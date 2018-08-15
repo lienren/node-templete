@@ -1,0 +1,48 @@
+{
+  "name": "templete",
+  "version": "1.0.0",
+  "description": "node templete",
+  "main": "app.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "production": "node src/app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "http://lienren@10.10.141.47/lienren/node-templete.git"
+  },
+  "keywords": [
+    "node",
+    "nodejs",
+    "js",
+    "javascript",
+    "templete"
+  ],
+  "author": "Lienren",
+  "license": "ISC",
+  "dependencies": {
+    "amqplib": "^0.5.2",
+    "axios": "^0.18.0",
+    "base64-img": "^1.0.4",
+    "crypto-js": "^3.1.9-1",
+    "ftp": "^0.3.10",
+    "gd-bmp": "^1.2.4",
+    "ioredis": "^3.2.2",
+    "koa": "^2.5.0",
+    "koa-bodyparser": "^4.2.0",
+    "koa-multer": "^1.0.2",
+    "koa-orm": "^2.3.0",
+    "koa-router": "^7.4.0",
+    "koa-static": "^4.0.2",
+    "koa2-cors": "^2.0.5",
+    "log4js": "^2.5.3",
+    "md5": "^2.2.1",
+    "moment": "^2.22.2",
+    "mysql2": "^1.5.3",
+    "node-rsa": "^1.0.0",
+    "require-directory": "^2.1.1",
+    "uuid": "^3.2.1",
+    "when": "^3.7.8",
+    "xml2js": "^0.4.19"
+  }
+}
