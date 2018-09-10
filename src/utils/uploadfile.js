@@ -2,13 +2,13 @@
  * @Author: Lienren 
  * @Date: 2018-04-19 16:56:45 
  * @Last Modified by: Lienren
- * @Last Modified time: 2018-06-20 12:36:59
+ * @Last Modified time: 2018-09-08 09:32:26
  */
 'use strict';
 
 const path = require('path');
 const multer = require('koa-multer');
-const comm = require('./comm');
+const io = require('./io');
 const config = require('../config.json');
 
 module.exports = {
@@ -20,7 +20,7 @@ module.exports = {
         savepath = path.resolve(__dirname, config.sys.uploadFilePath, savepath || '');
         
         // 新建目录
-        comm.mkdirs(savepath, () => {
+        io.mkdirs(savepath, () => {
           cb(null, savepath);
         });
       },
