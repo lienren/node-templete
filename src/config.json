@@ -8,19 +8,21 @@
       "responseLogPath": "../../logs/response/response"
     }
   },
-  "db": {
-    "dbtype": "mysql",
-    "port": 3306,
-    "dbname": "db_test",
-    "read": [{ "host": "localhost", "username": "root", "password": "123456" }],
-    "write": { "host": "localhost", "username": "root", "password": "123456" },
-    "pool": {
-      "maxConnections": 20,
-      "minConnections": 0,
-      "maxIdleTime": 30000
-    },
-    "modelPath": "../models"
-  },
+  "dbs": [
+    {
+      "dbtype": "mysql",
+      "port": 3306,
+      "dbname": "db_test",
+      "read": [{ "host": "localhost", "username": "root", "password": "123456" }],
+      "write": { "host": "localhost", "username": "root", "password": "123456" },
+      "pool": {
+        "maxConnections": 20,
+        "minConnections": 0,
+        "maxIdleTime": 30000
+      },
+      "modelPath": "../models"
+    }
+  ],
   "redis": {
     "host": "localhost",
     "port": 6379,

@@ -1,8 +1,8 @@
 /*
- * @Author: Lienren 
- * @Date: 2018-06-07 14:41:33 
+ * @Author: Lienren
+ * @Date: 2018-06-07 14:41:33
  * @Last Modified by: Lienren
- * @Last Modified time: 2018-07-20 10:09:06
+ * @Last Modified time: 2018-12-12 22:47:46
  */
 'use strict';
 
@@ -14,6 +14,7 @@ const encrypt = require('../utils/encrypt');
 const http = require('../utils/http');
 const wait = require('../utils/delay');
 const mq = require('../utils/mq');
+const jwt = require('jsonwebtoken');
 
 module.exports = {
   hello: async (ctx, next) => {
@@ -33,9 +34,13 @@ module.exports = {
     await wait(delayTime);
   },
   getUsers: async (ctx, next) => {
-    let result = await ctx.orm().users.findAll();
+    let users = await ctx.orm().users.findAll();
+    let users_dbname = await ctx.orm('db_test').users.findAll();
 
-    ctx.body = result;
+    ctx.body = {
+      users,
+      users_dbname
+    };
   },
   getUserByRedis: async (ctx, next) => {
     let redis = require('../utils/redis');
@@ -89,6 +94,40 @@ module.exports = {
 
     ctx.body = {
       result: result
+    };
+  },
+  jsonwebtoken: async (ctx, next) => {
+    let user = {
+      userId: 1,
+      userName: '李恩仁',
+      userRoles: [
+        {
+          roleId: 1,
+          roleName: '超级管理员'
+        },
+        {
+          roleId: 2,
+          roleName: '管理员'
+        }
+      ]
+    };
+
+    let key = comm.randCode(36);
+    let options = {
+      expiresIn: '10h',
+      issuer: 'Node-Templete',
+      audience: 'LI R&D TEAM 2018-2020',
+      algorithm: 'HS512'
+    };
+    let algorithms = [options.algorithm];
+
+    let token = jwt.sign(user, key, options);
+    let decoded = jwt.verify(token, key, { algorithms });
+
+    ctx.body = {
+      key,
+      token,
+      decoded
     };
   }
 };

@@ -2,9 +2,11 @@
  * @Author: Lienren
  * @Date: 2018-04-19 11:52:42
  * @Last Modified by: Lienren
- * @Last Modified time: 2018-12-04 12:13:12
+ * @Last Modified time: 2018-12-12 22:42:14
  */
 'use strict';
+
+console.time('Startup');
 
 const http = require('http');
 const path = require('path');
@@ -12,7 +14,6 @@ const koa = require('koa');
 const koastatic = require('koa-static');
 const cors = require('koa2-cors');
 const bodyParser = require('koa-bodyparser');
-
 const config = require('./config.json');
 
 const app = new koa();
@@ -37,8 +38,8 @@ app.use(
 );
 
 // 使用koa-orm中间件，sequelize，mysql
-const db = require('./configs/mysql_db');
-const orm = require('koa-orm')(db);
+const dbs = require('./configs/mysql_db');
+const orm = require('koa-orm')(dbs);
 app.use(orm.middleware);
 
 // 全局请求处理
@@ -51,3 +52,5 @@ app.use(router);
 
 // 绑定访问端口
 http.createServer(app.callback()).listen(config.sys.port);
+
+console.timeEnd('Startup');

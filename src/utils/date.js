@@ -2,7 +2,7 @@
  * @Author: Lienren 
  * @Date: 2018-04-19 12:02:43 
  * @Last Modified by: Lienren
- * @Last Modified time: 2018-06-20 12:23:02
+ * @Last Modified time: 2018-12-12 23:09:12
  */
 'use strict';
 
@@ -64,6 +64,11 @@ module.exports = {
     let s = date.getSeconds() < 10 ? '0' + date.getSeconds() : date.getSeconds();
 
     return Y + M + D + h + m + s;
+  },
+  // 时间转时间戳，时间格式：yyyy-MM-DD HH:mm:ss
+  timeToTimeStamp: function(time) {
+    var date = new Date(time.replace(/-/g, '/'));
+    return date.getTime();
   },
   // 获取今天开始和结束时间戳
   getTodayTimeStamp: function() {
