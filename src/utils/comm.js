@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2018-04-10 12:12:48
  * @Last Modified by: Lienren
- * @Last Modified time: 2018-12-12 23:06:52
+ * @Last Modified time: 2018-12-12 23:25:08
  */
 'use strict';
 
@@ -11,6 +11,17 @@ const empty = require('is-empty');
 const RAND_CODE = 'ABCDEFGHKMNPQRSTUVWXYZ23456789YXWVUTSRQPNMKHGFEDCBA';
 const RAND_NUMBER = '123456789987654321';
 const RAND_NUMBERCODE = '1234567890987654321';
+
+function randString(len, str) {
+  if (!str || str.length === 0) {
+    return '';
+  }
+  let code = '';
+  for (let i = 0; i < len; i++) {
+    code += str.charAt((Math.random() * str.length) | 0);
+  }
+  return code;
+}
 
 module.exports = {
   // 获取GUID
@@ -31,14 +42,7 @@ module.exports = {
   },
   // 生成随机码（字母和数字）
   randString: (len, str) => {
-    if (!str || str.length === 0) {
-      return '';
-    }
-    let code = '';
-    for (let i = 0; i < len; i++) {
-      code += str.charAt((Math.random() * str.length) | 0);
-    }
-    return code;
+    return randString(len, str);
   },
   // 生成随机码（字母和数字）
   randCode: len => {
