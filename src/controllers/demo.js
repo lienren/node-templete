@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2018-06-07 14:41:33
  * @Last Modified by: Lienren
- * @Last Modified time: 2018-12-12 23:31:11
+ * @Last Modified time: 2018-12-14 00:28:44
  */
 'use strict';
 
@@ -34,6 +34,7 @@ module.exports = {
     await wait(delayTime);
   },
   getUsers: async (ctx, next) => {
+    assert.ok(false, 'IsErrorCode');
     let users = await ctx.orm().users.findAll();
     let users_dbname = await ctx.orm('db_test').users.findAll();
 
@@ -43,7 +44,6 @@ module.exports = {
     };
   },
   getUserByRedis: async (ctx, next) => {
-    let redis = require('../utils/redis');
     await redis.set('lienren', JSON.stringify({ name: 'Lienren', age: 34 }));
     let result = await redis.get('lienren');
 
