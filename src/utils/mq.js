@@ -2,11 +2,11 @@
  * @Author: Lienren 
  * @Date: 2018-07-19 17:10:35 
  * @Last Modified by: Lienren
- * @Last Modified time: 2018-07-20 10:30:56
+ * @Last Modified time: 2018-12-13 23:58:08
  */
 ('use strict');
 
-const config = require('../config.json');
+const config = require('../config.js');
 const amqp = require('amqplib');
 var when = require('when');
 

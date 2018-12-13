@@ -1,16 +1,16 @@
 /*
- * @Author: Lienren 
- * @Date: 2018-04-19 15:46:35 
+ * @Author: Lienren
+ * @Date: 2018-04-19 15:46:35
  * @Last Modified by: Lienren
- * @Last Modified time: 2018-04-19 17:55:48
+ * @Last Modified time: 2018-12-14 00:05:00
  */
 'use strict';
 
 const log4js = require('log4js');
-const log_config = require('../configs/log_config');
+const logConfig = require('../config.js').sys.logConfig;
 
 // 加载配置文件
-log4js.configure(log_config);
+log4js.configure(logConfig);
 
 var logUtil = {};
 var errorLogger = log4js.getLogger('errorLogger');

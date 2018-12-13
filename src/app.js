@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2018-04-19 11:52:42
  * @Last Modified by: Lienren
- * @Last Modified time: 2018-12-12 22:42:14
+ * @Last Modified time: 2018-12-14 00:01:53
  */
 'use strict';
 
@@ -14,12 +14,12 @@ const koa = require('koa');
 const koastatic = require('koa-static');
 const cors = require('koa2-cors');
 const bodyParser = require('koa-bodyparser');
-const config = require('./config.json');
+const config = require('./config.js');
 
 const app = new koa();
 
 // 静态存放地址
-app.use(koastatic(path.resolve(__dirname, config.sys.staticPath)));
+app.use(koastatic(config.sys.staticPath));
 
 // 配置跨域访问
 app.use(cors());
@@ -38,9 +38,10 @@ app.use(
 );
 
 // 使用koa-orm中间件，sequelize，mysql
-const dbs = require('./configs/mysql_db');
-const orm = require('koa-orm')(dbs);
-app.use(orm.middleware);
+if (config.databases) {
+  const orm = require('koa-orm')(config.databases);
+  app.use(orm.middleware);
+}
 
 // 全局请求处理
 const requestFilter = require('./filters/request_filter');

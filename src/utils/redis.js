@@ -2,11 +2,11 @@
  * @Author: Lienren 
  * @Date: 2018-04-19 14:05:57 
  * @Last Modified by: Lienren
- * @Last Modified time: 2018-07-19 17:32:41
+ * @Last Modified time: 2018-12-13 23:58:12
  */
 'use strict';
 
-const config = require('../config.json');
+const config = require('../config.js');
 const Redis = require('ioredis');
 
 module.exports = {
