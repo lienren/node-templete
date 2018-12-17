@@ -2,37 +2,53 @@
  * @Author: Lienren
  * @Date: 2018-04-19 13:38:30
  * @Last Modified by: Lienren
- * @Last Modified time: 2018-12-14 00:30:56
+ * @Last Modified time: 2018-12-17 10:06:01
  */
 'use strict';
 
+const assert = require('assert');
 const sendfile = require('koa-sendfile');
 const log = require('../utils/log');
 const redirect = require('./request_redirect');
+const auth = require('./request_authentication');
 
 module.exports = async function(ctx, next) {
   // 响应开始时间
   const requestStartTime = new Date();
 
-  let urlPath = ctx.path || '';
-  let token = ctx.headers['authentication'] || '';
+  // 整合query和body内容
+  ctx.request.body = {
+    ...ctx.request.query,
+    ...ctx.request.body
+  };
+
+  ctx.work = {
+    code: '000000',
+    message: 'success'
+  };
 
   // 根据请求目录转入指定静态目录
-  await redirect(urlPath, async sitepath => {
+  let sitepath = await redirect(ctx, async (ctx, requestUrl, sitepath) => {
     await sendfile(ctx, sitepath);
   });
 
   try {
-    // 整合query和body内容
-    ctx.request.body = {
-      ...ctx.request.query,
-      ...ctx.request.body
-    };
+    // 鉴权验证
+    let isPass = await auth(
+      ctx,
+      async (ctx, requestUrl) => {
+        return true;
+      },
+      async (ctx, requestUrl, isPass, authInfo) => {
+        if (isPass && authInfo) {
+          // 验证通过
+        } else {
+          // 验证未通过
+        }
+      }
+    );
 
-    ctx.work = {
-      code: '000000',
-      message: 'success'
-    };
+    assert.ok(isPass, 'TokenIsFail');
 
     await next();
 
@@ -50,12 +66,12 @@ module.exports = async function(ctx, next) {
   } catch (error) {
     // 响应间隔时间
     let ms = new Date() - requestStartTime;
-    
+
     // 记录异常日志
     log.logError(ctx, error, ms);
 
     ctx.body = {
-      code: error.code || error.name,
+      code: error.code || error.name || error.message,
       message: error.message,
       data: {}
     };

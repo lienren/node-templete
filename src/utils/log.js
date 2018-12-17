@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2018-04-19 15:46:35
  * @Last Modified by: Lienren
- * @Last Modified time: 2018-12-14 00:05:00
+ * @Last Modified time: 2018-12-14 09:44:50
  */
 'use strict';
 
@@ -16,13 +16,22 @@ var logUtil = {};
 var errorLogger = log4js.getLogger('errorLogger');
 var resLogger = log4js.getLogger('resLogger');
 
-// 封装错误日志
+/**
+ * 记录异常日志
+ * @param {*} ctx ctx对象
+ * @param {*} error 异常对象
+ * @param {*} resTime 请求响应时长
+ */
 logUtil.logError = function(ctx, error, resTime) {
   if (ctx && error) {
     errorLogger.error(formatError(ctx, error, resTime));
   }
 };
-// 封装响应日志
+/**
+ * 记录响应日志
+ * @param {*} ctx ctx对象
+ * @param {*} resTime 请求响应时长
+ */
 logUtil.logResponse = function(ctx, resTime) {
   if (ctx) {
     resLogger.info(formatRes(ctx, resTime));

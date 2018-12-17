@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2018-12-13 23:49:41
  * @Last Modified by: Lienren
- * @Last Modified time: 2018-12-14 00:04:54
+ * @Last Modified time: 2018-12-14 09:19:59
  */
 'use strict';
 
@@ -50,6 +50,12 @@ module.exports = {
         errorLogger: { appenders: ['errorLogger'], level: 'error' }
       }
     }
+  },
+  auth: {
+    authOpen: true,
+    authSite: 'authentication',
+    authKey: '447CTXA2C2X9XMYBGQRYP3NMVCUXEA3BYQGP',
+    authAlgorithm: 'HS512'
   },
   websites: [
     {
