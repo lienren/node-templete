@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2018-12-13 23:49:41
  * @Last Modified by: Lienren
- * @Last Modified time: 2018-12-14 09:19:59
+ * @Last Modified time: 2019-03-01 11:14:43
  */
 'use strict';
 
@@ -54,8 +54,14 @@ module.exports = {
   auth: {
     authOpen: true,
     authSite: 'authentication',
+    authSource: 'authsource',
     authKey: '447CTXA2C2X9XMYBGQRYP3NMVCUXEA3BYQGP',
-    authAlgorithm: 'HS512'
+    authOptions: {
+      expiresIn: '24h',
+      issuer: 'RiskManager System',
+      audience: 'AXON R&D TEAM 2018-2020.',
+      algorithm: 'HS512'
+    }
   },
   websites: [
     {

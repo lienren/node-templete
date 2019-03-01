@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2018-04-19 13:38:30
  * @Last Modified by: Lienren
- * @Last Modified time: 2018-12-17 10:06:01
+ * @Last Modified time: 2019-03-01 10:03:50
  */
 'use strict';
 
@@ -34,17 +34,23 @@ module.exports = async function(ctx, next) {
 
   try {
     // 鉴权验证
-    let isPass = await auth(
+    let { token, isPass, authSource } = await auth(
       ctx,
       async (ctx, requestUrl) => {
-        return true;
+        return false;
       },
-      async (ctx, requestUrl, isPass, authInfo) => {
+      async (ctx, requestUrl, token, isPass, authInfo, authSource) => {
         if (isPass && authInfo) {
           // 验证通过
         } else {
           // 验证未通过
         }
+
+        return {
+          isPass,
+          authSource,
+          token
+        };
       }
     );
 

@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2018-04-19 11:52:42
  * @Last Modified by: Lienren
- * @Last Modified time: 2018-12-14 00:01:53
+ * @Last Modified time: 2019-03-01 11:13:22
  */
 'use strict';
 
@@ -33,7 +33,9 @@ app.use(async (ctx, next) => {
 // 使用koa-bodyparser中间件
 app.use(
   bodyParser({
-    enableTypes: ['json', 'form']
+    enableTypes: ['json', 'form'],
+    jsonLimit: '100mb',
+    formLimit: '100mb'
   })
 );
 
@@ -55,3 +57,4 @@ app.use(router);
 http.createServer(app.callback()).listen(config.sys.port);
 
 console.timeEnd('Startup');
+console.log(`listening : http://localhost:${config.sys.port}/`);
