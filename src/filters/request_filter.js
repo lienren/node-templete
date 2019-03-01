@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2018-04-19 13:38:30
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-03-01 10:03:50
+ * @Last Modified time: 2019-03-01 11:25:11
  */
 'use strict';
 
@@ -22,6 +22,8 @@ module.exports = async function(ctx, next) {
     ...ctx.request.body
   };
 
+  console.log('request body:', ctx.request.body);
+
   ctx.work = {
     code: '000000',
     message: 'success'
@@ -29,6 +31,7 @@ module.exports = async function(ctx, next) {
 
   // 根据请求目录转入指定静态目录
   let sitepath = await redirect(ctx, async (ctx, requestUrl, sitepath) => {
+    console.log('sitepath:', sitepath);
     await sendfile(ctx, sitepath);
   });
 

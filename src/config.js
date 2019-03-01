@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2018-12-13 23:49:41
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-03-01 11:14:43
+ * @Last Modified time: 2019-03-01 11:16:04
  */
 'use strict';
 
@@ -65,8 +65,8 @@ module.exports = {
   },
   websites: [
     {
-      sitename: 'website',
-      sitepath: path.resolve(__dirname, '../assets/website/index.html')
+      sitename: 'cheetahfnmanager',
+      sitepath: path.resolve(__dirname, '../assets/cheetahfnmanager/index.html')
     }
   ],
   // sequelize-auto -o "./src/models" -d db_test -h localhost -u root -p 3306 -x 123456 -e mysql

@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2018-06-07 14:41:33
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-01-21 17:17:14
+ * @Last Modified time: 2019-03-01 11:16:29
  */
 'use strict';
 
@@ -136,34 +136,6 @@ module.exports = {
       key,
       token,
       decoded
-    };
-  },
-  https: async (ctx, next) => {
-    let url = ctx.request.body.url || '';
-    let params = ctx.request.body.params || '';
-    let data = ctx.request.body.data || '';
-
-    https.globalAgent.options.rejectUnauthorized = false;
-
-    let axiosHttp = axios.create({
-      baseURL: url,
-      data,
-      params,
-      adapter: httpAdapter,
-      headers: { 'Content-Type': 'text/xml' },
-      httpsAgent: new https.Agent({
-        cert: fs.readFileSync(path.resolve(__dirname, `./client_504568.crt`)),
-        key: fs.readFileSync(path.resolve(__dirname, `./client_504568.key`)),
-        rejectUnauthorized: false
-      })
-    });
-
-    let result = await axiosHttp.get();
-
-    result = await xml2json.xml2json(result.data.toString());
-
-    ctx.body = {
-      result: result
     };
   }
 };
