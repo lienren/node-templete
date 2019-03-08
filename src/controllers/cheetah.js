@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-03-04 12:04:18
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-03-05 10:40:47
+ * @Last Modified time: 2019-03-05 12:07:32
  */
 'use strict';
 
@@ -18,13 +18,23 @@ module.exports = {
     let body = ctx.request.body || {};
 
     console.log('apiurl:', `${domain}/${apiUrl}`);
+    console.log('method:', ctx.method);
 
-    let result = await http.post({
-      url: `${domain}/${apiUrl}`,
-      data: body,
-      headers: ctx.headers
-    });
-    
-    ctx.body = result.data;
+    if (ctx.method === 'GET') {
+      let result = await http.get({
+        url: `${domain}/${apiUrl}`,
+        headers: ctx.headers
+      });
+
+      ctx.body = result.data;
+    } else if (ctx.method === 'POST') {
+      let result = await http.post({
+        url: `${domain}/${apiUrl}`,
+        data: body,
+        headers: ctx.headers
+      });
+
+      ctx.body = result.data;
+    }
   }
 };

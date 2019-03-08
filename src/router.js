@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2018-06-07 14:35:15
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-03-04 12:07:40
+ * @Last Modified time: 2019-03-05 12:05:14
  */
 'use strict';
 
@@ -12,6 +12,6 @@ const ctrl = require('./controllers/index.js');
 
 const router = new Router();
 
-router.post('/cheetah/(.*)', ctrl.cheetah.proxyApi);
+router.all('/cheetah/(.*)', ctrl.cheetah.proxyApi);
 
 module.exports = router.routes();
