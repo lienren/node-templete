@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2018-04-19 11:52:42
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-03-01 11:13:22
+ * @Last Modified time: 2019-04-02 15:04:19
  */
 'use strict';
 
@@ -27,6 +27,18 @@ app.use(cors());
 // 清除content-encoding请求头编码
 app.use(async (ctx, next) => {
   delete ctx.request.headers['content-encoding'];
+  await next();
+});
+
+app.use(async (ctx, next) => {
+  ctx.disableBodyParser = false;
+  ctx.disableBodyParserReturn = false;
+
+  let path = ctx.path.toLowerCase();
+
+  if (path.indexOf('editor') >= 0) {
+    ctx.disableBodyParserReturn = true;
+  }
   await next();
 });
 

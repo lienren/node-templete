@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2018-12-13 23:49:41
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-03-01 11:14:43
+ * @Last Modified time: 2019-04-02 15:12:14
  */
 'use strict';
 
@@ -11,6 +11,7 @@ const path = require('path');
 module.exports = {
   sys: {
     port: 20000,
+    domain: 'http://localhost:20000',
     staticPath: path.resolve(__dirname, '../assets/'),
     uploadFilePath: path.resolve(__dirname, '../uploads/'),
     logConfig: {
@@ -55,11 +56,11 @@ module.exports = {
     authOpen: true,
     authSite: 'authentication',
     authSource: 'authsource',
-    authKey: '447CTXA2C2X9XMYBGQRYP3NMVCUXEA3BYQGP',
+    authKey: 'ae52d27d-a653-49f3-a752-45cddfd0ee1b',
     authOptions: {
       expiresIn: '24h',
-      issuer: 'RiskManager System',
-      audience: 'AXON R&D TEAM 2018-2020.',
+      issuer: 'LI R&D TEAM',
+      audience: 'LI R&D TEAM 2018-2020.',
       algorithm: 'HS512'
     }
   },
@@ -69,11 +70,11 @@ module.exports = {
       sitepath: path.resolve(__dirname, '../assets/website/index.html')
     }
   ],
-  // sequelize-auto -o "./src/models" -d db_test -h localhost -u root -p 3306 -x 123456 -e mysql
+  // sequelize-auto -o "./src/models" -d MedicalProject -h localhost -u root -p 3306 -x 123456 -e mysql
   databases: [
     {
       modelPath: path.resolve(__dirname, './models'),
-      db: 'db_test',
+      db: 'MedicalProject',
       dialect: 'mysql',
       port: 3306,
       replication: {
