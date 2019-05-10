@@ -1,8 +1,8 @@
 /*
- * @Author: Lienren 
- * @Date: 2018-06-21 19:37:43 
+ * @Author: Lienren
+ * @Date: 2018-06-21 19:37:43
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-04-02 15:11:41
+ * @Last Modified time: 2019-05-07 10:46:12
  */
 'use strict';
 
@@ -52,7 +52,7 @@ module.exports = {
   uploadFile: async ctx => {
     if (ctx.req.files && ctx.req.files.length > 0) {
       ctx.body = {
-        filePath: `${config.sys.domain}/uploads/files/${ctx.req.files[0].filename}`
+        filePath: config.sys.uploadVirtualFilePath + '/files/' + ctx.req.files[0].filename
       };
     } else {
       ctx.body = {};

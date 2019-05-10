@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2018-04-19 13:38:30
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-04-02 16:54:37
+ * @Last Modified time: 2019-04-03 09:58:33
  */
 'use strict';
 
@@ -85,6 +85,16 @@ module.exports = async function(ctx, next) {
   } catch (error) {
     // 响应间隔时间
     let ms = new Date() - requestStartTime;
+
+    // 获取错误信息
+    let resultErrorContext = await ctx.orm().BaseErrorContext.findOne({
+      where: { key: error.message }
+    });
+
+    if (resultErrorContext) {
+      error.code = resultErrorContext.code;
+      error.message = resultErrorContext.context;
+    }
 
     // 记录异常日志
     log.logError(ctx, error, ms);

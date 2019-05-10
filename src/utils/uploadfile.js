@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2018-04-19 16:56:45
  * @Last Modified by: Lienren
- * @Last Modified time: 2018-12-13 23:58:16
+ * @Last Modified time: 2019-05-07 11:06:29
  */
 'use strict';
 
@@ -17,11 +17,11 @@ module.exports = {
     let storage = multer.diskStorage({
       //文件保存路径
       destination: function(req, file, cb) {
-        savepath = path.join(config.sys.uploadFilePath, savepath || '');
+        let filepath = path.join(config.sys.uploadFilePath, savepath || '');
 
         // 新建目录
-        io.mkdirs(savepath, () => {
-          cb(null, savepath);
+        io.mkdirs(filepath, () => {
+          cb(null, filepath);
         });
       },
       //修改文件名称

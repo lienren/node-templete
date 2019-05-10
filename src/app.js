@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2018-04-19 11:52:42
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-04-02 15:04:19
+ * @Last Modified time: 2019-04-02 17:38:01
  */
 'use strict';
 
@@ -63,7 +63,9 @@ app.use(requestFilter);
 
 // 路由
 const router = require('./router.js');
+const router_yp = require('./router_youngplay.js');
 app.use(router);
+app.use(router_yp);
 
 // 绑定访问端口
 http.createServer(app.callback()).listen(config.sys.port);

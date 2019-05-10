@@ -1,8 +1,8 @@
 /*
- * @Author: Lienren 
- * @Date: 2018-08-16 10:39:38 
+ * @Author: Lienren
+ * @Date: 2018-08-16 10:39:38
  * @Last Modified by: Lienren
- * @Last Modified time: 2018-08-17 10:24:04
+ * @Last Modified time: 2019-05-07 11:11:33
  */
 'use strict';
 
@@ -10,8 +10,8 @@ const busbody = require('await-busboy');
 const fs = require('fs');
 const path = require('path');
 const sysPath = process.cwd(); // 系统根目录
-const staticPath = path.join(sysPath, 'upload'); // 文件物理存储目录
-const virtualPath = '/upload'; // 文件访问虚拟目录
+const staticPath = path.join(sysPath, 'assets/ueditor_files'); // 文件物理存储目录
+const virtualPath = '/ueditor_files'; // 文件访问虚拟目录
 const actions = {
   uploadimage: 'image',
   uploadfile: 'file',

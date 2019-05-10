@@ -49,23 +49,23 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     r1: {
-      type: DataTypes.STRING(2000),
+      type: DataTypes.STRING(3000),
       allowNull: true
     },
     r2: {
-      type: DataTypes.STRING(2000),
+      type: DataTypes.STRING(3000),
       allowNull: true
     },
     r3: {
-      type: DataTypes.STRING(2000),
+      type: DataTypes.STRING(3000),
       allowNull: true
     },
     r4: {
-      type: DataTypes.STRING(2000),
+      type: DataTypes.STRING(3000),
       allowNull: true
     },
     attrs: {
-      type: DataTypes.STRING(5120),
+      type: DataTypes.STRING(3000),
       allowNull: true
     },
     tags: {
@@ -77,6 +77,10 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     isDel: {
+      type: DataTypes.INTEGER(11),
+      allowNull: true
+    },
+    busUserId: {
       type: DataTypes.INTEGER(11),
       allowNull: true
     }

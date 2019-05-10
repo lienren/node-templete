@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2018-12-13 23:49:41
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-04-02 15:12:14
+ * @Last Modified time: 2019-05-09 08:16:15
  */
 'use strict';
 
@@ -13,7 +13,8 @@ module.exports = {
     port: 20000,
     domain: 'http://localhost:20000',
     staticPath: path.resolve(__dirname, '../assets/'),
-    uploadFilePath: path.resolve(__dirname, '../uploads/'),
+    uploadFilePath: path.resolve(__dirname, '../assets/upload/'),
+    uploadVirtualFilePath: 'http:\/\/localhost:20000/upload',
     logConfig: {
       appenders: {
         resLogger: {
@@ -54,7 +55,7 @@ module.exports = {
   },
   auth: {
     authOpen: true,
-    authSite: 'authentication',
+    authSite: 'authorization',
     authSource: 'authsource',
     authKey: 'ae52d27d-a653-49f3-a752-45cddfd0ee1b',
     authOptions: {
@@ -66,15 +67,15 @@ module.exports = {
   },
   websites: [
     {
-      sitename: 'website',
-      sitepath: path.resolve(__dirname, '../assets/website/index.html')
+      sitename: 'yp-manage',
+      sitepath: path.resolve(__dirname, '../assets/yp-manage/index.html')
     }
   ],
-  // sequelize-auto -o "./src/models" -d MedicalProject -h localhost -u root -p 3306 -x 123456 -e mysql
+  // sequelize-auto -o "./src/models" -d youngplay -h localhost -u root -p 3306 -x 123456 -e mysql
   databases: [
     {
       modelPath: path.resolve(__dirname, './models'),
-      db: 'MedicalProject',
+      db: 'youngplay',
       dialect: 'mysql',
       port: 3306,
       replication: {
@@ -101,7 +102,7 @@ module.exports = {
   },
   rebitmq: {
     protocol: 'amqp',
-    hostname: '10.10.133.217',
+    hostname: '127.0.0.1',
     port: 5672,
     username: 'guest',
     password: 'guest'
