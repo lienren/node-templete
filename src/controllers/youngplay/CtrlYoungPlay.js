@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-04-02 17:35:45
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-05-09 08:17:56
+ * @Last Modified time: 2019-07-03 08:53:20
  */
 'use strict';
 
@@ -12,9 +12,11 @@ const date = require('../../utils/date');
 // Ler@2019
 
 const attrTypes = {
-  '1': '团购',
+  '1': '团建',
   '2': '活动',
-  '3': '场地'
+  '3': '场地',
+  '4': '亲子汇',
+  '5': '案例'
 };
 
 const classTypes = {
@@ -400,6 +402,7 @@ module.exports = {
     let attrs = ctx.request.body.attrs || [];
     let tags = ctx.request.body.tags || '';
     let busUserId = ctx.request.body.busUserId || 0;
+    let packAge = ctx.request.body.packAge || [];
 
     assert.notStrictEqual(title, '', '入参不正确！');
     assert.notStrictEqual(masterImg, '', '入参不正确！');
@@ -425,7 +428,8 @@ module.exports = {
       tags,
       createTime: now,
       isDel: 0,
-      busUserId
+      busUserId,
+      packAge: JSON.stringify(packAge)
     });
 
     ctx.body = {};
@@ -449,6 +453,7 @@ module.exports = {
     let attrs = ctx.request.body.attrs || [];
     let tags = ctx.request.body.tags || '';
     let busUserId = ctx.request.body.busUserId || 0;
+    let packAge = ctx.request.body.packAge || [];
 
     assert.notStrictEqual(id, 0, '入参不正确！');
     assert.notStrictEqual(title, '', '入参不正确！');
@@ -472,7 +477,8 @@ module.exports = {
         r4,
         attrs: JSON.stringify(attrs),
         tags,
-        busUserId
+        busUserId,
+        packAge: JSON.stringify(packAge)
       },
       {
         where: {

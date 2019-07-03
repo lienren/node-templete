@@ -48,6 +48,10 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING(2000),
       allowNull: true
     },
+    packAge: {
+      type: DataTypes.STRING(1000),
+      allowNull: true
+    },
     r1: {
       type: DataTypes.STRING(3000),
       allowNull: true
