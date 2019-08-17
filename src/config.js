@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2018-12-13 23:49:41
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-08-17 15:04:31
+ * @Last Modified time: 2019-08-17 15:27:20
  */
 'use strict';
 
@@ -53,7 +53,7 @@ module.exports = {
   },
   auth: {
     authOpen: true,
-    authSite: 'authentication',
+    authSite: 'authorization',
     authSource: 'authsource',
     authKey: '447CTXA2C2X9XMYBGQRYP3NMVCUXEA3BYQGP',
     authOptions: {
