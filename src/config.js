@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2018-12-13 23:49:41
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-03-01 11:14:43
+ * @Last Modified time: 2019-08-17 15:04:31
  */
 'use strict';
 
@@ -58,8 +58,8 @@ module.exports = {
     authKey: '447CTXA2C2X9XMYBGQRYP3NMVCUXEA3BYQGP',
     authOptions: {
       expiresIn: '24h',
-      issuer: 'RiskManager System',
-      audience: 'AXON R&D TEAM 2018-2020.',
+      issuer: 'SAT System',
+      audience: 'Li R&D TEAM 2018-2020.',
       algorithm: 'HS512'
     }
   },
@@ -69,19 +69,19 @@ module.exports = {
       sitepath: path.resolve(__dirname, '../assets/website/index.html')
     }
   ],
-  // sequelize-auto -o "./src/models" -d db_test -h localhost -u root -p 3306 -x 123456 -e mysql
+  // sequelize-auto -o "./src/models" -d sat -h 47.111.64.7 -u root -p 3306 -x Ler@2019 -e mysql
   databases: [
     {
       modelPath: path.resolve(__dirname, './models'),
-      db: 'db_test',
+      db: 'sat',
       dialect: 'mysql',
       port: 3306,
       replication: {
-        read: [{ host: 'localhost', username: 'root', password: '123456' }],
-        write: { host: 'localhost', username: 'root', password: '123456' }
+        read: [{ host: '47.111.64.7', username: 'root', password: 'Ler@2019' }],
+        write: { host: '47.111.64.7', username: 'root', password: 'Ler@2019' }
       },
       pool: {
-        maxConnections: 20,
+        maxConnections: 200,
         minConnections: 0,
         maxIdleTime: 30000
       },
