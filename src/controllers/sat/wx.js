@@ -2,16 +2,16 @@
  * @Author: Lienren
  * @Date: 2019-08-17 10:55:19
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-08-17 14:23:49
+ * @Last Modified time: 2019-08-17 15:40:33
  */
 'use strict';
 
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
-const comm = require('../utils/comm');
-const date = require('../utils/date');
-const http = require('../utils/http');
+const comm = require('../../utils/comm');
+const date = require('../../utils/date');
+const http = require('../../utils/http');
 
 const tokenFilePath = path.resolve(__dirname, '../../assets/wx_token.json');
 
