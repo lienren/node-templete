@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-04-02 17:35:45
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-07-09 08:16:43
+ * @Last Modified time: 2019-08-12 12:19:32
  */
 'use strict';
 
@@ -356,7 +356,7 @@ module.exports = {
       where
     });
     let result = await ctx.orm().PlayGroup.findAll({
-      attributes: ['id', 'title', 'price', 'score', 'strokeDay', 'createTime'],
+      // attributes: ['id', 'title', 'price', 'score', 'strokeDay', 'createTime'],
       offset: (current - 1) * pageSize,
       limit: pageSize,
       where,
@@ -519,7 +519,7 @@ module.exports = {
       where
     });
     let result = await ctx.orm().PlaySite.findAll({
-      attributes: ['id', 'title', 'price', 'size', 'height', 'peopleNum', 'createTime'],
+      // attributes: ['id', 'title', 'price', 'size', 'height', 'peopleNum', 'createTime'],
       offset: (current - 1) * pageSize,
       limit: pageSize,
       where,
@@ -682,7 +682,7 @@ module.exports = {
       where
     });
     let result = await ctx.orm().PlayActivity.findAll({
-      attributes: ['id', 'title', 'price', 'clsName', 'strokeDay', 'site', 'createTime'],
+      // attributes: ['id', 'title', 'price', 'clsName', 'strokeDay', 'site', 'createTime'],
       offset: (current - 1) * pageSize,
       limit: pageSize,
       where,
@@ -841,7 +841,7 @@ module.exports = {
       where
     });
     let result = await ctx.orm().PlayParentChild.findAll({
-      attributes: ['id', 'title', 'price', 'score', 'strokeDay', 'createTime'],
+      // attributes: ['id', 'title', 'price', 'score', 'strokeDay', 'createTime'],
       offset: (current - 1) * pageSize,
       limit: pageSize,
       where,
@@ -1004,7 +1004,7 @@ module.exports = {
       where
     });
     let result = await ctx.orm().PlayCase.findAll({
-      attributes: ['id', 'title', 'price', 'score', 'strokeDay', 'createTime'],
+      // attributes: ['id', 'title', 'price', 'score', 'strokeDay', 'createTime'],
       offset: (current - 1) * pageSize,
       limit: pageSize,
       where,
