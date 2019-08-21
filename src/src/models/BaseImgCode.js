@@ -1,46 +1,34 @@
 /* jshint indent: 2 */
 
 module.exports = function(sequelize, DataTypes) {
-  return sequelize.define('satExams', {
+  return sequelize.define('BaseImgCode', {
     id: {
       type: DataTypes.INTEGER(11),
       allowNull: false,
       primaryKey: true,
       autoIncrement: true
     },
-    examType: {
-      type: DataTypes.INTEGER(11),
-      allowNull: true
-    },
-    examTypeName: {
+    token: {
       type: DataTypes.STRING(100),
       allowNull: true
     },
-    title: {
+    imgCode: {
       type: DataTypes.STRING(100),
       allowNull: true
     },
-    examTime: {
-      type: DataTypes.DATE,
-      allowNull: true
-    },
-    tFollowNum: {
+    isUse: {
       type: DataTypes.INTEGER(11),
       allowNull: true
     },
-    tMsgNum: {
-      type: DataTypes.INTEGER(11),
+    overTime: {
+      type: DataTypes.BIGINT,
       allowNull: true
     },
     addTime: {
-      type: DataTypes.DATE,
-      allowNull: true
-    },
-    isDel: {
-      type: DataTypes.INTEGER(11),
+      type: DataTypes.BIGINT,
       allowNull: true
     }
   }, {
-    tableName: 'satExams'
+    tableName: 'BaseImgCode'
   });
 };

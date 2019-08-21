@@ -2,14 +2,13 @@
  * @Author: Lienren
  * @Date: 2019-08-17 10:55:19
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-08-17 15:40:33
+ * @Last Modified time: 2019-08-19 13:51:55
  */
 'use strict';
 
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
-const comm = require('../../utils/comm');
 const date = require('../../utils/date');
 const http = require('../../utils/http');
 

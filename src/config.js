@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2018-12-13 23:49:41
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-08-17 15:27:20
+ * @Last Modified time: 2019-08-20 14:38:45
  */
 'use strict';
 
@@ -65,8 +65,8 @@ module.exports = {
   },
   websites: [
     {
-      sitename: 'website',
-      sitepath: path.resolve(__dirname, '../assets/website/index.html')
+      sitename: 'adminweb',
+      sitepath: path.resolve(__dirname, '../assets/adminweb/index.html')
     }
   ],
   // sequelize-auto -o "./src/models" -d sat -h 47.111.64.7 -u root -p 3306 -x Ler@2019 -e mysql

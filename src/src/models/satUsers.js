@@ -1,35 +1,31 @@
 /* jshint indent: 2 */
 
 module.exports = function(sequelize, DataTypes) {
-  return sequelize.define('satExams', {
+  return sequelize.define('satUsers', {
     id: {
       type: DataTypes.INTEGER(11),
       allowNull: false,
       primaryKey: true,
       autoIncrement: true
     },
-    examType: {
-      type: DataTypes.INTEGER(11),
-      allowNull: true
-    },
-    examTypeName: {
+    openId: {
       type: DataTypes.STRING(100),
       allowNull: true
     },
-    title: {
+    unionId: {
       type: DataTypes.STRING(100),
       allowNull: true
     },
-    examTime: {
-      type: DataTypes.DATE,
+    userHeadImg: {
+      type: DataTypes.STRING(1000),
       allowNull: true
     },
-    tFollowNum: {
-      type: DataTypes.INTEGER(11),
+    userName: {
+      type: DataTypes.STRING(100),
       allowNull: true
     },
-    tMsgNum: {
-      type: DataTypes.INTEGER(11),
+    userPhone: {
+      type: DataTypes.STRING(100),
       allowNull: true
     },
     addTime: {
@@ -41,6 +37,6 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     }
   }, {
-    tableName: 'satExams'
+    tableName: 'satUsers'
   });
 };

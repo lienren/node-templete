@@ -1,46 +1,49 @@
 /* jshint indent: 2 */
 
 module.exports = function(sequelize, DataTypes) {
-  return sequelize.define('satExams', {
+  return sequelize.define('BaseMenu', {
     id: {
       type: DataTypes.INTEGER(11),
       allowNull: false,
-      primaryKey: true,
-      autoIncrement: true
+      primaryKey: true
     },
-    examType: {
-      type: DataTypes.INTEGER(11),
-      allowNull: true
-    },
-    examTypeName: {
+    menuName: {
       type: DataTypes.STRING(100),
       allowNull: true
     },
-    title: {
+    menuLink: {
+      type: DataTypes.STRING(1000),
+      allowNull: true
+    },
+    menuIcon: {
       type: DataTypes.STRING(100),
       allowNull: true
     },
-    examTime: {
-      type: DataTypes.DATE,
-      allowNull: true
-    },
-    tFollowNum: {
+    level: {
       type: DataTypes.INTEGER(11),
       allowNull: true
     },
-    tMsgNum: {
+    parentId: {
+      type: DataTypes.INTEGER(11),
+      allowNull: true
+    },
+    sort: {
       type: DataTypes.INTEGER(11),
       allowNull: true
     },
     addTime: {
-      type: DataTypes.DATE,
+      type: DataTypes.BIGINT,
       allowNull: true
     },
     isDel: {
       type: DataTypes.INTEGER(11),
       allowNull: true
+    },
+    parentName: {
+      type: DataTypes.STRING(100),
+      allowNull: true
     }
   }, {
-    tableName: 'satExams'
+    tableName: 'BaseMenu'
   });
 };

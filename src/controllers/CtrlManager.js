@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2018-06-21 19:35:28
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-08-17 15:20:48
+ * @Last Modified time: 2019-08-20 17:05:27
  */
 'use strict';
 
@@ -245,7 +245,7 @@ module.exports = {
     let ManagerPwdSaleCount = await configData.getConfig(ctx, configData.CONFIG_KEY_ENUM.ManagerPwdSaleCount);
     let salt = comm.randCode(ManagerPwdSaleCount);
 
-    ctx.orm().SuperManagerInfo.create({
+    let result = await ctx.orm().SuperManagerInfo.create({
       loginName: loginName,
       loginPwd: encrypt.getMd5(`${loginPwd}|${salt}`),
       realName: realName,
@@ -261,7 +261,7 @@ module.exports = {
       isDel: 0
     });
 
-    ctx.body = {};
+    ctx.body = result;
   },
   editManager: async ctx => {
     let id = ctx.request.body.id || 0;
