@@ -12,6 +12,14 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.INTEGER(11),
       allowNull: true
     },
+    topicTypeId: {
+      type: DataTypes.INTEGER(11),
+      allowNull: true
+    },
+    topicTypeName: {
+      type: DataTypes.STRING(100),
+      allowNull: true
+    },
     tIndex: {
       type: DataTypes.INTEGER(11),
       allowNull: true

@@ -2,12 +2,16 @@
  * @Author: Lienren
  * @Date: 2019-08-17 15:04:00
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-08-19 20:50:11
+ * @Last Modified time: 2019-08-22 15:00:27
  */
 'use strict';
 
 const assert = require('assert');
+const fs = require('fs');
+const path = require('path');
 const date = require('../../utils/date');
+
+let aboutFilePath = './about.txt';
 
 const examTypeDist = {
   '1': '亚太',
@@ -122,6 +126,23 @@ module.exports = {
     });
 
     ctx.body = result;
+  },
+  getAbout: async ctx => {
+    let context = '';
+    if (fs.existsSync(path.resolve(__dirname, aboutFilePath))) {
+      context = fs.readFileSync(path.resolve(__dirname, aboutFilePath), { encoding: 'utf8' });
+    }
+
+    ctx.body = {
+      context: context
+    };
+  },
+  setAbout: async ctx => {
+    let context = ctx.request.body.context || '';
+
+    fs.writeFileSync(path.resolve(__dirname, aboutFilePath), context, { encoding: 'utf8' });
+
+    ctx.body = {};
   },
   createExam: async ctx => {
     let examType = ctx.request.body.examType || 1;
