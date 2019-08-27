@@ -2,15 +2,22 @@
  * @Author: Lienren
  * @Date: 2019-08-17 15:04:00
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-08-26 19:24:23
+ * @Last Modified time: 2019-08-27 21:17:23
  */
 'use strict';
 
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
+const sequelize = require('sequelize');
+const comm = require('../../utils/comm');
 const date = require('../../utils/date');
+const download = require('../../utils/downloadfile');
 const sats = require('./sats');
+const config = require('../../config');
+const WXBizDataCrypt = require('./WXBizDataCrypt');
+
+const appId = 'wx984e28c5b868e075';
 
 let aboutFilePath = './about.txt';
 
@@ -61,18 +68,18 @@ module.exports = {
   getExamTopicFollowAndMsg: async ctx => {
     let tId = ctx.request.body.tId || 0;
 
-    assert.notStrictEqual(examId, 0, '入参不能为空！');
+    assert.notStrictEqual(tId, 0, '入参不能为空！');
 
     let follows = await ctx
       .orm()
       .query(
-        `select f.id, f.addTime, f.userId, u.userPhone, u.userName, u.userHeadImg, u.openId, u.unionId, u.addTime userAddTime from satExamTopicFllows f inner join satUsers u on u.id = f.userId and u.isDel = 0 where f.tId = ${tId} and f.isDel = 0;`
+        `select f.id, f.addTime, f.userId, u.userPhone, u.userName, u.userHeadImg, u.openId, u.unionId, u.addTime userAddTime from satExamTopicFllows f inner join satUsers u on u.id = f.userId and u.isDel = 0 where f.tId = ${tId} and f.isDel = 0 order by f.addTime desc;`
       );
 
     let msgs = await ctx
       .orm()
       .query(
-        `select m.id, m.addTime, m.userId, m.msgContext, u.userPhone, u.userName, u.userHeadImg, u.openId, u.unionId, u.addTime userAddTime from satExamTopicMsgs m inner join satUsers u on u.id = m.userId and u.isDel = 0 where m.tId = ${tId} and m.isDel = 0;`
+        `select m.id, m.addTime, m.userId, m.msgContext, u.userPhone, u.userName, u.userHeadImg, u.openId, u.unionId, u.addTime userAddTime from satExamTopicMsgs m inner join satUsers u on u.id = m.userId and u.isDel = 0 where m.tId = ${tId} and m.isDel = 0 order by m.addTime desc;`
       );
 
     ctx.body = {
@@ -212,6 +219,20 @@ module.exports = {
       addTime: now,
       isDel: 0
     });
+
+    ctx.orm().satExamTopics.update(
+      {
+        tFollowNum: sequelize.literal(`tFollowNum + 1`)
+      },
+      {
+        where: {
+          id: tId
+        }
+      }
+    );
+
+    // 记录用户进入
+    sats.updateDay(ctx.orm(), date.formatDate(new Date(), 'YYYYMMDD'), 's4', 1);
   },
   createExamTopicMsg: async ctx => {
     let tId = ctx.request.body.tId || 0;
@@ -231,6 +252,20 @@ module.exports = {
       addTime: now,
       isDel: 0
     });
+
+    ctx.orm().satExamTopics.update(
+      {
+        tMsgNum: sequelize.literal(`tMsgNum + 1`)
+      },
+      {
+        where: {
+          id: tId
+        }
+      }
+    );
+
+    // 记录用户进入
+    sats.updateDay(ctx.orm(), date.formatDate(new Date(), 'YYYYMMDD'), 's3', 1);
   },
   createBanner: async ctx => {
     let title = ctx.request.body.title || '';
@@ -267,39 +302,69 @@ module.exports = {
     });
   },
   registerUser: async ctx => {
-    let openId = ctx.request.body.openId || '';
+    let id = ctx.request.body.id || 0;
     let unionId = ctx.request.body.unionId || '';
     let userHeadImg = ctx.request.body.userHeadImg || '';
     let userName = ctx.request.body.userName || '';
-    let userPhone = ctx.request.body.userPhone || '';
+    let userInfo = ctx.request.body.userInfo || '';
 
-    assert.notStrictEqual(openId, '', '入参不能为空！');
-    assert.notStrictEqual(unionId, '', '入参不能为空！');
+    assert.notStrictEqual(id, 0, '入参不能为空！');
 
-    let now = date.formatDate();
+    let headFilePath = '../../../assets/uploads/headimgs/';
+    let headFileName = comm.getGuid() + '.jpg';
 
-    let result = await ctx.orm().satUsers.findOne({
-      where: {
-        openId,
-        isDel: 0
-      }
-    });
+    let virstualPath = config.sys.uploadVirtualFilePath + '/headimgs/' + headFileName;
+    download.downImage(userHeadImg, path.resolve(__dirname, headFilePath + headFileName));
 
-    if (result) {
-      ctx.body = result;
-    } else {
-      let user = await ctx.orm().satUsers.create({
-        openId,
+    await ctx.orm().satUsers.update(
+      {
         unionId,
-        userHeadImg,
+        userHeadImg: virstualPath,
         userName,
-        userPhone,
-        addTime: now,
+        userInfo,
         isDel: 0
-      });
+      },
+      {
+        where: {
+          id
+        }
+      }
+    );
 
-      ctx.body = user;
+    ctx.body = {};
+  },
+  registerUserPhone: async ctx => {
+    let id = ctx.request.body.id || 0;
+    let encryptedData = ctx.request.body.encryptedData || '';
+    let sessionKey = ctx.request.body.sessionKey || '';
+    let iv = ctx.request.body.iv || '';
+
+    assert.notStrictEqual(id, 0, '入参不能为空！');
+    assert.notStrictEqual(encryptedData, '', '入参不能为空！');
+    assert.notStrictEqual(sessionKey, '', '入参不能为空！');
+    assert.notStrictEqual(iv, '', '入参不能为空！');
+
+    let pc = new WXBizDataCrypt(appId, sessionKey);
+    let data = pc.decryptData(encryptedData, iv);
+    let phone = data && data.purePhoneNumber ? data.purePhoneNumber : '';
+
+    if (phone) {
+      await ctx.orm().satUsers.update(
+        {
+          userPhone: phone
+        },
+        {
+          where: {
+            id
+          }
+        }
+      );
     }
+
+    ctx.body = {
+      id,
+      userPhone: phone
+    };
   },
   getUserByOpenId: async ctx => {
     let openId = ctx.request.body.openId || '';
@@ -437,28 +502,116 @@ module.exports = {
 
     assert.notStrictEqual(id, 0, '入参不能为空！');
 
-    await ctx.orm().satExamTopicFllows.create(
-      {
-        isDel: 1
-      },
-      {
-        where: { id }
+    let result = await ctx.orm().satExamTopicFllows.findOne({
+      where: {
+        id: id,
+        isDel: 0
       }
-    );
+    });
+
+    if (result) {
+      await ctx.orm().satExamTopicFllows.update(
+        {
+          isDel: 1
+        },
+        {
+          where: { id }
+        }
+      );
+
+      ctx.orm().satExamTopics.update(
+        {
+          tFollowNum: sequelize.literal(`tFollowNum - 1`)
+        },
+        {
+          where: {
+            id: result.tId,
+            tFollowNum: {
+              $gt: 0
+            }
+          }
+        }
+      );
+    }
+  },
+  delExamTopicFollowByOwn: async ctx => {
+    let tId = ctx.request.body.tId || 0;
+    let userId = ctx.request.body.userId || 0;
+
+    assert.notStrictEqual(tId, 0, '入参不能为空！');
+    assert.notStrictEqual(userId, 0, '入参不能为空！');
+
+    let result = await ctx.orm().satExamTopicFllows.findOne({
+      where: {
+        tId: tId,
+        userId: userId,
+        isDel: 0
+      }
+    });
+
+    if (result) {
+      await ctx.orm().satExamTopicFllows.update(
+        {
+          isDel: 1
+        },
+        {
+          where: {
+            id: result.id
+          }
+        }
+      );
+
+      ctx.orm().satExamTopics.update(
+        {
+          tFollowNum: sequelize.literal(`tFollowNum - 1`)
+        },
+        {
+          where: {
+            id: result.tId,
+            tFollowNum: {
+              $gt: 0
+            }
+          }
+        }
+      );
+    }
   },
   delExamTopicMsg: async ctx => {
     let id = ctx.request.body.id || 0;
 
     assert.notStrictEqual(id, 0, '入参不能为空！');
 
-    await ctx.orm().satExamTopicMsgs.update(
-      {
-        isDel: 1
-      },
-      {
-        where: { id }
+    let result = await ctx.orm().satExamTopicMsgs.findOne({
+      where: {
+        id: id,
+        isDel: 0
       }
-    );
+    });
+
+    if (result) {
+      await ctx.orm().satExamTopicMsgs.update(
+        {
+          isDel: 1
+        },
+        {
+          where: { id }
+        }
+      );
+
+      ctx.orm().satExamTopics.update(
+        {
+          tMsgNum: sequelize.literal(`tMsgNum - 1`)
+        },
+        {
+          where: {
+            id: result.tId,
+            tMsgNum: {
+              $gt: 0
+            }
+          }
+        }
+      );
+    }
   },
   delBanner: async ctx => {
     let id = ctx.request.body.id || 0;
@@ -528,5 +681,41 @@ module.exports = {
       );
 
     ctx.body = sta;
+  },
+  getExamsByOwn: async ctx => {
+    let examType = ctx.request.body.examType || 0;
+
+    let where = {
+      isDel: 0
+    };
+
+    if (examType !== 0 && examTypeDist[`${examType}`]) {
+      where.examType = examType;
+    }
+
+    let result = await ctx.orm().satExams.findAll({
+      where,
+      order: [['examTime', 'DESC'], ['id', 'DESC']]
+    });
+
+    ctx.body = result;
+  },
+  getExamTopicsByOwn: async ctx => {
+    let examId = ctx.request.body.examId || 0;
+
+    assert.notStrictEqual(examId, 0, '入参不能为空！');
+
+    let result = await ctx.orm().satExamTopics.findAll({
+      where: {
+        examId: examId,
+        isDel: 0
+      },
+      order: [['tIndex']]
+    });
+
+    // 记录用户进入
+    sats.updateDay(ctx.orm(), date.formatDate(new Date(), 'YYYYMMDD'), 's2', 1);
+
+    ctx.body = result;
   }
 };

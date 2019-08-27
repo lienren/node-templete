@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-08-17 10:55:19
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-08-26 16:44:54
+ * @Last Modified time: 2019-08-27 20:15:54
  */
 'use strict';
 
@@ -11,6 +11,7 @@ const fs = require('fs');
 const path = require('path');
 const date = require('../../utils/date');
 const http = require('../../utils/http');
+const sats = require('./sats');
 
 const tokenFilePath = path.resolve(__dirname, '../../assets/wx_token.json');
 
@@ -73,7 +74,7 @@ let wxHelper = {
 
     return token;
   },
-  requestOpenIdAndUnionId: async code => {
+  requestOpenId: async code => {
     let url = `https://api.weixin.qq.com/sns/jscode2session?appid=${appId}&secret=${appSecret}&js_code=${code}&grant_type=authorization_code`;
 
     let result = await http.get({
@@ -81,12 +82,12 @@ let wxHelper = {
     });
     result = result && result.data ? result.data : {};
 
-    let openId = result && result.errcode === 0 && result.openid ? result.openid : '';
-    let unionId = result && result.errcode === 0 && result.unionid ? result.unionid : '';
+    let sessionKey = result && result.session_key ? result.session_key : '';
+    let openId = result && result.openid ? result.openid : '';
 
     return {
-      openId,
-      unionId
+      sessionKey,
+      openId
     };
   }
 };
@@ -104,10 +105,39 @@ module.exports = {
 
     assert.notStrictEqual(code, '', '入参不能为空！');
 
-    let result = await wxHelper.requestOpenIdAndUnionId(code);
+    let result = await wxHelper.requestOpenId(code);
 
-    ctx.body = {
-      ...result
-    };
+    let user = {};
+    let now = date.formatDate();
+
+    if (result && result.sessionKey && result.openId && result.sessionKey.length > 0 && result.openId.length > 0) {
+      // 记录用户进入
+      sats.updateDay(ctx.orm(), date.formatDate(new Date(), 'YYYYMMDD'), 's1', 1);
+
+      // 注册用户
+      user = await ctx.orm().satUsers.findOne({
+        where: {
+          openId: result.openId,
+          isDel: 0
+        }
+      });
+
+      if (!user) {
+        // 用户不存在
+        user = await ctx.orm().satUsers.create({
+          openId: result.openId,
+          unionId: '',
+          userHeadImg: '',
+          userName: '',
+          userPhone: '',
+          addTime: now,
+          isDel: 0
+        });
+      }
+
+      user.dataValues['sessionKey'] = result.sessionKey;
+    }
+
+    ctx.body = user;
   }
 };
