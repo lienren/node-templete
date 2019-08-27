@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-08-17 15:04:00
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-08-22 15:00:27
+ * @Last Modified time: 2019-08-26 19:24:23
  */
 'use strict';
 
@@ -10,6 +10,7 @@ const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
 const date = require('../../utils/date');
+const sats = require('./sats');
 
 let aboutFilePath = './about.txt';
 
@@ -500,5 +501,32 @@ module.exports = {
         where: { id }
       }
     );
+  },
+  getAllSTA: async ctx => {
+    let sta = await ctx
+      .orm()
+      .query(
+        `select CONVERT(sum(s1),SIGNED) s1, CONVERT(sum(s2),SIGNED) s2, CONVERT(sum(s3),SIGNED) s3, CONVERT(sum(s4),SIGNED) s4, CONVERT(sum(s5),SIGNED) s5, CONVERT(sum(s6),SIGNED) s6 from satStatistics;`
+      );
+
+    ctx.body = sta[0];
+  },
+  getTimeSTA: async ctx => {
+    let stime = ctx.request.body.stime || 0;
+    let etime = ctx.request.body.etime || 0;
+
+    assert.notStrictEqual(stime, 0, '入参不能为空！');
+    assert.notStrictEqual(etime, 0, '入参不能为空！');
+
+    let sta = await ctx
+      .orm()
+      .query(
+        `select day, s1, s2, s3, s4, s5, s6 from satStatistics where day between ${stime.replace(
+          /-/g,
+          ''
+        )} and ${etime.replace(/-/g, '')} order by day;`
+      );
+
+    ctx.body = sta;
   }
 };
