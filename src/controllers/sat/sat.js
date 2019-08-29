@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-08-17 15:04:00
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-08-27 21:17:23
+ * @Last Modified time: 2019-08-29 10:22:41
  */
 'use strict';
 
@@ -116,14 +116,13 @@ module.exports = {
     ctx.body = result;
   },
   getFeedbacks: async ctx => {
-    let result = await ctx.orm().satFeedbacks.findAll({
-      where: {
-        isDel: 0
-      },
-      order: [['id', 'DESC']]
-    });
+    let feedbacks = await ctx
+      .orm()
+      .query(
+        `select f.id, f.addTime, f.userId, f.msgContext, u.userPhone, u.userName, u.userHeadImg, u.openId, u.unionId, u.addTime userAddTime from satFeedbacks f inner join satUsers u on u.id = f.userId and u.isDel = 0 where f.isDel = 0 order by f.id desc;`
+      );
 
-    ctx.body = result;
+    ctx.body = feedbacks;
   },
   getUsers: async ctx => {
     let result = await ctx.orm().satUsers.findAll({
@@ -185,7 +184,6 @@ module.exports = {
     assert.notStrictEqual(topicTypeId, 0, '入参不能为空！');
     assert.notStrictEqual(tIndex, 0, '入参不能为空！');
     assert.notStrictEqual(tAnswer, '', '入参不能为空！');
-    assert.notStrictEqual(tTestCenter, '', '入参不能为空！');
     assert.notStrictEqual(tAnalysis, '', '入参不能为空！');
 
     let now = date.formatDate();
@@ -300,6 +298,9 @@ module.exports = {
       addTime: now,
       isDel: 0
     });
+
+    // 记录用户进入
+    sats.updateDay(ctx.orm(), date.formatDate(new Date(), 'YYYYMMDD'), 's6', 1);
   },
   registerUser: async ctx => {
     let id = ctx.request.body.id || 0;
@@ -383,30 +384,42 @@ module.exports = {
   getUserFollow: async ctx => {
     let userId = ctx.request.body.userId || 0;
 
-    assert.notStrictEqual(userId, '', '入参不能为空！');
+    assert.notStrictEqual(userId, 0, '入参不能为空！');
 
-    let result = await ctx.orm().satExamTopicFllows.findAll({
-      where: {
-        userId,
-        isDel: 0
-      }
-    });
+    let follows = await ctx.orm().query(
+      `select 
+            f.id, f.addTime, f.userId,
+            t.tIndex, t.examId, t.topicTypeId, t.topicTypeName, t.tAnswer, t.tTestCenter, t.tAnalysis,
+            e.title, e.examTypeName, e.examType, e.examTime 
+          from satExamTopicFllows f 
+          inner join satExamTopics t on t.id = f.tId and t.isDel = 0 
+          inner join satExams e on e.id = t.examId and e.isDel = 0 
+          where 
+            f.isDel = 0 and f.userId = ${userId} 
+          order by f.addTime desc;`
+    );
 
-    ctx.body = result;
+    ctx.body = follows;
   },
   getUserMsg: async ctx => {
     let userId = ctx.request.body.userId || 0;
 
-    assert.notStrictEqual(userId, '', '入参不能为空！');
+    assert.notStrictEqual(userId, 0, '入参不能为空！');
 
-    let result = await ctx.orm().satExamTopicMsgs.findAll({
-      where: {
-        userId,
-        isDel: 0
-      }
-    });
+    let msgs = await ctx.orm().query(
+      `select 
+            m.id, m.addTime, m.userId, m.msgContext,
+            t.tIndex, t.examId, t.topicTypeId, t.topicTypeName, t.tAnswer, t.tTestCenter, t.tAnalysis,
+            e.title, e.examTypeName, e.examType, e.examTime 
+          from satExamTopicMsgs m 
+          inner join satExamTopics t on t.id = m.tId and t.isDel = 0 
+          inner join satExams e on e.id = t.examId and e.isDel = 0 
+          where 
+            m.isDel = 0 and m.userId = ${userId} 
+          order by m.addTime desc;`
+    );
 
-    ctx.body = result;
+    ctx.body = msgs;
   },
   editExam: async ctx => {
     let id = ctx.request.body.id || 0;
@@ -447,7 +460,6 @@ module.exports = {
     assert.notStrictEqual(examId, 0, '入参不能为空！');
     assert.notStrictEqual(tIndex, 0, '入参不能为空！');
     assert.notStrictEqual(tAnswer, '', '入参不能为空！');
-    assert.notStrictEqual(tTestCenter, '', '入参不能为空！');
     assert.notStrictEqual(tAnalysis, '', '入参不能为空！');
 
     let now = date.formatDate();
@@ -717,5 +729,12 @@ module.exports = {
     sats.updateDay(ctx.orm(), date.formatDate(new Date(), 'YYYYMMDD'), 's2', 1);
 
     ctx.body = result;
+  },
+  log: async ctx => {
+    let code = ctx.request.body.code || 's5';
+    // 记录用户进入
+    sats.updateDay(ctx.orm(), date.formatDate(new Date(), 'YYYYMMDD'), code, 1);
+
+    ctx.body = {};
   }
 };

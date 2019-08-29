@@ -2,11 +2,12 @@
  * @Author: Lienren
  * @Date: 2018-04-19 13:38:30
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-08-17 15:05:53
+ * @Last Modified time: 2019-08-29 11:23:23
  */
 'use strict';
 
 const assert = require('assert');
+const path = require('path');
 const sendfile = require('koa-sendfile');
 const log = require('../utils/log');
 const redirect = require('./request_redirect');
@@ -32,9 +33,23 @@ module.exports = async function(ctx, next) {
   };
 
   // 根据请求目录转入指定静态目录
-  let sitepath = await redirect(ctx, async (ctx, requestUrl, sitepath) => {
-    await sendfile(ctx, sitepath);
+  if (ctx.path.indexOf('adminweb') > -1) {
+    await sendfile(ctx, path.resolve(__dirname, '../../assets/adminweb/index.html'));
+    return;
+  }
+
+  /* let sitepath = await redirect(ctx, async (ctx, requestUrl, sitepath) => {
+    let stats = await sendfile(ctx, sitepath);
+
+    console.log('stats:', stats);
+
+    return sitepath;
   });
+
+  if (sitepath && sitepath.length > 0) {
+    console.log('stop!!!');
+    return;
+  } */
 
   try {
     // 鉴权验证
