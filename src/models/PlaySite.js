@@ -53,19 +53,19 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     r1: {
-      type: DataTypes.STRING(3000),
+      type: DataTypes.TEXT,
       allowNull: true
     },
     r2: {
-      type: DataTypes.STRING(3000),
+      type: DataTypes.TEXT,
       allowNull: true
     },
     r3: {
-      type: DataTypes.STRING(3000),
+      type: DataTypes.TEXT,
       allowNull: true
     },
     r4: {
-      type: DataTypes.STRING(3000),
+      type: DataTypes.TEXT,
       allowNull: true
     },
     attrs: {
@@ -86,6 +86,10 @@ module.exports = function(sequelize, DataTypes) {
     },
     busUserId: {
       type: DataTypes.INTEGER(11),
+      allowNull: true
+    },
+    packAge: {
+      type: DataTypes.STRING(1000),
       allowNull: true
     }
   }, {

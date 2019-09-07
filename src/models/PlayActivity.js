@@ -44,20 +44,24 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING(2000),
       allowNull: true
     },
+    packAge: {
+      type: DataTypes.STRING(1000),
+      allowNull: true
+    },
     r1: {
-      type: DataTypes.STRING(3000),
+      type: DataTypes.TEXT,
       allowNull: true
     },
     r2: {
-      type: DataTypes.STRING(3000),
+      type: DataTypes.TEXT,
       allowNull: true
     },
     r3: {
-      type: DataTypes.STRING(3000),
+      type: DataTypes.TEXT,
       allowNull: true
     },
     r4: {
-      type: DataTypes.STRING(3000),
+      type: DataTypes.TEXT,
       allowNull: true
     },
     attrs: {

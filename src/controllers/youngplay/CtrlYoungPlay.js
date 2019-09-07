@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-04-02 17:35:45
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-08-12 12:19:32
+ * @Last Modified time: 2019-09-07 22:31:23
  */
 'use strict';
 
@@ -566,6 +566,7 @@ module.exports = {
     let attrs = ctx.request.body.attrs || [];
     let tags = ctx.request.body.tags || '';
     let busUserId = ctx.request.body.busUserId || 0;
+    let packAge = ctx.request.body.packAge || [];
 
     assert.notStrictEqual(title, '', '入参不正确！');
     assert.notStrictEqual(masterImg, '', '入参不正确！');
@@ -592,7 +593,8 @@ module.exports = {
       tags,
       createTime: now,
       isDel: 0,
-      busUserId
+      busUserId,
+      packAge: JSON.stringify(packAge)
     });
 
     ctx.body = {};
@@ -617,6 +619,7 @@ module.exports = {
     let attrs = ctx.request.body.attrs || [];
     let tags = ctx.request.body.tags || '';
     let busUserId = ctx.request.body.busUserId || 0;
+    let packAge = ctx.request.body.packAge || [];
 
     assert.notStrictEqual(id, 0, '入参不正确！');
     assert.notStrictEqual(title, '', '入参不正确！');
@@ -641,7 +644,8 @@ module.exports = {
         r4,
         attrs: JSON.stringify(attrs),
         tags,
-        busUserId
+        busUserId,
+        packAge: JSON.stringify(packAge)
       },
       {
         where: {
@@ -727,6 +731,7 @@ module.exports = {
     let attrs = ctx.request.body.attrs || [];
     let tags = ctx.request.body.tags || '';
     let busUserId = ctx.request.body.busUserId || 0;
+    let packAge = ctx.request.body.packAge || [];
 
     assert.notStrictEqual(title, '', '入参不正确！');
     assert.notStrictEqual(masterImg, '', '入参不正确！');
@@ -751,7 +756,8 @@ module.exports = {
       tags,
       createTime: now,
       isDel: 0,
-      busUserId
+      busUserId,
+      packAge: JSON.stringify(packAge)
     });
 
     ctx.body = {};
@@ -774,6 +780,7 @@ module.exports = {
     let attrs = ctx.request.body.attrs || [];
     let tags = ctx.request.body.tags || '';
     let busUserId = ctx.request.body.busUserId || 0;
+    let packAge = ctx.request.body.packAge || [];
 
     assert.notStrictEqual(id, 0, '入参不正确！');
     assert.notStrictEqual(title, '', '入参不正确！');
@@ -800,7 +807,8 @@ module.exports = {
         tags,
         createTime: now,
         isDel: 0,
-        busUserId
+        busUserId,
+        packAge: JSON.stringify(packAge)
       },
       {
         where: {
