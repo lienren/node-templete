@@ -2,10 +2,12 @@
  * @Author: Lienren
  * @Date: 2019-04-02 17:35:45
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-09-07 22:31:23
+ * @Last Modified time: 2019-09-16 01:07:55
  */
 'use strict';
 
+const fs = require('fs');
+const path = require('path');
 const assert = require('assert');
 const date = require('../../utils/date');
 
@@ -21,6 +23,38 @@ const attrTypes = {
 
 const classTypes = {
   '1': '办年会'
+};
+
+const orderType = {
+  '99': '无类型',
+  '1': '团建类型',
+  '2': '活动类型',
+  '3': '场地类型',
+  '4': '亲子汇类型',
+  '5': '案例类型'
+};
+
+const orderState = {
+  '1': '未处理',
+  '2': '处理中',
+  '3': '已处理完成'
+};
+
+const fileUtils = {
+  read: filePath => {
+    let content = null;
+
+    if (fs.existsSync(filePath)) {
+      content = fs.readFileSync(filePath, { encoding: 'utf8' });
+    }
+
+    return content;
+  },
+  write: (filePath, fileContent) => {
+    fs.writeFileSync(filePath, fileContent, { encoding: 'utf8' });
+
+    return true;
+  }
 };
 
 module.exports = {
@@ -1162,5 +1196,239 @@ module.exports = {
     );
 
     ctx.body = {};
+  },
+  getIndexBannerLink: async ctx => {
+    let content = fileUtils.read(path.resolve(__dirname, '../../../assets/indexBannerLink.json'));
+
+    if (content) {
+      content = JSON.parse(content);
+    } else {
+      content = [
+        {
+          url: '',
+          imgUrl: ''
+        },
+        {
+          url: '',
+          imgUrl: ''
+        },
+        {
+          url: '',
+          imgUrl: ''
+        },
+        {
+          url: '',
+          imgUrl: ''
+        }
+      ];
+    }
+
+    ctx.body = content;
+  },
+  setIndexBannerLink: async ctx => {
+    let bannerLink = ctx.request.body.bannerLink || [];
+
+    if (bannerLink.length === 0) {
+      bannerLink = [
+        {
+          url: '',
+          imgUrl: ''
+        },
+        {
+          url: '',
+          imgUrl: ''
+        },
+        {
+          url: '',
+          imgUrl: ''
+        },
+        {
+          url: '',
+          imgUrl: ''
+        }
+      ];
+    }
+
+    fileUtils.write(path.resolve(__dirname, '../../../assets/indexBannerLink.json'), JSON.stringify(bannerLink));
+  },
+  getIndexBigBannerLink: async ctx => {
+    let content = fileUtils.read(path.resolve(__dirname, '../../../assets/indexBigBannerLink.json'));
+
+    if (content) {
+      content = JSON.parse(content);
+    } else {
+      content = [
+        {
+          url: '',
+          imgUrl: ''
+        },
+        {
+          url: '',
+          imgUrl: ''
+        },
+        {
+          url: '',
+          imgUrl: ''
+        },
+        {
+          url: '',
+          imgUrl: ''
+        }
+      ];
+    }
+
+    ctx.body = content;
+  },
+  setIndexBigBannerLink: async ctx => {
+    let bannerLink = ctx.request.body.bannerLink || [];
+
+    if (bannerLink.length === 0) {
+      bannerLink = [
+        {
+          url: '',
+          imgUrl: ''
+        },
+        {
+          url: '',
+          imgUrl: ''
+        },
+        {
+          url: '',
+          imgUrl: ''
+        },
+        {
+          url: '',
+          imgUrl: ''
+        }
+      ];
+    }
+
+    fileUtils.write(path.resolve(__dirname, '../../../assets/indexBigBannerLink.json'), JSON.stringify(bannerLink));
+  },
+  getOrder: async ctx => {
+    let otype = ctx.request.body.otype || 0;
+    let ostate = ctx.request.body.ostate || 0;
+    let current = ctx.request.body.current || 1;
+    let pageSize = ctx.request.body.pageSize || 20;
+
+    let where = {
+      isDel: 0
+    };
+
+    if (otype > 0) {
+      where.otype = otype;
+    }
+
+    if (ostate > 0) {
+      where.ostate = ostate;
+    }
+
+    let resultCount = await ctx.orm().PlayOrders.findAndCountAll({
+      where
+    });
+    let result = await ctx.orm().PlayOrders.findAll({
+      offset: (current - 1) * pageSize,
+      limit: pageSize,
+      where,
+      order: [['createTime', 'DESC']]
+    });
+
+    ctx.body = {
+      total: resultCount.count,
+      list: result,
+      current,
+      pageSize
+    };
+  },
+  addOrder: async ctx => {
+    let now = date.getTimeStamp();
+    let osn = `PY${now}`;
+    let otype = ctx.request.body.otype || 99;
+    let otypeName = orderType[`${otype}`];
+    let opeopleNum = ctx.request.body.opeopleNum || 0;
+    let oprice = ctx.request.body.oprice || 0;
+    let oselectTime = ctx.request.body.oselectTime || '未选择时间';
+    let oselectDay = ctx.request.body.oselectDay || 0;
+    let userId = ctx.request.body.userId || 0;
+    let userPhone = ctx.request.body.userPhone || '';
+    let userName = ctx.request.body.userName || '';
+    let oprojectId = ctx.request.body.oprojectId || 0;
+    let oprojectName = ctx.request.body.oprojectName || '未选择项目';
+    let oprojectPageAge =
+      ctx.request.body.oprojectPageAge || '{"title":"未选择套餐","remark":"","price":"0","unit":"/人"}';
+    let oprojectBusUserId = ctx.request.body.oprojectBusUserId || 0;
+    let oprojectBusUserName = ctx.request.body.oprojectBusUserName || '无业务人员';
+    let oprojectBusUserInfo = ctx.request.body.oprojectBusUserInfo || '{}';
+    let ostate = 1;
+    let ostateName = orderState[`${ostate}`];
+
+    ctx.orm().PlayOrders.create({
+      osn,
+      otype,
+      otypeName,
+      opeopleNum,
+      oprice,
+      oselectTime,
+      oselectDay,
+      userId,
+      userPhone,
+      userName,
+      oprojectId,
+      oprojectName,
+      oprojectPageAge,
+      oprojectBusUserId,
+      oprojectBusUserName,
+      oprojectBusUserInfo,
+      ostate,
+      ostateName,
+      createTime: now,
+      isDel: 0
+    });
+
+    ctx.body = {};
+  },
+  updateOrderState: async ctx => {
+    let id = ctx.request.body.id || 0;
+    let ostate = ctx.request.body.ostate || 1;
+
+    await ctx.orm().PlayOrders.update(
+      {
+        ostate: ostate
+      },
+      {
+        where: {
+          id: id,
+          isDel: 0
+        }
+      }
+    );
+
+    ctx.body = {};
+  },
+  addOrderRemark: async ctx => {
+    let now = date.getTimeStamp();
+    let orderId = ctx.request.body.orderId || 0;
+    let remark = ctx.request.body.remark || '';
+
+    ctx.orm().PlayOrderRemark.create({
+      orderId,
+      remark,
+      manageId: ctx.work.managerId,
+      manageName: ctx.work.managerRealName,
+      createTime: now
+    });
+
+    ctx.body = {};
+  },
+  getOrderRemark: async ctx => {
+    let orderId = ctx.request.body.orderId || 0;
+
+    let result = await ctx.orm().PlayOrderRemark.findAll({
+      where: {
+        orderId
+      }
+    });
+
+    ctx.body = result;
   }
 };
