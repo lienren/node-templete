@@ -2,14 +2,18 @@
  * @Author: Lienren
  * @Date: 2019-04-02 17:35:45
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-09-16 01:07:55
+ * @Last Modified time: 2019-09-16 17:35:39
  */
 'use strict';
 
+const qs = require('qs');
 const fs = require('fs');
 const path = require('path');
 const assert = require('assert');
+const comm = require('../../utils/comm');
 const date = require('../../utils/date');
+const http = require('../../utils/http');
+const validate = require('../../utils/validate');
 
 // Ler@2019
 
@@ -37,7 +41,7 @@ const orderType = {
 const orderState = {
   '1': '未处理',
   '2': '处理中',
-  '3': '已处理完成'
+  '3': '已完成'
 };
 
 const fileUtils = {
@@ -1391,9 +1395,12 @@ module.exports = {
     let id = ctx.request.body.id || 0;
     let ostate = ctx.request.body.ostate || 1;
 
+    assert.notStrictEqual(id, 0, '入参不正确！');
+
     await ctx.orm().PlayOrders.update(
       {
-        ostate: ostate
+        ostate: ostate,
+        ostateName: orderState[`${ostate}`]
       },
       {
         where: {
@@ -1403,12 +1410,23 @@ module.exports = {
       }
     );
 
+    let now = date.getTimeStamp();
+    ctx.orm().PlayOrderRemark.create({
+      orderId: id,
+      remark: orderState[`${ostate}`],
+      manageId: ctx.work.managerId,
+      manageName: ctx.work.managerRealName,
+      createTime: now
+    });
+
     ctx.body = {};
   },
   addOrderRemark: async ctx => {
     let now = date.getTimeStamp();
     let orderId = ctx.request.body.orderId || 0;
     let remark = ctx.request.body.remark || '';
+
+    assert.notStrictEqual(orderId, 0, '入参不正确！');
 
     ctx.orm().PlayOrderRemark.create({
       orderId,
@@ -1430,5 +1448,122 @@ module.exports = {
     });
 
     ctx.body = result;
+  },
+  sendUserLoginCode: async ctx => {
+    let phone = ctx.request.body.phone || '';
+
+    assert.ok(validate.chkFormat(phone, 'phone'), '入参不正确！');
+
+    // 更新未使用的码
+    await ctx.orm().PlayUserCode.update(
+      {
+        isuse: 1
+      },
+      {
+        where: {
+          phone,
+          isuse: 0
+        }
+      }
+    );
+
+    let now = date.getTimeStamp();
+    let code = comm.randNumberCode(6);
+
+    let data = {
+      apikey: '87613ed05d729dde0d7a769d939160c5',
+      text: `【橙汇玩】您的验证码是${code}。如非本人操作，请忽略本短信`,
+      mobile: phone
+    };
+
+    let result = await http.post({
+      url: 'https://sms.yunpian.com/v2/sms/single_send.json',
+      data: qs.stringify(data),
+      headers: {
+        'content-type': 'application/x-www-form-urlencoded'
+      }
+    });
+
+    result = result && result.data ? result.data : result;
+
+    // 新增新码
+    await ctx.orm().PlayUserCode.create({
+      phone,
+      code,
+      isuse: 0,
+      reqTxt: JSON.stringify(data),
+      rspTxt: JSON.stringify(result),
+      createTime: now
+    });
+
+    if (result.code === 0 && result.count > 0) {
+      // 发送成功
+    } else {
+      // 发送失败
+    }
+  },
+  userLogin: async ctx => {
+    let phone = ctx.request.body.phone || '';
+    let code = ctx.request.body.code || '';
+
+    assert.ok(validate.chkFormat(phone, 'phone'), '入参不正确！');
+    assert.notStrictEqual(code, '', '入参不正确！');
+
+    let codes = await ctx.orm().PlayUserCode.findOne({
+      where: {
+        phone,
+        code,
+        isuse: 0
+      }
+    });
+
+    assert.ok(codes, '验证码已过期或不正确！');
+
+    // 设置code过期
+    ctx.orm().PlayUserCode.update(
+      {
+        isuse: 1
+      },
+      {
+        where: {
+          id: codes.id
+        }
+      }
+    );
+
+    let user = await ctx.orm().PlayUser.findOne({
+      where: {
+        userPhone: phone,
+        isDel: 0
+      }
+    });
+
+    if (user) {
+      ctx.body = {
+        userId: user.id,
+        userPhone: user.userPhone,
+        userPhoneDes: `${user.userPhone.substr(0, 3)}****${user.userPhone.substr(7)}`,
+        userName: user.userName,
+        userImg: ''
+      };
+    } else {
+      // 注册
+      let now = date.getTimeStamp();
+      let newUser = await ctx.orm().PlayUser.create({
+        userPhone: phone,
+        userPwd: '',
+        userName: '暂无',
+        createTime: now,
+        isDel: 0
+      });
+
+      ctx.body = {
+        userId: newUser.id,
+        userPhone: newUser.userPhone,
+        userPhoneDes: `${newUser.userPhone.substr(0, 3)}****${newUser.userPhone.substr(7)}`,
+        userName: newUser.userName,
+        userImg: ''
+      };
+    }
   }
 };
