@@ -20,6 +20,10 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING(100),
       allowNull: true
     },
+    openId: {
+      type: DataTypes.STRING(100),
+      allowNull: true
+    },
     createTime: {
       type: DataTypes.BIGINT,
       allowNull: true

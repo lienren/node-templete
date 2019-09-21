@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-04-02 17:35:45
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-09-16 17:35:39
+ * @Last Modified time: 2019-09-22 00:05:42
  */
 'use strict';
 
@@ -14,8 +14,11 @@ const comm = require('../../utils/comm');
 const date = require('../../utils/date');
 const http = require('../../utils/http');
 const validate = require('../../utils/validate');
+const WXBizDataCrypt = require('./WXBizDataCrypt');
 
 // Ler@2019
+
+const appId = 'wxdec3846411e4d9e6';
 
 const attrTypes = {
   '1': '团建',
@@ -1540,6 +1543,7 @@ module.exports = {
 
     if (user) {
       ctx.body = {
+        openId: user.openId,
         userId: user.id,
         userPhone: user.userPhone,
         userPhoneDes: `${user.userPhone.substr(0, 3)}****${user.userPhone.substr(7)}`,
@@ -1549,19 +1553,79 @@ module.exports = {
     } else {
       // 注册
       let now = date.getTimeStamp();
-      let newUser = await ctx.orm().PlayUser.create({
+      user = await ctx.orm().PlayUser.create({
         userPhone: phone,
         userPwd: '',
         userName: '暂无',
+        openId: '',
         createTime: now,
         isDel: 0
       });
 
       ctx.body = {
-        userId: newUser.id,
-        userPhone: newUser.userPhone,
-        userPhoneDes: `${newUser.userPhone.substr(0, 3)}****${newUser.userPhone.substr(7)}`,
-        userName: newUser.userName,
+        openId: user.openId,
+        userId: user.id,
+        userPhone: user.userPhone,
+        userPhoneDes: `${user.userPhone.substr(0, 3)}****${user.userPhone.substr(7)}`,
+        userName: user.userName,
+        userImg: ''
+      };
+    }
+  },
+  userLoginByWx: async ctx => {
+    let openId = ctx.request.body.openId || '';
+    let encryptedData = ctx.request.body.encryptedData || '';
+    let sessionKey = ctx.request.body.sessionKey || '';
+    let iv = ctx.request.body.iv || '';
+
+    assert.notStrictEqual(openId, '', '入参不能为空！');
+    assert.notStrictEqual(encryptedData, '', '入参不能为空！');
+    assert.notStrictEqual(sessionKey, '', '入参不能为空！');
+    assert.notStrictEqual(iv, '', '入参不能为空！');
+
+    let pc = new WXBizDataCrypt(appId, sessionKey);
+    let data = pc.decryptData(encryptedData, iv);
+    let phone = data && data.purePhoneNumber ? data.purePhoneNumber : '';
+
+    if (phone) {
+      let user = await ctx.orm().PlayUser.findOne({
+        where: {
+          userPhone: phone,
+          isDel: 0
+        }
+      });
+
+      if (user) {
+        // 用户存在，则更新openId
+        user = await ctx.orm().PlayUser.update(
+          {
+            openId: openId
+          },
+          {
+            where: {
+              id: user.id
+            }
+          }
+        );
+      } else {
+        // 用户不存在，则新增用户
+        let now = date.getTimeStamp();
+        user = await ctx.orm().PlayUser.create({
+          userPhone: phone,
+          userPwd: '',
+          userName: '暂无',
+          openId: openId,
+          createTime: now,
+          isDel: 0
+        });
+      }
+
+      ctx.body = {
+        openId: user.openId,
+        userId: user.id,
+        userPhone: user.userPhone,
+        userPhoneDes: `${user.userPhone.substr(0, 3)}****${user.userPhone.substr(7)}`,
+        userName: user.userName,
         userImg: ''
       };
     }
