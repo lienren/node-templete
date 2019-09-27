@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-04-02 17:35:45
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-09-22 00:05:42
+ * @Last Modified time: 2019-09-26 10:57:20
  */
 'use strict';
 
@@ -1312,6 +1312,60 @@ module.exports = {
 
     fileUtils.write(path.resolve(__dirname, '../../../assets/indexBigBannerLink.json'), JSON.stringify(bannerLink));
   },
+  getWxIndexBigBannerLink: async ctx => {
+    let content = fileUtils.read(path.resolve(__dirname, '../../../assets/wxIndexBigBannerLink.json'));
+
+    if (content) {
+      content = JSON.parse(content);
+    } else {
+      content = [
+        {
+          url: '',
+          imgUrl: ''
+        },
+        {
+          url: '',
+          imgUrl: ''
+        },
+        {
+          url: '',
+          imgUrl: ''
+        },
+        {
+          url: '',
+          imgUrl: ''
+        }
+      ];
+    }
+
+    ctx.body = content;
+  },
+  setWxIndexBigBannerLink: async ctx => {
+    let bannerLink = ctx.request.body.bannerLink || [];
+
+    if (bannerLink.length === 0) {
+      bannerLink = [
+        {
+          url: '',
+          imgUrl: ''
+        },
+        {
+          url: '',
+          imgUrl: ''
+        },
+        {
+          url: '',
+          imgUrl: ''
+        },
+        {
+          url: '',
+          imgUrl: ''
+        }
+      ];
+    }
+
+    fileUtils.write(path.resolve(__dirname, '../../../assets/wxIndexBigBannerLink.json'), JSON.stringify(bannerLink));
+  },
   getOrder: async ctx => {
     let otype = ctx.request.body.otype || 0;
     let ostate = ctx.request.body.ostate || 0;
@@ -1390,6 +1444,20 @@ module.exports = {
       ostateName,
       createTime: now,
       isDel: 0
+    });
+
+    let data = {
+      apikey: '87613ed05d729dde0d7a769d939160c5',
+      text: `【橙汇玩】橙汇玩提示您：你有新的咨询订单，请尽快联系处理，咨询号码：`,
+      mobile: '18509296693'
+    };
+
+    http.post({
+      url: 'https://sms.yunpian.com/v2/sms/single_send.json',
+      data: qs.stringify(data),
+      headers: {
+        'content-type': 'application/x-www-form-urlencoded'
+      }
     });
 
     ctx.body = {};
@@ -1597,7 +1665,7 @@ module.exports = {
 
       if (user) {
         // 用户存在，则更新openId
-        user = await ctx.orm().PlayUser.update(
+        await ctx.orm().PlayUser.update(
           {
             openId: openId
           },
@@ -1607,6 +1675,8 @@ module.exports = {
             }
           }
         );
+
+        user.openId = openId;
       } else {
         // 用户不存在，则新增用户
         let now = date.getTimeStamp();

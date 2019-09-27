@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-09-21 23:47:43
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-09-21 23:56:48
+ * @Last Modified time: 2019-09-25 11:15:49
  */
 'use strict';
 
@@ -107,7 +107,7 @@ module.exports = {
     let result = await wxHelper.requestOpenId(code);
 
     let user = {};
-
+    
     if (result && result.sessionKey && result.openId && result.sessionKey.length > 0 && result.openId.length > 0) {
       // 注册用户
       user = await ctx.orm().PlayUser.findOne({
