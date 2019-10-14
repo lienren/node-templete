@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-04-02 17:35:45
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-09-26 10:57:20
+ * @Last Modified time: 2019-10-13 22:16:57
  */
 'use strict';
 
@@ -25,7 +25,8 @@ const attrTypes = {
   '2': '活动',
   '3': '场地',
   '4': '亲子汇',
-  '5': '案例'
+  '5': '案例',
+  '6': '陶冶户外'
 };
 
 const classTypes = {
@@ -38,7 +39,8 @@ const orderType = {
   '2': '活动类型',
   '3': '场地类型',
   '4': '亲子汇类型',
-  '5': '案例类型'
+  '5': '案例类型',
+  '6': '陶冶户外类型'
 };
 
 const orderState = {
@@ -1699,5 +1701,168 @@ module.exports = {
         userImg: ''
       };
     }
+  },
+  getPlayTourYe: async ctx => {
+    let current = ctx.request.body.current || 1;
+    let pageSize = ctx.request.body.pageSize || 20;
+
+    let where = {
+      isDel: 0
+    };
+
+    let resultCount = await ctx.orm().PlayTourYe.findAndCountAll({
+      where
+    });
+    let result = await ctx.orm().PlayTourYe.findAll({
+      // attributes: ['id', 'title', 'price', 'score', 'strokeDay', 'createTime'],
+      offset: (current - 1) * pageSize,
+      limit: pageSize,
+      where,
+      order: [['createTime', 'DESC']]
+    });
+
+    ctx.body = {
+      total: resultCount.count,
+      list: result,
+      current,
+      pageSize
+    };
+  },
+  getPlayTourYeDetail: async ctx => {
+    let id = ctx.request.body.id || 0;
+
+    assert.notStrictEqual(id, 0, '入参不正确！');
+
+    let result = await ctx.orm().PlayTourYe.findOne({
+      where: {
+        id: id,
+        isDel: 0
+      }
+    });
+
+    ctx.body = result;
+  },
+  addPlayTourYe: async ctx => {
+    let title = ctx.request.body.title || '';
+    let subTitle = ctx.request.body.subTitle || '';
+    let price = ctx.request.body.price || 0;
+    let score = ctx.request.body.score || 0;
+    let reason = ctx.request.body.reason || '';
+    let strokeDay = ctx.request.body.strokeDay || 0;
+    let minPeopleNum = ctx.request.body.minPeopleNum || 0;
+    let maxPeopleNum = ctx.request.body.maxPeopleNum || 0;
+    let masterImg = ctx.request.body.masterImg || '';
+    let subImg = ctx.request.body.subImg || '';
+    let r1 = ctx.request.body.r1 || '';
+    let r2 = ctx.request.body.r2 || '';
+    let r3 = ctx.request.body.r3 || '';
+    let r4 = ctx.request.body.r4 || '';
+    let attrs = ctx.request.body.attrs || [];
+    let tags = ctx.request.body.tags || '';
+    let busUserId = ctx.request.body.busUserId || 0;
+    let packAge = ctx.request.body.packAge || [];
+
+    assert.notStrictEqual(title, '', '入参不正确！');
+    assert.notStrictEqual(masterImg, '', '入参不正确！');
+
+    let now = date.getTimeStamp();
+
+    await ctx.orm().PlayTourYe.create({
+      title,
+      subTitle,
+      price,
+      score,
+      reason,
+      strokeDay,
+      minPeopleNum,
+      maxPeopleNum,
+      masterImg,
+      subImg,
+      r1,
+      r2,
+      r3,
+      r4,
+      attrs: JSON.stringify(attrs),
+      tags,
+      createTime: now,
+      isDel: 0,
+      busUserId,
+      packAge: JSON.stringify(packAge)
+    });
+
+    ctx.body = {};
+  },
+  editPlayTourYe: async ctx => {
+    let id = ctx.request.body.id || 0;
+    let title = ctx.request.body.title || '';
+    let subTitle = ctx.request.body.subTitle || '';
+    let price = ctx.request.body.price || 0;
+    let score = ctx.request.body.score || 0;
+    let reason = ctx.request.body.reason || '';
+    let strokeDay = ctx.request.body.strokeDay || 0;
+    let minPeopleNum = ctx.request.body.minPeopleNum || 0;
+    let maxPeopleNum = ctx.request.body.maxPeopleNum || 0;
+    let masterImg = ctx.request.body.masterImg || '';
+    let subImg = ctx.request.body.subImg || '';
+    let r1 = ctx.request.body.r1 || '';
+    let r2 = ctx.request.body.r2 || '';
+    let r3 = ctx.request.body.r3 || '';
+    let r4 = ctx.request.body.r4 || '';
+    let attrs = ctx.request.body.attrs || [];
+    let tags = ctx.request.body.tags || '';
+    let busUserId = ctx.request.body.busUserId || 0;
+    let packAge = ctx.request.body.packAge || [];
+
+    assert.notStrictEqual(id, 0, '入参不正确！');
+    assert.notStrictEqual(title, '', '入参不正确！');
+    assert.notStrictEqual(masterImg, '', '入参不正确！');
+
+    await ctx.orm().PlayTourYe.update(
+      {
+        title,
+        subTitle,
+        price,
+        score,
+        reason,
+        strokeDay,
+        minPeopleNum,
+        maxPeopleNum,
+        masterImg,
+        subImg,
+        r1,
+        r2,
+        r3,
+        r4,
+        attrs: JSON.stringify(attrs),
+        tags,
+        busUserId,
+        packAge: JSON.stringify(packAge)
+      },
+      {
+        where: {
+          id: id
+        }
+      }
+    );
+
+    ctx.body = {};
+  },
+  delPlayTourYe: async ctx => {
+    let id = ctx.request.body.id || 0;
+
+    assert.notStrictEqual(id, 0, '入参不正确！');
+
+    await ctx.orm().PlayTourYe.update(
+      {
+        isDel: 1
+      },
+      {
+        where: {
+          id: id
+        }
+      }
+    );
+
+    ctx.body = {};
   }
 };
