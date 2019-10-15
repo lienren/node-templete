@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2018-12-13 23:49:41
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-08-29 11:17:45
+ * @Last Modified time: 2019-10-14 19:05:18
  */
 'use strict';
 
@@ -13,7 +13,7 @@ module.exports = {
     port: 20000,
     staticPath: path.resolve(__dirname, '../assets/'),
     uploadFilePath: path.resolve(__dirname, '../assets/uploads/'),
-    uploadVirtualFilePath: 'https://sat.billgenius.cn/uploads',
+    uploadVirtualFilePath: 'https://fruit.billgenius.cn/uploads',
     logConfig: {
       appenders: {
         resLogger: {
@@ -74,16 +74,16 @@ module.exports = {
       sitepath: path.resolve(__dirname, '../assets/adminweb/index.html')
     }
   ],
-  // sequelize-auto -o "./src/models" -d sat -h 47.111.64.7 -u root -p 3306 -x Ler@2019 -e mysql
+  // sequelize-auto -o "./src/models" -d fruit -h localhost -u root -p 3306 -x 123456 -e mysql
   databases: [
     {
       modelPath: path.resolve(__dirname, './models'),
-      db: 'sat',
+      db: 'fruit',
       dialect: 'mysql',
       port: 3306,
       replication: {
-        read: [{ host: '47.111.64.7', username: 'root', password: 'Ler@2019' }],
-        write: { host: '47.111.64.7', username: 'root', password: 'Ler@2019' }
+        read: [{ host: 'localhost', username: 'root', password: '123456' }],
+        write: { host: 'localhost', username: 'root', password: '123456' }
       },
       dialectOptions: {
         dateStrings: true,
@@ -116,7 +116,7 @@ module.exports = {
   },
   rebitmq: {
     protocol: 'amqp',
-    hostname: '10.10.133.217',
+    hostname: 'localhost',
     port: 5672,
     username: 'guest',
     password: 'guest'

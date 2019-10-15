@@ -1,16 +1,16 @@
 /*
  * @Author: Lienren
- * @Date: 2019-08-17 15:34:03
- * @Last Modified by:   Lienren
- * @Last Modified time: 2019-08-17 15:34:03
+ * @Date: 2019-10-14 13:47:27
+ * @Last Modified by: Lienren
+ * @Last Modified time: 2019-10-14 19:11:13
  */
 'use strict';
 
 const Router = require('koa-router');
-const ctrl = require('./controllers/sat/index.js');
+const ctrl = require('./controllers/fruit/index.js');
 
 const router = new Router({
-  prefix: '/sat'
+  prefix: '/fruit'
 });
 
 for (let className in ctrl) {

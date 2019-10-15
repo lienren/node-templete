@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2018-04-19 13:38:30
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-08-29 11:23:23
+ * @Last Modified time: 2019-10-14 19:12:59
  */
 'use strict';
 
@@ -98,6 +98,8 @@ module.exports = async function(ctx, next) {
   } catch (error) {
     // 响应间隔时间
     let ms = new Date() - requestStartTime;
+
+    console.log('error:', error);
 
     // 记录异常日志
     log.logError(ctx, error, ms);
