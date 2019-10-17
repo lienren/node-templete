@@ -2,11 +2,12 @@
  * @Author: Lienren
  * @Date: 2018-12-13 23:49:41
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-14 19:05:18
+ * @Last Modified time: 2019-10-17 20:29:45
  */
 'use strict';
 
 const path = require('path');
+const date = require('./utils/date');
 
 module.exports = {
   sys: {
@@ -88,9 +89,13 @@ module.exports = {
       dialectOptions: {
         dateStrings: true,
         typeCast: function(field, next) {
-          // for reading from database
-          if (field.type === 'DATETIME') {
-            return field.string();
+          if (field.type === 'DATETIME' || field.type === 'TIMESTAMP') {
+            let fieldDate = field.string();
+            if (fieldDate) {
+              return date.formatDate(fieldDate);
+            } else {
+              return fieldDate;
+            }
           }
           return next();
         }

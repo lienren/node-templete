@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2018-04-19 12:02:43
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-08-26 11:14:25
+ * @Last Modified time: 2019-10-17 15:17:31
  */
 'use strict';
 
@@ -106,6 +106,12 @@ module.exports = {
       date1.setDate(date1.getDate() + 1);
     }
     return dateArr;
+  },
+  // 给日期加天
+  addDay: function(date, day) {
+    date = getDate(date);
+    date = date.setDate(date.getDate() + day);
+    date = new Date(date);
   }
 };
 
