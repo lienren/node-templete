@@ -100,6 +100,18 @@ module.exports = function(sequelize, DataTypes) {
     verifyTime: {
       type: DataTypes.DATE,
       allowNull: true
+    },
+    currGId: {
+      type: DataTypes.INTEGER(11),
+      allowNull: true
+    },
+    currGName: {
+      type: DataTypes.STRING(0),
+      allowNull: true
+    },
+    currGTime: {
+      type: DataTypes.DATE,
+      allowNull: true
     }
   }, {
     tableName: 'ftUsers'

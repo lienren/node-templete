@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-16 19:58:40
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-17 19:45:39
+ * @Last Modified time: 2019-10-17 21:20:13
  */
 'use strict';
 
@@ -109,7 +109,9 @@ module.exports = {
           sitePickAddress: '',
           verifyType: 0,
           verifyTypeName: dic.verifyTypeEnum[`0`],
-          verfiyRemark: ''
+          verfiyRemark: '',
+          currGId: 0,
+          currGName: ''
         });
 
         // 查询新人券
@@ -143,12 +145,83 @@ module.exports = {
             })
           );
         }
+      } else {
+        // 验证团在不在
+        if (result.currGId && result.currGId > 0) {
+          let group = await ctx.orm().ftGroups.findOne({
+            where: {
+              id: result.currGId,
+              gStatus: 2,
+              isDel: 0
+            }
+          });
+
+          if (!group) {
+            // 团不在了，清用户所有团
+            result = await ctx.orm().ftUsers.update(
+              {
+                currGId: 0,
+                currGName: '',
+                currGTime: date.formatDate(),
+                updateTime: date.formatDate()
+              },
+              {
+                where: {
+                  id: result.id,
+                  isDel: 0
+                }
+              }
+            );
+          }
+        }
       }
 
-      ctx.body = result;
+      ctx.body = {
+        id: result.id,
+        alipayUserId: result.alipayUserId,
+        nickName: result.nickName,
+        userName: result.userName,
+        userPhone: result.userPhone,
+        headImg: result.headImg,
+        addTime: result.addTime,
+        userType: result.userType,
+        userTypeName: result.userTypeName,
+        pId: result.pId,
+        pName: result.pName,
+        cId: result.cId,
+        cName: result.cName,
+        siteName: result.siteName,
+        sitePosition: result.sitePosition,
+        siteAddress: result.siteAddress,
+        sitePickAddress: result.sitePickAddress,
+        currGId: result.currGId,
+        currGName: result.currGName,
+        currGTime: result.currGTime
+      };
     } else {
       ctx.body = {};
     }
+  },
+  setUserGoInGroup: async ctx => {
+    let param = ctx.request.body || {};
+
+    cp.isEmpty(param.id);
+    cp.isEmpty(param.currGId);
+    cp.isEmpty(param.currGName);
+
+    await ctx.orm().ftUsers.update(
+      {
+        currGId: param.currGId,
+        currGName: param.currGName,
+        currGTime: date.formatDate()
+      },
+      {
+        where: {
+          id: param.id,
+          isDel: 0
+        }
+      }
+    );
   },
   edit: async ctx => {
     let param = ctx.request.body || {};
