@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-16 19:58:40
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-18 17:54:00
+ * @Last Modified time: 2019-10-21 09:30:04
  */
 'use strict';
 
@@ -159,7 +159,7 @@ module.exports = {
 
           if (!group) {
             // 团不在了，清用户所有团
-            result = await ctx.orm().ftUsers.update(
+            await ctx.orm().ftUsers.update(
               {
                 currGId: 0,
                 currGName: '',
@@ -173,6 +173,11 @@ module.exports = {
                 }
               }
             );
+
+            result.dataValues['currGId'] = 0;
+            result.dataValues['currGName'] = '';
+            result.dataValues['currGTime'] = date.formatDate();
+            result.dataValues['updateTime'] = date.formatDate();
           }
         }
       }
@@ -186,7 +191,7 @@ module.exports = {
       let tokenOverTime = now + 3600000 * 4; // Token有效期4小时
 
       // 刷新Token
-      result = await ctx.orm().ftUsers.update(
+      await ctx.orm().ftUsers.update(
         {
           token: token,
           tokenOverTime: tokenOverTime,
@@ -199,6 +204,8 @@ module.exports = {
           }
         }
       );
+
+      result.dataValues['token'] = token;
 
       ctx.body = {
         id: result.id,
