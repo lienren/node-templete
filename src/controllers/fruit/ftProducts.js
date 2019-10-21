@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-17 11:28:47
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-17 14:16:07
+ * @Last Modified time: 2019-10-18 11:01:57
  */
 'use strict';
 
@@ -295,6 +295,24 @@ module.exports = {
         where: {
           id: param.id,
           proVerifyType: 2,
+          isDel: 0
+        }
+      }
+    );
+  },
+  onOffLinePro: async ctx => {
+    let param = ctx.request.body || {};
+
+    cp.isEmpty(param.id);
+
+    await ctx.orm().ftProducts.update(
+      {
+        isOnline: param.isOnline || 0,
+        updateTime: date.formatDate()
+      },
+      {
+        where: {
+          id: param.id,
           isDel: 0
         }
       }

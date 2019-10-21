@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-16 20:03:47
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-17 10:20:24
+ * @Last Modified time: 2019-10-18 14:27:54
  */
 'use strict';
 
@@ -10,6 +10,10 @@ const assert = require('assert');
 const validate = require('../../utils/validate');
 
 module.exports = {
+  isNull: (val, errorMsg = '入参不能为空！') => {
+    assert.ok(val !== null, errorMsg);
+    assert.ok(val !== undefined, errorMsg);
+  },
   isEmpty: (val, errorMsg = '入参不能为空！') => {
     assert.ok(val !== null, errorMsg);
     assert.ok(val !== undefined, errorMsg);
@@ -26,5 +30,11 @@ module.exports = {
     assert.ok(val !== null, errorMsg);
     assert.ok(val !== undefined, errorMsg);
     assert.ok(Array.isArray(val), errorMsg);
+  },
+  isArrayLengthGreaterThan0: (val, errorMsg = '入参不能为空！') => {
+    assert.ok(val !== null, errorMsg);
+    assert.ok(val !== undefined, errorMsg);
+    assert.ok(Array.isArray(val), errorMsg);
+    assert.ok(val.length > 0, errorMsg);
   }
 };

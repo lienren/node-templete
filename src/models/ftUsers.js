@@ -112,6 +112,14 @@ module.exports = function(sequelize, DataTypes) {
     currGTime: {
       type: DataTypes.DATE,
       allowNull: true
+    },
+    token: {
+      type: DataTypes.STRING(1000),
+      allowNull: true
+    },
+    tokenOverTime: {
+      type: DataTypes.BIGINT,
+      allowNull: true
     }
   }, {
     tableName: 'ftUsers'

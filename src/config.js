@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2018-12-13 23:49:41
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-17 20:29:45
+ * @Last Modified time: 2019-10-18 17:54:53
  */
 'use strict';
 
@@ -60,8 +60,8 @@ module.exports = {
     authKey: '447CTXA2C2X9XMYBGQRYP3NMVCUXEA3BYQGP',
     authOptions: {
       expiresIn: '24h',
-      issuer: 'SAT System',
-      audience: 'Li R&D TEAM 2018-2020.',
+      issuer: 'Fruit System',
+      audience: 'Li R&D TEAM 2019-2021.',
       algorithm: 'HS512'
     }
   },

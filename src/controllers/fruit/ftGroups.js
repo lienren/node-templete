@@ -2,10 +2,11 @@
  * @Author: Lienren
  * @Date: 2019-10-17 19:30:18
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-17 19:44:22
+ * @Last Modified time: 2019-10-18 16:54:54
  */
 'use strict';
 
+const assert = require('assert');
 const date = require('../../utils/date');
 const cp = require('./checkParam');
 const dic = require('./fruitEnum');
@@ -59,6 +60,27 @@ module.exports = {
 
     ctx.body = result;
   },
+  getGroupProductSort: async ctx => {
+    let param = ctx.request.body || {};
+
+    cp.isEmpty(param.id);
+
+    if (param.id > 0) {
+      let sql = `
+        select p.sortId, p.sortName, count(gp.proId) proNum from ftGroupProducts gp 
+        inner join ftProducts p on p.id = gp.proId and p.proVerifyType = 3 and p.isDel = 0 
+        where 
+        gp.gId = ${param.id} and 
+        gp.isDel = 0 
+        group by p.sortId, p.sortName;`;
+
+      let result = await ctx.orm().query(sql);
+
+      ctx.body = result;
+    } else {
+      ctx.body = [];
+    }
+  },
   getGroupProduct: async ctx => {
     let param = ctx.request.body || {};
 
@@ -74,7 +96,7 @@ module.exports = {
         gp.gId = ${param.id} and 
         gp.isDel = 0`;
 
-      let result = await ctx.orm().query(pushDiscountSql);
+      let result = await ctx.orm().query(sql);
 
       ctx.body = result;
     } else {
@@ -84,24 +106,133 @@ module.exports = {
   add: async ctx => {
     let param = ctx.request.body || {};
 
-    cp.isEmpty(param.pName);
+    cp.isEmpty(param.gType);
+    cp.isEmpty(param.groupUserId);
+    cp.isEmpty(param.gSiteName);
+    cp.isEmpty(param.gSiteAddress);
+    cp.isEmpty(param.gSitePickAddress);
+    cp.isEmpty(param.gSitePosition);
+    cp.isEmpty(param.gStartTime);
+    cp.isEmpty(param.gEndTime);
+    cp.isArrayLengthGreaterThan0(param.proList);
 
-    await ctx.orm().ftProvince.create({
-      pName: param.pName,
+    // 验证团长
+    let groupUser = await ctx.orm().ftUsers.findOne({
+      where: {
+        id: param.groupUserId,
+        userType: 2,
+        verifyType: 2
+      }
+    });
+
+    cp.isNull(groupUser);
+
+    // 验证团购交叉时间
+    let existGroupCrossTime = await ctx.orm().ftGroups.findOne({
+      where: {
+        groupUserId: groupUser.id,
+        gStartTime: {
+          $between: [gStartTime, gEndTime]
+        },
+        gStatus: {
+          $in: [1, 2]
+        },
+        isDel: 0
+      }
+    });
+
+    assert.ok(existGroupCrossTime === null, '该团购时间和其它团购时间有交叉，请重新选择时间！');
+
+    // 获取已审核，在线商品
+    let pros = await ctx.orm().ftProducts.findAll({
+      where: {
+        id: {
+          $in: param.proList.map(m => {
+            return m.proId;
+          })
+        },
+        proVerifyType: 3,
+        isOnline: 1
+      }
+    });
+
+    cp.isArrayLengthGreaterThan0(pros);
+
+    let gIndex = 1;
+    let gName = '第1期团购活动';
+
+    let groupUserGroup = await ctx.orm().ftGroups.findOne({
+      where: {
+        groupUserId: groupUser.id
+      },
+      order: [['addTime', 'DESC']]
+    });
+
+    if (groupUserGroup) {
+      gIndex = groupUserGroup.gIndex + 1;
+      gName = `第${gIndex}期团购活动`;
+    }
+
+    // 添加团购
+    let group = await ctx.orm().ftGroups.create({
+      gIndex: gIndex,
+      gName: gName,
+      groupUserId: groupUser.id,
+      groupUserName: groupUser.userName,
+      groupUserPhone: groupUser.userPhone,
+      gSiteName: groupUser.siteName,
+      gSiteAddress: groupUser.siteAddress,
+      gSitePickAddress: groupUser.sitePickAddress,
+      gSitePosition: groupUser.sitePosition,
+      gStartTime: param.gStartTime,
+      gEndTime: param.gEndTime,
+      gStatus: 1,
+      gStatusName: dic.groupStatusEnum[`1`],
+      gProductNum: pros.length,
+      gOrderNum: 0,
+      gType: param.gType,
+      gTypeName: dic.groupTypeEnum[`${param.gType}`],
       addTime: date.formatDate(),
       isDel: 0
     });
+
+    let groupPros = [];
+    pros.forEach(e => {
+      let find = proList.find(f => {
+        return f.proId === e.id;
+      });
+
+      if (find) {
+        groupPros.push({
+          gId: group.id,
+          gProType: find.gProType,
+          gProTypeName: dic.groupProTypeEnum[`${find.gProType}`],
+          proId: e.id,
+          startTime: find.startTime,
+          endTime: find.endTime,
+          teamNum: find.teamNum || 0,
+          isRecommend: find.isRecommend || 0,
+          addTime: date.formatDate(),
+          isDel: 0
+        });
+      }
+    });
+
+    // 添加团购商品
+    await ctx.orm().ftGroupProducts.bulkCreate(groupPros);
   },
-  edit: async ctx => {
+  del: async ctx => {
     let param = ctx.request.body || {};
 
     cp.isEmpty(param.id);
-    cp.isEmpty(param.pName);
 
-    await ctx.orm().ftProvince.update(
+    // 删除团购
+    await ctx.orm().ftGroups.update(
       {
-        pName: param.pName,
-        updateTime: date.formatDate()
+        gStatus: 999,
+        gStatusName: dic.groupStatusEnum[`999`],
+        updateTime: date.formatDate(),
+        isDel: 1
       },
       {
         where: {
@@ -110,20 +241,16 @@ module.exports = {
         }
       }
     );
-  },
-  del: async ctx => {
-    let param = ctx.request.body || {};
 
-    cp.isEmpty(param.id);
-
-    await ctx.orm().ftProvince.update(
+    // 删除团购商品
+    await ctx.orm().ftGroupProducts.update(
       {
         updateTime: date.formatDate(),
         isDel: 1
       },
       {
         where: {
-          id: param.id,
+          gId: param.id,
           isDel: 0
         }
       }

@@ -10,7 +10,8 @@ module.exports = function(sequelize, DataTypes) {
     },
     oSN: {
       type: DataTypes.STRING(100),
-      allowNull: true
+      allowNull: true,
+      unique: true
     },
     userId: {
       type: DataTypes.INTEGER(11),
@@ -28,16 +29,16 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING(100),
       allowNull: true
     },
-    oDisPrice: {
-      type: DataTypes.DECIMAL,
-      allowNull: true
-    },
     oDisId: {
       type: DataTypes.INTEGER(11),
       allowNull: true
     },
     oDisName: {
       type: DataTypes.STRING(100),
+      allowNull: true
+    },
+    oDisPrice: {
+      type: DataTypes.DECIMAL,
       allowNull: true
     },
     oStatus: {
@@ -113,6 +114,14 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     settlementPrice: {
+      type: DataTypes.DECIMAL,
+      allowNull: true
+    },
+    originalPrice: {
+      type: DataTypes.DECIMAL,
+      allowNull: true
+    },
+    sellPrice: {
       type: DataTypes.DECIMAL,
       allowNull: true
     }

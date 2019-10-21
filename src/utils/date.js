@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2018-04-19 12:02:43
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-17 15:17:31
+ * @Last Modified time: 2019-10-18 12:07:21
  */
 'use strict';
 
@@ -112,6 +112,22 @@ module.exports = {
     date = getDate(date);
     date = date.setDate(date.getDate() + day);
     date = new Date(date);
+    return date;
+  },
+  // 比较时间
+  compare: function(beginTime, endTime) {
+    beginTime = getDate(beginTime);
+    endTime = getDate(endTime);
+
+    return beginTime > endTime;
+  },
+  // 当前时间是否在区间内
+  isDateBetween: function(beginTime, endTime, nowTime) {
+    beginTime = getDate(beginTime);
+    endTime = getDate(endTime);
+    nowTime = getDate(nowTime);
+
+    return nowTime.getTime() - beginTime.getTime() > 0 && nowTime.getTime() - endTime.getTime() < 0;
   }
 };
 

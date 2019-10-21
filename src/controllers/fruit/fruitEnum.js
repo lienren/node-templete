@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-16 19:35:03
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-17 19:29:48
+ * @Last Modified time: 2019-10-18 12:10:05
  */
 'use strict';
 
@@ -91,7 +91,23 @@ module.exports = {
   groupStatusEnum: {
     '1': '未开始',
     '2': '已开始',
-    '999': '已结束'
+    '999': '已结束',
+    generationStatus: (groupStartTime, groupEndTime) => {
+      if (date.compare(groupStartTime, groupEndTime)) {
+        return 999;
+      }
+
+      let now = new Date();
+      if (date.compare(groupStartTime, now)) {
+        return 1;
+      }
+      if (date.isDateBetween(groupStartTime, groupEndTime, now)) {
+        return 2;
+      }
+      if (date.compare(now, groupEndTime)) {
+        return 999;
+      }
+    }
   },
   groupProTypeEnum: {
     '1': '普通商品',

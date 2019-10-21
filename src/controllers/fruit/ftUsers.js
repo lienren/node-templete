@@ -2,11 +2,12 @@
  * @Author: Lienren
  * @Date: 2019-10-16 19:58:40
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-17 21:20:13
+ * @Last Modified time: 2019-10-18 17:54:00
  */
 'use strict';
 
 const date = require('../../utils/date');
+const jwt = require('../../utils/jwt');
 const ali = require('../../extends/ali');
 const cp = require('./checkParam');
 const dic = require('./fruitEnum');
@@ -176,6 +177,29 @@ module.exports = {
         }
       }
 
+      // 生成Token
+      let now = date.getTimeStamp();
+      let token = jwt.getToken({
+        userId: result.id,
+        alipayUserId: result.alipayUserId
+      });
+      let tokenOverTime = now + 3600000 * 4; // Token有效期4小时
+
+      // 刷新Token
+      result = await ctx.orm().ftUsers.update(
+        {
+          token: token,
+          tokenOverTime: tokenOverTime,
+          updateTime: date.formatDate()
+        },
+        {
+          where: {
+            id: result.id,
+            isDel: 0
+          }
+        }
+      );
+
       ctx.body = {
         id: result.id,
         alipayUserId: result.alipayUserId,
@@ -196,7 +220,8 @@ module.exports = {
         sitePickAddress: result.sitePickAddress,
         currGId: result.currGId,
         currGName: result.currGName,
-        currGTime: result.currGTime
+        currGTime: result.currGTime,
+        token: result.token
       };
     } else {
       ctx.body = {};

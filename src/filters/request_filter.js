@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2018-04-19 13:38:30
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-14 19:12:59
+ * @Last Modified time: 2019-10-18 18:00:22
  */
 'use strict';
 
@@ -29,7 +29,9 @@ module.exports = async function(ctx, next) {
     managerId: 0, // 管理员编号
     managerLoginName: '', // 管理员帐号
     managerRealName: '', // 管理员真实姓名
-    managerPhone: '' // 管理员手机号
+    managerPhone: '', // 管理员手机号
+    userId: 0, // 用户编号
+    alipayUserId: '' // 支付宝帐号
   };
 
   // 根据请求目录转入指定静态目录
@@ -63,10 +65,12 @@ module.exports = async function(ctx, next) {
         if (isPass && authInfo) {
           // 验证通过
           // 记录管理员信息
-          ctx.work.managerId = authInfo.managerId;
+          ctx.work.managerId = authInfo.managerId || 0;
           ctx.work.managerLoginName = authInfo.managerLoginName;
           ctx.work.managerRealName = authInfo.managerRealName;
           ctx.work.managerPhone = authInfo.managerPhone;
+          ctx.work.userId = authInfo.userId || 0;
+          ctx.work.alipayUserId = authInfo.alipayUserId;
         } else {
           // 验证未通过
         }
