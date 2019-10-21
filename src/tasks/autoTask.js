@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-18 13:49:27
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-18 16:45:49
+ * @Last Modified time: 2019-10-21 17:53:48
  */
 'use strict';
 
@@ -20,6 +20,7 @@ let next = function() {
   return true;
 };
 
+// 更新团购状态
 async function updateGroupStatus() {
   // 获取所有未开始和已开始的团购
   let groups = await ctx.orm().ftGroups.findAll({
@@ -57,6 +58,10 @@ async function updateGroupStatus() {
     }
   }
 }
+
+// 更新用户优惠券状态
+// TODO:待实现
+async function updateUserDiscount() {}
 
 async function main() {
   // 使用koa-orm中间件，sequelize，mysql

@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-17 11:28:47
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-18 11:01:57
+ * @Last Modified time: 2019-10-21 10:28:30
  */
 'use strict';
 
@@ -40,7 +40,7 @@ module.exports = {
       where.isOnline = param.isOnline;
     }
 
-    let total = await ctx.orm().ftProducts.findAndCount({
+    let total = await ctx.orm().ftProducts.count({
       where
     });
     let list = await ctx.orm().ftProducts.findAll({

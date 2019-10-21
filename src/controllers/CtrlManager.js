@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2018-06-21 19:35:28
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-08-20 17:05:27
+ * @Last Modified time: 2019-10-21 10:28:05
  */
 'use strict';
 
@@ -199,7 +199,7 @@ module.exports = {
 
     condition.isDel = 0;
 
-    let resultCount = await ctx.orm().SuperManagerInfo.findAndCountAll({
+    let resultCount = await ctx.orm().SuperManagerInfo.count({
       where: condition
     });
     let result = await ctx.orm().SuperManagerInfo.findAll({
@@ -211,7 +211,7 @@ module.exports = {
     });
 
     ctx.body = {
-      total: resultCount.count,
+      total: resultCount,
       list: result,
       current,
       pageSize
@@ -503,9 +503,6 @@ module.exports = {
     let menuIds = [];
     resultMenuIds.forEach(menu => {
       menuIds.push(menu.menuId);
-      if (!menuIds.includes(menu.menuId.toString().substring(0, 1))) {
-        menuIds.push(menu.menuId.toString().substring(0, 1));
-      }
     });
 
     let resultMenus = await ctx.orm().BaseMenu.findAll({
@@ -542,7 +539,7 @@ module.exports = {
 
     condition.isDel = 0;
 
-    let resultCount = await ctx.orm().SuperRoleInfo.findAndCountAll({
+    let resultCount = await ctx.orm().SuperRoleInfo.count({
       where: condition
     });
     let result = await ctx.orm().SuperRoleInfo.findAll({
@@ -553,7 +550,7 @@ module.exports = {
     });
 
     ctx.body = {
-      total: resultCount.count,
+      total: resultCount,
       list: result,
       current,
       pageSize
@@ -698,7 +695,7 @@ module.exports = {
 
     condition.isDel = 0;
 
-    let resultCount = await ctx.orm().BaseMenu.findAndCountAll({
+    let resultCount = await ctx.orm().BaseMenu.count({
       where: condition
     });
     let result = await ctx.orm().BaseMenu.findAll({
@@ -709,7 +706,7 @@ module.exports = {
     });
 
     ctx.body = {
-      total: resultCount.count,
+      total: resultCount,
       list: result,
       current,
       pageSize
@@ -824,7 +821,7 @@ module.exports = {
       };
     }
 
-    let resultCount = await ctx.orm().SuperManagerLoginfo.findAndCountAll({
+    let resultCount = await ctx.orm().SuperManagerLoginfo.count({
       where: condition
     });
     let result = await ctx.orm().SuperManagerLoginfo.findAll({
@@ -850,7 +847,7 @@ module.exports = {
     });
 
     ctx.body = {
-      total: resultCount.count,
+      total: resultCount,
       list: result,
       current,
       pageSize

@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-17 14:23:14
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-17 14:28:12
+ * @Last Modified time: 2019-10-21 10:28:36
  */
 'use strict';
 
@@ -28,7 +28,7 @@ module.exports = {
       where.sortId = param.sortId;
     }
 
-    let total = await ctx.orm().ftProductsStore.findAndCount({
+    let total = await ctx.orm().ftProductsStore.count({
       where
     });
     let list = await ctx.orm().ftProductsStore.findAll({

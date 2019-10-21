@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-16 19:35:03
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-18 12:10:05
+ * @Last Modified time: 2019-10-21 17:56:36
  */
 'use strict';
 
@@ -118,7 +118,7 @@ module.exports = {
     '1': '主订单',
     '2': '子订单'
   },
-  orderStatus: {
+  orderStatusEnum: {
     '1': '待支付',
     '2': '待取货',
     '3': '待评价',
@@ -128,7 +128,7 @@ module.exports = {
     '12': '退货完成',
     '999': '已取消'
   },
-  orderShipStatus: {
+  orderShipStatusEnum: {
     '1': '未发货',
     '2': '正在备货',
     '3': '已发货待签收',

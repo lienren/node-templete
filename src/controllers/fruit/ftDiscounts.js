@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-17 14:34:23
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-17 16:21:02
+ * @Last Modified time: 2019-10-21 10:28:18
  */
 'use strict';
 
@@ -32,7 +32,7 @@ module.exports = {
       where.disValType = param.disValType;
     }
 
-    let total = await ctx.orm().ftDiscounts.findAndCount({
+    let total = await ctx.orm().ftDiscounts.count({
       where
     });
     let list = await ctx.orm().ftDiscounts.findAll({

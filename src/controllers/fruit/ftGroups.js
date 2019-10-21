@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-17 19:30:18
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-18 16:54:54
+ * @Last Modified time: 2019-10-21 18:57:18
  */
 'use strict';
 
@@ -29,7 +29,7 @@ module.exports = {
       where.gStatus = param.gStatus;
     }
 
-    let total = await ctx.orm().ftGroups.findAndCount({
+    let total = await ctx.orm().ftGroups.count({
       where
     });
     let list = await ctx.orm().ftGroups.findAll({
@@ -94,7 +94,7 @@ module.exports = {
         inner join ftProducts p on p.id = gp.proId and p.proVerifyType = 3 and p.isDel = 0 
         where 
         gp.gId = ${param.id} and 
-        gp.isDel = 0`;
+        gp.isDel = 0;`;
 
       let result = await ctx.orm().query(sql);
 

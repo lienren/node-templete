@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2018-04-19 16:56:45
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-08-17 10:59:26
+ * @Last Modified time: 2019-10-21 19:11:41
  */
 'use strict';
 
@@ -17,7 +17,7 @@ module.exports = {
     let storage = multer.diskStorage({
       //文件保存路径
       destination: function(req, file, cb) {
-        savepath = path.join(config.sys.uploadFilePath, savepath || '');
+        savepath = config.sys.uploadFilePath;
 
         // 新建目录
         io.mkdirs(savepath, () => {

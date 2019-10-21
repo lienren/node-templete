@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-17 09:05:32
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-17 10:17:19
+ * @Last Modified time: 2019-10-21 11:01:45
  */
 'use strict';
 
@@ -19,7 +19,11 @@ module.exports = {
       isDel: 0
     };
 
-    let total = await ctx.orm().ftCity.findAndCount({
+    if (param.pId && param.pId > 0) {
+      where.pId = param.pId;
+    }
+
+    let total = await ctx.orm().ftCity.count({
       where
     });
     let list = await ctx.orm().ftCity.findAll({

@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-16 19:58:40
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-21 09:30:04
+ * @Last Modified time: 2019-10-21 19:37:08
  */
 'use strict';
 
@@ -22,7 +22,15 @@ module.exports = {
       isDel: 0
     };
 
-    let total = await ctx.orm().ftUsers.findAndCount({
+    if (param.userType && param.userType > 0) {
+      where.userType = param.userType;
+    }
+
+    if (param.verifyType && param.verifyType > 0) {
+      where.verifyType = param.verifyType;
+    }
+
+    let total = await ctx.orm().ftUsers.count({
       where
     });
     let list = await ctx.orm().ftUsers.findAll({

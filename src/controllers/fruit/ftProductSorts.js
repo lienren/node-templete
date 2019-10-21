@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-17 11:20:25
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-17 11:27:46
+ * @Last Modified time: 2019-10-21 10:28:33
  */
 'use strict';
 
@@ -20,7 +20,7 @@ module.exports = {
       isDel: 0
     };
 
-    let total = await ctx.orm().ftProductSorts.findAndCount({
+    let total = await ctx.orm().ftProductSorts.count({
       where
     });
     let list = await ctx.orm().ftProductSorts.findAll({

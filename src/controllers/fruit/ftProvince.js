@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-16 19:58:40
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-17 16:21:02
+ * @Last Modified time: 2019-10-21 10:27:06
  */
 'use strict';
 
@@ -20,7 +20,7 @@ module.exports = {
       isDel: 0
     };
 
-    let total = await ctx.orm().ftProvince.findAndCount({
+    let total = await ctx.orm().ftProvince.count({
       where
     });
     let list = await ctx.orm().ftProvince.findAll({
