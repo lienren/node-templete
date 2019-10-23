@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-16 19:58:40
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-23 16:37:35
+ * @Last Modified time: 2019-10-23 16:53:45
  */
 'use strict';
 
@@ -86,9 +86,26 @@ module.exports = {
     cp.isEmpty(param.id);
     cp.isEmpty(param.pName);
 
+    let pPinyin = pinyin(param.pName, {
+      style: pinyin.STYLE_NORMAL
+    });
+
+    let pShortCode = pinyin(param.pName, {
+      style: pinyin.STYLE_FIRST_LETTER
+    });
+
+    pPinyin = pPinyin.reduce((total, curr) => {
+      return total + curr[0];
+    }, '');
+
+    pShortCode = pShortCode.length > 0 ? (pShortCode[0].length > 0 ? pShortCode[0][0] : '') : '';
+    pShortCode = pShortCode.toUpperCase();
+
     await ctx.orm().ftProvince.update(
       {
         pName: param.pName,
+        pShortCode: pShortCode,
+        pPinyin: pPinyin,
         updateTime: date.formatDate()
       },
       {

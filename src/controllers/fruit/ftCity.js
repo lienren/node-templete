@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-17 09:05:32
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-23 16:39:07
+ * @Last Modified time: 2019-10-23 16:53:18
  */
 'use strict';
 
@@ -95,11 +95,28 @@ module.exports = {
     cp.isEmpty(param.pId);
     cp.isEmpty(param.pName);
 
+    let cPinyin = pinyin(param.cName, {
+      style: pinyin.STYLE_NORMAL
+    });
+
+    let cShortCode = pinyin(param.cName, {
+      style: pinyin.STYLE_FIRST_LETTER
+    });
+
+    cPinyin = cPinyin.reduce((total, curr) => {
+      return total + curr[0];
+    }, '');
+
+    cShortCode = cShortCode.length > 0 ? (cShortCode[0].length > 0 ? cShortCode[0][0] : '') : '';
+    cShortCode = cShortCode.toUpperCase();
+
     await ctx.orm().ftCity.update(
       {
         cName: param.cName,
         pId: param.pId,
         pName: param.pName,
+        cShortCode: cShortCode,
+        cPinyin: cPinyin,
         updateTime: date.formatDate()
       },
       {
