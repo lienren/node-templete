@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-16 19:35:03
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-21 17:56:36
+ * @Last Modified time: 2019-10-22 16:18:45
  */
 'use strict';
 
@@ -59,12 +59,89 @@ module.exports = {
   disTypeEnum: {
     '1': '直减券', // {fullPrice:0,disPrice:100}
     '2': '满减券', // {fullPrice:200,disPrice:100}
-    '3': '打折券' // {fullPrice:200,discount:98}
+    '3': '打折券', // {fullPrice:200,discount:98}
+    calc: (disType, disContext, orderSellPrice) => {
+      disContext = typeof disContext === 'string' ? JSON.parse(disContext) : disContext;
+      switch (disType) {
+        case 1:
+          return {
+            orderSellPrice: orderSellPrice > disContext.disPrice ? orderSellPrice - disContext.disPrice : 0,
+            orderDisPrice: orderSellPrice > disContext.disPrice ? disContext.disPrice : orderSellPrice
+          };
+        case 2:
+          return {
+            orderSellPrice:
+              orderSellPrice >= disContext.fullPrice
+                ? orderSellPrice > disContext.disPrice
+                  ? orderSellPrice - disContext.disPrice
+                  : 0
+                : orderSellPrice,
+            orderDisPrice:
+              orderSellPrice >= disContext.fullPrice
+                ? orderSellPrice > disContext.disPrice
+                  ? disContext.disPrice
+                  : orderSellPrice
+                : 0
+          };
+        case 3:
+          return {
+            orderSellPrice:
+              orderSellPrice >= disContext.fullPrice ? (orderSellPrice * disContext.discount) / 100 : orderSellPrice,
+            orderDisPrice:
+              orderSellPrice >= disContext.fullPrice ? orderSellPrice - (orderSellPrice * disContext.discount) / 100 : 0
+          };
+      }
+    }
   },
   disRangeTypeEnum: {
     '1': '全部商品',
     '2': '分类商品',
-    '3': '选定商品'
+    '3': '选定商品',
+    verify: (disRangeType, disRange, proList) => {
+      disRange = typeof disRange === 'string' ? JSON.parse(disRange) : disRange;
+      switch (disRangeType) {
+        case 1:
+          return {
+            isHit: true,
+            disProList: proList,
+            notDisProList: []
+          };
+        case 2:
+          let disProList1 = proList.reduce((total, curr) => {
+            if (disRange.indexOf(curr.sortId) >= 0) {
+              return total.push(curr);
+            }
+          }, []);
+          let disProIds1 = disProList1.map(m => m.proId);
+          let notDisProList1 = proList.reduce((total, curr) => {
+            if (disProIds1.indexOf(curr.proId) === -1) {
+              return total.push(curr);
+            }
+          }, []);
+          return {
+            isHit: disProList1 && disProList1.length > 0,
+            disProList: disProList1,
+            notDisProList: notDisProList1
+          };
+        case 3:
+          let disProList2 = proList.reduce((total, curr) => {
+            if (disRange.indexOf(curr.proId) >= 0) {
+              return total.push(curr);
+            }
+          }, []);
+          let disProIds2 = disProList2.map(m => m.proId);
+          let notDisProList2 = proList.reduce((total, curr) => {
+            if (disProIds2.indexOf(curr.proId) === -1) {
+              return total.push(curr);
+            }
+          }, []);
+          return {
+            isHit: disProList2 && disProList2.length > 0,
+            disProList: disProList2,
+            notDisProList: notDisProList2
+          };
+      }
+    }
   },
   disValTypeEnum: {
     '1': '固定时间', // {startTime:'2019-10-01 00:00:00', endTime:'2019-10-07 23:59:59'}

@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-16 19:58:40
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-21 19:37:08
+ * @Last Modified time: 2019-10-23 14:48:22
  */
 'use strict';
 
@@ -335,8 +335,10 @@ module.exports = {
     cp.isEmpty(param.id);
     cp.isEmpty(param.verifyType);
 
-    let groupUser = await ctx.orm().ftUsers.update(
+    await ctx.orm().ftUsers.update(
       {
+        userType: 2,
+        userTypeName: dic.userTypeEnum[`${2}`],
         updateTime: date.formatDate(),
         verifyType: param.verifyType,
         verifyTypeName: dic.verifyTypeEnum[`${param.verifyType}`],
@@ -353,11 +355,11 @@ module.exports = {
       }
     );
 
-    if (groupUser.verifyType === 2) {
+    if (param.verifyType === 2) {
       // 审核通过
       // 添加帐户
       await ctx.orm().ftAccount.create({
-        userId: groupUser.id,
+        userId: param.id,
         totalBrokerage: 0,
         totalOverPrice: 0,
         curOverPrice: 0,

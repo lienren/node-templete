@@ -2,11 +2,12 @@
  * @Author: Lienren
  * @Date: 2019-10-18 16:56:04
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-21 18:57:05
+ * @Last Modified time: 2019-10-23 15:52:20
  */
 'use strict';
 
 const assert = require('assert');
+const sequelize = require('sequelize').Sequelize;
 const cp = require('./checkParam');
 const dic = require('./fruitEnum');
 const comm = require('../../utils/comm');
@@ -156,8 +157,53 @@ module.exports = {
     });
     cp.isNull(group, '团购不存在或已下线!');
 
+    // 获取商品
+    let getProsSql = `
+        select gp.*, p.sortId, p.sortName, p.title, p.subTitle, p.originalPrice, p.sellPrice, p.costPrice, p.proProfit, 
+        p.isLimit, p.limitNum, p.pickTime, p.specInfo, p.isOnline, p.content, p.stock, p.saleNum, p.saleNumV, 
+        p.masterImg, p.subImg, p.groupUserId, p.proType, p.proTypeName, p.rebateType, p.rebateTypeName, p.rebateRate, p.rebatePrice from ftGroupProducts gp 
+        inner join ftProducts p on p.id = gp.proId and p.isOnline = 1 and p.proVerifyType = 3 and stock > 0 and p.isDel = 0 
+        where 
+        gp.gId = ${group.id} and 
+        p.id in (${param.proList
+          .map(m => {
+            return m.proId;
+          })
+          .join(',')}) and
+        gp.isDel = 0;`;
+
+    let groupProList = await ctx.orm().query(getProsSql);
+
+    cp.isArrayLengthGreaterThan0(groupProList, '商品数据异常!');
+    assert.ok(param.proList.length === groupProList.length, '商品数据异常!');
+
+    // 验证是否已购买限购商品
+    let limitProList = groupProList.filter(f => {
+      return f.isLimit === 1;
+    });
+    if (limitProList && limitProList.length > 0) {
+      for (let i = 0, j = limitProList.length; i < j; i++) {
+        let limitOrderProductSql = `select IFNULL(sum(pNum),0) num from ftOrderProducts where groupId = ${group.id} and userId = ${param.userId} and proId = ${limitProList[i].proId} and isDel = 0;`;
+        let limitOrderProduct = await ctx.orm().query(limitOrderProductSql);
+        if (limitOrderProduct && limitOrderProduct.length > 0) {
+          let pro = param.proList.find(f => {
+            return f.proId === limitProList[i].proId;
+          });
+          assert.ok(
+            pro.pNum + parseInt(limitOrderProduct[0].num) <= limitProList[i].limitNum,
+            '购买商品已超限购数量！'
+          );
+        }
+      }
+    }
+
     // 获取用户优惠券
     let userDiscount = null;
+    let orderDisPrice = 0;
+    let orderOriginalPrice = groupProList.reduce((total, curr) => {
+      return total + curr.originalPrice;
+    }, 0);
+    let orderSellPrice = 0;
     if (param.oDisId && param.oDisId > 0) {
       userDiscount = await ctx.orm().ftUserDiscounts.findOne({
         id: param.oDisId,
@@ -167,13 +213,83 @@ module.exports = {
         isDel: 0
       });
       cp.isNull(userDiscount, '优惠券不存在!');
+
+      let discount = await ctx.orm().ftDiscounts.findOne({
+        id: userDiscount.disId,
+        isDel: 0
+      });
+      cp.isNull(discount, '优惠券不存在!');
+
+      // 提取优惠券商品
+      let discountHit = dic.disRangeTypeEnum.verify(discount.disRangeType, discount.disRange, groupProList);
+      assert.ok(discountHit.isHit, '购买的商品无法使用优惠券!');
+
+      // 能使用优惠券的商品总金额
+      let discountOrderSellPrice = discountHit.disProList.reduc((total, curr) => {
+        return total + curr.sellPrice;
+      }, 0);
+
+      // 不能使用优惠券的商品总金额
+      let notDiscountOrderSellPrice = discountHit.notDisProList.reduc((total, curr) => {
+        return total + curr.sellPrice;
+      }, 0);
+
+      // 计算优惠金额
+      let disCalc = dic.disTypeEnum.calc(userDiscount.disType, userDiscount.disContext, discountOrderSellPrice);
+      orderDisPrice = disCalc.orderDisPrice;
+      orderSellPrice = disCalc.orderSellPrice + notDiscountOrderSellPrice;
+
+      // 设置优惠券失效
+      ctx.orm().ftUserDiscounts.update(
+        {
+          isUse: 1
+        },
+        {
+          where: {
+            id: userDiscount.id,
+            isUse: 0,
+            isOver: 0,
+            isDel: 0
+          }
+        }
+      );
+    } else {
+      orderSellPrice = groupProList.reduce((total, curr) => {
+        return total + curr.sellPrice;
+      }, 0);
     }
 
-    
+    // 扣减库存，更新销售量
+    if (groupProList) {
+      await sequelize.transaction({}, async transaction => {
+        for (let i = 0, j = groupProList.length; i < j; i++) {
+          let pro = param.proList.find(f => {
+            return f.proId === groupProList[i].proId;
+          });
+
+          await ctx.orm().ftProducts.update(
+            {
+              stock: sequelize.literal(`stock - ${pro.pNum}`),
+              saleNum: sequelize.literal(` saleNum + ${pro.pNum}`)
+            },
+            {
+              where: {
+                id: groupProList[i].proId,
+                stock: {
+                  $gte: pro.pNum
+                }
+              },
+              transaction
+            }
+          );
+        }
+      });
+    }
 
     let oSN = 'O' + date.getTimeStamp() + comm.randNumberCode(4);
 
-    await ctx.orm().ftProvince.create({
+    // 添加订单
+    let order = await ctx.orm().ftProvince.create({
       oSN,
       userId: param.userId,
       oType: 1,
@@ -181,7 +297,7 @@ module.exports = {
       parentOSN: '',
       oDisId: userDiscount ? userDiscount.id : 0,
       oDisName: userDiscount ? userDiscount.disTitle : '',
-      oDisPrice: 0,
+      oDisPrice: orderDisPrice,
       oStatus: 1,
       oStatusName: dic.orderStatusEnum[`1`],
       oStatusTime: date.formatDate(),
@@ -193,13 +309,52 @@ module.exports = {
       groupUserId: groupUser.id,
       groupUserName: groupUser.userName,
       groupUserPhone: groupUser.userPhone,
-      originalPrice: 0,
-      sellPrice: 0,
+      originalPrice: orderOriginalPrice,
+      sellPrice: orderSellPrice,
       isSettlement: 0,
       settlementPrice: 0,
       addTime: date.formatDate(),
       isDel: 0
     });
+
+    // 添加订单商品
+    let orderPros = groupProList.map(m => {
+      let pro = param.proList.find(f => {
+        return f.proId === m.proId;
+      });
+      return {
+        oId: order.id,
+        oSN: order.oSN,
+        userId: order.userId,
+        proId: m.proId,
+        proTitle: m.title,
+        proMasterImg: m.masterImg,
+        specInfo: m.specInfo,
+        proType: m.proType,
+        proTypeName: m.proTypeName,
+        pickTime: m.pickTime,
+        originalPrice: m.originalPrice,
+        sellPrice: m.sellPrice,
+        costPrice: m.costPrice,
+        proProfit: m.proProfit,
+        pNum: pro.pNum,
+        totalPrice: m.sellPrice * pro.pNum,
+        totalProfit: m.proProfit * pro.pNum,
+        isLimit: m.isLimit,
+        groupId: group.id,
+        groupName: group.gName,
+        rebateType: m.rebateType,
+        rebateTypeName: m.rebateTypeName,
+        rebateRate: m.rebateRate,
+        rebatePrice: m.rebatePrice,
+        totalRebatePrice: m.rebatePrice * pro.pNum,
+        gProType: m.gProType,
+        gProTypeName: m.gProTypeName,
+        addTime: date.formatDate(),
+        isDel: 0
+      };
+    });
+    await ctx.orm().ftOrderProducts.bulkCreate(orderPros);
   },
   edit: async ctx => {
     let param = ctx.request.body || {};

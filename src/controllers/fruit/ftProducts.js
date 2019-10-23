@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-17 11:28:47
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-21 10:28:30
+ * @Last Modified time: 2019-10-22 19:59:09
  */
 'use strict';
 
@@ -97,8 +97,6 @@ module.exports = {
 
     // 平台商品计算返佣
     if (param.proType === 2) {
-      cp.isEmpty(param.rebateType);
-
       // 如果佣金没有配置，则设置为10%
       if (param.rebateRate === undefined || param.rebateRate === null) {
         param.rebateRate = 10;
@@ -140,7 +138,7 @@ module.exports = {
       masterImg: param.masterImg,
       subImg: JSON.stringify(param.subImg),
       groupUserId: param.groupUserId || 0,
-      rebateType: param.proType === 1 ? 0 : param.rebateType,
+      rebateType: param.proType === 1 ? 0 : param.rebateType || 0,
       rebateTypeName: dic.rebateTypeEnum[`${param.proType === 1 ? 0 : param.rebateType}`],
       rebateRate: param.rebateRate || 0,
       rebatePrice: param.rebatePrice || 0,

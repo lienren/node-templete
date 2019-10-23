@@ -104,7 +104,7 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING(100),
       allowNull: true
     },
-    rebate: {
+    rebateRate: {
       type: DataTypes.INTEGER(11),
       allowNull: true
     },
@@ -114,6 +114,14 @@ module.exports = function(sequelize, DataTypes) {
     },
     totalRebatePrice: {
       type: DataTypes.DECIMAL,
+      allowNull: true
+    },
+    gProType: {
+      type: DataTypes.INTEGER(11),
+      allowNull: true
+    },
+    gProTypeName: {
+      type: DataTypes.STRING(100),
       allowNull: true
     }
   }, {

@@ -2,12 +2,13 @@
  * @Author: Lienren
  * @Date: 2019-10-17 19:30:18
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-21 18:57:18
+ * @Last Modified time: 2019-10-23 09:39:21
  */
 'use strict';
 
 const assert = require('assert');
 const date = require('../../utils/date');
+const comm = require('../../utils/comm');
 const cp = require('./checkParam');
 const dic = require('./fruitEnum');
 
@@ -51,14 +52,56 @@ module.exports = {
 
     cp.isEmpty(param.id);
 
-    let result = await ctx.orm().ftGroups.findOne({
+    let group = await ctx.orm().ftGroups.findOne({
       where: {
         id: param.id,
         isDel: 0
       }
     });
 
-    ctx.body = result;
+    let groupPros = await ctx.orm().ftGroupProducts.findAll({
+      where: {
+        gId: param.id,
+        isDel: 0
+      }
+    });
+
+    ctx.body = {
+      group: group,
+      groupPros: groupPros
+    };
+  },
+  getGroup: async ctx => {
+    let param = ctx.request.body || {};
+
+    let groups = await ctx.orm().ftGroups.findAll({
+      where: {
+        gStatus: 2,
+        isDel: 0
+      },
+      order: [['gStartTime', 'DESC']]
+    });
+
+    if (groups && groups.length > 0) {
+      if (param.position && param.position.length === 2) {
+        // 有GPS坐标
+        for (let i = 0, j = groups.length; i < j; i++) {
+          let gSitePosition = JSON.parse(groups[i].gSitePosition);
+          let distance = comm.calcDistance(gSitePosition[0], gSitePosition[1], param.position[0], param.position[1]);
+          groups[i].dataValues['distance'] = distance || 0;
+        }
+
+        // 返回升序
+        ctx.body = groups.sort((a, b) => {
+          return b.distance - a.distance;
+        });
+      } else {
+        // 无GPS坐标
+        ctx.body = groups;
+      }
+    } else {
+      ctx.body = [];
+    }
   },
   getGroupProductSort: async ctx => {
     let param = ctx.request.body || {};
@@ -108,10 +151,6 @@ module.exports = {
 
     cp.isEmpty(param.gType);
     cp.isEmpty(param.groupUserId);
-    cp.isEmpty(param.gSiteName);
-    cp.isEmpty(param.gSiteAddress);
-    cp.isEmpty(param.gSitePickAddress);
-    cp.isEmpty(param.gSitePosition);
     cp.isEmpty(param.gStartTime);
     cp.isEmpty(param.gEndTime);
     cp.isArrayLengthGreaterThan0(param.proList);
@@ -132,7 +171,7 @@ module.exports = {
       where: {
         groupUserId: groupUser.id,
         gStartTime: {
-          $between: [gStartTime, gEndTime]
+          $between: [param.gStartTime, param.gEndTime]
         },
         gStatus: {
           $in: [1, 2]
@@ -158,9 +197,6 @@ module.exports = {
 
     cp.isArrayLengthGreaterThan0(pros);
 
-    let gIndex = 1;
-    let gName = '第1期团购活动';
-
     let groupUserGroup = await ctx.orm().ftGroups.findOne({
       where: {
         groupUserId: groupUser.id
@@ -168,10 +204,11 @@ module.exports = {
       order: [['addTime', 'DESC']]
     });
 
+    let gIndex = 1;
     if (groupUserGroup) {
       gIndex = groupUserGroup.gIndex + 1;
-      gName = `第${gIndex}期团购活动`;
     }
+    let gName = `第${gIndex}期团购活动`;
 
     // 添加团购
     let group = await ctx.orm().ftGroups.create({
@@ -198,7 +235,7 @@ module.exports = {
 
     let groupPros = [];
     pros.forEach(e => {
-      let find = proList.find(f => {
+      let find = param.proList.find(f => {
         return f.proId === e.id;
       });
 
