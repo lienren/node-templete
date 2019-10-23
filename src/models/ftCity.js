@@ -12,6 +12,14 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING(100),
       allowNull: true
     },
+    cShortCode: {
+      type: DataTypes.STRING(10),
+      allowNull: true
+    },
+    cPinyin: {
+      type: DataTypes.STRING(100),
+      allowNull: true
+    },
     pId: {
       type: DataTypes.INTEGER(11),
       allowNull: true

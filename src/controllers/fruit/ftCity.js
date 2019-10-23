@@ -2,10 +2,11 @@
  * @Author: Lienren
  * @Date: 2019-10-17 09:05:32
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-21 11:01:45
+ * @Last Modified time: 2019-10-23 16:39:07
  */
 'use strict';
 
+const pinyin = require('pinyin');
 const date = require('../../utils/date');
 const cp = require('./checkParam');
 
@@ -61,10 +62,27 @@ module.exports = {
     cp.isEmpty(param.pId);
     cp.isEmpty(param.pName);
 
+    let cPinyin = pinyin(param.cName, {
+      style: pinyin.STYLE_NORMAL
+    });
+
+    let cShortCode = pinyin(param.cName, {
+      style: pinyin.STYLE_FIRST_LETTER
+    });
+
+    cPinyin = cPinyin.reduce((total, curr) => {
+      return total + curr[0];
+    }, '');
+
+    cShortCode = cShortCode.length > 0 ? (cShortCode[0].length > 0 ? cShortCode[0][0] : '') : '';
+    cShortCode = cShortCode.toUpperCase();
+
     await ctx.orm().ftCity.create({
       cName: param.cName,
       pId: param.pId,
       pName: param.pName,
+      cShortCode: cShortCode,
+      cPinyin: cPinyin,
       addTime: date.formatDate(),
       isDel: 0
     });

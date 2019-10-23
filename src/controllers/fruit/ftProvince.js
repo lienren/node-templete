@@ -2,10 +2,11 @@
  * @Author: Lienren
  * @Date: 2019-10-16 19:58:40
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-21 10:27:06
+ * @Last Modified time: 2019-10-23 16:37:35
  */
 'use strict';
 
+const pinyin = require('pinyin');
 const date = require('../../utils/date');
 const cp = require('./checkParam');
 const dic = require('./fruitEnum');
@@ -56,8 +57,25 @@ module.exports = {
 
     cp.isEmpty(param.pName);
 
+    let pPinyin = pinyin(param.pName, {
+      style: pinyin.STYLE_NORMAL
+    });
+
+    let pShortCode = pinyin(param.pName, {
+      style: pinyin.STYLE_FIRST_LETTER
+    });
+
+    pPinyin = pPinyin.reduce((total, curr) => {
+      return total + curr[0];
+    }, '');
+
+    pShortCode = pShortCode.length > 0 ? (pShortCode[0].length > 0 ? pShortCode[0][0] : '') : '';
+    pShortCode = pShortCode.toUpperCase();
+
     await ctx.orm().ftProvince.create({
       pName: param.pName,
+      pShortCode: pShortCode,
+      pPinyin: pPinyin,
       addTime: date.formatDate(),
       isDel: 0
     });

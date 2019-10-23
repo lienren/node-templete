@@ -12,6 +12,14 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING(100),
       allowNull: true
     },
+    pShortCode: {
+      type: DataTypes.STRING(10),
+      allowNull: true
+    },
+    pPinyin: {
+      type: DataTypes.STRING(100),
+      allowNull: true
+    },
     addTime: {
       type: DataTypes.DATE,
       allowNull: true
