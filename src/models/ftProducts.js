@@ -139,6 +139,10 @@ module.exports = function(sequelize, DataTypes) {
     rebatePrice: {
       type: DataTypes.DECIMAL,
       allowNull: true
+    },
+    isRecommend: {
+      type: DataTypes.INTEGER(11),
+      allowNull: true
     }
   }, {
     tableName: 'ftProducts'

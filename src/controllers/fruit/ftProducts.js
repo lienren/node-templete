@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-17 11:28:47
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-22 19:59:09
+ * @Last Modified time: 2019-10-24 09:56:20
  */
 'use strict';
 
@@ -142,6 +142,7 @@ module.exports = {
       rebateTypeName: dic.rebateTypeEnum[`${param.proType === 1 ? 0 : param.rebateType}`],
       rebateRate: param.rebateRate || 0,
       rebatePrice: param.rebatePrice || 0,
+      isRecommend: param.isRecommend || 0,
       addTime: date.formatDate(),
       isDel: 0
     });
@@ -221,6 +222,7 @@ module.exports = {
         rebateTypeName: dic.rebateTypeEnum[`${param.proType === 1 ? 0 : param.rebateType}`],
         rebateRate: param.rebateRate || 0,
         rebatePrice: param.rebatePrice || 0,
+        isRecommend: param.isRecommend || 0,
         updateTime: date.formatDate()
       },
       {

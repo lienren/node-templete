@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-17 19:30:18
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-23 09:39:21
+ * @Last Modified time: 2019-10-24 11:00:31
  */
 'use strict';
 
@@ -133,7 +133,7 @@ module.exports = {
       let sql = `
         select gp.*, p.sortId, p.sortName, p.title, p.subTitle, p.originalPrice, p.sellPrice, 
         p.isLimit, p.limitNum, p.pickTime, p.specInfo, p.isOnline, p.content, p.stock, p.saleNum, p.saleNumV, 
-        p.masterImg, p.subImg, p.groupUserId from ftGroupProducts gp 
+        p.masterImg, p.subImg, p.groupUserId, p.isRecommend isRec from ftGroupProducts gp 
         inner join ftProducts p on p.id = gp.proId and p.proVerifyType = 3 and p.isDel = 0 
         where 
         gp.gId = ${param.id} and 
