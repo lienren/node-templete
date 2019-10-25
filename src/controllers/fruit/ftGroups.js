@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-17 19:30:18
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-24 18:54:07
+ * @Last Modified time: 2019-10-25 09:52:02
  */
 'use strict';
 
@@ -78,11 +78,21 @@ module.exports = {
   getGroup: async ctx => {
     let param = ctx.request.body || {};
 
+    let where = {
+      gStatus: 2,
+      isDel: 0
+    };
+
+    if (param.gPId && param.gPId > 0) {
+      where.gPId = param.gPId;
+    }
+
+    if (param.gCId && param.gCId > 0) {
+      where.gCId = param.gCId;
+    }
+
     let groups = await ctx.orm().ftGroups.findAll({
-      where: {
-        gStatus: 2,
-        isDel: 0
-      },
+      where,
       order: [['gStartTime', 'DESC']]
     });
 
@@ -234,6 +244,10 @@ module.exports = {
       gType: param.gType,
       gTypeName: dic.groupTypeEnum[`${param.gType}`],
       addTime: date.formatDate(),
+      gPId: groupUser.pId,
+      gPName: groupUser.pName,
+      gCId: groupUser.cId,
+      gCName: groupUser.cName,
       isDel: 0
     });
 

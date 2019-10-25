@@ -87,6 +87,22 @@ module.exports = function(sequelize, DataTypes) {
     isDel: {
       type: DataTypes.INTEGER(11),
       allowNull: true
+    },
+    gPId: {
+      type: DataTypes.INTEGER(11),
+      allowNull: true
+    },
+    gPName: {
+      type: DataTypes.STRING(100),
+      allowNull: true
+    },
+    gCId: {
+      type: DataTypes.INTEGER(11),
+      allowNull: true
+    },
+    gCName: {
+      type: DataTypes.STRING(100),
+      allowNull: true
     }
   }, {
     tableName: 'ftGroups'
