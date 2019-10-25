@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-17 19:30:18
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-25 11:20:02
+ * @Last Modified time: 2019-10-25 14:13:12
  */
 'use strict';
 
@@ -23,7 +23,7 @@ module.exports = {
     };
 
     if (param.groupUserId && param.groupUserId > 0) {
-      where.gType = param.groupUserId;
+      where.groupUserId = param.groupUserId;
     }
 
     if (param.gType && param.gType > 0) {
@@ -102,7 +102,7 @@ module.exports = {
         for (let i = 0, j = groups.length; i < j; i++) {
           let gSitePosition = JSON.parse(groups[i].gSitePosition);
           let distance = comm.calcDistance(gSitePosition[0], gSitePosition[1], param.position[0], param.position[1]);
-          groups[i].dataValues['distance'] = distance || 0;
+          groups[i].dataValues['distance'] = parseInt(distance) || 0;
         }
 
         // 返回升序
