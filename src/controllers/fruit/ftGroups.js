@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-17 19:30:18
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-24 11:00:31
+ * @Last Modified time: 2019-10-24 18:54:07
  */
 'use strict';
 
@@ -21,6 +21,10 @@ module.exports = {
     let where = {
       isDel: 0
     };
+
+    if (param.groupUserId && param.groupUserId > 0) {
+      where.gType = param.groupUserId;
+    }
 
     if (param.gType && param.gType > 0) {
       where.gType = param.gType;
