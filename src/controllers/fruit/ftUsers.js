@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-16 19:58:40
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-23 14:48:22
+ * @Last Modified time: 2019-10-25 11:55:32
  */
 'use strict';
 
@@ -236,6 +236,8 @@ module.exports = {
         currGId: result.currGId,
         currGName: result.currGName,
         currGTime: result.currGTime,
+        verifyType: result.verifyType,
+        verifyTypeName: result.verifyTypeName,
         token: result.token
       };
     } else {

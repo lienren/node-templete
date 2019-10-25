@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-17 19:30:18
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-25 09:52:02
+ * @Last Modified time: 2019-10-25 11:20:02
  */
 'use strict';
 
@@ -248,6 +248,7 @@ module.exports = {
       gPName: groupUser.pName,
       gCId: groupUser.cId,
       gCName: groupUser.cName,
+      groupUserHeadImg: groupUser.headImg,
       isDel: 0
     });
 

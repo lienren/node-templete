@@ -103,6 +103,10 @@ module.exports = function(sequelize, DataTypes) {
     gCName: {
       type: DataTypes.STRING(100),
       allowNull: true
+    },
+    groupUserHeadImg: {
+      type: DataTypes.STRING(1000),
+      allowNull: true
     }
   }, {
     tableName: 'ftGroups'
