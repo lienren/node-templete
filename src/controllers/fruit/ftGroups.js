@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-17 19:30:18
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-25 14:54:12
+ * @Last Modified time: 2019-10-25 16:11:06
  */
 'use strict';
 
@@ -162,6 +162,33 @@ module.exports = {
     } else {
       ctx.body = [];
     }
+  },
+  getGroupProductDetail: async ctx => {
+    let param = ctx.request.body || {};
+
+    cp.isEmpty(param.id);
+    cp.isEmpty(param.proId);
+
+    let groupProduct = await ctx.orm().ftGroupProducts.findOne({
+      where: {
+        gId: param.id,
+        proId: param.proId,
+        isDel: 0
+      }
+    });
+
+    let product = await ctx.orm().ftProducts.findOne({
+      where: {
+        id: param.proId,
+        proVerifyType: 3,
+        isDel: 0
+      }
+    });
+
+    ctx.body = {
+      groupProduct,
+      product
+    };
   },
   add: async ctx => {
     let param = ctx.request.body || {};
