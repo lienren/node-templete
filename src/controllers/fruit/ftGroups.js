@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-17 19:30:18
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-25 14:13:12
+ * @Last Modified time: 2019-10-25 14:54:12
  */
 'use strict';
 
@@ -70,6 +70,9 @@ module.exports = {
       }
     });
 
+    let dayDiff = date.dataScope(date.formatDate(), group.gEndTime);
+    group.dataValues['dayDiff'] = dayDiff.length || 0;
+
     ctx.body = {
       group: group,
       groupPros: groupPros
@@ -102,7 +105,7 @@ module.exports = {
         for (let i = 0, j = groups.length; i < j; i++) {
           let gSitePosition = JSON.parse(groups[i].gSitePosition);
           let distance = comm.calcDistance(gSitePosition[0], gSitePosition[1], param.position[0], param.position[1]);
-          groups[i].dataValues['distance'] = parseInt(distance) || 0;
+          groups[i].dataValues['distance'] = distance || 0;
         }
 
         // 返回升序
