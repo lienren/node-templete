@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-17 14:34:23
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-22 17:22:26
+ * @Last Modified time: 2019-10-25 22:46:42
  */
 'use strict';
 
@@ -101,7 +101,7 @@ module.exports = {
 
       // 送券Sql
       let pushDiscountSql = `insert into ftUserDiscounts 
-      (userId,disId,disTitle,disSubTitle,disType,disTypeName,disContext,disStartTime,disEndTime,isUse,isOver,addTime,isDel) values 
+      (userId,disId,disTitle,disSubTitle,disType,disTypeName,disContext,disStartTime,disEndTime,isUse,isOver,addTime,isDel)  
       select id,${discount.id},'${discount.disTitle}','${discount.disSubTitle}',${discount.disType},'${discount.disTypeName}','${discount.disContext}','${effectiveTime.startTime}','${effectiveTime.endTime}',0,0,now(),0 
       from ftUsers where isDel = 0;`;
 
@@ -139,5 +139,27 @@ module.exports = {
         }
       }
     );
+  },
+  getUserDiscount: async ctx => {
+    let param = ctx.request.body || {};
+
+    cp.isEmpty(param.userId);
+
+    let result = await ctx.orm().ftUserDiscounts.findAll({
+      where: {
+        userId: param.userId,
+        disStartTime: {
+          $lt: date.formatDate()
+        },
+        disEndTime: {
+          $gt: date.formatDate()
+        },
+        isUse: 0,
+        isOver: 0,
+        isDel: 0
+      }
+    });
+
+    ctx.body = result;
   }
 };

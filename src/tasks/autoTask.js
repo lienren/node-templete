@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-18 13:49:27
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-21 17:53:48
+ * @Last Modified time: 2019-10-26 20:40:36
  */
 'use strict';
 
@@ -15,6 +15,10 @@ const dic = require('../controllers/fruit/fruitEnum');
 
 // 自动更新团购状态
 let automaticUpdateGroupStatusJob = null;
+// 自动更新团购状态
+let automaticUpdateUserDiscountStatusJob = null;
+// 自动取消订单
+let automaticCancelOrder = null;
 let ctx = {};
 let next = function() {
   return true;
@@ -60,8 +64,45 @@ async function updateGroupStatus() {
 }
 
 // 更新用户优惠券状态
-// TODO:待实现
-async function updateUserDiscount() {}
+async function updateUserDiscount() {
+  await ctx.orm().ftUserDiscounts.update(
+    {
+      isOver: 1,
+      updateTime: date.formatDate()
+    },
+    {
+      where: {
+        disEndTime: {
+          $lt: date.formatDate()
+        },
+        isUse: 0,
+        isOver: 0,
+        isDel: 0
+      }
+    }
+  );
+}
+
+// 自动取消订单30分钟未支付订单
+async function cancelOrder() {
+  await ctx.orm().ftOrders.update(
+    {
+      oStatus: 999,
+      oStatusName: dic.orderStatusEnum[`999`],
+      updateTime: date.formatDate()
+    },
+    {
+      where: {
+        addTime: {
+          gt: date.formatDate(date.getTimeStamp(-30 * 60), 'YYYY-MM-DD HH:mm:ss', true)
+        },
+        oStatus: 1,
+        isPay: 0,
+        isDel: 0
+      }
+    }
+  );
+}
 
 async function main() {
   // 使用koa-orm中间件，sequelize，mysql
@@ -71,19 +112,26 @@ async function main() {
   }
 
   // 更新团购状态，每10秒执行一次
-  let automaticUpdateGroupRule = new schedule.RecurrenceRule();
-  automaticUpdateGroupRule.second = [];
+  let automaticRule = new schedule.RecurrenceRule();
+  automaticRule.second = [];
   for (let i = 0, j = 60; i < j; i++) {
     if (i % 10 === 0) {
-      automaticUpdateGroupRule.second.push(i);
+      automaticRule.second.push(i);
     }
   }
-  automaticUpdateGroupStatusJob = schedule.scheduleJob(automaticUpdateGroupRule, updateGroupStatus);
+
+  automaticUpdateGroupStatusJob = schedule.scheduleJob(automaticRule, updateGroupStatus);
+  automaticUpdateUserDiscountStatusJob = schedule.scheduleJob(automaticRule, updateUserDiscount);
+  automaticCancelOrder = schedule.scheduleJob(automaticRule, cancelOrder);
 }
 
 process.on('SIGINT', function() {
   if (automaticUpdateGroupStatusJob) {
     automaticUpdateGroupStatusJob.cancel();
+  }
+
+  if (automaticUpdateUserDiscountStatusJob) {
+    automaticUpdateUserDiscountStatusJob.cancel();
   }
 
   process.exit(0);

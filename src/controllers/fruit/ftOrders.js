@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-18 16:56:04
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-23 15:52:20
+ * @Last Modified time: 2019-10-26 00:20:51
  */
 'use strict';
 
@@ -10,8 +10,11 @@ const assert = require('assert');
 const sequelize = require('sequelize').Sequelize;
 const cp = require('./checkParam');
 const dic = require('./fruitEnum');
+const ali = require('../../extends/ali');
 const comm = require('../../utils/comm');
 const date = require('../../utils/date');
+
+const aliPayNotifyUrl = 'http://fruit.billgenius.cn/fruit/ftOrders/notify';
 
 module.exports = {
   getAll: async ctx => {
@@ -356,41 +359,64 @@ module.exports = {
     });
     await ctx.orm().ftOrderProducts.bulkCreate(orderPros);
   },
-  edit: async ctx => {
+  cancel: async ctx => {
     let param = ctx.request.body || {};
 
-    cp.isEmpty(param.id);
-    cp.isEmpty(param.pName);
+    cp.isEmpty(param.userId);
+    cp.isEmpty(param.oSN);
 
-    await ctx.orm().ftProvince.update(
+    await ctx.orm().ftOrders.update(
       {
-        pName: param.pName,
-        updateTime: date.formatDate()
+        oStatus: 999
       },
       {
         where: {
-          id: param.id,
+          oSN: param.oSN,
+          userId: param.userId,
+          oStatus: {
+            $in: [1]
+          },
           isDel: 0
         }
       }
     );
   },
-  del: async ctx => {
+  generationAliTradeNo: async ctx => {
     let param = ctx.request.body || {};
 
-    cp.isEmpty(param.id);
+    cp.isEmpty(param.userId);
+    cp.isEmpty(param.oSN);
 
-    await ctx.orm().ftProvince.update(
-      {
-        updateTime: date.formatDate(),
-        isDel: 1
-      },
-      {
-        where: {
-          id: param.id,
-          isDel: 0
-        }
+    let order = await ctx.orm().ftOrders.findOne({
+      where: {
+        oSN: param.oSN,
+        userId: param.userId,
+        oStatus: 1,
+        isPay: 0,
+        isDel: 0
       }
-    );
-  }
+    });
+
+    cp.isNull(order, '订单不存在！');
+
+    // 获取统一收单交易创建接口
+    const resultAli = await ali.exec('alipay.trade.create', {
+      notifyUrl: aliPayNotifyUrl,
+      bizContent: {
+        outTradeNo: order.oSN,
+        totalAmount: order.sellPrice,
+        subject: '得果且果支付订单'
+      }
+    });
+
+    if (resultAli && resultAli.tradeNo && resultAli.outTradeNo) {
+      ctx.body = {
+        tradeNo: resultAli.tradeNo,
+        outTradeNo: resultAli.outTradeNo
+      };
+    } else {
+      ctx.body = {};
+    }
+  },
+  notify: async ctx => {}
 };

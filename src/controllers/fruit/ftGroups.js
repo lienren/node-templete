@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-17 19:30:18
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-25 16:11:06
+ * @Last Modified time: 2019-10-26 20:31:08
  */
 'use strict';
 
@@ -341,5 +341,205 @@ module.exports = {
         }
       }
     );
+  },
+  addNewGroupProductRounds: async ctx => {
+    let param = ctx.request.body || {};
+
+    cp.isEmpty(param.groupId);
+    cp.isEmpty(param.proId);
+    cp.isEmpty(param.userId);
+
+    // 获取团购
+    let group = await ctx.orm().ftGroups.findOne({
+      where: {
+        id: param.groupId,
+        gStatus: 2,
+        gStartTime: {
+          $lt: date.formatDate()
+        },
+        gEndTime: {
+          $gt: date.formatDate()
+        },
+        isDel: 0
+      }
+    });
+    cp.isNull(group, '团购不存在或已下线!');
+
+    let groupProduct = await ctx.orm().ftGroupProducts.findOne({
+      where: {
+        gId: group.id,
+        gProType: 3,
+        proId: param.proId,
+        isDel: 0
+      }
+    });
+    cp.isNull(groupProduct, '此商品不是团购商品!');
+
+    let roundId = comm.getGuid();
+
+    let userRound = await ctx.orm().ftGroupProductRounds.create({
+      groupId: group.id,
+      groupName: group.gName,
+      proId: param.proId,
+      roundId,
+      userId: param.userId,
+      isOver: groupProduct.teamNum === 1 ? 1 : 0,
+      overTime: groupProduct.teamNum === 1 ? date.formatDate() : undefined,
+      addTime: date.formatDate(),
+      isDel: 0
+    });
+
+    ctx.body = userRound;
+  },
+  addOldGroupProductRounds: async ctx => {
+    let param = ctx.request.body || {};
+
+    cp.isEmpty(param.roundId);
+    cp.isEmpty(param.groupId);
+    cp.isEmpty(param.proId);
+    cp.isEmpty(param.userId);
+
+    // 获取团购
+    let group = await ctx.orm().ftGroups.findOne({
+      where: {
+        id: param.groupId,
+        gStatus: 2,
+        gStartTime: {
+          $lt: date.formatDate()
+        },
+        gEndTime: {
+          $gt: date.formatDate()
+        },
+        isDel: 0
+      }
+    });
+    cp.isNull(group, '团购不存在或已下线!');
+
+    // 获取团购商品
+    let groupProduct = await ctx.orm().ftGroupProducts.findOne({
+      where: {
+        gId: group.id,
+        gProType: 3,
+        proId: param.proId,
+        isDel: 0
+      }
+    });
+    cp.isNull(groupProduct, '此商品不是团购商品!');
+
+    let groupProductRounds = await ctx.orm().ftGroupProductRounds.findAll({
+      where: {
+        groupId: group.id,
+        proId: param.proId,
+        roundId: param.roundId,
+        isOver: 0,
+        isDel: 0
+      }
+    });
+
+    assert.ok(groupProductRounds.length < groupProduct.teamNum, '此团已满，请开新团！');
+
+    let userRound = await ctx.orm().ftGroupProductRounds.findOne({
+      where: {
+        groupId: group.id,
+        proId: param.proId,
+        roundId: param.roundId,
+        userId: param.userId,
+        isOver: 0,
+        isDel: 0
+      }
+    });
+
+    assert.ok(!userRound, '您已经参加了此团，请勿重复参团！');
+
+    let isOver = groupProduct.teamNum === groupProductRounds.length + 1 ? 1 : 0;
+
+    userRound = await ctx.orm().ftGroupProductRounds.create({
+      groupId: group.id,
+      groupName: group.gName,
+      proId: param.proId,
+      roundId: param.roundId,
+      userId: param.userId,
+      isOver: isOver,
+      overTime: isOver === 1 ? date.formatDate() : undefined,
+      addTime: date.formatDate(),
+      isDel: 0
+    });
+
+    if (isOver === 1) {
+      await ctx.orm().ftGroupProductRounds.update(
+        {
+          isOver: isOver,
+          overTime: isOver === 1 ? date.formatDate() : undefined,
+          updateTime: date.formatDate()
+        },
+        {
+          where: {
+            roundId: param.roundId,
+            isOver: 0,
+            isDel: 0
+          }
+        }
+      );
+    }
+
+    ctx.body = userRound;
+  },
+  delGroupProductRounds: async ctx => {
+    let param = ctx.request.body || {};
+
+    cp.isEmpty(param.roundId);
+    cp.isEmpty(param.groupId);
+    cp.isEmpty(param.proId);
+    cp.isEmpty(param.userId);
+
+    await ctx.orm().ftGroupProductRounds.update(
+      {
+        updateTime: date.formatDate(),
+        isDel: 1
+      },
+      {
+        where: {
+          groupId: param.groupId,
+          proId: param.proId,
+          roundId: param.roundId,
+          userId: param.userId,
+          isDel: 0
+        }
+      }
+    );
+
+    await ctx.orm().ftGroupProductRounds.update(
+      {
+        isOver: 0,
+        updateTime: date.formatDate()
+      },
+      {
+        where: {
+          groupId: param.groupId,
+          proId: param.proId,
+          roundId: param.roundId,
+          isDel: 0
+        }
+      }
+    );
+  },
+  getGroupProductRounds: async ctx => {
+    let param = ctx.request.body || {};
+
+    cp.isEmpty(param.groupId);
+    cp.isEmpty(param.proId);
+
+    let sql = `
+        select gpr.*, u.nickName, u.headImg from ftGroupProductRounds gpr 
+        inner join ftUsers u on u.id = gpr.userId and u.isDel = 0 
+        where 
+        gpr.groupId = ${param.groupId} and 
+        gpr.proId = ${param.proId} and 
+        gpr.isOver = 0 and 
+        gpr.isDel = 0;`;
+
+    let result = await ctx.orm().query(sql);
+
+    ctx.body = result;
   }
 };
