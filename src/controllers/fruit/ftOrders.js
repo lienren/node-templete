@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-18 16:56:04
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-26 00:20:51
+ * @Last Modified time: 2019-10-26 21:26:38
  */
 'use strict';
 
@@ -121,6 +121,7 @@ module.exports = {
     cp.isEmpty(param.userId);
     cp.isEmpty(param.groupId);
     cp.isEmpty(param.groupUserId);
+    cp.isEmpty(param.recId);
     cp.isArrayLengthGreaterThan0(param.proList);
 
     // 获取团长
@@ -159,6 +160,16 @@ module.exports = {
       }
     });
     cp.isNull(group, '团购不存在或已下线!');
+
+    // 获取收货地址
+    let userRec = await ctx.orm().ftUserRecAddress.findOne({
+      where: {
+        id: param.recId,
+        userId: param.userId,
+        isDel: 0
+      }
+    });
+    cp.isNull(userRec, '收货地址不存在!');
 
     // 获取商品
     let getProsSql = `
@@ -358,6 +369,22 @@ module.exports = {
       };
     });
     await ctx.orm().ftOrderProducts.bulkCreate(orderPros);
+
+    // 添加收货地址
+    await ctx.orm().ftOrderRecAddress.create({
+      oId: order.id,
+      oSn: order.oSN,
+      userId: order.userId,
+      recName: userRec.recName,
+      recPhone: userRec.recPhone,
+      recSiteName: group.gSiteName,
+      recAddress: userRec.recAddress,
+      recPName: userRec.recPName,
+      recCName: userRec.recCName,
+      recAName: userRec.recAName,
+      addTime: date.formatDate(),
+      isDel: 0
+    });
   },
   cancel: async ctx => {
     let param = ctx.request.body || {};
