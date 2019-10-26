@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-18 16:56:04
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-26 21:26:38
+ * @Last Modified time: 2019-10-26 21:33:50
  */
 'use strict';
 
@@ -385,6 +385,17 @@ module.exports = {
       addTime: date.formatDate(),
       isDel: 0
     });
+
+    // 更新团订单数量
+    await ctx.orm().ftGroups.update(
+      {
+        gOrderNum: sequelize.literal(`gOrderNum + 1`)
+      },
+      {
+        id: group.id,
+        isDel: 0
+      }
+    );
   },
   cancel: async ctx => {
     let param = ctx.request.body || {};
