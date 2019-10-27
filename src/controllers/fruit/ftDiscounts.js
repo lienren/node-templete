@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-17 14:34:23
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-25 22:46:42
+ * @Last Modified time: 2019-10-27 10:49:39
  */
 'use strict';
 
@@ -145,20 +145,19 @@ module.exports = {
 
     cp.isEmpty(param.userId);
 
-    let result = await ctx.orm().ftUserDiscounts.findAll({
-      where: {
-        userId: param.userId,
-        disStartTime: {
-          $lt: date.formatDate()
-        },
-        disEndTime: {
-          $gt: date.formatDate()
-        },
-        isUse: 0,
-        isOver: 0,
-        isDel: 0
-      }
-    });
+    let sql = `select ud.*, d.disRangeType, d.disRangeTypeName, d.disRange from ftUserDiscounts ud 
+    inner join ftDiscounts d on d.id = ud.disId and d.isDel = 0 
+    where 
+      ud.userId = ${param.userId} and 
+      ud.disStartTime < '${date.formatDate()}' and 
+      ud.disEndTime > '${date.formatDate()}' and 
+      ud.isUse = 0 and 
+      ud.isOver = 0 and 
+      ud.isDel = 0;`;
+
+    let result = await ctx.orm().query(sql);
+
+    ctx.body = result;
 
     ctx.body = result;
   }

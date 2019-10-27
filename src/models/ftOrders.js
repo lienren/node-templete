@@ -124,6 +124,14 @@ module.exports = function(sequelize, DataTypes) {
     sellPrice: {
       type: DataTypes.DECIMAL,
       allowNull: true
+    },
+    isRevertStock: {
+      type: DataTypes.INTEGER(11),
+      allowNull: true
+    },
+    revertStockName: {
+      type: DataTypes.STRING(100),
+      allowNull: true
     }
   }, {
     tableName: 'ftOrders'

@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-18 16:56:04
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-26 21:33:50
+ * @Last Modified time: 2019-10-27 17:47:21
  */
 'use strict';
 
@@ -215,7 +215,7 @@ module.exports = {
     let userDiscount = null;
     let orderDisPrice = 0;
     let orderOriginalPrice = groupProList.reduce((total, curr) => {
-      return total + curr.originalPrice;
+      return total + parseFloat(curr.originalPrice);
     }, 0);
     let orderSellPrice = 0;
     if (param.oDisId && param.oDisId > 0) {
@@ -239,13 +239,13 @@ module.exports = {
       assert.ok(discountHit.isHit, '购买的商品无法使用优惠券!');
 
       // 能使用优惠券的商品总金额
-      let discountOrderSellPrice = discountHit.disProList.reduc((total, curr) => {
-        return total + curr.sellPrice;
+      let discountOrderSellPrice = discountHit.disProList.reduce((total, curr) => {
+        return total + parseFloat(curr.sellPrice);
       }, 0);
 
       // 不能使用优惠券的商品总金额
-      let notDiscountOrderSellPrice = discountHit.notDisProList.reduc((total, curr) => {
-        return total + curr.sellPrice;
+      let notDiscountOrderSellPrice = discountHit.notDisProList.reduce((total, curr) => {
+        return total + parseFloat(curr.sellPrice);
       }, 0);
 
       // 计算优惠金额
@@ -275,7 +275,7 @@ module.exports = {
 
     // 扣减库存，更新销售量
     if (groupProList) {
-      await sequelize.transaction({}, async transaction => {
+      await ctx.orm().sequelize.transaction({}, async transaction => {
         for (let i = 0, j = groupProList.length; i < j; i++) {
           let pro = param.proList.find(f => {
             return f.proId === groupProList[i].proId;
@@ -303,7 +303,7 @@ module.exports = {
     let oSN = 'O' + date.getTimeStamp() + comm.randNumberCode(4);
 
     // 添加订单
-    let order = await ctx.orm().ftProvince.create({
+    let order = await ctx.orm().ftOrders.create({
       oSN,
       userId: param.userId,
       oType: 1,
@@ -328,7 +328,9 @@ module.exports = {
       isSettlement: 0,
       settlementPrice: 0,
       addTime: date.formatDate(),
-      isDel: 0
+      isDel: 0,
+      isRevertStock: 0,
+      revertStockName: '未还原库存'
     });
 
     // 添加订单商品
@@ -392,10 +394,17 @@ module.exports = {
         gOrderNum: sequelize.literal(`gOrderNum + 1`)
       },
       {
-        id: group.id,
-        isDel: 0
+        where: {
+          id: group.id,
+          isDel: 0
+        }
       }
     );
+
+    ctx.body = {
+      id: order.id,
+      oSn: order.oSN
+    };
   },
   cancel: async ctx => {
     let param = ctx.request.body || {};
@@ -405,7 +414,9 @@ module.exports = {
 
     await ctx.orm().ftOrders.update(
       {
-        oStatus: 999
+        oStatus: 999,
+        oStatusName: dic.orderStatusEnum[`999`],
+        updateTime: date.formatDate()
       },
       {
         where: {

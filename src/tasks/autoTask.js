@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-18 13:49:27
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-26 20:40:36
+ * @Last Modified time: 2019-10-27 17:48:08
  */
 'use strict';
 
@@ -19,6 +19,8 @@ let automaticUpdateGroupStatusJob = null;
 let automaticUpdateUserDiscountStatusJob = null;
 // 自动取消订单
 let automaticCancelOrder = null;
+// 自动还原订单库存
+let automaticOrderRevertStock = null;
 let ctx = {};
 let next = function() {
   return true;
@@ -104,6 +106,9 @@ async function cancelOrder() {
   );
 }
 
+// 还原已取消订单库存
+async function orderRevertStock() {}
+
 async function main() {
   // 使用koa-orm中间件，sequelize，mysql
   if (config.databases) {
@@ -123,6 +128,7 @@ async function main() {
   automaticUpdateGroupStatusJob = schedule.scheduleJob(automaticRule, updateGroupStatus);
   automaticUpdateUserDiscountStatusJob = schedule.scheduleJob(automaticRule, updateUserDiscount);
   automaticCancelOrder = schedule.scheduleJob(automaticRule, cancelOrder);
+  automaticOrderRevertStock = schedule.scheduleJob(automaticRule, orderRevertStock);
 }
 
 process.on('SIGINT', function() {
@@ -132,6 +138,14 @@ process.on('SIGINT', function() {
 
   if (automaticUpdateUserDiscountStatusJob) {
     automaticUpdateUserDiscountStatusJob.cancel();
+  }
+
+  if (automaticCancelOrder) {
+    automaticCancelOrder.cancel();
+  }
+
+  if (automaticOrderRevertStock) {
+    automaticOrderRevertStock.cancel();
   }
 
   process.exit(0);
