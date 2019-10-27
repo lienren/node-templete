@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-18 16:56:04
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-27 17:47:21
+ * @Last Modified time: 2019-10-27 19:42:49
  */
 'use strict';
 
@@ -25,6 +25,10 @@ module.exports = {
     let where = {
       isDel: 0
     };
+
+    if (param.userId && param.userId > 0) {
+      where.userId = param.userId;
+    }
 
     if (param.startTime && param.endTime) {
       where.addTime = {
@@ -110,9 +114,17 @@ module.exports = {
       }
     });
 
+    let orderRec = await ctx.orm().ftOrderRecAddress.findOne({
+      where: {
+        oId: param.id,
+        isDel: 0
+      }
+    });
+
     ctx.body = {
       order,
-      orderProduct
+      orderProduct,
+      orderRec
     };
   },
   add: async ctx => {
@@ -220,11 +232,13 @@ module.exports = {
     let orderSellPrice = 0;
     if (param.oDisId && param.oDisId > 0) {
       userDiscount = await ctx.orm().ftUserDiscounts.findOne({
-        id: param.oDisId,
-        userId: param.userId,
-        isUse: 0,
-        isOver: 0,
-        isDel: 0
+        where: {
+          id: param.oDisId,
+          userId: param.userId,
+          isUse: 0,
+          isOver: 0,
+          isDel: 0
+        }
       });
       cp.isNull(userDiscount, '优惠券不存在!');
 
@@ -467,5 +481,9 @@ module.exports = {
       ctx.body = {};
     }
   },
-  notify: async ctx => {}
+  notify: async ctx => {
+    let param = ctx.request.body || {};
+
+    console.log('order notify param:', param);
+  }
 };
