@@ -144,6 +144,10 @@ module.exports = function(sequelize, DataTypes) {
     oPickDay: {
       type: DataTypes.INTEGER(11),
       allowNull: true
+    },
+    totalPrice: {
+      type: DataTypes.DECIMAL,
+      allowNull: true
     }
   }, {
     tableName: 'ftOrders'

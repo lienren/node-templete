@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-18 16:56:04
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-28 16:10:22
+ * @Last Modified time: 2019-10-28 17:50:39
  */
 'use strict';
 
@@ -93,9 +93,9 @@ module.exports = {
         oId: {
           $in: list.map(m => {
             return m.id;
-          }),
-          isDel: 0
-        }
+          })
+        },
+        isDel: 0
       },
       order: [['oId', 'DESC']]
     });
@@ -238,7 +238,7 @@ module.exports = {
     });
     if (limitProList && limitProList.length > 0) {
       for (let i = 0, j = limitProList.length; i < j; i++) {
-        let limitOrderProductSql = `select IFNULL(sum(pNum),0) num from ftOrderProducts where groupId = ${group.id} and userId = ${param.userId} and proId = ${limitProList[i].proId} and isDel = 0;`;
+        let limitOrderProductSql = `select IFNULL(sum(op.pNum),0) num from ftOrderProducts op inner join ftOrders o on o.id = op.oId and o.isDel = 0 and o.oStatus != 999 where op.groupId = ${group.id} and op.userId = ${param.userId} and op.proId = ${limitProList[i].proId} and op.isDel = 0;`;
         let limitOrderProduct = await ctx.orm().query(limitOrderProductSql);
         if (limitOrderProduct && limitOrderProduct.length > 0) {
           let pro = param.proList.find(f => {
@@ -258,6 +258,9 @@ module.exports = {
     let orderOriginalPrice = groupProList.reduce((total, curr) => {
       return total + parseFloat(curr.originalPrice);
     }, 0);
+    let orderTotalPrice = groupProList.reduce((total, curr) => {
+      return total + parseFloat(curr.sellPrice);
+    }, 0);
     let orderSellPrice = 0;
     if (param.oDisId && param.oDisId > 0) {
       userDiscount = await ctx.orm().ftUserDiscounts.findOne({
@@ -272,8 +275,10 @@ module.exports = {
       cp.isNull(userDiscount, '优惠券不存在!');
 
       let discount = await ctx.orm().ftDiscounts.findOne({
-        id: userDiscount.disId,
-        isDel: 0
+        where: {
+          id: userDiscount.disId,
+          isDel: 0
+        }
       });
       cp.isNull(discount, '优惠券不存在!');
 
@@ -299,7 +304,8 @@ module.exports = {
       // 设置优惠券失效
       ctx.orm().ftUserDiscounts.update(
         {
-          isUse: 1
+          isUse: 1,
+          updateTime: date.formatDate()
         },
         {
           where: {
@@ -311,9 +317,7 @@ module.exports = {
         }
       );
     } else {
-      orderSellPrice = groupProList.reduce((total, curr) => {
-        return total + curr.sellPrice;
-      }, 0);
+      orderSellPrice = orderTotalPrice;
     }
 
     // 扣减库存，更新销售量
@@ -368,6 +372,7 @@ module.exports = {
       groupUserPhone: groupUser.userPhone,
       originalPrice: orderOriginalPrice,
       sellPrice: orderSellPrice,
+      totalPrice: orderTotalPrice,
       isSettlement: 0,
       settlementPrice: 0,
       addTime: date.formatDate(),
@@ -412,6 +417,7 @@ module.exports = {
         totalRebatePrice: m.rebatePrice * pro.pNum,
         gProType: m.gProType,
         gProTypeName: m.gProTypeName,
+        roundId: pro.roundId,
         addTime: date.formatDate(),
         isDel: 0
       };
@@ -475,7 +481,20 @@ module.exports = {
     cp.isEmpty(param.userId);
     cp.isEmpty(param.oSN);
 
-    await ctx.orm().ftOrders.update(
+    let order = await ctx.orm().ftOrders.findOne({
+      where: {
+        oSN: param.oSN,
+        userId: param.userId,
+        oStatus: {
+          $in: [1]
+        },
+        isDel: 0
+      }
+    });
+
+    cp.isNull(order, '订单不存在！');
+
+    let result = await ctx.orm().ftOrders.update(
       {
         oStatus: 999,
         oStatusName: dic.orderStatusEnum[`999`],
@@ -483,8 +502,8 @@ module.exports = {
       },
       {
         where: {
-          oSN: param.oSN,
-          userId: param.userId,
+          id: order.id,
+          userId: order.userId,
           oStatus: {
             $in: [1]
           },
@@ -492,6 +511,69 @@ module.exports = {
         }
       }
     );
+
+    if (result && result.length > 0 && result[0] > 0) {
+      // 退出成团
+      let orderGroupProducts = await ctx.orm().ftOrderProducts.findAll({
+        where: {
+          oId: order.id,
+          gProType: 3,
+          isDel: 0
+        }
+      });
+
+      for (let i = 0, j = orderGroupProducts.length; i < j; i++) {
+        await ctx.orm().ftGroupProductRounds.update(
+          {
+            updateTime: date.formatDate(),
+            isDel: 1
+          },
+          {
+            where: {
+              groupId: orderGroupProducts[i].groupId,
+              proId: orderGroupProducts[i].proId,
+              roundId: orderGroupProducts[i].roundId,
+              userId: orderGroupProducts[i].userId,
+              isDel: 0
+            }
+          }
+        );
+
+        ctx.orm().ftGroupProductRounds.update(
+          {
+            isOver: 0,
+            updateTime: date.formatDate()
+          },
+          {
+            where: {
+              groupId: orderGroupProducts[i].groupId,
+              proId: orderGroupProducts[i].proId,
+              roundId: orderGroupProducts[i].roundId,
+              isDel: 0
+            }
+          }
+        );
+      }
+
+      // 退券
+      if (order.oDisId && order.oDisId > 0) {
+        // 设置优惠券有效
+        ctx.orm().ftUserDiscounts.update(
+          {
+            isUse: 0,
+            updateTime: date.formatDate()
+          },
+          {
+            where: {
+              id: order.oDisId,
+              userId: order.userId,
+              isUse: 1,
+              isDel: 0
+            }
+          }
+        );
+      }
+    }
   },
   generationAliTradeNo: async ctx => {
     let param = ctx.request.body || {};
@@ -628,6 +710,7 @@ module.exports = {
                 groupUserPhone: order.groupUserPhone,
                 originalPrice: 0,
                 sellPrice: 0,
+                totalPrice: 0,
                 isSettlement: 0,
                 settlementPrice: 0,
                 addTime: date.formatDate(),
@@ -669,6 +752,7 @@ module.exports = {
                   totalRebatePrice: m.totalRebatePrice,
                   gProType: m.gProType,
                   gProTypeName: m.gProTypeName,
+                  roundId: m.roundId,
                   addTime: date.formatDate(),
                   isDel: 0
                 };
@@ -699,7 +783,7 @@ module.exports = {
                 {
                   id: {
                     $in: orderGroupUserProducts.map(m => {
-                      return m.proId;
+                      return m.id;
                     })
                   },
                   proType: 1,

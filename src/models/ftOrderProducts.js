@@ -123,6 +123,10 @@ module.exports = function(sequelize, DataTypes) {
     gProTypeName: {
       type: DataTypes.STRING(100),
       allowNull: true
+    },
+    roundId: {
+      type: DataTypes.STRING(100),
+      allowNull: true
     }
   }, {
     tableName: 'ftOrderProducts'

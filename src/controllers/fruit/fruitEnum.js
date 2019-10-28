@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-16 19:35:03
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-28 15:38:34
+ * @Last Modified time: 2019-10-28 17:15:05
  */
 'use strict';
 
@@ -109,14 +109,16 @@ module.exports = {
         case 2:
           let disProList1 = proList.reduce((total, curr) => {
             if (disRange.indexOf(curr.sortId) >= 0) {
-              return total.push(curr);
+              total.push(curr);
             }
+            return total;
           }, []);
           let disProIds1 = disProList1.map(m => m.proId);
           let notDisProList1 = proList.reduce((total, curr) => {
             if (disProIds1.indexOf(curr.proId) === -1) {
-              return total.push(curr);
+              total.push(curr);
             }
+            return total;
           }, []);
           return {
             isHit: disProList1 && disProList1.length > 0,
@@ -126,14 +128,16 @@ module.exports = {
         case 3:
           let disProList2 = proList.reduce((total, curr) => {
             if (disRange.indexOf(curr.proId) >= 0) {
-              return total.push(curr);
+              total.push(curr);
             }
+            return total;
           }, []);
           let disProIds2 = disProList2.map(m => m.proId);
           let notDisProList2 = proList.reduce((total, curr) => {
             if (disProIds2.indexOf(curr.proId) === -1) {
-              return total.push(curr);
+              total.push(curr);
             }
+            return total;
           }, []);
           return {
             isHit: disProList2 && disProList2.length > 0,
