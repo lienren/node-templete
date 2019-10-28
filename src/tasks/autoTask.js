@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-18 13:49:27
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-28 18:27:41
+ * @Last Modified time: 2019-10-28 21:51:10
  */
 'use strict';
 
@@ -88,23 +88,100 @@ async function updateUserDiscount() {
 
 // 自动取消订单30分钟未支付订单
 async function cancelOrder() {
-  await ctx.orm().ftOrders.update(
-    {
-      oStatus: 999,
-      oStatusName: dic.orderStatusEnum[`999`],
-      updateTime: date.formatDate()
-    },
-    {
-      where: {
-        addTime: {
-          gt: date.formatDate(date.getTimeStamp(-30 * 60), 'YYYY-MM-DD HH:mm:ss', true)
+  let orders = await ctx.orm().ftOrders.findAll({
+    where: {
+      addTime: {
+        gt: date.formatDate(date.getTimeStamp(-30 * 60), 'YYYY-MM-DD HH:mm:ss', true)
+      },
+      oStatus: 1,
+      isPay: 0,
+      isDel: 0
+    }
+  });
+
+  if (orders && orders.length > 0) {
+    for (let i = 0, j = orders.length; i < j; i++) {
+      let order = orders[i];
+      let result = await ctx.orm().ftOrders.update(
+        {
+          oStatus: 999,
+          oStatusName: dic.orderStatusEnum[`999`],
+          updateTime: date.formatDate()
         },
-        oStatus: 1,
-        isPay: 0,
-        isDel: 0
+        {
+          where: {
+            id: order.id,
+            oStatus: 1,
+            isPay: 0,
+            isDel: 0
+          }
+        }
+      );
+
+      if (result && result.length > 0 && result[0] > 0) {
+        // 退出成团
+        let orderGroupProducts = await ctx.orm().ftOrderProducts.findAll({
+          where: {
+            oId: order.id,
+            gProType: 3,
+            isDel: 0
+          }
+        });
+
+        for (let i = 0, j = orderGroupProducts.length; i < j; i++) {
+          await ctx.orm().ftGroupProductRounds.update(
+            {
+              updateTime: date.formatDate(),
+              isDel: 1
+            },
+            {
+              where: {
+                groupId: orderGroupProducts[i].groupId,
+                proId: orderGroupProducts[i].proId,
+                roundId: orderGroupProducts[i].roundId,
+                userId: orderGroupProducts[i].userId,
+                isDel: 0
+              }
+            }
+          );
+
+          ctx.orm().ftGroupProductRounds.update(
+            {
+              isOver: 0,
+              updateTime: date.formatDate()
+            },
+            {
+              where: {
+                groupId: orderGroupProducts[i].groupId,
+                proId: orderGroupProducts[i].proId,
+                roundId: orderGroupProducts[i].roundId,
+                isDel: 0
+              }
+            }
+          );
+        }
+
+        // 退券
+        if (order.oDisId && order.oDisId > 0) {
+          // 设置优惠券有效
+          ctx.orm().ftUserDiscounts.update(
+            {
+              isUse: 0,
+              updateTime: date.formatDate()
+            },
+            {
+              where: {
+                id: order.oDisId,
+                userId: order.userId,
+                isUse: 1,
+                isDel: 0
+              }
+            }
+          );
+        }
       }
     }
-  );
+  }
 }
 
 // 还原已取消订单库存

@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-18 16:56:04
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-28 18:17:52
+ * @Last Modified time: 2019-10-28 21:50:07
  */
 'use strict';
 
@@ -512,9 +512,8 @@ module.exports = {
         where: {
           id: order.id,
           userId: order.userId,
-          oStatus: {
-            $in: [1]
-          },
+          oStatus: 1,
+          isPay: 0,
           isDel: 0
         }
       }
@@ -711,6 +710,7 @@ module.exports = {
                 isPay: 1,
                 oShipStatus: 3,
                 oShipStatusName: dic.orderShipStatusEnum[`3`],
+                oShipTime: date.formatDate(),
                 groupId: order.groupId,
                 groupName: order.groupName,
                 groupUserId: order.groupUserId,
