@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-18 16:56:04
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-28 15:38:45
+ * @Last Modified time: 2019-10-28 16:10:22
  */
 'use strict';
 
@@ -88,8 +88,21 @@ module.exports = {
       order: [['addTime', 'DESC']]
     });
 
+    let proList = await ctx.orm().ftOrderProducts.findAll({
+      where: {
+        oId: {
+          $in: list.map(m => {
+            return m.id;
+          }),
+          isDel: 0
+        }
+      },
+      order: [['oId', 'DESC']]
+    });
+
     ctx.body = {
       list,
+      proList,
       total,
       pageIndex,
       pageSize
@@ -434,6 +447,23 @@ module.exports = {
       }
     );
 
+    // 更新订单佣金
+    let settlementPrice = orderPros.reduce((total, curr) => {
+      return total + parseFloat(curr.totalRebatePrice);
+    }, 0);
+    if (settlementPrice > 0) {
+      await ctx.orm().ftOrders.update(
+        {
+          settlementPrice: settlementPrice
+        },
+        {
+          where: {
+            id: order.id
+          }
+        }
+      );
+    }
+
     ctx.body = {
       id: order.id,
       oSn: order.oSN
@@ -547,7 +577,138 @@ module.exports = {
           }
         );
 
-        // TODO: 拆单
+        // 订单状态更新成功
+        if (result && result.length > 0 && result[0] > 0) {
+          // 获取团长商品
+          let orderProducts = await ctx.orm().ftOrderProducts.findAll({
+            where: {
+              oId: order.id,
+              isDel: 0
+            }
+          });
+
+          if (orderProducts && orderProducts.length > 0) {
+            let orderGroupUserProducts = orderProducts.filter(f => {
+              return f.proType === 1;
+            });
+
+            // 有团长商品
+            // 且还有平台商品
+            // 则拆单
+            if (orderGroupUserProducts && orderGroupUserProducts.length < orderProducts.length) {
+              // 获取收货地址
+              let newOrderRec = await ctx.orm().ftOrderRecAddress.findOne({
+                where: {
+                  oId: order.id,
+                  isDel: 0
+                }
+              });
+
+              // 生成新订单
+              let newOSN = order.oSN + '001';
+              let newOrder = await ctx.orm().ftOrders.create({
+                oSN: newOSN,
+                userId: order.userId,
+                oType: 2,
+                oTypeName: dic.orderTypeEnum[`2`],
+                parentOSN: order.oSN,
+                oDisId: 0,
+                oDisName: '',
+                oDisPrice: 0,
+                oStatus: 2,
+                oStatusName: dic.orderStatusEnum[`2`],
+                oStatusTime: date.formatDate(),
+                isPay: 1,
+                oShipStatus: 3,
+                oShipStatusName: dic.orderShipStatusEnum[`3`],
+                groupId: order.groupId,
+                groupName: order.groupName,
+                groupUserId: order.groupUserId,
+                groupUserName: order.groupUserName,
+                groupUserPhone: order.groupUserPhone,
+                originalPrice: 0,
+                sellPrice: 0,
+                isSettlement: 0,
+                settlementPrice: 0,
+                addTime: date.formatDate(),
+                isDel: 0,
+                isRevertStock: 0,
+                revertStockName: '未还原库存',
+                oRemark: order.oRemark,
+                oPickDay: 0,
+                oPickTime: date.formatDate()
+              });
+
+              // 生成新订单商品
+              let newOrderPros = orderGroupUserProducts.map(m => {
+                return {
+                  oId: newOrder.id,
+                  oSN: newOrder.oSN,
+                  userId: newOrder.userId,
+                  proId: m.proId,
+                  proTitle: m.proTitle,
+                  proMasterImg: m.proMasterImg,
+                  specInfo: m.specInfo,
+                  proType: m.proType,
+                  proTypeName: m.proTypeName,
+                  pickTime: m.pickTime,
+                  originalPrice: m.originalPrice,
+                  sellPrice: m.sellPrice,
+                  costPrice: m.costPrice,
+                  proProfit: m.proProfit,
+                  pNum: m.pNum,
+                  totalPrice: m.totalPrice,
+                  totalProfit: m.totalProfit,
+                  isLimit: m.isLimit,
+                  groupId: m.groupId,
+                  groupName: m.groupName,
+                  rebateType: m.rebateType,
+                  rebateTypeName: m.rebateTypeName,
+                  rebateRate: m.rebateRate,
+                  rebatePrice: m.rebatePrice,
+                  totalRebatePrice: m.totalRebatePrice,
+                  gProType: m.gProType,
+                  gProTypeName: m.gProTypeName,
+                  addTime: date.formatDate(),
+                  isDel: 0
+                };
+              });
+              await ctx.orm().ftOrderProducts.bulkCreate(newOrderPros);
+
+              // 添加收货地址
+              await ctx.orm().ftOrderRecAddress.create({
+                oId: newOrder.id,
+                oSn: newOrder.oSN,
+                userId: newOrderRec.userId,
+                recName: newOrderRec.recName,
+                recPhone: newOrderRec.recPhone,
+                recSiteName: newOrderRec.recSiteName,
+                recAddress: newOrderRec.recAddress,
+                recPName: newOrderRec.recPName,
+                recCName: newOrderRec.recCName,
+                recAName: newOrderRec.recAName,
+                addTime: date.formatDate(),
+                isDel: 0
+              });
+
+              // 删除老订单中团长商品
+              await ctx.orm().ftOrderProducts.update(
+                {
+                  isDel: 1
+                },
+                {
+                  id: {
+                    $in: orderGroupUserProducts.map(m => {
+                      return m.proId;
+                    })
+                  },
+                  proType: 1,
+                  oId: order.id
+                }
+              );
+            }
+          }
+        }
 
         // 记录支付信息
         ctx.orm().ftOrderPayInfo.create({
