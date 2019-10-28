@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-18 16:56:04
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-28 18:09:56
+ * @Last Modified time: 2019-10-28 18:17:52
  */
 'use strict';
 
@@ -220,7 +220,6 @@ module.exports = {
         gp.isDel = 0;`;
 
     let groupProList = await ctx.orm().query(getProsSql);
-
     cp.isArrayLengthGreaterThan0(groupProList, '商品数据异常!');
     assert.ok(param.proList.length === groupProList.length, '商品数据异常!');
 

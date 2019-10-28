@@ -2,13 +2,14 @@
  * @Author: Lienren
  * @Date: 2019-10-18 13:49:27
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-27 17:48:08
+ * @Last Modified time: 2019-10-28 18:27:41
  */
 'use strict';
 
 console.time('AutoTaskExec');
 
 const schedule = require('node-schedule');
+const sequelize = require('sequelize').Sequelize;
 const config = require('../config.js');
 const date = require('../utils/date');
 const dic = require('../controllers/fruit/fruitEnum');
@@ -107,7 +108,63 @@ async function cancelOrder() {
 }
 
 // 还原已取消订单库存
-async function orderRevertStock() {}
+async function orderRevertStock() {
+  let orders = await ctx.orm().ftOrders.findAll({
+    where: {
+      oStatus: 999,
+      isRevertStock: 0,
+      isDel: 0
+    }
+  });
+
+  if (orders && orders.length > 0) {
+    let orderProListSql = `select proId, sum(pNum) pNum from ftOrderProducts 
+    where 
+      oId in (${orders
+        .map(m => {
+          return m.id;
+        })
+        .join(',')}) and 
+      isDel = 0 
+    group by proId;`;
+    let orderProList = await ctx.orm().query(orderProListSql);
+
+    if (orderProList && orderProList.length > 0) {
+      for (let i = 0, j = orderProList.length; i < j; i++) {
+        // 还原库存
+        await ctx.orm().ftProducts.update(
+          {
+            stock: sequelize.literal(`stock + ${orderProList[i].pNum}`),
+            saleNum: sequelize.literal(`saleNum - ${orderProList[i].pNum}`)
+          },
+          {
+            where: {
+              id: orderProList[i].proId,
+              isDel: 0
+            }
+          }
+        );
+      }
+
+      // 更新订单
+      await ctx.orm().ftOrders.update(
+        {
+          isRevertStock: 1,
+          revertStockName: '已还原库存'
+        },
+        {
+          where: {
+            id: {
+              $in: orders.map(m => {
+                return m.id;
+              })
+            }
+          }
+        }
+      );
+    }
+  }
+}
 
 async function main() {
   // 使用koa-orm中间件，sequelize，mysql
