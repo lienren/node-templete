@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-18 16:56:04
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-28 15:22:22
+ * @Last Modified time: 2019-10-28 15:38:45
  */
 'use strict';
 
@@ -521,6 +521,7 @@ module.exports = {
         where: {
           oSN: oSn,
           sellPrice: totalAmount,
+          oStatus: 1,
           isPay: 0,
           isDel: 0
         }
@@ -532,13 +533,14 @@ module.exports = {
           {
             isPay: 1,
             payTime: date.formatDate(),
-            oStatus: 2,
-            oStatusName: dic.orderStatusEnum[`2`],
+            oStatus: 5,
+            oStatusName: dic.orderStatusEnum[`5`],
             oPickTime: date.formatDate(date.addDay(new Date(), order.oPickDay))
           },
           {
             where: {
               id: order.id,
+              oStatus: 1,
               isPay: 0,
               isDel: 0
             }

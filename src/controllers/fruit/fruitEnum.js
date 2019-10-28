@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-16 19:35:03
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-22 16:18:45
+ * @Last Modified time: 2019-10-28 15:38:34
  */
 'use strict';
 
@@ -200,6 +200,7 @@ module.exports = {
     '2': '待取货',
     '3': '待评价',
     '4': '已完成',
+    '5': '待发货',
     '10': '退货审核中',
     '11': '待退货',
     '12': '退货完成',
