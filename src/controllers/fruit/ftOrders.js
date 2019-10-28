@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-18 16:56:04
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-28 17:50:39
+ * @Last Modified time: 2019-10-28 18:09:56
  */
 'use strict';
 
@@ -322,13 +322,13 @@ module.exports = {
 
     // 扣减库存，更新销售量
     if (groupProList) {
-      await ctx.orm().sequelize.transaction({}, async transaction => {
+      let batchBuckleStock = await ctx.orm().sequelize.transaction({}, async transaction => {
         for (let i = 0, j = groupProList.length; i < j; i++) {
           let pro = param.proList.find(f => {
             return f.proId === groupProList[i].proId;
           });
 
-          await ctx.orm().ftProducts.update(
+          let resultBuckleStock = await ctx.orm().ftProducts.update(
             {
               stock: sequelize.literal(`stock - ${pro.pNum}`),
               saleNum: sequelize.literal(` saleNum + ${pro.pNum}`)
@@ -343,8 +343,17 @@ module.exports = {
               transaction
             }
           );
+
+          if (resultBuckleStock && resultBuckleStock.length > 0 && resultBuckleStock[0] > 0) {
+            // 正常，什么都不处理
+          } else {
+            // 扣库存失败，异常出去
+            throw new Error('库存不足！');
+          }
         }
       });
+
+      console.log('batchBuckleStock:', batchBuckleStock);
     }
 
     let oSN = 'O' + date.getTimeStamp() + comm.randNumberCode(4);
