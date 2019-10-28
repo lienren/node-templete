@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-18 16:56:04
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-27 19:42:49
+ * @Last Modified time: 2019-10-28 15:22:22
  */
 'use strict';
 
@@ -121,10 +121,18 @@ module.exports = {
       }
     });
 
+    let group = await ctx.orm().ftUsers.findOne({
+      where: {
+        id: order.groupUserId,
+        isDel: 0
+      }
+    });
+
     ctx.body = {
       order,
       orderProduct,
-      orderRec
+      orderRec,
+      group
     };
   },
   add: async ctx => {
@@ -202,6 +210,14 @@ module.exports = {
 
     cp.isArrayLengthGreaterThan0(groupProList, '商品数据异常!');
     assert.ok(param.proList.length === groupProList.length, '商品数据异常!');
+
+    let pickTime = groupProList
+      .map(m => {
+        return m.pickTime;
+      })
+      .sort((a, b) => {
+        return b - a;
+      })[0];
 
     // 验证是否已购买限购商品
     let limitProList = groupProList.filter(f => {
@@ -344,7 +360,10 @@ module.exports = {
       addTime: date.formatDate(),
       isDel: 0,
       isRevertStock: 0,
-      revertStockName: '未还原库存'
+      revertStockName: '未还原库存',
+      oRemark: param.oRemark,
+      oPickDay: pickTime,
+      oPickTime: date.formatDate(date.addDay(new Date(), pickTime))
     });
 
     // 添加订单商品
@@ -462,13 +481,23 @@ module.exports = {
 
     cp.isNull(order, '订单不存在！');
 
+    let user = await ctx.orm().ftUsers.findOne({
+      where: {
+        id: order.userId,
+        isDel: 0
+      }
+    });
+
+    cp.isNull(order, '用户不存在！');
+
     // 获取统一收单交易创建接口
     const resultAli = await ali.exec('alipay.trade.create', {
       notifyUrl: aliPayNotifyUrl,
       bizContent: {
         outTradeNo: order.oSN,
         totalAmount: order.sellPrice,
-        subject: '得果且果支付订单'
+        subject: '得果且果支付订单',
+        buyerId: user.alipayUserId
       }
     });
 
@@ -484,6 +513,51 @@ module.exports = {
   notify: async ctx => {
     let param = ctx.request.body || {};
 
-    console.log('order notify param:', param);
+    if (ali.checkNotifySign(param)) {
+      let oSn = param.out_trade_no || '';
+      let totalAmount = parseFloat(param.total_amount) || 0;
+
+      let order = await ctx.orm().ftOrders.findOne({
+        where: {
+          oSN: oSn,
+          sellPrice: totalAmount,
+          isPay: 0,
+          isDel: 0
+        }
+      });
+
+      if (order) {
+        // 更新订单支付状态
+        let result = await ctx.orm().ftOrders.update(
+          {
+            isPay: 1,
+            payTime: date.formatDate(),
+            oStatus: 2,
+            oStatusName: dic.orderStatusEnum[`2`],
+            oPickTime: date.formatDate(date.addDay(new Date(), order.oPickDay))
+          },
+          {
+            where: {
+              id: order.id,
+              isPay: 0,
+              isDel: 0
+            }
+          }
+        );
+
+        // TODO: 拆单
+
+        // 记录支付信息
+        ctx.orm().ftOrderPayInfo.create({
+          oSn: oSn,
+          payContent: JSON.stringify(param),
+          addTime: date.formatDate()
+        });
+      } else {
+        console.log('未找到支付订单!');
+      }
+    } else {
+      console.log('支付签名验证失败!');
+    }
   }
 };

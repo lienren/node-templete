@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-16 19:58:40
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-25 11:55:32
+ * @Last Modified time: 2019-10-28 11:49:27
  */
 'use strict';
 
@@ -87,10 +87,10 @@ module.exports = {
       refreshToken: 'token'
     });
 
-    if (resultAli.alipayUserId) {
+    if (resultAli.userId) {
       let result = await ctx.orm().ftUsers.findOne({
         where: {
-          alipayUserId: resultAli.alipayUserId,
+          alipayUserId: resultAli.userId,
           isDel: 0
         }
       });
@@ -98,7 +98,7 @@ module.exports = {
       if (!result) {
         // 找不到，新用户注册
         result = await ctx.orm().ftUsers.create({
-          alipayUserId: resultAli.alipayUserId,
+          alipayUserId: resultAli.userId,
           nickName: '',
           userName: '',
           userPhone: '',

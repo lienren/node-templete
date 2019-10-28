@@ -132,6 +132,18 @@ module.exports = function(sequelize, DataTypes) {
     revertStockName: {
       type: DataTypes.STRING(100),
       allowNull: true
+    },
+    oRemark: {
+      type: DataTypes.STRING(1000),
+      allowNull: true
+    },
+    oPickTime: {
+      type: DataTypes.DATE,
+      allowNull: true
+    },
+    oPickDay: {
+      type: DataTypes.INTEGER(11),
+      allowNull: true
     }
   }, {
     tableName: 'ftOrders'
