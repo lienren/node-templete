@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-18 16:56:04
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-29 17:41:27
+ * @Last Modified time: 2019-10-29 18:10:29
  */
 'use strict';
 
@@ -894,8 +894,8 @@ module.exports = {
   comment: async ctx => {
     let param = ctx.request.body || {};
 
-    cp.isEmpty(param.userId);
     cp.isEmpty(param.oSN);
+    cp.isEmpty(param.userId);
     cp.isEmpty(param.starNum);
     cp.isEmpty(param.commentRemark);
 
