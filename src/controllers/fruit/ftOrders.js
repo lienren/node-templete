@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-18 16:56:04
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-28 21:50:07
+ * @Last Modified time: 2019-10-29 14:49:14
  */
 'use strict';
 
@@ -320,6 +320,9 @@ module.exports = {
     }
 
     // 扣减库存，更新销售量
+    let orderProNum = param.proList.reduce((total, curr) => {
+      return total + parseInt(curr.pNum);
+    }, 0);
     if (groupProList) {
       let batchBuckleStock = await ctx.orm().sequelize.transaction({}, async transaction => {
         for (let i = 0, j = groupProList.length; i < j; i++) {
@@ -344,7 +347,7 @@ module.exports = {
           );
 
           if (resultBuckleStock && resultBuckleStock.length > 0 && resultBuckleStock[0] > 0) {
-            // 正常，什么都不处理
+            // 正常
           } else {
             // 扣库存失败，异常出去
             throw new Error('库存不足！');
@@ -389,7 +392,8 @@ module.exports = {
       revertStockName: '未还原库存',
       oRemark: param.oRemark,
       oPickDay: pickTime,
-      oPickTime: date.formatDate(date.addDay(new Date(), pickTime))
+      oPickTime: date.formatDate(date.addDay(new Date(), pickTime)),
+      proNum: orderProNum
     });
 
     // 添加订单商品
@@ -654,7 +658,8 @@ module.exports = {
             payTime: date.formatDate(),
             oStatus: 5,
             oStatusName: dic.orderStatusEnum[`5`],
-            oPickTime: date.formatDate(date.addDay(new Date(), order.oPickDay))
+            oPickTime: date.formatDate(date.addDay(new Date(), order.oPickDay)),
+            updateTime: date.formatDate()
           },
           {
             where: {
@@ -684,7 +689,12 @@ module.exports = {
             // 有团长商品
             // 且还有平台商品
             // 则拆单
-            if (orderGroupUserProducts && orderGroupUserProducts.length < orderProducts.length) {
+            if (
+              orderGroupUserProducts &&
+              orderGroupUserProducts.length > 0 &&
+              orderGroupUserProducts.length < orderProducts.length
+            ) {
+              // 部分团长商品
               // 获取收货地址
               let newOrderRec = await ctx.orm().ftOrderRecAddress.findOne({
                 where: {
@@ -708,8 +718,8 @@ module.exports = {
                 oStatusName: dic.orderStatusEnum[`2`],
                 oStatusTime: date.formatDate(),
                 isPay: 1,
-                oShipStatus: 3,
-                oShipStatusName: dic.orderShipStatusEnum[`3`],
+                oShipStatus: 4,
+                oShipStatusName: dic.orderShipStatusEnum[`4`],
                 oShipTime: date.formatDate(),
                 groupId: order.groupId,
                 groupName: order.groupName,
@@ -783,6 +793,20 @@ module.exports = {
                 isDel: 0
               });
 
+              // 更新老订单商品数量
+              await ctx.orm().ftOrders.update(
+                {
+                  proNum: sequelize.literal(` proNum - ${orderGroupUserProducts.length} `),
+                  updateTime: date.formatDate()
+                },
+                {
+                  where: {
+                    id: order.id,
+                    isDel: 0
+                  }
+                }
+              );
+
               // 删除老订单中团长商品
               await ctx.orm().ftOrderProducts.update(
                 {
@@ -798,6 +822,24 @@ module.exports = {
                   oId: order.id
                 }
               );
+            } else if (
+              orderGroupUserProducts &&
+              orderGroupUserProducts.length > 0 &&
+              orderGroupUserProducts.length === orderProducts.length
+            ) {
+              // 全是团长商品
+              await ctx.orm().ftOrders.update(
+                {
+                  oStatus: 2,
+                  oStatusName: dic.orderStatusEnum[`2`],
+                  oStatusTime: date.formatDate(),
+                  updateTime: date.formatDate()
+                },
+                {
+                  id: order.id,
+                  isDel: 0
+                }
+              );
             }
           }
         }
@@ -808,8 +850,6 @@ module.exports = {
           payContent: JSON.stringify(param),
           addTime: date.formatDate()
         });
-      } else {
-        console.log('未找到支付订单!');
       }
     } else {
       console.log('支付签名验证失败!');

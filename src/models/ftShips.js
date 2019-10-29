@@ -20,11 +20,11 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.INTEGER(11),
       allowNull: true
     },
-    groupName: {
+    groupUserName: {
       type: DataTypes.STRING(100),
       allowNull: true
     },
-    groupPhone: {
+    groupUserPhone: {
       type: DataTypes.STRING(100),
       allowNull: true
     },
@@ -62,6 +62,38 @@ module.exports = function(sequelize, DataTypes) {
     },
     isDel: {
       type: DataTypes.INTEGER(11),
+      allowNull: true
+    },
+    groupId: {
+      type: DataTypes.INTEGER(11),
+      allowNull: true
+    },
+    groupName: {
+      type: DataTypes.STRING(100),
+      allowNull: true
+    },
+    groupSiteName: {
+      type: DataTypes.STRING(100),
+      allowNull: true
+    },
+    groupSitePosition: {
+      type: DataTypes.STRING(200),
+      allowNull: true
+    },
+    groupSiteAddress: {
+      type: DataTypes.STRING(100),
+      allowNull: true
+    },
+    groupSitePickAddress: {
+      type: DataTypes.STRING(100),
+      allowNull: true
+    },
+    pName: {
+      type: DataTypes.STRING(100),
+      allowNull: true
+    },
+    cName: {
+      type: DataTypes.STRING(100),
       allowNull: true
     }
   }, {

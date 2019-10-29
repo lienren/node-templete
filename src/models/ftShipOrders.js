@@ -16,11 +16,15 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.INTEGER(11),
       allowNull: true
     },
+    orderSn: {
+      type: DataTypes.STRING(100),
+      allowNull: true
+    },
     groupUserId: {
       type: DataTypes.INTEGER(11),
       allowNull: true
     },
-    groupName: {
+    groupUserName: {
       type: DataTypes.STRING(100),
       allowNull: true
     },
