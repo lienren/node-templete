@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-18 16:56:04
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-29 14:49:14
+ * @Last Modified time: 2019-10-29 17:09:00
  */
 'use strict';
 
@@ -497,9 +497,7 @@ module.exports = {
       where: {
         oSN: param.oSN,
         userId: param.userId,
-        oStatus: {
-          $in: [1]
-        },
+        oStatus: 1,
         isDel: 0
       }
     });
@@ -854,5 +852,76 @@ module.exports = {
     } else {
       console.log('支付签名验证失败!');
     }
+  },
+  off: async ctx => {
+    let param = ctx.request.body || {};
+
+    cp.isEmpty(param.groupUserId);
+    cp.isEmpty(param.oSN);
+
+    // 更新订单状态
+    await ctx.orm().ftOrders.update(
+      {
+        oStatus: 3,
+        oStatusName: dic.orderStatusEnum[`3`],
+        oStatusTime: date.formatDate(),
+        updateTime: date.formatDate()
+      },
+      {
+        where: {
+          oSN: param.oSN,
+          groupUserId: param.groupUserId,
+          oStatus: 2,
+          oShipStatus: 4,
+          isDel: 0
+        }
+      }
+    );
+  },
+  comment: async ctx => {
+    let param = ctx.request.body || {};
+
+    cp.isEmpty(param.userId);
+    cp.isEmpty(param.oSN);
+    cp.isEmpty(param.starNum);
+    cp.isEmpty(param.commentRemark);
+
+    let order = await ctx.orm().ftOrders.findOne({
+      where: {
+        oSN: param.oSN,
+        userId: param.userId,
+        oStatus: 3,
+        isDel: 0
+      }
+    });
+
+    cp.isNull(order, '订单不存在！');
+
+    await ctx.orm().ftOrderComments.create({
+      orderId: order.id,
+      orderSn: order.oSN,
+      userId: order.userId,
+      starNum: param.starNum,
+      commentRemark: param.commentRemark,
+      addTime: date.formatDate(),
+      isDel: 0
+    });
+
+    await ctx.orm().ftOrders.update(
+      {
+        oStatus: 4,
+        oStatusName: dic.orderStatusEnum[`4`],
+        oStatusTime: date.formatDate(),
+        updateTime: date.formatDate()
+      },
+      {
+        where: {
+          id: order.id,
+          userId: order.userId,
+          oStatus: 3,
+          isDel: 0
+        }
+      }
+    );
   }
 };

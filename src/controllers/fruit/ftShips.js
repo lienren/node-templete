@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-28 22:43:16
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-29 14:34:49
+ * @Last Modified time: 2019-10-29 16:32:48
  */
 'use strict';
 
@@ -328,7 +328,7 @@ module.exports = {
                 return m.orderId;
               })
             },
-            isDe: 0
+            isDel: 0
           }
         }
       );
@@ -394,7 +394,7 @@ module.exports = {
                 return m.orderId;
               })
             },
-            isDe: 0
+            isDel: 0
           }
         }
       );
