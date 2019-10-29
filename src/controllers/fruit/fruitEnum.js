@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-16 19:35:03
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-29 14:25:57
+ * @Last Modified time: 2019-10-29 22:27:42
  */
 'use strict';
 
@@ -196,8 +196,8 @@ module.exports = {
     '3': '团购商品'
   },
   orderTypeEnum: {
-    '1': '主订单',
-    '2': '子订单'
+    '1': '平台订单',
+    '2': '团长订单'
   },
   orderStatusEnum: {
     '1': '待支付',

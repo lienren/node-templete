@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-18 16:56:04
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-29 18:10:29
+ * @Last Modified time: 2019-10-29 22:51:06
  */
 'use strict';
 
@@ -236,6 +236,20 @@ module.exports = {
     cp.isArrayLengthGreaterThan0(groupProList, '商品数据异常!');
     assert.ok(param.proList.length === groupProList.length, '商品数据异常!');
 
+    // 整合购买量和roundId
+    groupProList = groupProList.reduce((total, curr) => {
+      let pro = param.proList.find(f => {
+        return f.proId === curr.proId;
+      });
+
+      curr.pNum = pro.pNum;
+      curr.roundId = pro.roundId;
+
+      total.push(curr);
+
+      return total;
+    }, []);
+
     let pickTime = groupProList
       .map(m => {
         return m.pickTime;
@@ -253,11 +267,8 @@ module.exports = {
         let limitOrderProductSql = `select IFNULL(sum(op.pNum),0) num from ftOrderProducts op inner join ftOrders o on o.id = op.oId and o.isDel = 0 and o.oStatus != 999 where op.groupId = ${group.id} and op.userId = ${param.userId} and op.proId = ${limitProList[i].proId} and op.isDel = 0;`;
         let limitOrderProduct = await ctx.orm().query(limitOrderProductSql);
         if (limitOrderProduct && limitOrderProduct.length > 0) {
-          let pro = param.proList.find(f => {
-            return f.proId === limitProList[i].proId;
-          });
           assert.ok(
-            pro.pNum + parseInt(limitOrderProduct[0].num) <= limitProList[i].limitNum,
+            limitProList[i].pNum + parseInt(limitOrderProduct[0].num) <= limitProList[i].limitNum,
             '购买商品已超限购数量！'
           );
         }
@@ -268,10 +279,10 @@ module.exports = {
     let userDiscount = null;
     let orderDisPrice = 0;
     let orderOriginalPrice = groupProList.reduce((total, curr) => {
-      return total + parseFloat(curr.originalPrice);
+      return total + parseFloat(curr.originalPrice) * curr.pNum;
     }, 0);
     let orderTotalPrice = groupProList.reduce((total, curr) => {
-      return total + parseFloat(curr.sellPrice);
+      return total + parseFloat(curr.sellPrice) * curr.pNum;
     }, 0);
     let orderSellPrice = 0;
     if (param.oDisId && param.oDisId > 0) {
@@ -300,12 +311,12 @@ module.exports = {
 
       // 能使用优惠券的商品总金额
       let discountOrderSellPrice = discountHit.disProList.reduce((total, curr) => {
-        return total + parseFloat(curr.sellPrice);
+        return total + parseFloat(curr.sellPrice) * curr.pNum;
       }, 0);
 
       // 不能使用优惠券的商品总金额
       let notDiscountOrderSellPrice = discountHit.notDisProList.reduce((total, curr) => {
-        return total + parseFloat(curr.sellPrice);
+        return total + parseFloat(curr.sellPrice) * curr.pNum;
       }, 0);
 
       // 计算优惠金额
@@ -333,20 +344,16 @@ module.exports = {
     }
 
     // 扣减库存，更新销售量
-    let orderProNum = param.proList.reduce((total, curr) => {
-      return total + parseInt(curr.pNum);
+    let orderProNum = groupProList.reduce((total, curr) => {
+      return total + curr.pNum;
     }, 0);
     if (groupProList) {
       let batchBuckleStock = await ctx.orm().sequelize.transaction({}, async transaction => {
         for (let i = 0, j = groupProList.length; i < j; i++) {
-          let pro = param.proList.find(f => {
-            return f.proId === groupProList[i].proId;
-          });
-
           let resultBuckleStock = await ctx.orm().ftProducts.update(
             {
-              stock: sequelize.literal(`stock - ${pro.pNum}`),
-              saleNum: sequelize.literal(` saleNum + ${pro.pNum}`)
+              stock: sequelize.literal(`stock - ${groupProList[i].pNum}`),
+              saleNum: sequelize.literal(` saleNum + ${groupProList[i].pNum}`)
             },
             {
               where: {
@@ -411,9 +418,6 @@ module.exports = {
 
     // 添加订单商品
     let orderPros = groupProList.map(m => {
-      let pro = param.proList.find(f => {
-        return f.proId === m.proId;
-      });
       return {
         oId: order.id,
         oSN: order.oSN,
@@ -429,9 +433,9 @@ module.exports = {
         sellPrice: m.sellPrice,
         costPrice: m.costPrice,
         proProfit: m.proProfit,
-        pNum: pro.pNum,
-        totalPrice: m.sellPrice * pro.pNum,
-        totalProfit: m.proProfit * pro.pNum,
+        pNum: m.pNum,
+        totalPrice: m.sellPrice * m.pNum,
+        totalProfit: m.proProfit * m.pNum,
         isLimit: m.isLimit,
         groupId: group.id,
         groupName: group.gName,
@@ -439,10 +443,10 @@ module.exports = {
         rebateTypeName: m.rebateTypeName,
         rebateRate: m.rebateRate,
         rebatePrice: m.rebatePrice,
-        totalRebatePrice: m.rebatePrice * pro.pNum,
+        totalRebatePrice: m.rebatePrice * m.pNum,
         gProType: m.gProType,
         gProTypeName: m.gProTypeName,
-        roundId: pro.roundId,
+        roundId: m.roundId,
         addTime: date.formatDate(),
         isDel: 0
       };
@@ -715,6 +719,7 @@ module.exports = {
               });
 
               // 生成新订单
+              // 更新订单收益为商品销售价
               let newOSN = order.oSN + '001';
               let newOrder = await ctx.orm().ftOrders.create({
                 oSN: newOSN,
@@ -741,7 +746,9 @@ module.exports = {
                 sellPrice: 0,
                 totalPrice: 0,
                 isSettlement: 0,
-                settlementPrice: 0,
+                settlementPrice: orderGroupUserProducts.reduce((total, curr) => {
+                  return total + parseFloat(curr.totalPrice);
+                }, 0),
                 addTime: date.formatDate(),
                 isDel: 0,
                 isRevertStock: 0,
@@ -803,7 +810,7 @@ module.exports = {
                 addTime: date.formatDate(),
                 isDel: 0
               });
-
+              
               // 更新老订单商品数量
               await ctx.orm().ftOrders.update(
                 {
@@ -839,11 +846,17 @@ module.exports = {
               orderGroupUserProducts.length === orderProducts.length
             ) {
               // 全是团长商品
+              // 更新订单收益为商品销售价
               await ctx.orm().ftOrders.update(
                 {
+                  oType: 2,
+                  oTypeName: dic.orderTypeEnum[`2`],
                   oStatus: 2,
                   oStatusName: dic.orderStatusEnum[`2`],
                   oStatusTime: date.formatDate(),
+                  settlementPrice: orderGroupUserProducts.reduce((total, curr) => {
+                    return total + parseFloat(curr.totalPrice);
+                  }, 0),
                   updateTime: date.formatDate()
                 },
                 {
@@ -936,5 +949,46 @@ module.exports = {
         }
       }
     );
+  },
+  getUserComment: async ctx => {
+    let param = ctx.request.body || {};
+
+    cp.isEmpty(param.userId);
+
+    let comments = await ctx.orm().ftOrderComments.findAll({
+      where: {
+        userId: param.userId,
+        isDel: 0
+      },
+      order: [['addTime', 'DESC']]
+    });
+
+    let orders = await ctx.orm().ftOrders.findAll({
+      where: {
+        id: {
+          $in: comments.map(m => {
+            return m.orderId;
+          })
+        },
+        isDel: 0
+      }
+    });
+
+    let orderPros = await ctx.orm().ftOrderProducts.findAll({
+      where: {
+        oId: {
+          $in: orders.map(m => {
+            return m.id;
+          })
+        },
+        isDel: 0
+      }
+    });
+
+    ctx.body = {
+      comments,
+      orders,
+      orderPros
+    };
   }
 };

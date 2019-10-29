@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-16 19:58:40
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-28 11:49:27
+ * @Last Modified time: 2019-10-29 22:21:15
  */
 'use strict';
 
@@ -366,7 +366,7 @@ module.exports = {
         totalOverPrice: 0,
         curOverPrice: 0,
         preOccupy: 0,
-        handFeeRate: 6, // 手续费比例（6‰）
+        handFeeRate: 0, // 手续费比例（6‰）
         taxRate: 5, // 税点（5%）
         addTime: date.formatDate(),
         isDel: 0
@@ -430,5 +430,23 @@ module.exports = {
         }
       }
     );
+  },
+  getAccount: async ctx => {
+    let param = ctx.request.body || {};
+
+    cp.isEmpty(param.id);
+
+    let result = await ctx.orm().ftAccount.findOne({
+      where: {
+        userId: param.id
+      }
+    });
+
+    ctx.body = {
+      totalBrokerage: result.totalBrokerage,
+      totalOverPrice: result.totalOverPrice,
+      curOverPrice: result.curOverPrice,
+      preOccupy: result.preOccupy
+    };
   }
 };
