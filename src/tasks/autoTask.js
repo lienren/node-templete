@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-18 13:49:27
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-28 21:51:10
+ * @Last Modified time: 2019-10-29 23:44:58
  */
 'use strict';
 
@@ -22,6 +22,7 @@ let automaticUpdateUserDiscountStatusJob = null;
 let automaticCancelOrder = null;
 // 自动还原订单库存
 let automaticOrderRevertStock = null;
+let automaticAccountSettlement = null;
 let ctx = {};
 let next = function() {
   return true;
@@ -64,6 +65,8 @@ async function updateGroupStatus() {
       }
     }
   }
+
+  console.log('updateGroupStatus is over:%s', date.formatDate());
 }
 
 // 更新用户优惠券状态
@@ -84,6 +87,8 @@ async function updateUserDiscount() {
       }
     }
   );
+
+  console.log('updateUserDiscount is over:%s', date.formatDate());
 }
 
 // 自动取消订单30分钟未支付订单
@@ -182,6 +187,8 @@ async function cancelOrder() {
       }
     }
   }
+
+  console.log('cancelOrder is over:%s', date.formatDate());
 }
 
 // 还原已取消订单库存
@@ -241,6 +248,48 @@ async function orderRevertStock() {
       );
     }
   }
+
+  console.log('orderRevertStock is over:%s', date.formatDate());
+}
+
+// 帐户结算（每天0：10结算7天前订单）
+async function accountSettlement() {
+  let day = parseInt(date.formatDate(new Date(), 'YYYYMMDD'));
+  let today = date.formatDate();
+
+  // 插入结算表
+  let insertAccountOrderSql = `insert into ftAccountOrders (day,userId,orderId,orderSN,orderType,orderTypeName,settlementPrice,addTime,isDel) 
+  select ${day},groupUserId,id,oSN,oType,oTypeName,settlementPrice,now(),0 from ftOrders where settlementTime <= '${today}' and oStatus in (3,4) and isSettlement = 0 and isDel = 0;`;
+  await ctx.orm().query(insertAccountOrderSql, {}, { type: ctx.orm().sequelize.QueryTypes.INSERT });
+
+  // 获取团长结算
+  let getAccountOrderSql = `select groupUserId, convert(sum(settlementPrice), DECIMAL) settlementPrice from ftOrders where settlementTime <= '${today}' and oStatus in (3,4) and isSettlement = 0 and isDel = 0 group by groupUserId;`;
+  let getAccountOrder = await ctx.orm().query(getAccountOrderSql);
+  if (getAccountOrder && getAccountOrder.length > 0) {
+    for (let i = 0, j = getAccountOrder.length; i < j; i++) {
+      // 更新团长结算
+      let result = await ctx.orm().ftAccount.update(
+        {
+          totalBrokerage: sequelize.literal(`totalBrokerage + ${getAccountOrder[i].settlementPrice}`),
+          curOverPrice: sequelize.literal(`curOverPrice + ${getAccountOrder[i].settlementPrice}`)
+        },
+        {
+          where: {
+            userId: getAccountOrder[i].groupUserId,
+            isDel: 0
+          }
+        }
+      );
+
+      if (result && result.length > 0 && result[0] > 0) {
+        // 更新订单结算状态
+        let updateAccountOrderSql = `update ftOrders set isSettlement = 1 where groupUserId = ${getAccountOrder[i].groupUserId} and settlementTime <= '${today}' and oStatus in (3,4) and isSettlement = 0 and isDel = 0;`;
+        await ctx.orm().query(updateAccountOrderSql, {}, { type: ctx.orm().sequelize.QueryTypes.UPDATE });
+      }
+    }
+  }
+
+  console.log('accountSettlement is over:%s', date.formatDate());
 }
 
 async function main() {
@@ -263,6 +312,8 @@ async function main() {
   automaticUpdateUserDiscountStatusJob = schedule.scheduleJob(automaticRule, updateUserDiscount);
   automaticCancelOrder = schedule.scheduleJob(automaticRule, cancelOrder);
   automaticOrderRevertStock = schedule.scheduleJob(automaticRule, orderRevertStock);
+
+  automaticAccountSettlement = schedule.scheduleJob('0 10 0 * * *', accountSettlement);
 }
 
 process.on('SIGINT', function() {
@@ -280,6 +331,10 @@ process.on('SIGINT', function() {
 
   if (automaticOrderRevertStock) {
     automaticOrderRevertStock.cancel();
+  }
+
+  if (automaticAccountSettlement) {
+    automaticAccountSettlement.cancel();
   }
 
   process.exit(0);

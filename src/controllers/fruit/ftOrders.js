@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-18 16:56:04
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-29 22:51:06
+ * @Last Modified time: 2019-10-29 23:12:30
  */
 'use strict';
 
@@ -810,7 +810,7 @@ module.exports = {
                 addTime: date.formatDate(),
                 isDel: 0
               });
-              
+
               // 更新老订单商品数量
               await ctx.orm().ftOrders.update(
                 {
@@ -890,6 +890,7 @@ module.exports = {
       {
         oStatus: 3,
         oStatusName: dic.orderStatusEnum[`3`],
+        settlementTime: date.formatDate(date.addDay(new Date(), 7)),
         oStatusTime: date.formatDate(),
         updateTime: date.formatDate()
       },

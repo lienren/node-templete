@@ -24,6 +24,14 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING(100),
       allowNull: true
     },
+    orderType: {
+      type: DataTypes.INTEGER(11),
+      allowNull: true
+    },
+    orderTypeName: {
+      type: DataTypes.STRING(100),
+      allowNull: true
+    },
     settlementPrice: {
       type: DataTypes.DECIMAL,
       allowNull: true

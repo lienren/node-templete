@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-16 19:58:40
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-29 22:21:15
+ * @Last Modified time: 2019-10-29 23:02:49
  */
 'use strict';
 
@@ -447,6 +447,35 @@ module.exports = {
       totalOverPrice: result.totalOverPrice,
       curOverPrice: result.curOverPrice,
       preOccupy: result.preOccupy
+    };
+  },
+  getAccountOrder: async ctx => {
+    let param = ctx.request.body || {};
+    let pageIndex = param.pageIndex || 1;
+    let pageSize = param.pageSize || 20;
+
+    cp.isEmpty(param.id);
+
+    let where = {
+      userId: param.id,
+      isDel: 0
+    };
+
+    let total = await ctx.orm().ftAccountOrders.count({
+      where
+    });
+    let list = await ctx.orm().ftAccountOrders.findAll({
+      offset: (pageIndex - 1) * pageSize,
+      limit: pageSize,
+      where,
+      order: [['addTime', 'DESC']]
+    });
+
+    ctx.body = {
+      list,
+      total,
+      pageIndex,
+      pageSize
     };
   }
 };
