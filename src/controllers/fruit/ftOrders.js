@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-18 16:56:04
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-29 17:09:00
+ * @Last Modified time: 2019-10-29 17:41:27
  */
 'use strict';
 
@@ -100,9 +100,22 @@ module.exports = {
       order: [['oId', 'DESC']]
     });
 
+    let orderRec = await ctx.orm().ftOrderRecAddress.findAll({
+      where: {
+        oId: {
+          $in: list.map(m => {
+            return m.id;
+          })
+        },
+        isDel: 0
+      },
+      order: [['oId', 'DESC']]
+    });
+
     ctx.body = {
       list,
       proList,
+      orderRec,
       total,
       pageIndex,
       pageSize
