@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-18 16:56:04
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-29 23:12:30
+ * @Last Modified time: 2019-10-30 10:59:29
  */
 'use strict';
 
@@ -991,5 +991,43 @@ module.exports = {
       orders,
       orderPros
     };
+  },
+  getGroupNewOrders: async ctx => {
+    let param = ctx.request.body || {};
+
+    cp.isEmpty(param.groupId);
+
+    let getGroupNewOrderSql = `select u.headImg, u.nickName, op.proTitle, op.pNum from ftOrders o 
+    inner join ftOrderProducts op on op.oId = o.id and op.isDel = 0 
+    inner join ftUsers u on u.id = o.userId and u.isDel = 0 
+    where 
+      o.groupId = ${param.groupId} and 
+      o.isDel = 0 
+    order by o.addTime desc limit 20;`;
+
+    let result = await ctx.orm().query(getGroupNewOrderSql);
+
+    ctx.body = result;
+  },
+  getNotSettlementPrice: async ctx => {
+    let param = ctx.request.body || {};
+
+    cp.isEmpty(param.groupUserId);
+
+    let getAccountOrderSql = `select groupUserId, convert(sum(settlementPrice), DECIMAL) settlementPrice from ftOrders where groupUserId = ${param.groupUserId} and oStatus in (3,4) and isSettlement = 0 and isDel = 0 group by groupUserId;`;
+
+    let result = await ctx.orm().query(getAccountOrderSql);
+
+    if (result && result.length > 0) {
+      ctx.body = {
+        groupUserId: result[0].groupUserId,
+        settlementPrice: result[0].settlementPrice
+      };
+    } else {
+      ctx.body = {
+        groupUserId: param.groupUserId,
+        settlementPrice: 0
+      };
+    }
   }
 };
