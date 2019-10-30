@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2018-04-19 11:52:42
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-14 19:07:49
+ * @Last Modified time: 2019-10-30 11:21:04
  */
 'use strict';
 
@@ -18,11 +18,11 @@ const config = require('./config.js');
 
 const app = new koa();
 
-// 静态存放地址
-app.use(koastatic(config.sys.staticPath));
-
 // 配置跨域访问
 app.use(cors());
+
+// 静态存放地址
+app.use(koastatic(config.sys.staticPath));
 
 // 清除content-encoding请求头编码
 app.use(async (ctx, next) => {
