@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-16 19:58:40
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-31 14:45:09
+ * @Last Modified time: 2019-10-31 14:54:16
  */
 'use strict';
 
@@ -578,7 +578,7 @@ module.exports = {
         pickPrice: pickPrice,
         handFeePrice: handFeePrice,
         taxPrice: taxPrice,
-        pickCashContext: pickCashContext,
+        pickCashContext: param.pickCashContext,
         pickCashStatus: 1,
         pickCashStatusName: dic.pickCashStatusEnum[`1`],
         pickCashStatusTime: date.formatDate(),
