@@ -2,10 +2,11 @@
  * @Author: Lienren
  * @Date: 2019-10-17 14:34:23
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-31 14:46:13
+ * @Last Modified time: 2019-10-31 15:17:15
  */
 'use strict';
 
+const assert = require('assert');
 const date = require('../../utils/date');
 const cp = require('./checkParam');
 const dic = require('./fruitEnum');
@@ -174,5 +175,50 @@ module.exports = {
     let result = await ctx.orm().query(sql);
 
     ctx.body = result;
+  },
+  pullDiscount: async ctx => {
+    let param = ctx.request.body || {};
+
+    cp.isEmpty(param.userId);
+    cp.isEmpty(param.disId);
+
+    let result = await ctx.orm().ftUserDiscounts.findOne({
+      where: {
+        userId: param.userId,
+        disId: param.disId,
+        isDel: 0
+      }
+    });
+
+    if (result) {
+      assert.ok(false, '已领取过该券！');
+    } else {
+      let discount = await ctx.orm().ftDiscounts.findOne({
+        where: {
+          id: param.disId,
+          isDel: 0
+        }
+      });
+
+      cp.isNull(discount, '优惠券不存在！');
+
+      let effectiveTime = dic.disValTypeEnum.generationTime(discount.disValType, discount.disVal, new Date());
+
+      await ctx.orm().ftUserDiscounts.create({
+        userId: param.userId,
+        disId: discount.id,
+        disTitle: discount.disTitle,
+        disSubTitle: discount.disSubTitle,
+        disType: discount.disType,
+        disTypeName: discount.disTypeName,
+        disContext: discount.disContext,
+        disStartTime: effectiveTime.startTime,
+        disEndTime: effectiveTime.endTime,
+        isUse: 0,
+        isOver: 0,
+        addTime: date.formatDate(),
+        isDel: 0
+      });
+    }
   }
 };
