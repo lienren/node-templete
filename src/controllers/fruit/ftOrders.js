@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-18 16:56:04
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-30 10:59:29
+ * @Last Modified time: 2019-10-31 11:47:51
  */
 'use strict';
 
@@ -72,7 +72,12 @@ module.exports = {
       where.groupUserId = param.groupUserId;
     }
 
-    if (param.beginSellPrice !== undefined && param.endSellPrice !== undefined) {
+    if (
+      param.beginSellPrice !== null &&
+      param.beginSellPrice !== undefined &&
+      param.endSellPrice !== null &&
+      param.endSellPrice !== undefined
+    ) {
       where.sellPrice = {
         $between: [param.beginSellPrice, param.endSellPrice]
       };

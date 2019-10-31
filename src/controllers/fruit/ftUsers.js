@@ -2,10 +2,11 @@
  * @Author: Lienren
  * @Date: 2019-10-16 19:58:40
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-29 23:02:49
+ * @Last Modified time: 2019-10-31 12:11:10
  */
 'use strict';
 
+const sequelize = require('sequelize').Sequelize;
 const date = require('../../utils/date');
 const jwt = require('../../utils/jwt');
 const ali = require('../../extends/ali');
@@ -366,8 +367,8 @@ module.exports = {
         totalOverPrice: 0,
         curOverPrice: 0,
         preOccupy: 0,
-        handFeeRate: 0, // 手续费比例（6‰）
-        taxRate: 5, // 税点（5%）
+        handFeeRate: 6, // 手续费比例（6‰）
+        taxRate: 0, // 税点（5%）
         addTime: date.formatDate(),
         isDel: 0
       });
@@ -461,6 +462,10 @@ module.exports = {
       isDel: 0
     };
 
+    if (param.orderType && param.orderType > 0) {
+      where.orderType = param.orderType;
+    }
+
     let total = await ctx.orm().ftAccountOrders.count({
       where
     });
@@ -477,5 +482,143 @@ module.exports = {
       pageIndex,
       pageSize
     };
+  },
+  getPickCashAll: async ctx => {
+    let param = ctx.request.body || {};
+    let pageIndex = param.pageIndex || 1;
+    let pageSize = param.pageSize || 20;
+
+    let where = {
+      isDel: 0
+    };
+
+    if (param.userId && param.userId > 0) {
+      where.userId = param.userId;
+    }
+
+    if (param.pickCashType && param.pickCashType > 0) {
+      where.pickCashType = param.pickCashType;
+    }
+
+    if (param.pickCashStatus && param.pickCashStatus > 0) {
+      where.pickCashStatus = param.pickCashStatus;
+    }
+
+    let total = await ctx.orm().ftPickCashs.count({
+      where
+    });
+    let list = await ctx.orm().ftPickCashs.findAll({
+      offset: (pageIndex - 1) * pageSize,
+      limit: pageSize,
+      where,
+      order: [['addTime', 'DESC']]
+    });
+
+    ctx.body = {
+      list,
+      total,
+      pageIndex,
+      pageSize
+    };
+  },
+  addPickCashs: async ctx => {
+    let param = ctx.request.body || {};
+
+    cp.isEmpty(param.userId);
+    cp.isEmpty(param.pickCashType);
+    cp.isEmpty(param.pickPrice);
+    cp.isEmpty(param.pickCashContext);
+
+    // 获取团长
+    let groupUser = await ctx.orm().ftUsers.findOne({
+      where: {
+        id: param.groupUserId,
+        userType: 2,
+        verifyType: 2,
+        isDel: 0
+      }
+    });
+    cp.isNull(groupUser, '团长不存在!');
+
+    let groupAccount = await ctx.orm().ftAccount.findOne({
+      where: {
+        userId: groupUser.id,
+        isDel: 0
+      }
+    });
+    cp.isNull(groupAccount, '团长帐户不存在!');
+
+    let handFeePrice = (param.pickPrice * groupAccount.handFeeRate) / 1000;
+    let taxPrice = (param.pickPrice * groupAccount.taxRate) / 1000;
+    let pickPrice = param.pickPrice - handFeePrice - taxPrice;
+
+    let result = await ctx.orm().ftAccount.update(
+      {
+        curOverPrice: sequelize.literal(`curOverPrice - ${pickPrice}`),
+        preOccupy: sequelize.literal(`preOccupy + ${pickPrice}`)
+      },
+      {
+        where: {
+          userId: groupUser.id,
+          curOverPrice: {
+            $gte: pickPrice
+          },
+          isDel: 0
+        }
+      }
+    );
+
+    if (result && result.length > 0 && result[0] > 0) {
+      await ctx.orm().ftPickCashs.create({
+        userId: groupUser.id,
+        userName: groupUser.userName,
+        pickCashType: param.pickCashType,
+        pickCashTypeName: dic.pickCashTypeEnum[`${param.pickCashType}`],
+        pickPrice: pickPrice,
+        handFeePrice: handFeePrice,
+        taxPrice: taxPrice,
+        pickCashContext: pickCashContext,
+        pickCashStatus: 1,
+        pickCashStatusName: dic.pickCashStatusEnum[`1`],
+        pickCashStatusTime: date.formatDate(),
+        addTime: date.formatDate(),
+        isDel: 0
+      });
+    }
+  },
+  submitPickCashVerifyOver: async ctx => {
+    let param = ctx.request.body || {};
+
+    cp.isEmpty(param.id);
+    cp.isEmpty(param.pickCashStatus);
+
+    let pickCash = await ctx.orm().ftPickCashs.findOne({
+      where: {
+        id: param.id,
+        isDel: 0
+      }
+    });
+    cp.isNull(pickCash, '提现单不存在!');
+
+    let result = await ctx.orm().ftPickCashs.update(
+      {
+        pickCashStatus: param.pickCashStatus,
+        pickCashStatusName: dic.pickCashStatusEnum[`${param.pickCashStatus}`],
+        remark: param.remark,
+        pickCashStatusTime: date.formatDate()
+      },
+      {
+        where: {
+          id: pickCash.id,
+          isDel: 0
+        }
+      }
+    );
+
+    if (result && result.length > 0 && result[0] > 0) {
+      if (pickCash.pickCashType === 1 && param.pickCashStatus === 2) {
+        // 支付宝转帐
+      }
+    }
   }
 };

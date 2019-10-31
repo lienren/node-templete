@@ -8,6 +8,14 @@ module.exports = function(sequelize, DataTypes) {
       primaryKey: true,
       autoIncrement: true
     },
+    userId: {
+      type: DataTypes.INTEGER(11),
+      allowNull: true
+    },
+    userName: {
+      type: DataTypes.STRING(100),
+      allowNull: true
+    },
     pickCashType: {
       type: DataTypes.INTEGER(11),
       allowNull: true
@@ -21,6 +29,10 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     handFeePrice: {
+      type: DataTypes.DECIMAL,
+      allowNull: true
+    },
+    taxPrice: {
       type: DataTypes.DECIMAL,
       allowNull: true
     },
