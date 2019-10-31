@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-17 14:34:23
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-27 10:49:39
+ * @Last Modified time: 2019-10-31 14:46:13
  */
 'use strict';
 
@@ -158,6 +158,20 @@ module.exports = {
     let result = await ctx.orm().query(sql);
 
     ctx.body = result;
+
+    ctx.body = result;
+  },
+  getUserNotDiscount: async ctx => {
+    let param = ctx.request.body || {};
+
+    cp.isEmpty(param.userId);
+
+    let sql = `select * from ftDiscounts where 
+    disSendType = 2 and 
+    id not in (select disId from ftUserDiscounts where userId = ${param.userId} and isDel = 0) and 
+    isDel = 0;`;
+
+    let result = await ctx.orm().query(sql);
 
     ctx.body = result;
   }

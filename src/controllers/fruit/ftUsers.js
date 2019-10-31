@@ -2,10 +2,11 @@
  * @Author: Lienren
  * @Date: 2019-10-16 19:58:40
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-31 12:11:10
+ * @Last Modified time: 2019-10-31 14:45:09
  */
 'use strict';
 
+const assert = require('assert');
 const sequelize = require('sequelize').Sequelize;
 const date = require('../../utils/date');
 const jwt = require('../../utils/jwt');
@@ -532,7 +533,7 @@ module.exports = {
     // 获取团长
     let groupUser = await ctx.orm().ftUsers.findOne({
       where: {
-        id: param.groupUserId,
+        id: param.userId,
         userType: 2,
         verifyType: 2,
         isDel: 0
@@ -584,6 +585,8 @@ module.exports = {
         addTime: date.formatDate(),
         isDel: 0
       });
+    } else {
+      assert.ok(false, '您的余额不足！');
     }
   },
   submitPickCashVerifyOver: async ctx => {
@@ -620,5 +623,16 @@ module.exports = {
         // 支付宝转帐
       }
     }
+  },
+  getGroupUserLeaderboard: async ctx => {
+    let sql = `select a.userId, a.totalBrokerage, u.userName, u.headImg, u.pName, u.cName, u.siteName, u.siteAddress from ftAccount a 
+    inner join ftUsers u on u.id = a.userId and u.isDel = 0 
+    where 
+      a.isDel = 0 
+    order by a.totalBrokerage desc;`;
+
+    let result = await ctx.orm().query(sql);
+
+    ctx.body = result;
   }
 };
