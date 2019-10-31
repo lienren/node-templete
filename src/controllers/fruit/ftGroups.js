@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-17 19:30:18
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-26 21:04:48
+ * @Last Modified time: 2019-10-31 15:52:39
  */
 'use strict';
 
@@ -374,6 +374,18 @@ module.exports = {
       }
     });
     cp.isNull(groupProduct, '此商品不是团购商品!');
+
+    let userRoundOver = await ctx.orm().ftGroupProductRounds.findOne({
+      where: {
+        groupId: group.id,
+        proId: param.proId,
+        userId: param.userId,
+        isOver: 0,
+        isDel: 0
+      }
+    });
+
+    assert.ok(!userRoundOver, '您已经参加了团还未结束，请勿重复开团！');
 
     let roundId = comm.getGuid();
 

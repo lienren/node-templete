@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-18 16:56:04
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-31 11:47:51
+ * @Last Modified time: 2019-10-31 16:14:23
  */
 'use strict';
 
@@ -364,7 +364,7 @@ module.exports = {
               where: {
                 id: groupProList[i].proId,
                 stock: {
-                  $gte: pro.pNum
+                  $gte: groupProList[i].pNum
                 }
               },
               transaction
