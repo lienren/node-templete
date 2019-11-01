@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-17 19:30:18
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-31 15:52:39
+ * @Last Modified time: 2019-11-01 23:57:46
  */
 'use strict';
 
@@ -127,12 +127,13 @@ module.exports = {
 
     if (param.id > 0) {
       let sql = `
-        select p.sortId, p.sortName, count(gp.proId) proNum from ftGroupProducts gp 
+        select s.id sortId, s.sortName, s.sortImg, count(gp.proId) proNum from ftGroupProducts gp 
         inner join ftProducts p on p.id = gp.proId and p.proVerifyType = 3 and p.isDel = 0 
+        inner join ftProductSorts s on s.id = p.sortId and s.isDel = 0 
         where 
-        gp.gId = ${param.id} and 
-        gp.isDel = 0 
-        group by p.sortId, p.sortName;`;
+          gp.gId = ${param.id} and 
+          gp.isDel = 0 
+        group by s.id, s.sortName, s.sortImg;`;
 
       let result = await ctx.orm().query(sql);
 

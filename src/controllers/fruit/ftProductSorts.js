@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-17 11:20:25
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-21 10:28:33
+ * @Last Modified time: 2019-11-01 23:48:56
  */
 'use strict';
 
@@ -63,6 +63,7 @@ module.exports = {
       groupUserId: param.groupUserId || 0,
       sortType: 2,
       sortTypeName: dic.sortTypeEnum[`${2}`],
+      sortImg: param.sortImg || '',
       addTime: date.formatDate(),
       isDel: 0
     });
@@ -79,6 +80,7 @@ module.exports = {
         sortName: param.sortName,
         sortIndex: param.sortIndex,
         groupUserId: param.groupUserId || 0,
+        sortImg: param.sortImg || '',
         updateTime: date.formatDate()
       },
       {

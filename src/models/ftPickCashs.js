@@ -36,6 +36,10 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.DECIMAL,
       allowNull: true
     },
+    totalPickPrice: {
+      type: DataTypes.DECIMAL,
+      allowNull: true
+    },
     pickCashContext: {
       type: DataTypes.STRING(1000),
       allowNull: true
@@ -62,10 +66,6 @@ module.exports = function(sequelize, DataTypes) {
     },
     isDel: {
       type: DataTypes.INTEGER(11),
-      allowNull: true
-    },
-    totalPickPrice: {
-      type: DataTypes.DECIMAL,
       allowNull: true
     }
   }, {
