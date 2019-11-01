@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-16 19:58:40
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-31 14:54:16
+ * @Last Modified time: 2019-11-01 11:18:36
  */
 'use strict';
 
@@ -549,6 +549,7 @@ module.exports = {
     });
     cp.isNull(groupAccount, '团长帐户不存在!');
 
+    let totalPickPrice = param.pickPrice;
     let handFeePrice = (param.pickPrice * groupAccount.handFeeRate) / 1000;
     let taxPrice = (param.pickPrice * groupAccount.taxRate) / 1000;
     let pickPrice = param.pickPrice - handFeePrice - taxPrice;
@@ -578,6 +579,7 @@ module.exports = {
         pickPrice: pickPrice,
         handFeePrice: handFeePrice,
         taxPrice: taxPrice,
+        totalPickPrice: totalPickPrice,
         pickCashContext: param.pickCashContext,
         pickCashStatus: 1,
         pickCashStatusName: dic.pickCashStatusEnum[`1`],
@@ -622,6 +624,22 @@ module.exports = {
       if (pickCash.pickCashType === 1 && param.pickCashStatus === 2) {
         // 支付宝转帐
       }
+
+      await ctx.orm().ftAccount.update(
+        {
+          preOccupy: sequelize.literal(`preOccupy - ${pickCash.totalPickPrice}`),
+          updateTime: date.formatDate()
+        },
+        {
+          where: {
+            userId: pickCash.userId,
+            preOccupy: {
+              $gte: pickCash.totalPickPrice
+            },
+            isDel: 0
+          }
+        }
+      );
     }
   },
   getGroupUserLeaderboard: async ctx => {

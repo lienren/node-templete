@@ -63,6 +63,10 @@ module.exports = function(sequelize, DataTypes) {
     isDel: {
       type: DataTypes.INTEGER(11),
       allowNull: true
+    },
+    totalPickPrice: {
+      type: DataTypes.DECIMAL,
+      allowNull: true
     }
   }, {
     tableName: 'ftPickCashs'
