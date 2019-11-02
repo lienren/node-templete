@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-11-01 10:00:23
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-11-01 11:18:49
+ * @Last Modified time: 2019-11-02 16:15:16
  */
 'use strict';
 
@@ -20,7 +20,7 @@ module.exports = {
     let sql2 = `select 
       sum(costPrice*pNum) totalCostPrice, 
       sum(totalProfit) totalProfit from ftOrderProducts 
-      where oId in (select id from ftOrders where oStatus in (2,3,4,5));`;
+      where oId in (select id from ftOrders where oStatus in (2,3,4,5) and oType = 1);`;
     let result2 = await ctx.orm().query(sql2);
 
     let sql3 = `select count(1) groupUserCount from ftUsers where isDel = 0 and userType = 2 and verifyType = 2;`;
@@ -80,6 +80,8 @@ module.exports = {
         totalProfit: find2.totalProfit
       };
     }, []);
+
+    ctx.body = data;
   },
   line3: async ctx => {
     let sql = `select a.*, u.nickName, u.headImg from (

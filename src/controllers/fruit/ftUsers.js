@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-16 19:58:40
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-11-01 11:18:36
+ * @Last Modified time: 2019-11-02 16:36:33
  */
 'use strict';
 
@@ -652,5 +652,29 @@ module.exports = {
     let result = await ctx.orm().query(sql);
 
     ctx.body = result;
+  },
+  getGroupUserAccount: async ctx => {
+    let param = ctx.request.body || {};
+    let pageIndex = param.pageIndex || 1;
+    let pageSize = param.pageSize || 20;
+
+    let groupUserId = param.groupUserId || 0;
+
+    let sql1 = `select count(1) num from ftAccount a inner join ftUsers u on u.id = a.userId and u.isDel = 0 where a.isDel = 0 ${
+      groupUserId > 0 ? ` and a.userId = ${groupUserId}` : ``
+    };`;
+    let sql2 = `select a.*, u.* from ftAccount a inner join ftUsers u on u.id = a.userId and u.isDel = 0 where a.isDel = 0 ${
+      groupUserId > 0 ? ` and a.userId = ${groupUserId}` : ``
+    } order by a.addTime desc limit ${(pageIndex - 1) * pageSize},${pageSize};`;
+
+    let result1 = await ctx.orm().query(sql1);
+    let result2 = await ctx.orm().query(sql2);
+
+    ctx.body = {
+      list: result2,
+      total: result1 && result1.length > 0 ? result1[0].num : 0,
+      pageIndex,
+      pageSize
+    };
   }
 };

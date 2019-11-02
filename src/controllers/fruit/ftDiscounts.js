@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-17 14:34:23
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-31 15:17:15
+ * @Last Modified time: 2019-11-02 16:47:07
  */
 'use strict';
 
@@ -220,5 +220,44 @@ module.exports = {
         isDel: 0
       });
     }
+  },
+  getUsersDiscount: async ctx => {
+    let param = ctx.request.body || {};
+    let pageIndex = param.pageIndex || 1;
+    let pageSize = param.pageSize || 20;
+
+    let disId = param.disId || 0;
+    let isUse = param.isUse !== undefined && param.isUse !== null ? param.isUse : -1;
+    let isOver = param.isOver !== undefined && param.isOver !== null ? param.isOver : -1;
+
+    let sql1 = `select count(1) num from ftUserDiscounts ud 
+    inner join ftDiscounts d on d.id = ud.disId and d.isDel = 0 
+    inner join ftUsers u on u.id = ud.userId and u.isDel = 0 
+    where 
+      ud.isUse = 0 and 
+      ud.isOver = 0 and 
+      ud.isDel = 0 ${disId > 0 ? ` and ud.disId = ${disId} ` : ``} ${isUse > -1 ? ` and ud.isUse=${isUse} ` : ``} ${
+      isOver > -1 ? ` and ud.isOver=${isOver} ` : ``
+    };`;
+
+    let sql2 = `select ud.*, d.disRangeType, d.disRangeTypeName, d.disRange, u.nickName, u.headImg from ftUserDiscounts ud 
+    inner join ftDiscounts d on d.id = ud.disId and d.isDel = 0 
+    inner join ftUsers u on u.id = ud.userId and u.isDel = 0 
+    where 
+      ud.isUse = 0 and 
+      ud.isOver = 0 and 
+      ud.isDel = 0 ${disId > 0 ? ` and ud.disId = ${disId} ` : ``} ${isUse > -1 ? ` and ud.isUse=${isUse} ` : ``} ${
+      isOver > -1 ? ` and ud.isOver=${isOver} ` : ``
+    } order by ud.addTime desc limit ${(pageIndex - 1) * pageSize},${pageSize};`;
+
+    let result1 = await ctx.orm().query(sql1);
+    let result2 = await ctx.orm().query(sql2);
+
+    ctx.body = {
+      list: result2,
+      total: result1 && result1.length > 0 ? result1[0].num : 0,
+      pageIndex,
+      pageSize
+    };
   }
 };
