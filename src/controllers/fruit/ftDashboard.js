@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-11-01 10:00:23
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-11-02 16:15:16
+ * @Last Modified time: 2019-11-02 19:06:15
  */
 'use strict';
 
@@ -76,10 +76,12 @@ module.exports = {
       total[curr] = {
         payNum: find1 ? find1.payNum : 0,
         noPayNum: find11 ? find11.payNum : 0,
-        totalCostPrice: find2.totalCostPrice,
-        totalProfit: find2.totalProfit
+        totalCostPrice: find2 ? find2.totalCostPrice : 0,
+        totalProfit: find2 ? find2.totalProfit : 0
       };
-    }, []);
+
+      return total;
+    }, {});
 
     ctx.body = data;
   },

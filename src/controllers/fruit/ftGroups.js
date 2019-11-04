@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-17 19:30:18
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-11-01 23:57:46
+ * @Last Modified time: 2019-11-04 08:26:19
  */
 'use strict';
 
@@ -338,6 +338,25 @@ module.exports = {
       {
         where: {
           gId: param.id,
+          isDel: 0
+        }
+      }
+    );
+  },
+  cancel: async ctx => {
+    let param = ctx.request.body || {};
+
+    cp.isEmpty(param.id);
+
+    await ctx.orm().ftGroups.update(
+      {
+        gStatus: 999,
+        gStatusName: dic.groupStatusEnum[`999`],
+        updateTime: date.formatDate()
+      },
+      {
+        where: {
+          id: param.id,
           isDel: 0
         }
       }

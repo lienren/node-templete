@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-31 14:52:35
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-31 14:58:33
+ * @Last Modified time: 2019-11-04 11:23:05
  */
 'use strict';
 
@@ -64,6 +64,27 @@ module.exports = {
       addTime: date.formatDate(),
       isDel: 0
     });
+  },
+  edit: async ctx => {
+    let param = ctx.request.body || {};
+
+    cp.isEmpty(param.id);
+    cp.isEmpty(param.imgUrl);
+
+    await ctx.orm().ftBanners.update(
+      {
+        imgUrl: param.imgUrl,
+        imgLink: param.imgLink,
+        sortIndex: param.sortIndex || 0,
+        addTime: date.formatDate()
+      },
+      {
+        where: {
+          id: param.id,
+          isDel: 0
+        }
+      }
+    );
   },
   del: async ctx => {
     let param = ctx.request.body || {};
