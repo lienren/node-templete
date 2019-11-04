@@ -2,13 +2,17 @@
  * @Author: Lienren
  * @Date: 2019-10-16 19:35:03
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-11-01 11:18:50
+ * @Last Modified time: 2019-11-04 11:29:03
  */
 'use strict';
 
 const date = require('../../utils/date');
 
 module.exports = {
+  imgTypeEnum: {
+    '1': '横幅',
+    '2': '合作厂商招募'
+  },
   userTypeEnum: {
     '1': '普通用户',
     '2': '团长',

@@ -31,6 +31,14 @@ module.exports = function(sequelize, DataTypes) {
     isDel: {
       type: DataTypes.INTEGER(11),
       allowNull: true
+    },
+    imgType: {
+      type: DataTypes.INTEGER(11),
+      allowNull: true
+    },
+    imgTypeName: {
+      type: DataTypes.STRING(100),
+      allowNull: true
     }
   }, {
     tableName: 'ftBanners'

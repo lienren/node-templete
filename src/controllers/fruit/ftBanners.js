@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-31 14:52:35
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-11-04 11:23:05
+ * @Last Modified time: 2019-11-04 11:31:16
  */
 'use strict';
 
@@ -16,10 +16,15 @@ module.exports = {
     let param = ctx.request.body || {};
     let pageIndex = param.pageIndex || 1;
     let pageSize = param.pageSize || 20;
+    let imgType = param.imgType || 1;
 
     let where = {
       isDel: 0
     };
+
+    if (imgType && imgType > 0) {
+      where.imgType = imgType;
+    }
 
     let total = await ctx.orm().ftBanners.count({
       where
@@ -54,6 +59,7 @@ module.exports = {
   },
   add: async ctx => {
     let param = ctx.request.body || {};
+    let imgType = param.imgType || 1;
 
     cp.isEmpty(param.imgUrl);
 
@@ -61,6 +67,8 @@ module.exports = {
       imgUrl: param.imgUrl,
       imgLink: param.imgLink,
       sortIndex: param.sortIndex || 0,
+      imgType: imgType,
+      imgTypeName: dic.imgTypeEnum[`${imgType}`],
       addTime: date.formatDate(),
       isDel: 0
     });
