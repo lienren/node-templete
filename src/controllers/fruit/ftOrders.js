@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-18 16:56:04
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-11-05 11:40:09
+ * @Last Modified time: 2019-11-06 00:38:22
  */
 'use strict';
 
@@ -210,6 +210,10 @@ module.exports = {
     let where = {
       isDel: 0
     };
+
+    if (param.oSN && param.oSN.length > 0) {
+      where.oSN = param.oSN;
+    }
 
     if (param.userId && param.userId > 0) {
       where.userId = param.userId;
