@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-18 16:56:04
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-31 16:14:23
+ * @Last Modified time: 2019-11-05 11:40:09
  */
 'use strict';
 
@@ -15,6 +15,191 @@ const comm = require('../../utils/comm');
 const date = require('../../utils/date');
 
 const aliPayNotifyUrl = 'http://fruit.billgenius.cn/fruit/ftOrders/notify';
+
+async function splitOrder(ctx, order) {
+  // 获取团长商品
+  let orderProducts = await ctx.orm().ftOrderProducts.findAll({
+    where: {
+      oId: order.id,
+      isDel: 0
+    }
+  });
+
+  if (orderProducts && orderProducts.length > 0) {
+    let orderGroupUserProducts = orderProducts.filter(f => {
+      return f.proType === 1;
+    });
+
+    // 有团长商品
+    // 且还有平台商品
+    // 则拆单
+    if (
+      orderGroupUserProducts &&
+      orderGroupUserProducts.length > 0 &&
+      orderGroupUserProducts.length < orderProducts.length
+    ) {
+      // 部分团长商品
+      // 获取收货地址
+      let newOrderRec = await ctx.orm().ftOrderRecAddress.findOne({
+        where: {
+          oId: order.id,
+          isDel: 0
+        }
+      });
+
+      // 生成新订单
+      // 更新订单收益为商品销售价
+      let newOSN = order.oSN + '001';
+      let newOrder = await ctx.orm().ftOrders.create({
+        oSN: newOSN,
+        userId: order.userId,
+        oType: 2,
+        oTypeName: dic.orderTypeEnum[`2`],
+        parentOSN: order.oSN,
+        oDisId: 0,
+        oDisName: '',
+        oDisPrice: 0,
+        oStatus: 2,
+        oStatusName: dic.orderStatusEnum[`2`],
+        oStatusTime: date.formatDate(),
+        isPay: 1,
+        oShipStatus: 4,
+        oShipStatusName: dic.orderShipStatusEnum[`4`],
+        oShipTime: date.formatDate(),
+        groupId: order.groupId,
+        groupName: order.groupName,
+        groupUserId: order.groupUserId,
+        groupUserName: order.groupUserName,
+        groupUserPhone: order.groupUserPhone,
+        originalPrice: 0,
+        sellPrice: 0,
+        totalPrice: 0,
+        isSettlement: 0,
+        settlementPrice: orderGroupUserProducts.reduce((total, curr) => {
+          return total + parseFloat(curr.totalPrice);
+        }, 0),
+        addTime: date.formatDate(),
+        isDel: 0,
+        isRevertStock: 0,
+        revertStockName: '未还原库存',
+        oRemark: order.oRemark,
+        oPickDay: 0,
+        oPickTime: date.formatDate()
+      });
+
+      // 生成新订单商品
+      let newOrderPros = orderGroupUserProducts.map(m => {
+        return {
+          oId: newOrder.id,
+          oSN: newOrder.oSN,
+          userId: newOrder.userId,
+          proId: m.proId,
+          proTitle: m.proTitle,
+          proMasterImg: m.proMasterImg,
+          specInfo: m.specInfo,
+          proType: m.proType,
+          proTypeName: m.proTypeName,
+          pickTime: m.pickTime,
+          originalPrice: m.originalPrice,
+          sellPrice: m.sellPrice,
+          costPrice: m.costPrice,
+          proProfit: m.proProfit,
+          pNum: m.pNum,
+          totalPrice: m.totalPrice,
+          totalProfit: m.totalProfit,
+          isLimit: m.isLimit,
+          groupId: m.groupId,
+          groupName: m.groupName,
+          rebateType: m.rebateType,
+          rebateTypeName: m.rebateTypeName,
+          rebateRate: m.rebateRate,
+          rebatePrice: m.rebatePrice,
+          totalRebatePrice: m.totalRebatePrice,
+          gProType: m.gProType,
+          gProTypeName: m.gProTypeName,
+          roundId: m.roundId,
+          addTime: date.formatDate(),
+          isDel: 0
+        };
+      });
+      await ctx.orm().ftOrderProducts.bulkCreate(newOrderPros);
+
+      // 添加收货地址
+      await ctx.orm().ftOrderRecAddress.create({
+        oId: newOrder.id,
+        oSn: newOrder.oSN,
+        userId: newOrderRec.userId,
+        recName: newOrderRec.recName,
+        recPhone: newOrderRec.recPhone,
+        recSiteName: newOrderRec.recSiteName,
+        recAddress: newOrderRec.recAddress,
+        recPName: newOrderRec.recPName,
+        recCName: newOrderRec.recCName,
+        recAName: newOrderRec.recAName,
+        addTime: date.formatDate(),
+        isDel: 0
+      });
+
+      // 更新老订单商品数量
+      await ctx.orm().ftOrders.update(
+        {
+          proNum: sequelize.literal(` proNum - ${orderGroupUserProducts.length} `),
+          updateTime: date.formatDate()
+        },
+        {
+          where: {
+            id: order.id,
+            isDel: 0
+          }
+        }
+      );
+
+      // 删除老订单中团长商品
+      await ctx.orm().ftOrderProducts.update(
+        {
+          isDel: 1
+        },
+        {
+          where: {
+            id: {
+              $in: orderGroupUserProducts.map(m => {
+                return m.id;
+              })
+            },
+            proType: 1,
+            oId: order.id
+          }
+        }
+      );
+    } else if (
+      orderGroupUserProducts &&
+      orderGroupUserProducts.length > 0 &&
+      orderGroupUserProducts.length === orderProducts.length
+    ) {
+      // 全是团长商品
+      // 更新订单收益为商品销售价
+      await ctx.orm().ftOrders.update(
+        {
+          oType: 2,
+          oTypeName: dic.orderTypeEnum[`2`],
+          oStatus: 2,
+          oStatusName: dic.orderStatusEnum[`2`],
+          oStatusTime: date.formatDate(),
+          settlementPrice: orderGroupUserProducts.reduce((total, curr) => {
+            return total + parseFloat(curr.totalPrice);
+          }, 0),
+          updateTime: date.formatDate()
+        },
+        {
+          where: {
+            id: order.id,
+            isDel: 0
+          }
+        }
+      );
+    }
+  }
+}
 
 module.exports = {
   getAll: async ctx => {
@@ -487,6 +672,33 @@ module.exports = {
       }
     );
 
+    if (orderSellPrice <= 0) {
+      // 更新订单支付状态
+      let result = await ctx.orm().ftOrders.update(
+        {
+          isPay: 1,
+          payTime: date.formatDate(),
+          oStatus: 5,
+          oStatusName: dic.orderStatusEnum[`5`],
+          oPickTime: date.formatDate(date.addDay(new Date(), order.oPickDay)),
+          updateTime: date.formatDate()
+        },
+        {
+          where: {
+            id: order.id,
+            oStatus: 1,
+            isPay: 0,
+            isDel: 0
+          }
+        }
+      );
+
+      // 订单状态更新成功
+      if (result && result.length > 0 && result[0] > 0) {
+        await splitOrder(ctx, order);
+      }
+    }
+
     // 更新订单佣金
     let settlementPrice = orderPros.reduce((total, curr) => {
       return total + parseFloat(curr.totalRebatePrice);
@@ -693,184 +905,7 @@ module.exports = {
 
         // 订单状态更新成功
         if (result && result.length > 0 && result[0] > 0) {
-          // 获取团长商品
-          let orderProducts = await ctx.orm().ftOrderProducts.findAll({
-            where: {
-              oId: order.id,
-              isDel: 0
-            }
-          });
-
-          if (orderProducts && orderProducts.length > 0) {
-            let orderGroupUserProducts = orderProducts.filter(f => {
-              return f.proType === 1;
-            });
-
-            // 有团长商品
-            // 且还有平台商品
-            // 则拆单
-            if (
-              orderGroupUserProducts &&
-              orderGroupUserProducts.length > 0 &&
-              orderGroupUserProducts.length < orderProducts.length
-            ) {
-              // 部分团长商品
-              // 获取收货地址
-              let newOrderRec = await ctx.orm().ftOrderRecAddress.findOne({
-                where: {
-                  oId: order.id,
-                  isDel: 0
-                }
-              });
-
-              // 生成新订单
-              // 更新订单收益为商品销售价
-              let newOSN = order.oSN + '001';
-              let newOrder = await ctx.orm().ftOrders.create({
-                oSN: newOSN,
-                userId: order.userId,
-                oType: 2,
-                oTypeName: dic.orderTypeEnum[`2`],
-                parentOSN: order.oSN,
-                oDisId: 0,
-                oDisName: '',
-                oDisPrice: 0,
-                oStatus: 2,
-                oStatusName: dic.orderStatusEnum[`2`],
-                oStatusTime: date.formatDate(),
-                isPay: 1,
-                oShipStatus: 4,
-                oShipStatusName: dic.orderShipStatusEnum[`4`],
-                oShipTime: date.formatDate(),
-                groupId: order.groupId,
-                groupName: order.groupName,
-                groupUserId: order.groupUserId,
-                groupUserName: order.groupUserName,
-                groupUserPhone: order.groupUserPhone,
-                originalPrice: 0,
-                sellPrice: 0,
-                totalPrice: 0,
-                isSettlement: 0,
-                settlementPrice: orderGroupUserProducts.reduce((total, curr) => {
-                  return total + parseFloat(curr.totalPrice);
-                }, 0),
-                addTime: date.formatDate(),
-                isDel: 0,
-                isRevertStock: 0,
-                revertStockName: '未还原库存',
-                oRemark: order.oRemark,
-                oPickDay: 0,
-                oPickTime: date.formatDate()
-              });
-
-              // 生成新订单商品
-              let newOrderPros = orderGroupUserProducts.map(m => {
-                return {
-                  oId: newOrder.id,
-                  oSN: newOrder.oSN,
-                  userId: newOrder.userId,
-                  proId: m.proId,
-                  proTitle: m.proTitle,
-                  proMasterImg: m.proMasterImg,
-                  specInfo: m.specInfo,
-                  proType: m.proType,
-                  proTypeName: m.proTypeName,
-                  pickTime: m.pickTime,
-                  originalPrice: m.originalPrice,
-                  sellPrice: m.sellPrice,
-                  costPrice: m.costPrice,
-                  proProfit: m.proProfit,
-                  pNum: m.pNum,
-                  totalPrice: m.totalPrice,
-                  totalProfit: m.totalProfit,
-                  isLimit: m.isLimit,
-                  groupId: m.groupId,
-                  groupName: m.groupName,
-                  rebateType: m.rebateType,
-                  rebateTypeName: m.rebateTypeName,
-                  rebateRate: m.rebateRate,
-                  rebatePrice: m.rebatePrice,
-                  totalRebatePrice: m.totalRebatePrice,
-                  gProType: m.gProType,
-                  gProTypeName: m.gProTypeName,
-                  roundId: m.roundId,
-                  addTime: date.formatDate(),
-                  isDel: 0
-                };
-              });
-              await ctx.orm().ftOrderProducts.bulkCreate(newOrderPros);
-
-              // 添加收货地址
-              await ctx.orm().ftOrderRecAddress.create({
-                oId: newOrder.id,
-                oSn: newOrder.oSN,
-                userId: newOrderRec.userId,
-                recName: newOrderRec.recName,
-                recPhone: newOrderRec.recPhone,
-                recSiteName: newOrderRec.recSiteName,
-                recAddress: newOrderRec.recAddress,
-                recPName: newOrderRec.recPName,
-                recCName: newOrderRec.recCName,
-                recAName: newOrderRec.recAName,
-                addTime: date.formatDate(),
-                isDel: 0
-              });
-
-              // 更新老订单商品数量
-              await ctx.orm().ftOrders.update(
-                {
-                  proNum: sequelize.literal(` proNum - ${orderGroupUserProducts.length} `),
-                  updateTime: date.formatDate()
-                },
-                {
-                  where: {
-                    id: order.id,
-                    isDel: 0
-                  }
-                }
-              );
-
-              // 删除老订单中团长商品
-              await ctx.orm().ftOrderProducts.update(
-                {
-                  isDel: 1
-                },
-                {
-                  id: {
-                    $in: orderGroupUserProducts.map(m => {
-                      return m.id;
-                    })
-                  },
-                  proType: 1,
-                  oId: order.id
-                }
-              );
-            } else if (
-              orderGroupUserProducts &&
-              orderGroupUserProducts.length > 0 &&
-              orderGroupUserProducts.length === orderProducts.length
-            ) {
-              // 全是团长商品
-              // 更新订单收益为商品销售价
-              await ctx.orm().ftOrders.update(
-                {
-                  oType: 2,
-                  oTypeName: dic.orderTypeEnum[`2`],
-                  oStatus: 2,
-                  oStatusName: dic.orderStatusEnum[`2`],
-                  oStatusTime: date.formatDate(),
-                  settlementPrice: orderGroupUserProducts.reduce((total, curr) => {
-                    return total + parseFloat(curr.totalPrice);
-                  }, 0),
-                  updateTime: date.formatDate()
-                },
-                {
-                  id: order.id,
-                  isDel: 0
-                }
-              );
-            }
-          }
+          await splitOrder(ctx, order);
         }
 
         // 记录支付信息
