@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-18 13:49:27
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-29 23:44:58
+ * @Last Modified time: 2019-11-06 00:31:41
  */
 'use strict';
 
@@ -22,7 +22,10 @@ let automaticUpdateUserDiscountStatusJob = null;
 let automaticCancelOrder = null;
 // 自动还原订单库存
 let automaticOrderRevertStock = null;
+// 自动结算佣金
 let automaticAccountSettlement = null;
+// 自动完成超过30分钟的团购
+let automaticCompleteOver30MinutesRounds = null;
 let ctx = {};
 let next = function() {
   return true;
@@ -96,7 +99,7 @@ async function cancelOrder() {
   let orders = await ctx.orm().ftOrders.findAll({
     where: {
       addTime: {
-        gt: date.formatDate(date.getTimeStamp(-30 * 60), 'YYYY-MM-DD HH:mm:ss', true)
+        $lt: date.formatDate(date.getTimeStamp(-30 * 60), 'YYYY-MM-DD HH:mm:ss', true)
       },
       oStatus: 1,
       isPay: 0,
@@ -292,6 +295,42 @@ async function accountSettlement() {
   console.log('accountSettlement is over:%s', date.formatDate());
 }
 
+// 完成超过30分钟的团购
+async function completeOver30MinutesRounds() {
+  let groupProductRounds = await ctx.orm().ftGroupProductRounds.findAll({
+    where: {
+      addTime: {
+        $lt: date.formatDate(date.getTimeStamp(-30 * 60), 'YYYY-MM-DD HH:mm:ss', true)
+      },
+      isOver: 0,
+      isDel: 0
+    }
+  });
+
+  if (groupProductRounds && groupProductRounds.length > 0) {
+    for (let i = 0, j = groupProductRounds.length; i < j; i++) {
+      await ctx.orm().ftGroupProductRounds.update(
+        {
+          isOver: 1,
+          overTime: date.formatDate(),
+          updateTime: date.formatDate()
+        },
+        {
+          where: {
+            groupId: groupProductRounds[i].groupId,
+            proId: groupProductRounds[i].proId,
+            roundId: groupProductRounds[i].roundId,
+            isOver: 0,
+            isDel: 0
+          }
+        }
+      );
+    }
+  }
+
+  console.log('over30MinutesRounds is over:%s', date.formatDate());
+}
+
 async function main() {
   // 使用koa-orm中间件，sequelize，mysql
   if (config.databases) {
@@ -312,6 +351,7 @@ async function main() {
   automaticUpdateUserDiscountStatusJob = schedule.scheduleJob(automaticRule, updateUserDiscount);
   automaticCancelOrder = schedule.scheduleJob(automaticRule, cancelOrder);
   automaticOrderRevertStock = schedule.scheduleJob(automaticRule, orderRevertStock);
+  automaticCompleteOver30MinutesRounds = schedule.scheduleJob(automaticRule, completeOver30MinutesRounds);
 
   automaticAccountSettlement = schedule.scheduleJob('0 10 0 * * *', accountSettlement);
 }
@@ -331,6 +371,10 @@ process.on('SIGINT', function() {
 
   if (automaticOrderRevertStock) {
     automaticOrderRevertStock.cancel();
+  }
+
+  if (automaticCompleteOver30MinutesRounds) {
+    automaticCompleteOver30MinutesRounds.cancel();
   }
 
   if (automaticAccountSettlement) {
