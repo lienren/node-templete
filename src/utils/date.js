@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2018-04-19 12:02:43
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-25 14:44:40
+ * @Last Modified time: 2019-11-06 23:19:02
  */
 'use strict';
 
@@ -11,7 +11,7 @@ const comm = require('./comm');
 
 module.exports = {
   // Date日期格式化
-  formatDate: function(date = new Date(), formate = 'YYYY-MM-DD HH:mm:ss', isunix = false) {
+  formatDate: function(date = new Date(), formate = 'YYYY-MM-DD HH:mm:ss') {
     if (!date) {
       date = new Date();
     }
@@ -20,12 +20,7 @@ module.exports = {
       formate = 'YYYY-MM-DD HH:mm:ss';
     }
 
-    let val;
-    if (isunix) {
-      val = moment.unix(date).format(formate);
-    } else {
-      val = moment(date).format(formate);
-    }
+    let val = moment(date).format(formate);
 
     return val;
   },
@@ -33,7 +28,7 @@ module.exports = {
   getTimeStamp: function(second) {
     let date = new Date().getTime();
 
-    if (second && comm.isNumber(second)) {
+    if (second) {
       date += second * 1000;
     }
 

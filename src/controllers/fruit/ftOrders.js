@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-18 16:56:04
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-11-06 00:38:22
+ * @Last Modified time: 2019-11-06 20:06:17
  */
 'use strict';
 
@@ -185,6 +185,9 @@ async function splitOrder(ctx, order) {
           oStatus: 2,
           oStatusName: dic.orderStatusEnum[`2`],
           oStatusTime: date.formatDate(),
+          oShipStatus: 4,
+          oShipStatusName: dic.orderShipStatusEnum[`4`],
+          oShipTime: date.formatDate(),
           settlementPrice: orderGroupUserProducts.reduce((total, curr) => {
             return total + parseFloat(curr.totalPrice);
           }, 0),

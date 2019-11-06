@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-18 13:49:27
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-11-06 00:31:41
+ * @Last Modified time: 2019-11-06 23:18:57
  */
 'use strict';
 
@@ -99,7 +99,7 @@ async function cancelOrder() {
   let orders = await ctx.orm().ftOrders.findAll({
     where: {
       addTime: {
-        $lt: date.formatDate(date.getTimeStamp(-30 * 60), 'YYYY-MM-DD HH:mm:ss', true)
+        $lt: date.formatDate(date.getTimeStamp(-30 * 60))
       },
       oStatus: 1,
       isPay: 0,
@@ -300,7 +300,7 @@ async function completeOver30MinutesRounds() {
   let groupProductRounds = await ctx.orm().ftGroupProductRounds.findAll({
     where: {
       addTime: {
-        $lt: date.formatDate(date.getTimeStamp(-30 * 60), 'YYYY-MM-DD HH:mm:ss', true)
+        $lt: date.formatDate(date.getTimeStamp(-30 * 60))
       },
       isOver: 0,
       isDel: 0
