@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-16 19:58:40
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-11-02 16:36:33
+ * @Last Modified time: 2019-11-08 11:02:23
  */
 'use strict';
 
@@ -362,17 +362,132 @@ module.exports = {
     if (param.verifyType === 2) {
       // 审核通过
       // 添加帐户
-      await ctx.orm().ftAccount.create({
-        userId: param.id,
-        totalBrokerage: 0,
-        totalOverPrice: 0,
-        curOverPrice: 0,
-        preOccupy: 0,
-        handFeeRate: 6, // 手续费比例（6‰）
-        taxRate: 0, // 税点（5%）
-        addTime: date.formatDate(),
-        isDel: 0
+
+      let account = await ctx.orm().ftAccount.findOne({
+        where: {
+          userId: param.id
+        }
       });
+
+      if (account) {
+        await ctx.orm().ftAccount.update(
+          {
+            handFeeRate: param.handFeeRate || 6, // 手续费比例（6‰）
+            taxRate: param.taxRate || 0, // 税点（5%）
+            updateTime: date.formatDate(),
+            isDel: 0
+          },
+          {
+            where: {
+              userId: account.userId,
+              isDel: 1
+            }
+          }
+        );
+      } else {
+        await ctx.orm().ftAccount.create({
+          userId: param.id,
+          totalBrokerage: 0,
+          totalOverPrice: 0,
+          curOverPrice: 0,
+          preOccupy: 0,
+          handFeeRate: param.handFeeRate || 6, // 手续费比例（6‰）
+          taxRate: param.taxRate || 0, // 税点（5%）
+          addTime: date.formatDate(),
+          isDel: 0
+        });
+      }
+    }
+  },
+  updateGroupUser: async ctx => {
+    let param = ctx.request.body || {};
+
+    cp.isEmpty(param.id);
+    cp.isEmpty(param.userName);
+    cp.isEmpty(param.userPhone);
+    cp.isEmpty(param.userIdCard);
+    cp.isEmpty(param.siteName);
+    cp.isEmpty(param.siteAddress);
+    cp.isEmpty(param.sitePickAddress);
+
+    let result = await ctx.orm().ftUsers.update(
+      {
+        userName: param.userName,
+        userPhone: param.userPhone,
+        userIdCard: param.userIdCard,
+        siteName: param.siteName,
+        siteAddress: param.siteAddress,
+        sitePickAddress: param.sitePickAddress,
+        updateTime: date.formatDate()
+      },
+      {
+        where: {
+          id: param.id,
+          userType: 2,
+          verifyType: 2,
+          isDel: 0
+        }
+      }
+    );
+
+    if (result && result.length > 0 && result[0] > 0) {
+      // 修改成功
+      ctx.orm().ftGroups.update(
+        {
+          groupUserName: param.userName,
+          groupUserPhone: param.userPhone,
+          gSiteName: param.siteName,
+          gSiteAddress: param.siteAddress,
+          gSitePickAddress: param.sitePickAddress
+        },
+        {
+          where: {
+            groupUserId: param.id,
+            isDel: 0
+          }
+        }
+      );
+
+      ctx.orm().ftOrders.update(
+        {
+          groupUserName: param.userName,
+          groupUserPhone: param.userPhone
+        },
+        {
+          where: {
+            groupUserId: param.id,
+            isDel: 0
+          }
+        }
+      );
+
+      ctx.orm().ftShips.update(
+        {
+          groupUserName: param.userName,
+          groupUserPhone: param.userPhone,
+          groupSiteName: param.siteName,
+          groupSiteAddress: param.siteAddress,
+          groupSitePickAddress: param.sitePickAddress
+        },
+        {
+          where: {
+            groupUserId: param.id,
+            isDel: 0
+          }
+        }
+      );
+
+      ctx.orm().ftShipOrders.update(
+        {
+          groupUserName: param.userName
+        },
+        {
+          where: {
+            groupUserId: param.id,
+            isDel: 0
+          }
+        }
+      );
     }
   },
   editGroupUserHandFeeAndTax: async ctx => {
@@ -394,6 +509,45 @@ module.exports = {
         {
           where: {
             userId: param.userId,
+            isDel: 0
+          }
+        }
+      );
+    }
+  },
+  closeGroupUser: async ctx => {
+    let param = ctx.request.body || {};
+
+    cp.isEmpty(param.id);
+
+    let result = await ctx.orm().ftUsers.update(
+      {
+        userType: 1,
+        userTypeName: dic.userTypeEnum[`${1}`],
+        updateTime: date.formatDate(),
+        verifyType: 0,
+        verifyTypeName: dic.verifyTypeEnum[`0`],
+        verfiyRemark: '关闭团长'
+      },
+      {
+        where: {
+          id: param.id,
+          userType: 2,
+          verifyType: 2,
+          isDel: 0
+        }
+      }
+    );
+
+    if (result && result.length > 0 && result[0] > 0) {
+      await ctx.orm().ftAccount.update(
+        {
+          updateTime: date.formatDate(),
+          isDel: 1
+        },
+        {
+          where: {
+            userId: param.id,
             isDel: 0
           }
         }
