@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-16 19:58:40
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-11-08 11:02:23
+ * @Last Modified time: 2019-11-11 15:47:47
  */
 'use strict';
 
@@ -490,6 +490,25 @@ module.exports = {
       );
     }
   },
+  updateGroupUserHandFeeAndTax: async ctx => {
+    let param = ctx.request.body || {};
+
+    cp.isEmpty(param.id);
+
+    await ctx.orm().ftAccount.update(
+      {
+        handFeeRate: param.handFeeRate || 0, // 手续费比例（6‰）
+        taxRate: param.taxRate || 0, // 税点（5%）
+        updateTime: date.formatDate()
+      },
+      {
+        where: {
+          userId: param.id,
+          isDel: 0
+        }
+      }
+    );
+  },
   editGroupUserHandFeeAndTax: async ctx => {
     let param = ctx.request.body || {};
 
@@ -602,7 +621,9 @@ module.exports = {
       totalBrokerage: result.totalBrokerage,
       totalOverPrice: result.totalOverPrice,
       curOverPrice: result.curOverPrice,
-      preOccupy: result.preOccupy
+      preOccupy: result.preOccupy,
+      handFeeRate: result.handFeeRate,
+      taxRate: result.taxRate
     };
   },
   getAccountOrder: async ctx => {

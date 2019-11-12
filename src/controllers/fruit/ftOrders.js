@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-18 16:56:04
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-11-06 20:06:17
+ * @Last Modified time: 2019-11-11 14:54:25
  */
 'use strict';
 
@@ -248,12 +248,22 @@ module.exports = {
       where.oStatus = param.oStatus;
     }
 
+    if (param.oStatusList && param.oStatusList.length > 0) {
+      where.oStatus = {
+        $in: param.oStatusList
+      };
+    }
+
     if (param.oShipStatus && param.oShipStatus > 0) {
       where.oShipStatus = param.oShipStatus;
     }
 
     if (param.isPay !== undefined && param.isPay !== null) {
       where.isPay = param.isPay;
+    }
+
+    if (param.isSettlement !== undefined && param.isSettlement !== null) {
+      where.isSettlement = param.isSettlement;
     }
 
     if (param.groupId && param.groupId > 0) {
@@ -932,25 +942,37 @@ module.exports = {
     cp.isEmpty(param.groupUserId);
     cp.isEmpty(param.oSN);
 
-    // 更新订单状态
-    await ctx.orm().ftOrders.update(
-      {
-        oStatus: 3,
-        oStatusName: dic.orderStatusEnum[`3`],
-        settlementTime: date.formatDate(date.addDay(new Date(), 7)),
-        oStatusTime: date.formatDate(),
-        updateTime: date.formatDate()
-      },
-      {
-        where: {
-          oSN: param.oSN,
-          groupUserId: param.groupUserId,
-          oStatus: 2,
-          oShipStatus: 4,
-          isDel: 0
-        }
+    let order = await ctx.orm().ftOrders.findOne({
+      where: {
+        oSN: param.oSN,
+        groupUserId: param.groupUserId,
+        oStatus: 2,
+        oShipStatus: 4,
+        isDel: 0
       }
-    );
+    });
+
+    if (order) {
+      // 更新订单状态
+      await ctx.orm().ftOrders.update(
+        {
+          oStatus: 3,
+          oStatusName: dic.orderStatusEnum[`3`],
+          settlementTime: order.oType === 1 ? date.formatDate(date.addDay(new Date(), 7)) : date.formatDate(),
+          oStatusTime: date.formatDate(),
+          updateTime: date.formatDate()
+        },
+        {
+          where: {
+            id: order.id,
+            groupUserId: param.groupUserId,
+            oStatus: 2,
+            oShipStatus: 4,
+            isDel: 0
+          }
+        }
+      );
+    }
   },
   comment: async ctx => {
     let param = ctx.request.body || {};
