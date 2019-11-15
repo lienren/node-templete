@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-18 13:49:27
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-11-06 23:18:57
+ * @Last Modified time: 2019-11-15 23:13:18
  */
 'use strict';
 
@@ -347,7 +347,7 @@ async function main() {
     }
   }
 
-  automaticUpdateGroupStatusJob = schedule.scheduleJob(automaticRule, updateGroupStatus);
+  // automaticUpdateGroupStatusJob = schedule.scheduleJob(automaticRule, updateGroupStatus);
   automaticUpdateUserDiscountStatusJob = schedule.scheduleJob(automaticRule, updateUserDiscount);
   automaticCancelOrder = schedule.scheduleJob(automaticRule, cancelOrder);
   automaticOrderRevertStock = schedule.scheduleJob(automaticRule, orderRevertStock);
