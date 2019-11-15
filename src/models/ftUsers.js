@@ -106,7 +106,7 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     currGName: {
-      type: DataTypes.STRING(0),
+      type: DataTypes.STRING(100),
       allowNull: true
     },
     currGTime: {

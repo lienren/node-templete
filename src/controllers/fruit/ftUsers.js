@@ -2,17 +2,110 @@
  * @Author: Lienren
  * @Date: 2019-10-16 19:58:40
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-11-11 15:47:47
+ * @Last Modified time: 2019-11-13 12:13:18
  */
-'use strict';
+"use strict";
 
-const assert = require('assert');
-const sequelize = require('sequelize').Sequelize;
-const date = require('../../utils/date');
-const jwt = require('../../utils/jwt');
-const ali = require('../../extends/ali');
-const cp = require('./checkParam');
-const dic = require('./fruitEnum');
+const assert = require("assert");
+const sequelize = require("sequelize").Sequelize;
+const date = require("../../utils/date");
+const jwt = require("../../utils/jwt");
+const ali = require("../../extends/ali");
+const cp = require("./checkParam");
+const dic = require("./fruitEnum");
+
+async function addGroup(ctx, groupUserId) {
+  // 验证团长
+  let groupUser = await ctx.orm().ftUsers.findOne({
+    where: {
+      id: groupUserId,
+      userType: 2,
+      verifyType: 2
+    }
+  });
+
+  cp.isNull(groupUser);
+
+  let groupUserGroup = await ctx.orm().ftGroups.findOne({
+    where: {
+      groupUserId: groupUser.id
+    }
+  });
+
+  let gIndex = 1;
+  if (groupUserGroup) {
+    gIndex = groupUserGroup.gIndex + 1;
+  }
+  let gName = `第${gIndex}期团购活动`;
+
+  // 添加团购
+  let group = await ctx.orm().ftGroups.create({
+    gIndex: gIndex,
+    gName: gName,
+    groupUserId: groupUser.id,
+    groupUserName: groupUser.userName,
+    groupUserPhone: groupUser.userPhone,
+    gSiteName: groupUser.siteName,
+    gSiteAddress: groupUser.siteAddress,
+    gSitePickAddress: groupUser.sitePickAddress,
+    gSitePosition: groupUser.sitePosition,
+    gStartTime: date.formatDate(),
+    gEndTime: "9999-12-31 23:59:59",
+    gStatus: 2,
+    gStatusName: dic.groupStatusEnum[`2`],
+    gProductNum: 0,
+    gOrderNum: 0,
+    gType: 1,
+    gTypeName: dic.groupTypeEnum[`1`],
+    addTime: date.formatDate(),
+    gPId: groupUser.pId,
+    gPName: groupUser.pName,
+    gCId: groupUser.cId,
+    gCName: groupUser.cName,
+    groupUserHeadImg: groupUser.headImg,
+    isDel: 0
+  });
+
+  if (group) {
+    // 注入平台商品
+    let proList = await ctx.orm().ftProducts.findAll({
+      where: {
+        proType: 2,
+        proVerifyType: 3,
+        isDel: 0
+      }
+    });
+
+    let groupPros = proList.map(m => {
+      let groupInfo =
+        m.groupInfo && m.groupInfo.length > 0
+          ? JSON.parse(m.groupInfo)
+          : {
+              gProType: 1,
+              startTime: null,
+              endTime: null,
+              teamNum: 0,
+              isRecommend: m.isRecommend
+            };
+
+      return {
+        gId: group.id,
+        gProType: groupInfo.gProType,
+        gProTypeName: dic.groupProTypeEnum[`${groupInfo.gProType}`],
+        proId: m.id,
+        startTime: groupInfo.startTime,
+        endTime: groupInfo.endTime,
+        teamNum: groupInfo.teamNum || 0,
+        isRecommend: groupInfo.isRecommend || 0,
+        addTime: date.formatDate(),
+        isDel: 0
+      };
+    });
+
+    // 添加平台商品
+    await ctx.orm().ftGroupProducts.bulkCreate(groupPros);
+  }
+}
 
 module.exports = {
   getAll: async ctx => {
@@ -39,7 +132,7 @@ module.exports = {
       offset: (pageIndex - 1) * pageSize,
       limit: pageSize,
       where,
-      order: [['addTime', 'DESC']]
+      order: [["addTime", "DESC"]]
     });
 
     ctx.body = {
@@ -83,10 +176,10 @@ module.exports = {
     cp.isEmpty(param.code);
 
     // 获取支付宝信息
-    const resultAli = await ali.exec('alipay.system.oauth.token', {
-      grantType: 'authorization_code',
+    const resultAli = await ali.exec("alipay.system.oauth.token", {
+      grantType: "authorization_code",
       code: param.code,
-      refreshToken: 'token'
+      refreshToken: "token"
     });
 
     if (resultAli.userId) {
@@ -101,28 +194,28 @@ module.exports = {
         // 找不到，新用户注册
         result = await ctx.orm().ftUsers.create({
           alipayUserId: resultAli.userId,
-          nickName: '',
-          userName: '',
-          userPhone: '',
-          headImg: '',
+          nickName: "",
+          userName: "",
+          userPhone: "",
+          headImg: "",
           addTime: date.formatDate(),
           isDel: 0,
           userType: 1,
           userTypeName: dic.userTypeEnum[`1`],
-          userIdCard: '',
+          userIdCard: "",
           pId: 0,
-          pName: '',
+          pName: "",
           cId: 0,
-          cName: '',
-          siteName: '',
-          sitePosition: '[]',
-          siteAddress: '',
-          sitePickAddress: '',
+          cName: "",
+          siteName: "",
+          sitePosition: "[]",
+          siteAddress: "",
+          sitePickAddress: "",
           verifyType: 0,
           verifyTypeName: dic.verifyTypeEnum[`0`],
-          verfiyRemark: '',
+          verfiyRemark: "",
           currGId: 0,
-          currGName: ''
+          currGName: ""
         });
 
         // 查询新人券
@@ -137,7 +230,11 @@ module.exports = {
           // 送新人券
           ctx.orm().ftUserDiscounts.bulkCreate(
             discounts.map(m => {
-              let effectiveTime = dic.disValTypeEnum.generationTime(m.disValType, m.disVal, new Date());
+              let effectiveTime = dic.disValTypeEnum.generationTime(
+                m.disValType,
+                m.disVal,
+                new Date()
+              );
               return {
                 userId: result.id,
                 disId: m.id,
@@ -172,7 +269,7 @@ module.exports = {
             await ctx.orm().ftUsers.update(
               {
                 currGId: 0,
-                currGName: '',
+                currGName: "",
                 currGTime: date.formatDate(),
                 updateTime: date.formatDate()
               },
@@ -184,10 +281,10 @@ module.exports = {
               }
             );
 
-            result.dataValues['currGId'] = 0;
-            result.dataValues['currGName'] = '';
-            result.dataValues['currGTime'] = date.formatDate();
-            result.dataValues['updateTime'] = date.formatDate();
+            result.dataValues["currGId"] = 0;
+            result.dataValues["currGName"] = "";
+            result.dataValues["currGTime"] = date.formatDate();
+            result.dataValues["updateTime"] = date.formatDate();
           }
         }
       }
@@ -215,7 +312,7 @@ module.exports = {
         }
       );
 
-      result.dataValues['token'] = token;
+      result.dataValues["token"] = token;
 
       ctx.body = {
         id: result.id,
@@ -318,7 +415,7 @@ module.exports = {
         updateTime: date.formatDate(),
         verifyType: 1,
         verifyTypeName: dic.verifyTypeEnum[`1`],
-        verfiyRemark: '',
+        verfiyRemark: "",
         verifyTime: date.formatDate()
       },
       {
@@ -397,6 +494,9 @@ module.exports = {
           isDel: 0
         });
       }
+
+      // 添加长期大团
+      await addGroup(ctx, param.id);
     }
   },
   updateGroupUser: async ctx => {
@@ -546,7 +646,7 @@ module.exports = {
         updateTime: date.formatDate(),
         verifyType: 0,
         verifyTypeName: dic.verifyTypeEnum[`0`],
-        verfiyRemark: '关闭团长'
+        verfiyRemark: "关闭团长"
       },
       {
         where: {
@@ -567,6 +667,23 @@ module.exports = {
         {
           where: {
             userId: param.id,
+            isDel: 0
+          }
+        }
+      );
+
+      await ctx.orm().ftGroups.update(
+        {
+          gStatus: 999,
+          gStatusName: dic.groupStatusEnum[`999`],
+          updateTime: date.formatDate()
+        },
+        {
+          where: {
+            groupUserId: param.id,
+            gStatus: {
+              $in: [1, 2]
+            },
             isDel: 0
           }
         }
@@ -649,7 +766,7 @@ module.exports = {
       offset: (pageIndex - 1) * pageSize,
       limit: pageSize,
       where,
-      order: [['addTime', 'DESC']]
+      order: [["addTime", "DESC"]]
     });
 
     ctx.body = {
@@ -687,7 +804,7 @@ module.exports = {
       offset: (pageIndex - 1) * pageSize,
       limit: pageSize,
       where,
-      order: [['addTime', 'DESC']]
+      order: [["addTime", "DESC"]]
     });
 
     ctx.body = {
@@ -714,7 +831,7 @@ module.exports = {
         isDel: 0
       }
     });
-    cp.isNull(groupUser, '团长不存在!');
+    cp.isNull(groupUser, "团长不存在!");
 
     let groupAccount = await ctx.orm().ftAccount.findOne({
       where: {
@@ -722,7 +839,7 @@ module.exports = {
         isDel: 0
       }
     });
-    cp.isNull(groupAccount, '团长帐户不存在!');
+    cp.isNull(groupAccount, "团长帐户不存在!");
 
     let totalPickPrice = param.pickPrice;
     let handFeePrice = (param.pickPrice * groupAccount.handFeeRate) / 1000;
@@ -763,7 +880,7 @@ module.exports = {
         isDel: 0
       });
     } else {
-      assert.ok(false, '您的余额不足！');
+      assert.ok(false, "您的余额不足！");
     }
   },
   submitPickCashVerifyOver: async ctx => {
@@ -778,7 +895,7 @@ module.exports = {
         isDel: 0
       }
     });
-    cp.isNull(pickCash, '提现单不存在!');
+    cp.isNull(pickCash, "提现单不存在!");
 
     let result = await ctx.orm().ftPickCashs.update(
       {
@@ -802,7 +919,9 @@ module.exports = {
 
       await ctx.orm().ftAccount.update(
         {
-          preOccupy: sequelize.literal(`preOccupy - ${pickCash.totalPickPrice}`),
+          preOccupy: sequelize.literal(
+            `preOccupy - ${pickCash.totalPickPrice}`
+          ),
           updateTime: date.formatDate()
         },
         {

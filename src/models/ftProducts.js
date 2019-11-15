@@ -143,6 +143,10 @@ module.exports = function(sequelize, DataTypes) {
     isRecommend: {
       type: DataTypes.INTEGER(11),
       allowNull: true
+    },
+    groupInfo: {
+      type: DataTypes.TEXT,
+      allowNull: true
     }
   }, {
     tableName: 'ftProducts'

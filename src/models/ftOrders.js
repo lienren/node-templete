@@ -10,8 +10,7 @@ module.exports = function(sequelize, DataTypes) {
     },
     oSN: {
       type: DataTypes.STRING(100),
-      allowNull: true,
-      unique: true
+      allowNull: true
     },
     userId: {
       type: DataTypes.INTEGER(11),
