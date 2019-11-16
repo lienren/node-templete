@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-18 13:49:27
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-11-15 23:13:18
+ * @Last Modified time: 2019-11-16 22:55:40
  */
 'use strict';
 
@@ -45,7 +45,10 @@ async function updateGroupStatus() {
 
   if (groups && groups.length > 0) {
     for (let i = 0, j = groups.length; i < j; i++) {
-      let nowGroupStatus = dic.groupStatusEnum.generationStatus(groups[i].gStartTime, groups[i].gEndTime);
+      let nowGroupStatus = dic.groupStatusEnum.generationStatus(
+        groups[i].gStartTime,
+        groups[i].gEndTime
+      );
 
       if (groups[i].gStatus !== nowGroupStatus) {
         // 更新团购状态
@@ -263,7 +266,13 @@ async function accountSettlement() {
   // 插入结算表
   let insertAccountOrderSql = `insert into ftAccountOrders (day,userId,orderId,orderSN,orderType,orderTypeName,settlementPrice,addTime,isDel) 
   select ${day},groupUserId,id,oSN,oType,oTypeName,settlementPrice,now(),0 from ftOrders where settlementTime <= '${today}' and oStatus in (3,4) and isSettlement = 0 and isDel = 0;`;
-  await ctx.orm().query(insertAccountOrderSql, {}, { type: ctx.orm().sequelize.QueryTypes.INSERT });
+  await ctx
+    .orm()
+    .query(
+      insertAccountOrderSql,
+      {},
+      { type: ctx.orm().sequelize.QueryTypes.INSERT }
+    );
 
   // 获取团长结算
   let getAccountOrderSql = `select groupUserId, convert(sum(settlementPrice), DECIMAL) settlementPrice from ftOrders where settlementTime <= '${today}' and oStatus in (3,4) and isSettlement = 0 and isDel = 0 group by groupUserId;`;
@@ -273,8 +282,12 @@ async function accountSettlement() {
       // 更新团长结算
       let result = await ctx.orm().ftAccount.update(
         {
-          totalBrokerage: sequelize.literal(`totalBrokerage + ${getAccountOrder[i].settlementPrice}`),
-          curOverPrice: sequelize.literal(`curOverPrice + ${getAccountOrder[i].settlementPrice}`)
+          totalBrokerage: sequelize.literal(
+            `totalBrokerage + ${getAccountOrder[i].settlementPrice}`
+          ),
+          curOverPrice: sequelize.literal(
+            `curOverPrice + ${getAccountOrder[i].settlementPrice}`
+          )
         },
         {
           where: {
@@ -286,8 +299,24 @@ async function accountSettlement() {
 
       if (result && result.length > 0 && result[0] > 0) {
         // 更新订单结算状态
-        let updateAccountOrderSql = `update ftOrders set isSettlement = 1 where groupUserId = ${getAccountOrder[i].groupUserId} and settlementTime <= '${today}' and oStatus in (3,4) and isSettlement = 0 and isDel = 0;`;
-        await ctx.orm().query(updateAccountOrderSql, {}, { type: ctx.orm().sequelize.QueryTypes.UPDATE });
+        await ctx.orm().ftOrders.update(
+          {
+            isSettlement: 1
+          },
+          {
+            where: {
+              groupUserId: getAccountOrder[i].groupUserId,
+              settlementTime: {
+                $lte: today
+              },
+              oStatus: {
+                $in: [3, 4]
+              },
+              isSettlement: 0,
+              isDel: 0
+            }
+          }
+        );
       }
     }
   }
@@ -348,12 +377,24 @@ async function main() {
   }
 
   // automaticUpdateGroupStatusJob = schedule.scheduleJob(automaticRule, updateGroupStatus);
-  automaticUpdateUserDiscountStatusJob = schedule.scheduleJob(automaticRule, updateUserDiscount);
+  automaticUpdateUserDiscountStatusJob = schedule.scheduleJob(
+    automaticRule,
+    updateUserDiscount
+  );
   automaticCancelOrder = schedule.scheduleJob(automaticRule, cancelOrder);
-  automaticOrderRevertStock = schedule.scheduleJob(automaticRule, orderRevertStock);
-  automaticCompleteOver30MinutesRounds = schedule.scheduleJob(automaticRule, completeOver30MinutesRounds);
+  automaticOrderRevertStock = schedule.scheduleJob(
+    automaticRule,
+    orderRevertStock
+  );
+  automaticCompleteOver30MinutesRounds = schedule.scheduleJob(
+    automaticRule,
+    completeOver30MinutesRounds
+  );
 
-  automaticAccountSettlement = schedule.scheduleJob('0 10 0 * * *', accountSettlement);
+  automaticAccountSettlement = schedule.scheduleJob(
+    '0 10 0 * * *',
+    accountSettlement
+  );
 }
 
 process.on('SIGINT', function() {
