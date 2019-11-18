@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-18 13:49:27
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-11-16 22:55:40
+ * @Last Modified time: 2019-11-18 15:22:29
  */
 'use strict';
 
@@ -297,27 +297,25 @@ async function accountSettlement() {
         }
       );
 
-      if (result && result.length > 0 && result[0] > 0) {
-        // 更新订单结算状态
-        await ctx.orm().ftOrders.update(
-          {
-            isSettlement: 1
-          },
-          {
-            where: {
-              groupUserId: getAccountOrder[i].groupUserId,
-              settlementTime: {
-                $lte: today
-              },
-              oStatus: {
-                $in: [3, 4]
-              },
-              isSettlement: 0,
-              isDel: 0
-            }
+      // 更新订单结算状态
+      await ctx.orm().ftOrders.update(
+        {
+          isSettlement: 1
+        },
+        {
+          where: {
+            groupUserId: getAccountOrder[i].groupUserId,
+            settlementTime: {
+              $lte: today
+            },
+            oStatus: {
+              $in: [3, 4]
+            },
+            isSettlement: 0,
+            isDel: 0
           }
-        );
-      }
+        }
+      );
     }
   }
 
