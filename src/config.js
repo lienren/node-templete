@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2018-12-13 23:49:41
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-21 19:10:28
+ * @Last Modified time: 2019-11-21 14:30:57
  */
 'use strict';
 
@@ -75,16 +75,16 @@ module.exports = {
       sitepath: path.resolve(__dirname, '../assets/adminweb/index.html')
     }
   ],
-  // sequelize-auto -o "./src/models" -d fruit -h localhost -u root -p 3306 -x 123456 -e mysql
+  // sequelize-auto -o "./src/models" -d reclaim -h 47.105.83.138 -u root_logistics -p 3306 -x "djg3@JR&4_j4%2u" -e mysql
   databases: [
     {
       modelPath: path.resolve(__dirname, './models'),
-      db: 'fruit',
+      db: 'reclaim',
       dialect: 'mysql',
       port: 3306,
       replication: {
-        read: [{ host: 'localhost', username: 'root', password: '123456' }],
-        write: { host: 'localhost', username: 'root', password: '123456' }
+        read: [{ host: '47.105.83.138', username: 'root_logistics', password: 'djg3@JR&4_j4%2u' }],
+        write: { host: '47.105.83.138', username: 'root_logistics', password: 'djg3@JR&4_j4%2u' }
       },
       dialectOptions: {
         dateStrings: true,
