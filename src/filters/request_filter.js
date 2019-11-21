@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2018-04-19 13:38:30
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-11-21 14:33:07
+ * @Last Modified time: 2019-11-21 17:15:10
  */
 'use strict';
 
@@ -35,10 +35,10 @@ module.exports = async function(ctx, next) {
   };
 
   // 根据请求目录转入指定静态目录
-  if (ctx.path.indexOf('adminweb') > -1) {
+  if (ctx.path.indexOf('clothes') > -1) {
     await sendfile(
       ctx,
-      path.resolve(__dirname, '../../assets/adminweb/index.html')
+      path.resolve(__dirname, '../../assets/clothes/index.html')
     );
     return;
   }
@@ -87,7 +87,7 @@ module.exports = async function(ctx, next) {
       }
     );
 
-    assert.ok(isPass, '登录验证异常');*/
+    assert.ok(isPass, '登录验证异常'); */
 
     await next();
 
