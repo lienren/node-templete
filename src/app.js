@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2018-04-19 11:52:42
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-30 11:21:04
+ * @Last Modified time: 2019-11-21 14:45:08
  */
 'use strict';
 
@@ -50,9 +50,8 @@ const requestFilter = require('./filters/request_filter');
 app.use(requestFilter);
 
 // 路由
-const router = require('./router.js');
-const router_fruit = require('./router_fruit.js');
-app.use(router).use(router_fruit);
+const router_reclaim = require('./router_reclaim.js');
+app.use(router_reclaim);
 
 // 绑定访问端口
 http.createServer(app.callback()).listen(config.sys.port);
