@@ -2,17 +2,17 @@
  * @Author: Lienren
  * @Date: 2019-10-16 19:58:40
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-11-13 12:13:18
+ * @Last Modified time: 2019-11-25 16:08:20
  */
-"use strict";
+'use strict';
 
-const assert = require("assert");
-const sequelize = require("sequelize").Sequelize;
-const date = require("../../utils/date");
-const jwt = require("../../utils/jwt");
-const ali = require("../../extends/ali");
-const cp = require("./checkParam");
-const dic = require("./fruitEnum");
+const assert = require('assert');
+const sequelize = require('sequelize').Sequelize;
+const date = require('../../utils/date');
+const jwt = require('../../utils/jwt');
+const ali = require('../../extends/ali');
+const cp = require('./checkParam');
+const dic = require('./fruitEnum');
 
 async function addGroup(ctx, groupUserId) {
   // 验证团长
@@ -50,7 +50,7 @@ async function addGroup(ctx, groupUserId) {
     gSitePickAddress: groupUser.sitePickAddress,
     gSitePosition: groupUser.sitePosition,
     gStartTime: date.formatDate(),
-    gEndTime: "9999-12-31 23:59:59",
+    gEndTime: '9999-12-31 23:59:59',
     gStatus: 2,
     gStatusName: dic.groupStatusEnum[`2`],
     gProductNum: 0,
@@ -132,7 +132,7 @@ module.exports = {
       offset: (pageIndex - 1) * pageSize,
       limit: pageSize,
       where,
-      order: [["addTime", "DESC"]]
+      order: [['addTime', 'DESC']]
     });
 
     ctx.body = {
@@ -176,10 +176,10 @@ module.exports = {
     cp.isEmpty(param.code);
 
     // 获取支付宝信息
-    const resultAli = await ali.exec("alipay.system.oauth.token", {
-      grantType: "authorization_code",
+    const resultAli = await ali.exec('alipay.system.oauth.token', {
+      grantType: 'authorization_code',
       code: param.code,
-      refreshToken: "token"
+      refreshToken: 'token'
     });
 
     if (resultAli.userId) {
@@ -194,28 +194,28 @@ module.exports = {
         // 找不到，新用户注册
         result = await ctx.orm().ftUsers.create({
           alipayUserId: resultAli.userId,
-          nickName: "",
-          userName: "",
-          userPhone: "",
-          headImg: "",
+          nickName: '',
+          userName: '',
+          userPhone: '',
+          headImg: '',
           addTime: date.formatDate(),
           isDel: 0,
           userType: 1,
           userTypeName: dic.userTypeEnum[`1`],
-          userIdCard: "",
+          userIdCard: '',
           pId: 0,
-          pName: "",
+          pName: '',
           cId: 0,
-          cName: "",
-          siteName: "",
-          sitePosition: "[]",
-          siteAddress: "",
-          sitePickAddress: "",
+          cName: '',
+          siteName: '',
+          sitePosition: '[]',
+          siteAddress: '',
+          sitePickAddress: '',
           verifyType: 0,
           verifyTypeName: dic.verifyTypeEnum[`0`],
-          verfiyRemark: "",
+          verfiyRemark: '',
           currGId: 0,
-          currGName: ""
+          currGName: ''
         });
 
         // 查询新人券
@@ -269,7 +269,7 @@ module.exports = {
             await ctx.orm().ftUsers.update(
               {
                 currGId: 0,
-                currGName: "",
+                currGName: '',
                 currGTime: date.formatDate(),
                 updateTime: date.formatDate()
               },
@@ -281,10 +281,10 @@ module.exports = {
               }
             );
 
-            result.dataValues["currGId"] = 0;
-            result.dataValues["currGName"] = "";
-            result.dataValues["currGTime"] = date.formatDate();
-            result.dataValues["updateTime"] = date.formatDate();
+            result.dataValues['currGId'] = 0;
+            result.dataValues['currGName'] = '';
+            result.dataValues['currGTime'] = date.formatDate();
+            result.dataValues['updateTime'] = date.formatDate();
           }
         }
       }
@@ -312,7 +312,7 @@ module.exports = {
         }
       );
 
-      result.dataValues["token"] = token;
+      result.dataValues['token'] = token;
 
       ctx.body = {
         id: result.id,
@@ -415,7 +415,7 @@ module.exports = {
         updateTime: date.formatDate(),
         verifyType: 1,
         verifyTypeName: dic.verifyTypeEnum[`1`],
-        verfiyRemark: "",
+        verfiyRemark: '',
         verifyTime: date.formatDate()
       },
       {
@@ -646,7 +646,7 @@ module.exports = {
         updateTime: date.formatDate(),
         verifyType: 0,
         verifyTypeName: dic.verifyTypeEnum[`0`],
-        verfiyRemark: "关闭团长"
+        verfiyRemark: '关闭团长'
       },
       {
         where: {
@@ -766,7 +766,7 @@ module.exports = {
       offset: (pageIndex - 1) * pageSize,
       limit: pageSize,
       where,
-      order: [["addTime", "DESC"]]
+      order: [['addTime', 'DESC']]
     });
 
     ctx.body = {
@@ -804,7 +804,7 @@ module.exports = {
       offset: (pageIndex - 1) * pageSize,
       limit: pageSize,
       where,
-      order: [["addTime", "DESC"]]
+      order: [['addTime', 'DESC']]
     });
 
     ctx.body = {
@@ -831,7 +831,7 @@ module.exports = {
         isDel: 0
       }
     });
-    cp.isNull(groupUser, "团长不存在!");
+    cp.isNull(groupUser, '团长不存在!');
 
     let groupAccount = await ctx.orm().ftAccount.findOne({
       where: {
@@ -839,7 +839,7 @@ module.exports = {
         isDel: 0
       }
     });
-    cp.isNull(groupAccount, "团长帐户不存在!");
+    cp.isNull(groupAccount, '团长帐户不存在!');
 
     let totalPickPrice = param.pickPrice;
     let handFeePrice = (param.pickPrice * groupAccount.handFeeRate) / 1000;
@@ -880,7 +880,7 @@ module.exports = {
         isDel: 0
       });
     } else {
-      assert.ok(false, "您的余额不足！");
+      assert.ok(false, '您的余额不足！');
     }
   },
   submitPickCashVerifyOver: async ctx => {
@@ -895,7 +895,7 @@ module.exports = {
         isDel: 0
       }
     });
-    cp.isNull(pickCash, "提现单不存在!");
+    cp.isNull(pickCash, '提现单不存在!');
 
     let result = await ctx.orm().ftPickCashs.update(
       {
@@ -969,6 +969,14 @@ module.exports = {
       total: result1 && result1.length > 0 ? result1[0].num : 0,
       pageIndex,
       pageSize
+    };
+  },
+  aliGateWay: async ctx => {
+    let param = ctx.request.body || {};
+    console.log('param:', param);
+
+    ctx.body = {
+      ...param
     };
   }
 };

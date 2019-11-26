@@ -151,6 +151,10 @@ module.exports = function(sequelize, DataTypes) {
     proNum: {
       type: DataTypes.INTEGER(11),
       allowNull: true
+    },
+    payPrice: {
+      type: DataTypes.DECIMAL,
+      allowNull: true
     }
   }, {
     tableName: 'ftOrders'

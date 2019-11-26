@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-18 16:56:04
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-11-11 14:54:25
+ * @Last Modified time: 2019-11-26 11:56:37
  */
 'use strict';
 
@@ -143,7 +143,9 @@ async function splitOrder(ctx, order) {
       // 更新老订单商品数量
       await ctx.orm().ftOrders.update(
         {
-          proNum: sequelize.literal(` proNum - ${orderGroupUserProducts.length} `),
+          proNum: sequelize.literal(
+            ` proNum - ${orderGroupUserProducts.length} `
+          ),
           updateTime: date.formatDate()
         },
         {
@@ -475,7 +477,8 @@ module.exports = {
         let limitOrderProduct = await ctx.orm().query(limitOrderProductSql);
         if (limitOrderProduct && limitOrderProduct.length > 0) {
           assert.ok(
-            limitProList[i].pNum + parseInt(limitOrderProduct[0].num) <= limitProList[i].limitNum,
+            limitProList[i].pNum + parseInt(limitOrderProduct[0].num) <=
+              limitProList[i].limitNum,
             '购买商品已超限购数量！'
           );
         }
@@ -513,21 +516,35 @@ module.exports = {
       cp.isNull(discount, '优惠券不存在!');
 
       // 提取优惠券商品
-      let discountHit = dic.disRangeTypeEnum.verify(discount.disRangeType, discount.disRange, groupProList);
+      let discountHit = dic.disRangeTypeEnum.verify(
+        discount.disRangeType,
+        discount.disRange,
+        groupProList
+      );
       assert.ok(discountHit.isHit, '购买的商品无法使用优惠券!');
 
       // 能使用优惠券的商品总金额
-      let discountOrderSellPrice = discountHit.disProList.reduce((total, curr) => {
-        return total + parseFloat(curr.sellPrice) * curr.pNum;
-      }, 0);
+      let discountOrderSellPrice = discountHit.disProList.reduce(
+        (total, curr) => {
+          return total + parseFloat(curr.sellPrice) * curr.pNum;
+        },
+        0
+      );
 
       // 不能使用优惠券的商品总金额
-      let notDiscountOrderSellPrice = discountHit.notDisProList.reduce((total, curr) => {
-        return total + parseFloat(curr.sellPrice) * curr.pNum;
-      }, 0);
+      let notDiscountOrderSellPrice = discountHit.notDisProList.reduce(
+        (total, curr) => {
+          return total + parseFloat(curr.sellPrice) * curr.pNum;
+        },
+        0
+      );
 
       // 计算优惠金额
-      let disCalc = dic.disTypeEnum.calc(userDiscount.disType, userDiscount.disContext, discountOrderSellPrice);
+      let disCalc = dic.disTypeEnum.calc(
+        userDiscount.disType,
+        userDiscount.disContext,
+        discountOrderSellPrice
+      );
       orderDisPrice = disCalc.orderDisPrice;
       orderSellPrice = disCalc.orderSellPrice + notDiscountOrderSellPrice;
 
@@ -555,32 +572,38 @@ module.exports = {
       return total + curr.pNum;
     }, 0);
     if (groupProList) {
-      let batchBuckleStock = await ctx.orm().sequelize.transaction({}, async transaction => {
-        for (let i = 0, j = groupProList.length; i < j; i++) {
-          let resultBuckleStock = await ctx.orm().ftProducts.update(
-            {
-              stock: sequelize.literal(`stock - ${groupProList[i].pNum}`),
-              saleNum: sequelize.literal(` saleNum + ${groupProList[i].pNum}`)
-            },
-            {
-              where: {
-                id: groupProList[i].proId,
-                stock: {
-                  $gte: groupProList[i].pNum
-                }
+      let batchBuckleStock = await ctx
+        .orm()
+        .sequelize.transaction({}, async transaction => {
+          for (let i = 0, j = groupProList.length; i < j; i++) {
+            let resultBuckleStock = await ctx.orm().ftProducts.update(
+              {
+                stock: sequelize.literal(`stock - ${groupProList[i].pNum}`),
+                saleNum: sequelize.literal(` saleNum + ${groupProList[i].pNum}`)
               },
-              transaction
-            }
-          );
+              {
+                where: {
+                  id: groupProList[i].proId,
+                  stock: {
+                    $gte: groupProList[i].pNum
+                  }
+                },
+                transaction
+              }
+            );
 
-          if (resultBuckleStock && resultBuckleStock.length > 0 && resultBuckleStock[0] > 0) {
-            // 正常
-          } else {
-            // 扣库存失败，异常出去
-            throw new Error('库存不足！');
+            if (
+              resultBuckleStock &&
+              resultBuckleStock.length > 0 &&
+              resultBuckleStock[0] > 0
+            ) {
+              // 正常
+            } else {
+              // 扣库存失败，异常出去
+              throw new Error('库存不足！');
+            }
           }
-        }
-      });
+        });
 
       console.log('batchBuckleStock:', batchBuckleStock);
     }
@@ -620,7 +643,8 @@ module.exports = {
       oRemark: param.oRemark,
       oPickDay: pickTime,
       oPickTime: date.formatDate(date.addDay(new Date(), pickTime)),
-      proNum: orderProNum
+      proNum: orderProNum,
+      payPrice: 0
     });
 
     // 添加订单商品
@@ -888,6 +912,7 @@ module.exports = {
     if (ali.checkNotifySign(param)) {
       let oSn = param.out_trade_no || '';
       let totalAmount = parseFloat(param.total_amount) || 0;
+      let receiptAmount = parseFloat(param.receiptAmount) || 0;
 
       let order = await ctx.orm().ftOrders.findOne({
         where: {
@@ -905,6 +930,7 @@ module.exports = {
           {
             isPay: 1,
             payTime: date.formatDate(),
+            payPrice: receiptAmount,
             oStatus: 5,
             oStatusName: dic.orderStatusEnum[`5`],
             oPickTime: date.formatDate(date.addDay(new Date(), order.oPickDay)),
@@ -958,7 +984,10 @@ module.exports = {
         {
           oStatus: 3,
           oStatusName: dic.orderStatusEnum[`3`],
-          settlementTime: order.oType === 1 ? date.formatDate(date.addDay(new Date(), 7)) : date.formatDate(),
+          settlementTime:
+            order.oType === 1
+              ? date.formatDate(date.addDay(new Date(), 7))
+              : date.formatDate(),
           oStatusTime: date.formatDate(),
           updateTime: date.formatDate()
         },
