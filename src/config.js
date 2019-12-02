@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2018-12-13 23:49:41
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-11-21 14:30:57
+ * @Last Modified time: 2019-12-02 17:33:40
  */
 'use strict';
 
@@ -76,6 +76,7 @@ module.exports = {
     }
   ],
   // sequelize-auto -o "./src/models" -d reclaim -h 47.105.83.138 -u root_logistics -p 3306 -x "djg3@JR&4_j4%2u" -e mysql
+  // sequelize-auto -o "./src/models" -d logistics -h 39.106.6.195 -u root_logistics -p 3306 -x "djg3@JR&4_j4%2u" -e mysql
   databases: [
     {
       modelPath: path.resolve(__dirname, './models'),
@@ -83,8 +84,62 @@ module.exports = {
       dialect: 'mysql',
       port: 3306,
       replication: {
-        read: [{ host: '47.105.83.138', username: 'root_logistics', password: 'djg3@JR&4_j4%2u' }],
-        write: { host: '47.105.83.138', username: 'root_logistics', password: 'djg3@JR&4_j4%2u' }
+        read: [
+          {
+            host: '47.105.83.138',
+            username: 'root_logistics',
+            password: 'djg3@JR&4_j4%2u'
+          }
+        ],
+        write: {
+          host: '47.105.83.138',
+          username: 'root_logistics',
+          password: 'djg3@JR&4_j4%2u'
+        }
+      },
+      dialectOptions: {
+        dateStrings: true,
+        typeCast: function(field, next) {
+          if (field.type === 'DATETIME' || field.type === 'TIMESTAMP') {
+            let fieldDate = field.string();
+            if (fieldDate) {
+              return date.formatDate(fieldDate);
+            } else {
+              return fieldDate;
+            }
+          }
+          return next();
+        }
+      },
+      timezone: '+08:00',
+      pool: {
+        maxConnections: 200,
+        minConnections: 0,
+        maxIdleTime: 30000
+      },
+      define: {
+        timestamps: false
+      },
+      logging: false
+    },
+    {
+      modelPath: path.resolve(__dirname, './models'),
+      db: 'logistics',
+      dialect: 'mysql',
+      port: 3306,
+      replication: {
+        read: [
+          {
+            host: '39.106.6.195',
+            username: 'root_logistics',
+            password: 'djg3@JR&4_j4%2u'
+          }
+        ],
+        write: {
+          host: '39.106.6.195',
+          username: 'root_logistics',
+          password: 'djg3@JR&4_j4%2u'
+        }
       },
       dialectOptions: {
         dateStrings: true,
