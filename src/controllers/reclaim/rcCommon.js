@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-11-21 16:14:34
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-11-21 16:20:23
+ * @Last Modified time: 2020-02-22 11:46:56
  */
 'use strict';
 
@@ -23,5 +23,27 @@ module.exports = {
     } else {
       ctx.body = [];
     }
+  },
+  getAppletBanners: async ctx => {
+    let json = {
+      index: {
+        top: [
+          {
+            url: 'https://www.jiangxinzhiyin.com/rcplus/index_1.png',
+            link: ''
+          }
+        ],
+        middle: {
+          url: 'https://www.jiangxinzhiyin.com/rcplus/middle_1.jpg',
+          link: ''
+        },
+        bottom: {
+          url: 'https://www.jiangxinzhiyin.com/rcplus/bottom_1.jpg',
+          link: ''
+        }
+      }
+    };
+
+    ctx.body = json;
   }
 };

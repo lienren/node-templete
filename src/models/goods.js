@@ -12,6 +12,10 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING(200),
       allowNull: false
     },
+    g_class: {
+      type: DataTypes.STRING(100),
+      allowNull: true
+    },
     g_integral: {
       type: DataTypes.INTEGER(11),
       allowNull: false
@@ -31,6 +35,23 @@ module.exports = function(sequelize, DataTypes) {
     g_time: {
       type: DataTypes.DATE,
       allowNull: false
+    },
+    g_desc: {
+      type: DataTypes.STRING(1000),
+      allowNull: true
+    },
+    g_spec: {
+      type: DataTypes.STRING(100),
+      allowNull: true
+    },
+    g_arrival_time: {
+      type: DataTypes.STRING(100),
+      allowNull: true
+    },
+    g_exchange_num: {
+      type: DataTypes.INTEGER(11),
+      allowNull: true,
+      defaultValue: '0'
     }
   }, {
     tableName: 'goods'

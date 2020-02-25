@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-12-02 17:37:30
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-12-03 00:21:15
+ * @Last Modified time: 2020-02-24 10:27:23
  */
 'use strict';
 
@@ -50,10 +50,21 @@ module.exports = {
         }
       });
 
+      let csc_info = null;
+      if (w_order && w_order.csc_id) {
+        csc_info = await ctx.orm('logistics').courier_services_company.findOne({
+          where: {
+            csc_id: w_order.csc_id
+          }
+        });
+      }
+
       data.push({
         ...orders[i].dataValues,
-        o_state_name: orderStatusEnum[`${orders[i].dataValues.o_state}`] || '未知状态',
-        w_name: w_order ? w_order.dataValues.w_name : '未分配'
+        o_state_name:
+          orderStatusEnum[`${orders[i].dataValues.o_state}`] || '未知状态',
+        w_name: w_order ? w_order.dataValues.w_name : '未分配',
+        csc_name: csc_info ? csc_info.dataValues.csc_name : '未分配'
       });
     }
 
