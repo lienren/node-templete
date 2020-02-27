@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-11-21 16:14:34
  * @Last Modified by: Lienren
- * @Last Modified time: 2020-02-22 11:46:56
+ * @Last Modified time: 2020-02-27 23:10:18
  */
 'use strict';
 
@@ -29,16 +29,16 @@ module.exports = {
       index: {
         top: [
           {
-            url: 'https://www.jiangxinzhiyin.com/rcplus/index_1.png',
+            url: 'https://www.jiangxinzhiyin.com/pic/banners/index_1.png',
             link: ''
           }
         ],
         middle: {
-          url: 'https://www.jiangxinzhiyin.com/rcplus/middle_1.jpg',
+          url: 'https://www.jiangxinzhiyin.com/pic/banners/middle_1.jpg',
           link: ''
         },
         bottom: {
-          url: 'https://www.jiangxinzhiyin.com/rcplus/bottom_1.jpg',
+          url: 'https://www.jiangxinzhiyin.com/pic/banners/bottom_1.jpg',
           link: ''
         }
       }
