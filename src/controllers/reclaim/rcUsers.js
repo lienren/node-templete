@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2020-02-23 11:34:17
  * @Last Modified by: Lienren
- * @Last Modified time: 2020-02-27 22:53:20
+ * @Last Modified time: 2020-02-28 14:59:23
  */
 'use strict';
 
@@ -242,7 +242,47 @@ module.exports = {
       });
     }
   },
-  setUserInvite: async ctx => {},
+  setUserInvite: async ctx => {
+    let superiorId = ctx.request.body.superiorId || 0;
+
+    assert.notStrictEqual(superiorId, 0, '入参不能为空！');
+
+    // 获取用户
+    let user = await ctx.orm().user.findOne({
+      where: {
+        u_id: superiorId
+      }
+    });
+
+    assert.ok(user, '用户不存在！');
+
+    let n_integral = 20;
+    let now = date.formatDate();
+
+    // 送积分
+    await ctx.orm().user.update(
+      {
+        u_integral: Sequelize.literal(`u_integral + ${n_integral}`)
+      },
+      {
+        where: {
+          u_id: user.u_id
+        }
+      }
+    );
+
+    // 添加任务信息
+    ctx.orm().user_task_info.create({
+      uId: user.u_id,
+      taskName: '成功分享好友',
+      taskContext: `${now}成功分享好友赠送${n_integral}个环保币`,
+      taskIntegral: n_integral,
+      uNickName: user.u_nick_name,
+      uHeadImg: user.u_head,
+      uPosition: '未知',
+      addTime: date.formatDate()
+    });
+  },
   getTaskNumber: async ctx => {
     let gteOrderCount = await ctx.orm().ordinary_order.count({
       where: {
@@ -280,13 +320,13 @@ module.exports = {
     let totalRankSql = `select a.u_id, u.u_nick_name, u.u_head, a.oo_weight, (select sum(ir_integral) from integral_record where lower_u_id = a.u_id) ir_integral from (
         select u_id, SUM(oo_weight) oo_weight from ordinary_order where oo_status = 3 group by u_id) a
         inner join user u on u.u_id = a.u_id
-        order by a.oo_weight desc limit 10;`;
+        order by a.oo_weight desc limit 5;`;
     let totalRank = await ctx.orm().query(totalRankSql);
 
     let monthRankSql = `select a.u_id, u.u_nick_name, u.u_head, a.oo_weight, (select sum(ir_integral) from integral_record where lower_u_id = a.u_id) ir_integral from (
         select u_id, SUM(oo_weight) oo_weight from ordinary_order where oo_status = 3 and date_format(oo_time,'%Y')=date_format(now(),'%Y') group by u_id) a
         inner join user u on u.u_id = a.u_id
-        order by a.oo_weight desc limit 10;`;
+        order by a.oo_weight desc limit 5;`;
     let monthRank = await ctx.orm().query(monthRankSql);
 
     let totalRankList = totalRank.map(m => {
