@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2018-04-19 13:38:30
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-18 18:00:22
+ * @Last Modified time: 2020-03-05 11:42:53
  */
 'use strict';
 
@@ -36,7 +36,10 @@ module.exports = async function(ctx, next) {
 
   // 根据请求目录转入指定静态目录
   if (ctx.path.indexOf('adminweb') > -1) {
-    await sendfile(ctx, path.resolve(__dirname, '../../assets/adminweb/index.html'));
+    await sendfile(
+      ctx,
+      path.resolve(__dirname, '../../assets/adminweb/index.html')
+    );
     return;
   }
 
@@ -58,7 +61,9 @@ module.exports = async function(ctx, next) {
     let { isPass, authSource, authInfo, token } = await auth(
       ctx,
       async (ctx, requestUrl) => {
-        let api = await ctx.orm().BaseApi.findOne({ where: { apiUrl: requestUrl } });
+        let api = await ctx
+          .orm()
+          .BaseApi.findOne({ where: { apiUrl: requestUrl } });
         return api && api.isAuth === 1;
       },
       async (ctx, requestUrl, token, isPass, authInfo, authSource) => {
@@ -94,11 +99,13 @@ module.exports = async function(ctx, next) {
     // 记录响应日志
     log.logResponse(ctx, ms);
 
-    ctx.body = {
-      code: ctx.work.code,
-      message: ctx.work.message,
-      data: ctx.body || {}
-    };
+    if (!ctx.disableBodyParserReturn) {
+      ctx.body = {
+        code: ctx.work.code,
+        message: ctx.work.message,
+        data: ctx.body || {}
+      };
+    }
   } catch (error) {
     // 响应间隔时间
     let ms = new Date() - requestStartTime;

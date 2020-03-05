@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2020-03-05 09:48:43
  * @Last Modified by: Lienren
- * @Last Modified time: 2020-03-05 10:56:10
+ * @Last Modified time: 2020-03-05 14:28:36
  */
 
 const assert = require('assert');
@@ -30,6 +30,8 @@ module.exports = {
     cp.isEmpty(x2);
     cp.isEmpty(imgCode);
     cp.isEmpty(imgCodeToken);
+
+    let now = date.getTimeStamp();
 
     // 验证图形验证码
     let resultImgCodeToken = await ctx.orm().BaseImgCode.findOne({
@@ -105,7 +107,6 @@ module.exports = {
     let x16 = ctx.request.body.x16 || '';
     let x17 = ctx.request.body.x17 || '';
     let x18 = ctx.request.body.x18 || '';
-    let x19 = ctx.request.body.x19 || '';
 
     cp.isEmpty(openId);
     cp.isEmpty(x3);
@@ -158,7 +159,6 @@ module.exports = {
         x16,
         x17,
         x18,
-        x19,
         xIsAdd: 1,
         xlsAddTime: date.formatDate()
       },
@@ -171,7 +171,7 @@ module.exports = {
 
     ctx.body = {
       id: user.id,
-      xIsAdd: user.xIsAdd,
+      xIsAdd: 1,
       x19: user.x19
     };
   },

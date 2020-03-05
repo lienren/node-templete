@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2018-06-21 19:37:43
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-21 19:10:53
+ * @Last Modified time: 2020-03-05 11:55:05
  */
 'use strict';
 
@@ -20,20 +20,31 @@ module.exports = {
   getImageCode: async ctx => {
     let token = ctx.request.body.token || '';
 
-    assert.notStrictEqual(token, '', configData.ERROR_KEY_ENUM.ImageCodeTokenIsNull);
+    assert.notStrictEqual(
+      token,
+      '',
+      configData.ERROR_KEY_ENUM.ImageCodeTokenIsNull
+    );
 
     let now = date.getTimeStamp();
 
     // 获取图形验证码随机数配置
-    let ImageCodeRandomCount = await configData.getConfig(ctx, configData.CONFIG_KEY_ENUM.ImageCodeRandomCount);
-    let ImageCodeOverTime = await configData.getConfig(ctx, configData.CONFIG_KEY_ENUM.ImageCodeOverTime);
+    let ImageCodeRandomCount = await configData.getConfig(
+      ctx,
+      configData.CONFIG_KEY_ENUM.ImageCodeRandomCount
+    );
+    let ImageCodeOverTime = await configData.getConfig(
+      ctx,
+      configData.CONFIG_KEY_ENUM.ImageCodeOverTime
+    );
 
     let code = comm.randCode(ImageCodeRandomCount);
     let overTime = now + ImageCodeOverTime * 1000;
     let imgCode = await makeimgcode.makeCapcha(code, 90, 30, {
       ...{ bgColor: 0xffffff, topMargin: { base: 5, min: -8, max: 8 } }
     });
-    let imgCodeBase64 = 'data:image/bmp;base64,' + imgCode.getFileData().toString('base64');
+    let imgCodeBase64 =
+      'data:image/bmp;base64,' + imgCode.getFileData().toString('base64');
 
     // 保存数据库
     ctx.orm().BaseImgCode.create({
@@ -47,6 +58,49 @@ module.exports = {
     ctx.body = {
       imgbase64: imgCodeBase64
     };
+  },
+  // 获取图形验证码Buffer
+  getImageCodeByBase64: async ctx => {
+    let token = ctx.request.body.token || '';
+
+    assert.notStrictEqual(
+      token,
+      '',
+      configData.ERROR_KEY_ENUM.ImageCodeTokenIsNull
+    );
+
+    let now = date.getTimeStamp();
+
+    // 获取图形验证码随机数配置
+    let ImageCodeRandomCount = await configData.getConfig(
+      ctx,
+      configData.CONFIG_KEY_ENUM.ImageCodeRandomCount
+    );
+    let ImageCodeOverTime = await configData.getConfig(
+      ctx,
+      configData.CONFIG_KEY_ENUM.ImageCodeOverTime
+    );
+
+    let code = comm.randCode(ImageCodeRandomCount);
+    let overTime = now + ImageCodeOverTime * 1000;
+    let imgCode = await makeimgcode.makeCapcha(code, 90, 30, {
+      ...{ bgColor: 0xffffff, topMargin: { base: 5, min: -8, max: 8 } }
+    });
+    let imgCodeBuffer = imgCode.getFileData();
+
+    // 保存数据库
+    ctx.orm().BaseImgCode.create({
+      token: token,
+      imgCode: code,
+      isUse: 0,
+      overTime: overTime,
+      addTime: now
+    });
+
+    ctx.type = 'bmp';
+    ctx.status = 200;
+    ctx.length = Buffer.byteLength(imgCodeBuffer);
+    ctx.body = imgCodeBuffer;
   },
   // 上传文件
   uploadFile: async ctx => {
