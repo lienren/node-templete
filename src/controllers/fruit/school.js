@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2020-03-05 09:48:43
  * @Last Modified by: Lienren
- * @Last Modified time: 2020-03-05 14:28:36
+ * @Last Modified time: 2020-03-05 15:51:24
  */
 
 const assert = require('assert');
@@ -42,7 +42,7 @@ module.exports = {
         overTime: { $gt: now }
       }
     });
-    assert.notStrictEqual(resultImgCodeToken, null, '验证已过期！');
+    assert.notStrictEqual(resultImgCodeToken, null, '验证码已过期！');
 
     // 设置图形验证码已使用
     ctx.orm().BaseImgCode.update(
@@ -259,5 +259,57 @@ module.exports = {
       );
     }
   },
-  search: async ctx => {}
+  search: async ctx => {
+    let isAdd = ctx.request.body.isAdd || -1;
+    let isAddSTime = ctx.request.body.isAddSTime || '';
+    let isAddETime = ctx.request.body.isAddETime || '';
+    let state = ctx.request.body.state || -1;
+    let backSTime = ctx.request.body.backSTime || '';
+    let backETime = ctx.request.body.backETime || '';
+    let x1 = ctx.request.body.x1 || '';
+    let x2 = ctx.request.body.x2 || '';
+    let x3 = ctx.request.body.x3 || '';
+    let x4 = ctx.request.body.x4 || '';
+    let x5 = ctx.request.body.x5 || '';
+    let x6 = ctx.request.body.x6 || '';
+    let x7 = ctx.request.body.x7 || '';
+    let x8 = ctx.request.body.x8 || '';
+    let x9 = ctx.request.body.x9 || '';
+    let x11 = ctx.request.body.x11 || '';
+    let x12 = ctx.request.body.x12 || '';
+    let x13 = ctx.request.body.x13 || -1;
+    let x14 = ctx.request.body.x14 || '';
+    let x15 = ctx.request.body.x15 || '';
+    let x16 = ctx.request.body.x16 || '';
+    let x19 = ctx.request.body.x19 || '';
+    let x20 = ctx.request.body.x20 || '';
+    let pageIndex = param.pageIndex || 1;
+    let pageSize = param.pageSize || 20;
+
+    let where = {};
+
+    if (isAdd > -1) {
+      where.xIsAdd = isAdd;
+    }
+
+    if (isAddSTime !== '' && isAddETime !== '') {
+      where.xlsAddTime = {
+        $between: [isAddSTime, isAddETime]
+      };
+    }
+
+    if (state > -1) {
+      where.xState = xState;
+    }
+
+    if (backSTime !== '' && backETime !== '') {
+      where.xBackTime = {
+        $between: [backSTime, backETime]
+      };
+    }
+
+    if (x1 !== '') {
+        
+    }
+  }
 };
