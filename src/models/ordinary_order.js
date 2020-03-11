@@ -73,6 +73,10 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING(100),
       allowNull: true,
       defaultValue: '衣森林'
+    },
+    oo_formid: {
+      type: DataTypes.STRING(100),
+      allowNull: true
     }
   }, {
     tableName: 'ordinary_order'

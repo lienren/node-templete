@@ -18,7 +18,8 @@ module.exports = function(sequelize, DataTypes) {
     },
     u_openid: {
       type: DataTypes.STRING(50),
-      allowNull: false
+      allowNull: false,
+      unique: true
     },
     u_qr_code: {
       type: DataTypes.STRING(100),

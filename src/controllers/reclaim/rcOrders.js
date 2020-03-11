@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-11-21 14:34:07
  * @Last Modified by: Lienren
- * @Last Modified time: 2020-02-24 14:30:58
+ * @Last Modified time: 2020-03-11 13:46:13
  */
 'use strict';
 
@@ -142,6 +142,7 @@ module.exports = {
     let remark = ctx.request.body.remark || '';
     let channelId = ctx.request.body.channelId || 1;
     let channelName = ctx.request.body.channelName || '衣森林';
+    let formId = ctx.request.body.formId || '';
 
     assert.notStrictEqual(openId, '', '入参不能为空！');
     assert.notStrictEqual(userName, '', '入参不能为空！');
@@ -187,7 +188,8 @@ module.exports = {
       oo_status: 0,
       oo_time: date.formatDate(),
       oo_channelId: channelId,
-      oo_channelName: channelName
+      oo_channelName: channelName,
+      oo_formid: formId
     });
 
     ctx.body = {
