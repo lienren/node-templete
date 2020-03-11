@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2020-03-05 09:48:43
  * @Last Modified by: Lienren
- * @Last Modified time: 2020-03-05 15:51:24
+ * @Last Modified time: 2020-03-06 17:30:23
  */
 
 const assert = require('assert');
@@ -175,6 +175,91 @@ module.exports = {
       x19: user.x19
     };
   },
+  clearUserInfo: async ctx => {
+    let openId = ctx.request.body.openId || '';
+
+    cp.isEmpty(openId);
+
+    let user = await ctx.orm().school_users.findOne({
+      where: {
+        openId: openId
+      }
+    });
+    assert.notStrictEqual(user, null, '您的信息不存在，请确认后再试！');
+    assert.ok(user.xState === 0, '您已报道入校，不能重填信息！');
+
+    await ctx.orm().school_users.update(
+      {
+        x4: '',
+        x5: '',
+        x6: '',
+        x7: '',
+        x8: '',
+        x9: '',
+        x10: '',
+        x11: '',
+        x12: '',
+        x13: 0,
+        x14: '',
+        x15: '',
+        x16: '',
+        x17: '',
+        x18: '',
+        xIsAdd: 0,
+        xlsAddTime: date.formatDate()
+      },
+      {
+        where: {
+          id: user.id
+        }
+      }
+    );
+
+    ctx.body = {};
+  },
+  clearUserInfoById: async ctx => {
+    let id = ctx.request.body.id || 0;
+
+    cp.isNumber(id);
+
+    let user = await ctx.orm().school_users.findOne({
+      where: {
+        id: id
+      }
+    });
+    assert.notStrictEqual(user, null, '您的信息不存在，请确认后再试！');
+    assert.ok(user.xState === 0, '您已报道入校，不能重填信息！');
+
+    await ctx.orm().school_users.update(
+      {
+        openId: '',
+        x4: '',
+        x5: '',
+        x6: '',
+        x7: '',
+        x8: '',
+        x9: '',
+        x10: '',
+        x11: '',
+        x12: '',
+        x13: 0,
+        x14: '',
+        x15: '',
+        x16: '',
+        x17: '',
+        x18: '',
+        xIsAdd: 0,
+        xlsAddTime: date.formatDate()
+      },
+      {
+        where: {
+          id: user.id
+        }
+      }
+    );
+
+    ctx.body = {};
+  },
   getUserInfo: async ctx => {
     let openId = ctx.request.body.openId || '';
     let mOpenId = ctx.request.body.mOpenId || '';
@@ -283,8 +368,8 @@ module.exports = {
     let x16 = ctx.request.body.x16 || '';
     let x19 = ctx.request.body.x19 || '';
     let x20 = ctx.request.body.x20 || '';
-    let pageIndex = param.pageIndex || 1;
-    let pageSize = param.pageSize || 20;
+    let pageIndex = ctx.request.body.pageIndex || 1;
+    let pageSize = ctx.request.body.pageSize || 20;
 
     let where = {};
 
@@ -299,7 +384,7 @@ module.exports = {
     }
 
     if (state > -1) {
-      where.xState = xState;
+      where.xState = state;
     }
 
     if (backSTime !== '' && backETime !== '') {
@@ -309,7 +394,70 @@ module.exports = {
     }
 
     if (x1 !== '') {
-        
+      where.x1 = x1;
     }
+    if (x2 !== '') {
+      where.x2 = x2;
+    }
+    if (x3 !== '') {
+      where.x3 = x3;
+    }
+    if (x4 !== '') {
+      where.x4 = x4;
+    }
+    if (x5 !== '') {
+      where.x5 = x5;
+    }
+    if (x6 !== '') {
+      where.x6 = x6;
+    }
+    if (x7 !== '') {
+      where.x7 = x7;
+    }
+    if (x8 !== '') {
+      where.x8 = x8;
+    }
+    if (x9 !== '') {
+      where.x9 = x9;
+    }
+    if (x11 !== '') {
+      where.x11 = x11;
+    }
+    if (x12 !== '') {
+      where.x12 = x12;
+    }
+    if (x13 > -1) {
+      where.x13 = x13;
+    }
+    if (x14 !== '') {
+      where.x14 = x14;
+    }
+    if (x15 !== '') {
+      where.x15 = x15;
+    }
+    if (x16 !== '') {
+      where.x16 = x16;
+    }
+    if (x19 !== '') {
+      where.x19 = {
+        $between: [`${x19} 00:00:00`, `${x19} 23:59:59`]
+      };
+    }
+    if (x20 !== '') {
+      where.x20 = x20;
+    }
+
+    let list = await ctx.orm().school_users.findAndCountAll({
+      offset: (pageIndex - 1) * pageSize,
+      limit: pageSize,
+      where
+    });
+
+    ctx.body = {
+      list: list.rows,
+      total: list.count,
+      pageIndex,
+      pageSize
+    };
   }
 };
