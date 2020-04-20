@@ -2,23 +2,15 @@
  * @Author: Lienren
  * @Date: 2020-03-05 09:48:43
  * @Last Modified by: Lienren
- * @Last Modified time: 2020-03-06 17:30:23
+ * @Last Modified time: 2020-04-20 11:17:26
  */
 
 const assert = require('assert');
-const sequelize = require('sequelize').Sequelize;
 const cp = require('./checkParam');
-const dic = require('./fruitEnum');
-const ali = require('../../extends/ali');
-const comm = require('../../utils/comm');
 const date = require('../../utils/date');
 
-let mOpenIdDist = {
-  xxxxxx: '李恩仁'
-};
-
 module.exports = {
-  login: async ctx => {
+  login: async (ctx) => {
     let openId = ctx.request.body.openId || '';
     let x1 = ctx.request.body.x1 || '';
     let x2 = ctx.request.body.x2 || '';
@@ -39,29 +31,37 @@ module.exports = {
         token: imgCodeToken,
         imgCode: imgCode.toLocaleUpperCase(),
         isUse: 0,
-        overTime: { $gt: now }
-      }
+        overTime: {
+          $gt: now,
+        },
+      },
     });
     assert.notStrictEqual(resultImgCodeToken, null, '验证码已过期！');
 
     // 设置图形验证码已使用
     ctx.orm().BaseImgCode.update(
-      { isUse: 1 },
+      {
+        isUse: 1,
+      },
       {
         where: {
           token: imgCodeToken,
-          imgCode: imgCode
-        }
+          imgCode: imgCode,
+        },
       }
     );
 
     let user = await ctx.orm().school_users.findOne({
       where: {
         x1: x1,
-        x2: x2
-      }
+      },
     });
-    assert.notStrictEqual(user, null, '您的信息不存在，请确认后再试！');
+    assert.notStrictEqual(
+      user,
+      null,
+      '您不在返校名单中，请向辅导员确认是否暂缓/暂不返校！'
+    );
+    assert.ok(user.x2 === x2, '您输入密码不正确，请重新输入！');
     if (user.openId) {
       assert.ok(
         user.openId === openId,
@@ -73,12 +73,12 @@ module.exports = {
       // 更新openId
       await ctx.orm().school_users.update(
         {
-          openId: openId
+          openId: openId,
         },
         {
           where: {
-            id: user.id
-          }
+            id: user.id,
+          },
         }
       );
     }
@@ -86,10 +86,10 @@ module.exports = {
     ctx.body = {
       id: user.id,
       xIsAdd: user.xIsAdd,
-      x19: user.x19
+      x19: user.x19,
     };
   },
-  submitUserInfo: async ctx => {
+  submitUserInfo: async (ctx) => {
     let openId = ctx.request.body.openId || '';
     let x3 = ctx.request.body.x3 || '';
     let x4 = ctx.request.body.x4 || '';
@@ -107,6 +107,7 @@ module.exports = {
     let x16 = ctx.request.body.x16 || '';
     let x17 = ctx.request.body.x17 || '';
     let x18 = ctx.request.body.x18 || '';
+    let x21 = ctx.request.body.x21 || '';
 
     cp.isEmpty(openId);
     cp.isEmpty(x3);
@@ -125,20 +126,24 @@ module.exports = {
 
     cp.isNumber(x13);
     if (x13 > 0) {
-      cp.isEmpty(x14);
-      cp.isEmpty(x15);
-      cp.isEmpty(x16);
-      cp.isEmpty(x17);
+      // cp.isEmpty(x14);
+      // cp.isEmpty(x15);
+      // cp.isEmpty(x16);
+      // cp.isEmpty(x17);
     }
 
     // cp.isEmpty(x18);
 
     let user = await ctx.orm().school_users.findOne({
       where: {
-        openId: openId
-      }
+        openId: openId,
+      },
     });
-    assert.notStrictEqual(user, null, '您的信息不存在，请确认后再试！');
+    assert.notStrictEqual(
+      user,
+      null,
+      '您不在返校名单中，请向辅导员确认是否暂缓/暂不返校！'
+    );
     assert.ok(user.xState === 0 && user.xIsAdd === 0, '您的信息已完成登记！');
     assert.ok(user.x3 === x3, '您填写的姓名不正确！');
 
@@ -159,33 +164,38 @@ module.exports = {
         x16,
         x17,
         x18,
+        x21,
         xIsAdd: 1,
-        xlsAddTime: date.formatDate()
+        xlsAddTime: date.formatDate(),
       },
       {
         where: {
-          id: user.id
-        }
+          id: user.id,
+        },
       }
     );
 
     ctx.body = {
       id: user.id,
       xIsAdd: 1,
-      x19: user.x19
+      x19: user.x19,
     };
   },
-  clearUserInfo: async ctx => {
+  clearUserInfo: async (ctx) => {
     let openId = ctx.request.body.openId || '';
 
     cp.isEmpty(openId);
 
     let user = await ctx.orm().school_users.findOne({
       where: {
-        openId: openId
-      }
+        openId: openId,
+      },
     });
-    assert.notStrictEqual(user, null, '您的信息不存在，请确认后再试！');
+    assert.notStrictEqual(
+      user,
+      null,
+      '您不在返校名单中，请向辅导员确认是否暂缓/暂不返校！'
+    );
     assert.ok(user.xState === 0, '您已报道入校，不能重填信息！');
 
     await ctx.orm().school_users.update(
@@ -205,29 +215,34 @@ module.exports = {
         x16: '',
         x17: '',
         x18: '',
+        x21: '',
         xIsAdd: 0,
-        xlsAddTime: date.formatDate()
+        xlsAddTime: date.formatDate(),
       },
       {
         where: {
-          id: user.id
-        }
+          id: user.id,
+        },
       }
     );
 
     ctx.body = {};
   },
-  clearUserInfoById: async ctx => {
+  clearUserInfoById: async (ctx) => {
     let id = ctx.request.body.id || 0;
 
     cp.isNumber(id);
 
     let user = await ctx.orm().school_users.findOne({
       where: {
-        id: id
-      }
+        id: id,
+      },
     });
-    assert.notStrictEqual(user, null, '您的信息不存在，请确认后再试！');
+    assert.notStrictEqual(
+      user,
+      null,
+      '您不在返校名单中，请向辅导员确认是否暂缓/暂不返校！'
+    );
     assert.ok(user.xState === 0, '您已报道入校，不能重填信息！');
 
     await ctx.orm().school_users.update(
@@ -248,19 +263,20 @@ module.exports = {
         x16: '',
         x17: '',
         x18: '',
+        x21: '',
         xIsAdd: 0,
-        xlsAddTime: date.formatDate()
+        xlsAddTime: date.formatDate(),
       },
       {
         where: {
-          id: user.id
-        }
+          id: user.id,
+        },
       }
     );
 
     ctx.body = {};
   },
-  getUserInfo: async ctx => {
+  getUserInfo: async (ctx) => {
     let openId = ctx.request.body.openId || '';
     let mOpenId = ctx.request.body.mOpenId || '';
 
@@ -268,13 +284,25 @@ module.exports = {
     cp.isEmpty(mOpenId);
 
     // TODO:需要验证管理员OpenId
+    let manager = await ctx.orm().school_manager.findOne({
+      where: {
+        openId: mOpenId,
+        isDel: 0,
+      },
+    });
+
+    assert.notStrictEqual(manager, null, '您不是查验员，无权进入查看信息！');
 
     let user = await ctx.orm().school_users.findOne({
       where: {
-        openId: openId
-      }
+        openId: openId,
+      },
     });
-    assert.notStrictEqual(user, null, '您的信息不存在，请确认后再试！');
+    assert.notStrictEqual(
+      user,
+      null,
+      '您不在返校名单中，请向辅导员确认是否暂缓/暂不返校！'
+    );
     assert.ok(user.xIsAdd === 1, '信息未登记，请登记完成后再试！');
 
     let isBack = 0;
@@ -305,26 +333,39 @@ module.exports = {
       x13: user.x13,
       x14: user.x14,
       x16: user.x16,
+      x21: user.x21,
       isBack: isBack,
       backInfo: backInfo,
-      xBackTime: user.xBackTime
+      xBackTime: user.xBackTime,
     };
   },
-  setUserBackSchool: async ctx => {
+  setUserBackSchool: async (ctx) => {
     let openId = ctx.request.body.openId || '';
     let mOpenId = ctx.request.body.mOpenId || '';
 
     cp.isEmpty(openId);
     cp.isEmpty(mOpenId);
 
-    // TODO:需要验证管理员OpenId
+    // TODO: 需要验证管理员OpenId
+    let manager = await ctx.orm().school_manager.findOne({
+      where: {
+        openId: mOpenId,
+        isDel: 0,
+      },
+    });
+
+    assert.notStrictEqual(manager, null, '您不是查验员，无权设置返校！');
 
     let user = await ctx.orm().school_users.findOne({
       where: {
-        openId: openId
-      }
+        openId: openId,
+      },
     });
-    assert.notStrictEqual(user, null, '您的信息不存在，请确认后再试！');
+    assert.notStrictEqual(
+      user,
+      null,
+      '您不在返校名单中，请向辅导员确认是否暂缓/暂不返校！'
+    );
     assert.ok(user.xIsAdd === 1, '信息未登记，请登记完成后再试！');
 
     if (user.xState === 0) {
@@ -333,18 +374,18 @@ module.exports = {
           xState: 1,
           xStateName: '已返校',
           xBackTime: date.formatDate(),
-          mOpenId: mOpenId,
-          mOpenName: mOpenIdDist[`${mOpenId}`]
+          mOpenId: manager.openId,
+          mOpenName: manager.manageName,
         },
         {
           where: {
-            id: user.id
-          }
+            id: user.id,
+          },
         }
       );
     }
   },
-  search: async ctx => {
+  search: async (ctx) => {
     let isAdd = ctx.request.body.isAdd || -1;
     let isAddSTime = ctx.request.body.isAddSTime || '';
     let isAddETime = ctx.request.body.isAddETime || '';
@@ -379,7 +420,7 @@ module.exports = {
 
     if (isAddSTime !== '' && isAddETime !== '') {
       where.xlsAddTime = {
-        $between: [isAddSTime, isAddETime]
+        $between: [isAddSTime, isAddETime],
       };
     }
 
@@ -389,7 +430,7 @@ module.exports = {
 
     if (backSTime !== '' && backETime !== '') {
       where.xBackTime = {
-        $between: [backSTime, backETime]
+        $between: [backSTime, backETime],
       };
     }
 
@@ -440,7 +481,7 @@ module.exports = {
     }
     if (x19 !== '') {
       where.x19 = {
-        $between: [`${x19} 00:00:00`, `${x19} 23:59:59`]
+        $between: [`${x19} 00:00:00`, `${x19} 23:59:59`],
       };
     }
     if (x20 !== '') {
@@ -450,14 +491,36 @@ module.exports = {
     let list = await ctx.orm().school_users.findAndCountAll({
       offset: (pageIndex - 1) * pageSize,
       limit: pageSize,
-      where
+      where,
     });
 
     ctx.body = {
       list: list.rows,
       total: list.count,
       pageIndex,
-      pageSize
+      pageSize,
     };
-  }
+  },
+  addManager: async (ctx) => {
+    let openId = ctx.request.body.openId || '';
+    let manageName = ctx.request.body.manageName || '';
+
+    let result = await ctx.orm().school_manager.findOne({
+      where: {
+        openId: openId,
+      },
+    });
+
+    assert.ok(result === null, '您已经是管理员！');
+
+    // 管理员不存在，则添加
+    await ctx.orm().school_manager.create({
+      openId,
+      manageName,
+      addTime: date.formatDate(),
+      isDel: 0,
+    });
+
+    ctx.body = {};
+  },
 };

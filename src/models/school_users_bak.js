@@ -1,7 +1,7 @@
 /* jshint indent: 2 */
 
 module.exports = function(sequelize, DataTypes) {
-  return sequelize.define('school_users', {
+  return sequelize.define('school_users_bak', {
     id: {
       type: DataTypes.INTEGER(11),
       allowNull: false,
@@ -92,10 +92,6 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING(5),
       allowNull: true
     },
-    x21: {
-      type: DataTypes.STRING(3000),
-      allowNull: true
-    },
     xState: {
       type: DataTypes.INTEGER(11),
       allowNull: true
@@ -130,6 +126,6 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     }
   }, {
-    tableName: 'school_users'
+    tableName: 'school_users_bak'
   });
 };
