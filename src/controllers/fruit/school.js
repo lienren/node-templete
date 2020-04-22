@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2020-03-05 09:48:43
  * @Last Modified by: Lienren
- * @Last Modified time: 2020-04-20 11:17:26
+ * @Last Modified time: 2020-04-22 09:47:53
  */
 
 const assert = require('assert');
@@ -311,7 +311,7 @@ module.exports = {
     if (
       user.xState === 0 &&
       user.xIsAdd === 1 &&
-      date.formatDate(user.x19, 'YYYYMMDD') ===
+      date.formatDate(new Date(), 'YYYYMMDD') ===
         date.formatDate(new Date(), 'YYYYMMDD')
     ) {
       isBack = 1;
@@ -336,7 +336,7 @@ module.exports = {
       x21: user.x21,
       isBack: isBack,
       backInfo: backInfo,
-      xBackTime: user.xBackTime,
+      xBackTime: date.formatDate(new Date(), 'YYYY-MM-DD HH:mm:ss'),
     };
   },
   setUserBackSchool: async (ctx) => {
@@ -409,6 +409,7 @@ module.exports = {
     let x16 = ctx.request.body.x16 || '';
     let x19 = ctx.request.body.x19 || '';
     let x20 = ctx.request.body.x20 || '';
+    let area = ctx.request.body.area || '';
     let pageIndex = ctx.request.body.pageIndex || 1;
     let pageSize = ctx.request.body.pageSize || 20;
 
@@ -486,6 +487,10 @@ module.exports = {
     }
     if (x20 !== '') {
       where.x20 = x20;
+    }
+
+    if (area !== '') {
+      where.area = area;
     }
 
     let list = await ctx.orm().school_users.findAndCountAll({

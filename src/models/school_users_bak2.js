@@ -1,7 +1,7 @@
 /* jshint indent: 2 */
 
 module.exports = function(sequelize, DataTypes) {
-  return sequelize.define('school_users', {
+  return sequelize.define('school_users_bak2', {
     id: {
       type: DataTypes.INTEGER(11),
       allowNull: false,
@@ -128,12 +128,8 @@ module.exports = function(sequelize, DataTypes) {
     xlsAddTime: {
       type: DataTypes.DATE,
       allowNull: true
-    },
-    area: {
-      type: DataTypes.STRING(100),
-      allowNull: true
     }
   }, {
-    tableName: 'school_users'
+    tableName: 'school_users_bak2'
   });
 };
