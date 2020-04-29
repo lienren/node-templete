@@ -40,6 +40,10 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.INTEGER(11),
       allowNull: true
     },
+    userStatusName: {
+      type: DataTypes.STRING(20),
+      allowNull: true
+    },
     addTime: {
       type: DataTypes.DATE,
       allowNull: true

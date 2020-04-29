@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2020-04-29 15:22:15
  * @Last Modified by: Lienren
- * @Last Modified time: 2020-04-29 18:06:14
+ * @Last Modified time: 2020-04-29 18:21:48
  */
 'use strict';
 
@@ -11,6 +11,16 @@ const comm = require('../../utils/comm');
 const date = require('../../utils/date');
 const encrypt = require('../../utils/encrypt');
 const cp = require('./checkParam');
+
+const enumDefStatusName = {
+  0: '未启用',
+  1: '已启用',
+};
+const enumUserStatusName = {
+  0: '待审核',
+  1: '已启用',
+  2: '已停用',
+};
 
 async function checkImageCode(ctx, imgCodeToken, imgCode) {
   let now = date.getTimeStamp();
@@ -76,7 +86,7 @@ module.exports = {
     cp.isEmpty(imgCodeToken);
 
     let imgCodeResult = await checkImageCode(ctx, imgCodeToken, imgCode);
-    assert.ok(imgCodeResult, '验证码已过期！');
+    assert.ok(imgCodeResult, '验证码错误或已过期！');
 
     let user = await ctx.orm('youhouse').yh_users.findOne({
       where: {
@@ -108,6 +118,7 @@ module.exports = {
       defName: defUser.defName,
       userCompName: userCompName,
       userStatus: 1,
+      userStatusName: enumUserStatusName[1],
       addTime: date.formatDate(),
       isDel: 0,
     });
@@ -128,7 +139,7 @@ module.exports = {
     cp.isEmpty(imgCodeToken);
 
     let imgCodeResult = await checkImageCode(ctx, imgCodeToken, imgCode);
-    assert.ok(imgCodeResult, '验证码已过期！');
+    assert.ok(imgCodeResult, '验证码错误或已过期！');
 
     let user = await ctx.orm('youhouse').yh_users.findOne({
       where: {
