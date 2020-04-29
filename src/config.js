@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2018-12-13 23:49:41
  * @Last Modified by: Lienren
- * @Last Modified time: 2020-03-05 09:47:59
+ * @Last Modified time: 2020-04-29 15:20:36
  */
 'use strict';
 
@@ -29,7 +29,7 @@ module.exports = {
           category: 'log_file',
           numBackups: 5, // keep five backup files
           // compress: true, // compress the backups
-          encoding: 'utf-8'
+          encoding: 'utf-8',
         },
         errorLogger: {
           type: 'dateFile',
@@ -43,15 +43,15 @@ module.exports = {
           category: 'log_file',
           numBackups: 5, // keep five backup files
           // compress: true, // compress the backups
-          encoding: 'utf-8'
-        }
+          encoding: 'utf-8',
+        },
       },
       categories: {
         default: { appenders: ['resLogger'], level: 'trace' },
         resLogger: { appenders: ['resLogger'], level: 'trace' },
-        errorLogger: { appenders: ['errorLogger'], level: 'error' }
-      }
-    }
+        errorLogger: { appenders: ['errorLogger'], level: 'error' },
+      },
+    },
   },
   auth: {
     authOpen: true,
@@ -62,18 +62,18 @@ module.exports = {
       expiresIn: '24h',
       issuer: 'Fruit System',
       audience: 'Li R&D TEAM 2019-2021.',
-      algorithm: 'HS512'
-    }
+      algorithm: 'HS512',
+    },
   },
   websites: [
     {
       sitename: 'adminweb',
-      sitepath: path.resolve(__dirname, '../assets/adminweb/index.html')
+      sitepath: path.resolve(__dirname, '../assets/adminweb/index.html'),
     },
     {
       sitename: '.ico',
-      sitepath: path.resolve(__dirname, '../assets/adminweb/index.html')
-    }
+      sitepath: path.resolve(__dirname, '../assets/adminweb/index.html'),
+    },
   ],
   // sequelize-auto -o "./src/models" -d fruit -h 47.108.71.94 -u root -p 3306 -x Ler@2019 -e mysql
   databases: [
@@ -83,12 +83,14 @@ module.exports = {
       dialect: 'mysql',
       port: 3306,
       replication: {
-        read: [{ host: '47.108.71.94', username: 'root', password: 'Ler@2019' }],
-        write: { host: '47.108.71.94', username: 'root', password: 'Ler@2019' }
+        read: [
+          { host: '47.108.71.94', username: 'root', password: 'Ler@2019' },
+        ],
+        write: { host: '47.108.71.94', username: 'root', password: 'Ler@2019' },
       },
       dialectOptions: {
         dateStrings: true,
-        typeCast: function(field, next) {
+        typeCast: function (field, next) {
           if (field.type === 'DATETIME' || field.type === 'TIMESTAMP') {
             let fieldDate = field.string();
             if (fieldDate) {
@@ -98,32 +100,69 @@ module.exports = {
             }
           }
           return next();
-        }
+        },
       },
       timezone: '+08:00',
       pool: {
         maxConnections: 200,
         minConnections: 0,
-        maxIdleTime: 30000
+        maxIdleTime: 30000,
       },
       define: {
-        timestamps: false
+        timestamps: false,
       },
-      logging: false
-    }
+      logging: false,
+    },
+    // sequelize-auto -o "./src/models" -d youhouse -h 47.108.71.94 -u root -p 3306 -x Ler@2019 -e mysql
+    {
+      modelPath: path.resolve(__dirname, './models'),
+      db: 'youhouse',
+      dialect: 'mysql',
+      port: 3306,
+      replication: {
+        read: [
+          { host: '47.108.71.94', username: 'root', password: 'Ler@2019' },
+        ],
+        write: { host: '47.108.71.94', username: 'root', password: 'Ler@2019' },
+      },
+      dialectOptions: {
+        dateStrings: true,
+        typeCast: function (field, next) {
+          if (field.type === 'DATETIME' || field.type === 'TIMESTAMP') {
+            let fieldDate = field.string();
+            if (fieldDate) {
+              return date.formatDate(fieldDate);
+            } else {
+              return fieldDate;
+            }
+          }
+          return next();
+        },
+      },
+      timezone: '+08:00',
+      pool: {
+        maxConnections: 200,
+        minConnections: 0,
+        maxIdleTime: 30000,
+      },
+      define: {
+        timestamps: false,
+      },
+      logging: false,
+    },
   ],
   redis: {
     host: 'localhost',
     port: 6379,
     family: 4,
     password: '',
-    db: 0
+    db: 0,
   },
   rebitmq: {
     protocol: 'amqp',
     hostname: 'localhost',
     port: 5672,
     username: 'guest',
-    password: 'guest'
-  }
+    password: 'guest',
+  },
 };

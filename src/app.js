@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2018-04-19 11:52:42
  * @Last Modified by: Lienren
- * @Last Modified time: 2020-03-05 11:43:18
+ * @Last Modified time: 2020-04-29 15:24:08
  */
 'use strict';
 
@@ -46,7 +46,7 @@ app.use(
   bodyParser({
     enableTypes: ['json', 'form'],
     jsonLimit: '100mb',
-    formLimit: '100mb'
+    formLimit: '100mb',
   })
 );
 
@@ -63,7 +63,8 @@ app.use(requestFilter);
 // 路由
 const router = require('./router.js');
 const router_fruit = require('./router_fruit.js');
-app.use(router).use(router_fruit);
+const router_youhouse = require('./router_youhouse.js');
+app.use(router).use(router_fruit).use(router_youhouse);
 
 // 绑定访问端口
 http.createServer(app.callback()).listen(config.sys.port);
