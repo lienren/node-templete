@@ -44,6 +44,10 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING(20),
       allowNull: true
     },
+    userToken: {
+      type: DataTypes.STRING(100),
+      allowNull: true
+    },
     addTime: {
       type: DataTypes.DATE,
       allowNull: true

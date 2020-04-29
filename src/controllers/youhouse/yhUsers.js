@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2020-04-29 15:22:15
  * @Last Modified by: Lienren
- * @Last Modified time: 2020-04-29 18:21:48
+ * @Last Modified time: 2020-04-29 19:01:26
  */
 'use strict';
 
@@ -166,6 +166,19 @@ module.exports = {
 
     assert.ok(defUser !== null, '您选择的维护人不存在，请联系管理员！');
 
+    let userToken = comm.randCode(32);
+
+    ctx.orm('youhouse').yh_users.update(
+      {
+        userToken: userToken,
+      },
+      {
+        where: {
+          id: user.id,
+        },
+      }
+    );
+
     ctx.body = {
       userId: user.id,
       userPhone: user.userPhone,
@@ -174,6 +187,7 @@ module.exports = {
       defName: user.defName,
       defPhone: defUser.defPhone,
       userCompName: user.userCompName,
+      userToken: userToken,
     };
   },
 };
