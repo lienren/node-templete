@@ -60,6 +60,22 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING(100),
       allowNull: true
     },
+    city: {
+      type: DataTypes.STRING(50),
+      allowNull: true
+    },
+    area: {
+      type: DataTypes.STRING(50),
+      allowNull: true
+    },
+    street: {
+      type: DataTypes.STRING(50),
+      allowNull: true
+    },
+    isRecomm: {
+      type: DataTypes.INTEGER(11),
+      allowNull: true
+    },
     addTime: {
       type: DataTypes.DATE,
       allowNull: true

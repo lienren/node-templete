@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2020-04-29 18:25:38
  * @Last Modified by: Lienren
- * @Last Modified time: 2020-04-29 18:40:06
+ * @Last Modified time: 2020-05-07 18:17:59
  */
 'use strict';
 
@@ -19,12 +19,14 @@ const enumHouseStatusName = {
   3: '已下线',
 };
 module.exports = {
-  getHouse: async (ctx) => {
+  getRecommHouse: async (ctx) => {
     let result = await ctx.orm('youhouse').yh_house.findAll({
       where: {
+        isRecomm: 1,
         status: 2,
         isDel: 0,
       },
+      order: [['addTime', 'desc']],
     });
 
     let houseItems = [];
@@ -40,6 +42,31 @@ module.exports = {
             return `root://assets/img/icons/${jm}.png`;
           }),
           jiansKeys: jians,
+          stopTime: date.formatDate(data.stopTime, 'YYYY年MM月DD日'),
+        };
+      });
+    }
+
+    ctx.body = houseItems;
+  },
+  getHouse: async (ctx) => {
+    let result = await ctx.orm('youhouse').yh_house.findAll({
+      where: {
+        status: 2,
+        isDel: 0,
+      },
+      order: [['addTime', 'desc']],
+    });
+
+    let houseItems = [];
+    if (result) {
+      houseItems = result.map((m) => {
+        let data = m.dataValues;
+        return {
+          ...data,
+          yj: data.yj && data.yj.length > 0 ? JSON.parse(data.yj) : ['无'],
+          jians:
+            data.jians && data.jians.length > 0 ? JSON.parse(data.jians) : [],
           stopTime: date.formatDate(data.stopTime, 'YYYY年MM月DD日'),
         };
       });

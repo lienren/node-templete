@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2020-04-29 18:53:41
  * @Last Modified by: Lienren
- * @Last Modified time: 2020-04-29 19:37:47
+ * @Last Modified time: 2020-04-29 20:07:13
  */
 'use strict';
 
@@ -132,5 +132,51 @@ module.exports = {
     }
 
     ctx.body = reportItems;
+  },
+  getReportCount: async (ctx) => {
+    let userId = ctx.request.body.userId || 0;
+    let userToken = ctx.request.body.userToken || '';
+
+    cp.isNumberGreaterThan0(userId);
+    cp.isEmpty(userToken);
+
+    let user = await ctx.orm('youhouse').yh_users.findOne({
+      where: {
+        id: userId,
+        isDel: 0,
+      },
+    });
+    assert.ok(user !== null, '您的帐号不存在！');
+    assert.ok(user.userStatus === 1, '您的帐号被停用，请联系管理员！');
+    assert.ok(
+      user.userToken === userToken,
+      '您的帐号已在别处登录，请退出后重新登录！'
+    );
+
+    let sql = `select status, statusName, count(1) num from yh_report where uid = ${user.id} and status in (1, 3, 4, 5) and isDel = 0 group by status, statusName;`;
+    let result = await ctx.orm('youhouse').query(sql);
+
+    let countInfo = {
+      c1: 0,
+      c2: 0,
+      c3: 0,
+      c4: 0,
+    };
+
+    if (result && result.length > 0) {
+      result.map((m) => {
+        if (m.status === 1) {
+          countInfo.c1 = m.num;
+        } else if (m.status === 3) {
+          countInfo.c2 = m.num;
+        } else if (m.status === 4) {
+          countInfo.c3 = m.num;
+        } else if (m.status === 5) {
+          countInfo.c4 = m.num;
+        }
+      });
+    }
+
+    ctx.body = countInfo;
   },
 };
