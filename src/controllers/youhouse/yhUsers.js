@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2020-04-29 15:22:15
  * @Last Modified by: Lienren
- * @Last Modified time: 2020-04-29 19:01:26
+ * @Last Modified time: 2020-05-08 16:33:54
  */
 'use strict';
 
@@ -20,6 +20,13 @@ const enumUserStatusName = {
   0: '待审核',
   1: '已启用',
   2: '已停用',
+};
+const enumUserTypeName = {
+  1: '房产经纪人',
+  2: '悠房维护人员',
+  3: '悠房驻场人员',
+  4: '装修设计师',
+  999: '系统人员',
 };
 
 async function checkImageCode(ctx, imgCodeToken, imgCode) {
@@ -58,16 +65,6 @@ async function checkImageCode(ctx, imgCodeToken, imgCode) {
 }
 
 module.exports = {
-  getDefUsers: async (ctx) => {
-    let result = await ctx.orm('youhouse').yh_def_users.findAll({
-      where: {
-        defStatus: 1,
-        isDel: 0,
-      },
-    });
-
-    ctx.body = result;
-  },
   register: async (ctx) => {
     let userPhone = ctx.request.body.userPhone || '';
     let userPwd = ctx.request.body.userPwd || '';
@@ -97,10 +94,10 @@ module.exports = {
 
     assert.ok(user === null, '您输入的手机号已被注册过！');
 
-    let defUser = await ctx.orm('youhouse').yh_def_users.findOne({
+    let defUser = await ctx.orm('youhouse').yh_users.findOne({
       where: {
         id: defId,
-        defStatus: 1,
+        userStatus: 1,
         isDel: 0,
       },
     });
@@ -115,7 +112,7 @@ module.exports = {
       userSalt: salt,
       userName: userName,
       defId: defUser.id,
-      defName: defUser.defName,
+      defName: defUser.userName,
       userCompName: userCompName,
       userStatus: 1,
       userStatusName: enumUserStatusName[1],
@@ -156,10 +153,10 @@ module.exports = {
 
     assert.ok(user.userPwd === pwd, '您的密码不正确！');
 
-    let defUser = await ctx.orm('youhouse').yh_def_users.findOne({
+    let defUser = await ctx.orm('youhouse').yh_users.findOne({
       where: {
         id: user.defId,
-        defStatus: 1,
+        userStatus: 1,
         isDel: 0,
       },
     });
@@ -185,9 +182,51 @@ module.exports = {
       userName: user.userName,
       defId: user.defId,
       defName: user.defName,
-      defPhone: defUser.defPhone,
+      defPhone: defUser.userPhone,
       userCompName: user.userCompName,
       userToken: userToken,
+      userType: user.userType,
+      userTypeName: user.userTypeName,
     };
+  },
+  getDefUsers: async (ctx) => {
+    let result = await ctx.orm('youhouse').yh_users.findAll({
+      where: {
+        userStatus: 1,
+        userType: 2,
+        isDel: 0,
+      },
+    });
+
+    let users = result.map((m) => {
+      let data = m.dataValues;
+      return {
+        id: data.id,
+        defName: data.userName,
+        defPhone: data.userPhone,
+      };
+    });
+
+    ctx.body = users;
+  },
+  getDecoUsers: async (ctx) => {
+    let result = await ctx.orm('youhouse').yh_users.findAll({
+      where: {
+        userStatus: 1,
+        userType: 4,
+        isDel: 0,
+      },
+    });
+
+    let users = result.map((m) => {
+      let data = m.dataValues;
+      return {
+        id: data.id,
+        userName: data.userName,
+        userPhone: data.userPhone,
+      };
+    });
+
+    ctx.body = users;
   },
 };

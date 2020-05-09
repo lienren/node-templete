@@ -1,50 +1,58 @@
 /* jshint indent: 2 */
 
 module.exports = function(sequelize, DataTypes) {
-  return sequelize.define('yh_users', {
+  return sequelize.define('yh_report_deco', {
     id: {
       type: DataTypes.INTEGER(11),
       allowNull: false,
       primaryKey: true,
       autoIncrement: true
     },
-    userPhone: {
+    cName: {
+      type: DataTypes.STRING(100),
+      allowNull: true
+    },
+    cPhone: {
       type: DataTypes.STRING(20),
       allowNull: true
     },
-    userPwd: {
-      type: DataTypes.STRING(255),
+    cSex: {
+      type: DataTypes.STRING(10),
       allowNull: true
     },
-    userSalt: {
-      type: DataTypes.STRING(100),
+    cGetTimeDate: {
+      type: DataTypes.DATE,
       allowNull: true
     },
-    userName: {
-      type: DataTypes.STRING(100),
+    cGetTimeTime: {
+      type: DataTypes.STRING(10),
       allowNull: true
     },
-    defId: {
-      type: DataTypes.INTEGER(100),
-      allowNull: true
-    },
-    defName: {
-      type: DataTypes.STRING(100),
-      allowNull: true
-    },
-    userCompName: {
-      type: DataTypes.STRING(100),
-      allowNull: true
-    },
-    userStatus: {
+    status: {
       type: DataTypes.INTEGER(11),
       allowNull: true
     },
-    userStatusName: {
-      type: DataTypes.STRING(20),
+    statusName: {
+      type: DataTypes.STRING(100),
       allowNull: true
     },
-    userToken: {
+    uId: {
+      type: DataTypes.INTEGER(11),
+      allowNull: true
+    },
+    uName: {
+      type: DataTypes.STRING(100),
+      allowNull: true
+    },
+    cCost: {
+      type: DataTypes.STRING(50),
+      allowNull: true
+    },
+    disgId: {
+      type: DataTypes.INTEGER(11),
+      allowNull: true
+    },
+    disgName: {
       type: DataTypes.STRING(100),
       allowNull: true
     },
@@ -53,19 +61,10 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     isDel: {
-      type: DataTypes.INTEGER(255),
-      allowNull: true
-    },
-    userType: {
       type: DataTypes.INTEGER(11),
-      allowNull: true,
-      defaultValue: '1'
-    },
-    userTypeName: {
-      type: DataTypes.STRING(20),
       allowNull: true
     }
   }, {
-    tableName: 'yh_users'
+    tableName: 'yh_report_deco'
   });
 };
