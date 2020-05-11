@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2020-04-29 18:53:41
  * @Last Modified by: Lienren
- * @Last Modified time: 2020-05-09 14:32:40
+ * @Last Modified time: 2020-05-11 16:03:06
  */
 'use strict';
 
@@ -139,6 +139,58 @@ module.exports = {
 
     ctx.body = reportItems;
   },
+  getReportByHouse: async (ctx) => {
+    let userId = ctx.request.body.userId || 0;
+    let userToken = ctx.request.body.userToken || '';
+    let houseId = ctx.request.body.houseId || 0;
+
+    cp.isNumberGreaterThan0(userId);
+    cp.isEmpty(userToken);
+    cp.isNumberGreaterThan0(houseId);
+
+    let user = await ctx.orm('youhouse').yh_users.findOne({
+      where: {
+        id: userId,
+        isDel: 0,
+      },
+    });
+    assert.ok(user !== null, '您的帐号不存在！');
+    assert.ok(user.userStatus === 1, '您的帐号被停用，请联系管理员！');
+    assert.ok(
+      user.userToken === userToken,
+      '您的帐号已在别处登录，请退出后重新登录！'
+    );
+
+    let result = await ctx.orm('youhouse').yh_report.findAll({
+      where: {
+        uId: user.id,
+        hId: houseId,
+        isDel: 0,
+      },
+      order: [['addTime', 'desc']],
+    });
+
+    let reportItems = [];
+    if (result) {
+      reportItems = result.map((m) => {
+        let data = m.dataValues;
+        return {
+          id: data.id,
+          hName: data.hName,
+          hImgUrl: data.hImgUrl,
+          cName: data.cName,
+          cPhone: data.cPhone,
+          cSex: data.cSex,
+          cGetTime: date.formatDate(data.cGetTime, 'YYYY年MM月DD日'),
+          status: data.status,
+          statusName: data.statusName,
+          addTime: date.formatDate(data.addTime, 'YYYY年MM月DD日 HH:mm:ss'),
+        };
+      });
+    }
+
+    ctx.body = reportItems;
+  },
   getReportCount: async (ctx) => {
     let userId = ctx.request.body.userId || 0;
     let userToken = ctx.request.body.userToken || '';
@@ -159,9 +211,6 @@ module.exports = {
       '您的帐号已在别处登录，请退出后重新登录！'
     );
 
-    let sql = `select status, statusName, count(1) num from yh_report where uid = ${user.id} and status in (1, 3, 4, 5) and isDel = 0 group by status, statusName;`;
-    let result = await ctx.orm('youhouse').query(sql);
-
     let countInfo = {
       c1: 0,
       c2: 0,
@@ -169,18 +218,18 @@ module.exports = {
       c4: 0,
     };
 
-    if (result && result.length > 0) {
-      result.map((m) => {
-        if (m.status === 1) {
-          countInfo.c1 = m.num;
-        } else if (m.status === 3) {
-          countInfo.c2 = m.num;
-        } else if (m.status === 4) {
-          countInfo.c3 = m.num;
-        } else if (m.status === 5) {
-          countInfo.c4 = m.num;
-        }
-      });
+    let sql1 = `select count(1) num from yh_report where uid = ${user.id} and isDel = 0;`;
+    let result1 = await ctx.orm('youhouse').query(sql1);
+
+    if (result1 && result1.length > 0) {
+      countInfo.c1 = result1[0].num;
+    }
+
+    let sql2 = `select count(1) num from yh_report_deco where uid = ${user.id} and isDel = 0;`;
+    let result2 = await ctx.orm('youhouse').query(sql2);
+
+    if (result2 && result2.length > 0) {
+      countInfo.c2 = result2[0].num;
     }
 
     ctx.body = countInfo;

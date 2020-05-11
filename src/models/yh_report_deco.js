@@ -63,6 +63,14 @@ module.exports = function(sequelize, DataTypes) {
     isDel: {
       type: DataTypes.INTEGER(11),
       allowNull: true
+    },
+    community: {
+      type: DataTypes.STRING(100),
+      allowNull: true
+    },
+    address: {
+      type: DataTypes.STRING(255),
+      allowNull: true
     }
   }, {
     tableName: 'yh_report_deco'

@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2020-04-29 18:25:38
  * @Last Modified by: Lienren
- * @Last Modified time: 2020-05-07 17:31:31
+ * @Last Modified time: 2020-05-11 15:11:10
  */
 'use strict';
 
@@ -28,5 +28,25 @@ module.exports = {
     });
 
     ctx.body = result;
+  },
+  getMsgs: async (ctx) => {
+    let result = await ctx.orm('youhouse').yh_msg.findAll({
+      where: {
+        isDel: 0,
+      },
+      order: [['addTime', 'desc']],
+    });
+
+    let msgItems = [];
+    if (result) {
+      msgItems = result.map((m) => {
+        return {
+          ...m.dataValues,
+          time: date.formatDate(m.dataValues.addTime, 'YYYY年MM月DD日 HH:mm'),
+        };
+      });
+    }
+
+    ctx.body = msgItems;
   },
 };
