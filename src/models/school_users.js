@@ -132,6 +132,10 @@ module.exports = function(sequelize, DataTypes) {
     area: {
       type: DataTypes.STRING(100),
       allowNull: true
+    },
+    x22: {
+      type: DataTypes.STRING(50),
+      allowNull: true
     }
   }, {
     tableName: 'school_users'

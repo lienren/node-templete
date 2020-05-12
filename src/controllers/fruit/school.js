@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2020-03-05 09:48:43
  * @Last Modified by: Lienren
- * @Last Modified time: 2020-04-22 09:47:53
+ * @Last Modified time: 2020-05-11 21:38:15
  */
 
 const assert = require('assert');
@@ -83,10 +83,22 @@ module.exports = {
       );
     }
 
+    let isBack =
+      parseInt(date.formatDate(new Date(), 'YYYYMMDD')) >=
+      parseInt(date.formatDate(user.x19, 'YYYYMMDD'));
+
+    let backInfo = isBack
+      ? '今天可以返校'
+      : '今天不可以返校，您的返校时间是：' +
+        date.formatDate(user.x19, 'YYYY年MM月DD日');
+
     ctx.body = {
       id: user.id,
       xIsAdd: user.xIsAdd,
       x19: user.x19,
+      isBack: isBack,
+      backInfo: backInfo,
+      today: date.formatDate(new Date(), 'YYYY年MM月DD日'),
     };
   },
   submitUserInfo: async (ctx) => {
@@ -175,10 +187,22 @@ module.exports = {
       }
     );
 
+    let isBack =
+      parseInt(date.formatDate(new Date(), 'YYYYMMDD')) >=
+      parseInt(date.formatDate(user.x19, 'YYYYMMDD'));
+
+    let backInfo = isBack
+      ? '今天可以返校'
+      : '今天不可以返校，您的返校时间是：' +
+        date.formatDate(user.x19, 'YYYY年MM月DD日');
+
     ctx.body = {
       id: user.id,
       xIsAdd: 1,
       x19: user.x19,
+      isBack: isBack,
+      backInfo: backInfo,
+      today: date.formatDate(new Date(), 'YYYY年MM月DD日'),
     };
   },
   clearUserInfo: async (ctx) => {
@@ -308,14 +332,17 @@ module.exports = {
     let isBack = 0;
     let backInfo = '报到时间未到，不能入校';
 
-    if (
-      user.xState === 0 &&
-      user.xIsAdd === 1 &&
-      date.formatDate(new Date(), 'YYYYMMDD') ===
-        date.formatDate(new Date(), 'YYYYMMDD')
-    ) {
-      isBack = 1;
-      backInfo = '报到时间无误，可以入校';
+    if (user.xState === 0 && user.xIsAdd === 1) {
+      if (
+        parseInt(date.formatDate(new Date(), 'YYYYMMDD')) >=
+        parseInt(date.formatDate(user.x19, 'YYYYMMDD'))
+      ) {
+        isBack = 1;
+        backInfo = '报到时间无误，可以入校';
+      } else {
+        isBack = 3;
+        backInfo = '返校日期是：' + date.formatDate(user.x19, 'YYYY年MM月DD日');
+      }
     } else if (user.xState === 1) {
       isBack = 2;
       backInfo = '已入校签到';
@@ -327,12 +354,12 @@ module.exports = {
       x3: user.x3,
       x5: user.x5,
       x6: user.x6,
-      x19: user.x19,
       x11: user.x11,
       x12: user.x12,
       x13: user.x13,
       x14: user.x14,
       x16: user.x16,
+      x19: user.x19,
       x21: user.x21,
       isBack: isBack,
       backInfo: backInfo,
@@ -369,6 +396,10 @@ module.exports = {
     assert.ok(user.xIsAdd === 1, '信息未登记，请登记完成后再试！');
 
     if (user.xState === 0) {
+      let isBack =
+        parseInt(date.formatDate(new Date(), 'YYYYMMDD')) >=
+        parseInt(date.formatDate(user.x19, 'YYYYMMDD'));
+
       await ctx.orm().school_users.update(
         {
           xState: 1,
@@ -376,6 +407,7 @@ module.exports = {
           xBackTime: date.formatDate(),
           mOpenId: manager.openId,
           mOpenName: manager.manageName,
+          x22: isBack ? '正常返校' : '提前返校',
         },
         {
           where: {
@@ -409,6 +441,7 @@ module.exports = {
     let x16 = ctx.request.body.x16 || '';
     let x19 = ctx.request.body.x19 || '';
     let x20 = ctx.request.body.x20 || '';
+    let x22 = ctx.request.body.x22 || '';
     let area = ctx.request.body.area || '';
     let pageIndex = ctx.request.body.pageIndex || 1;
     let pageSize = ctx.request.body.pageSize || 20;
@@ -487,6 +520,9 @@ module.exports = {
     }
     if (x20 !== '') {
       where.x20 = x20;
+    }
+    if (x22 != '') {
+      where.x22 = x22;
     }
 
     if (area !== '') {

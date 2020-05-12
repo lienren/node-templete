@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2020-04-29 18:25:38
  * @Last Modified by: Lienren
- * @Last Modified time: 2020-05-11 15:11:10
+ * @Last Modified time: 2020-05-12 10:10:24
  */
 'use strict';
 
@@ -13,6 +13,9 @@ const encrypt = require('../../utils/encrypt');
 const cp = require('./checkParam');
 
 module.exports = {
+  notifySms: async (ctx) => {
+    console.log('ctx.request.body:', ctx.request.body);
+  },
   getBanners: async (ctx) => {
     let imgState = ctx.request.body.imgState || 1;
 
