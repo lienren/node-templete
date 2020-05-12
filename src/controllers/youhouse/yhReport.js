@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2020-04-29 18:53:41
  * @Last Modified by: Lienren
- * @Last Modified time: 2020-05-11 16:03:06
+ * @Last Modified time: 2020-05-12 11:53:42
  */
 'use strict';
 
@@ -11,6 +11,7 @@ const comm = require('../../utils/comm');
 const date = require('../../utils/date');
 const encrypt = require('../../utils/encrypt');
 const cp = require('./checkParam');
+const sendmsg = require('./yhSendMsg');
 
 const enumReportStatusName = {
   1: '已报备',
@@ -26,6 +27,9 @@ const enumReportDecoStatusName = {
   3: '已量房',
   4: '已成交',
 };
+
+const masterDesoPhone = '18652940112';
+
 module.exports = {
   sumbitReport: async (ctx) => {
     let userId = ctx.request.body.userId || 0;
@@ -84,6 +88,25 @@ module.exports = {
       zcName: house.zcName,
       addTime: date.formatDate(),
       isDel: 0,
+    });
+
+    // 发送驻场人员信息
+    sendmsg.create(ctx, {
+      smsTitle: '发送驻场人员购房信息',
+      smsContent: `【悠房】${user.userCompName}在${date.formatDate(
+        new Date(),
+        'MM月DD日 HH:mm'
+      )}提交购房客户信息，请您及时处理！`,
+      smsPhones: house.zc,
+    });
+    // 发送维护人员信息
+    sendmsg.create(ctx, {
+      smsTitle: '发送维护人员购房信息',
+      smsContent: `【悠房】${user.userCompName}在${date.formatDate(
+        new Date(),
+        'MM月DD日 HH:mm'
+      )}提交购房客户信息，请您及时关注！`,
+      smsPhones: house.zc,
     });
 
     ctx.body = {
@@ -308,6 +331,28 @@ module.exports = {
       addTime: date.formatDate(),
       isDel: 0,
     });
+
+    // 发送朱彦朴信息
+    sendmsg.create(ctx, {
+      smsTitle: '发送朱彦朴装修信息',
+      smsContent: `【悠房】${user.userCompName}在${date.formatDate(
+        new Date(),
+        'MM月DD日 HH:mm'
+      )}提交装修客户信息，请您及时处理！`,
+      smsPhones: masterDesoPhone,
+    });
+
+    // 发送设计师信息
+    if (disgUser && disgUser.id > 0 && disgUser.userPhone !== masterDesoPhone) {
+      sendmsg.create(ctx, {
+        smsTitle: '发送设计师装修信息',
+        smsContent: `【悠房】${user.userCompName}在${date.formatDate(
+          new Date(),
+          'MM月DD日 HH:mm'
+        )}提交装修客户信息，请您及时处理！`,
+        smsPhones: disgUser.userPhone,
+      });
+    }
 
     ctx.body = {
       id: report.id,

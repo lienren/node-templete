@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2020-05-11 17:14:39
  * @Last Modified by: Lienren
- * @Last Modified time: 2020-05-11 17:47:59
+ * @Last Modified time: 2020-05-12 12:00:26
  */
 'use strict';
 
@@ -24,16 +24,16 @@ module.exports = {
   create: async (ctx, params) => {
     let smsTitle = params.smsTitle || '';
     let smsContent = params.smsContent || '';
-    let smsPhones = params.smsPhones || [];
+    let smsPhones = params.smsPhones || '';
 
-    if (smsTitle === '' || smsContent === '' || smsPhones.length === 0) {
+    if (smsTitle === '' || smsContent === '' || smsPhones === '') {
       return;
     }
 
     let result = await ctx.orm('youhouse').yh_send_sms.create({
       smsTitle: smsTitle,
       smsContent: smsContent,
-      smsPhones: JSON.stringify(smsPhones),
+      smsPhones: smsPhones,
       addTime: date.formatDate(),
       isDel: 0,
       sendCount: 0,
