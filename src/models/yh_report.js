@@ -60,6 +60,10 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING(100),
       allowNull: true
     },
+    zcId: {
+      type: DataTypes.INTEGER(11),
+      allowNull: true
+    },
     zc: {
       type: DataTypes.STRING(20),
       allowNull: true
@@ -74,6 +78,14 @@ module.exports = function(sequelize, DataTypes) {
     },
     isDel: {
       type: DataTypes.INTEGER(11),
+      allowNull: true
+    },
+    defId: {
+      type: DataTypes.INTEGER(11),
+      allowNull: true
+    },
+    defName: {
+      type: DataTypes.STRING(100),
       allowNull: true
     }
   }, {

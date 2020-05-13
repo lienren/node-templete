@@ -44,6 +44,10 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING(500),
       allowNull: true
     },
+    zcId: {
+      type: DataTypes.INTEGER(11),
+      allowNull: true
+    },
     zc: {
       type: DataTypes.STRING(20),
       allowNull: true

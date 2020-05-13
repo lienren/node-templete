@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2020-04-29 18:53:41
  * @Last Modified by: Lienren
- * @Last Modified time: 2020-05-12 16:27:22
+ * @Last Modified time: 2020-05-13 14:40:56
  */
 'use strict';
 
@@ -97,8 +97,11 @@ module.exports = {
       uId: user.id,
       uName: user.userName,
       uCompName: user.userCompName,
+      zcId: house.zcId,
       zc: house.zc,
       zcName: house.zcName,
+      defId: user.defId,
+      defName: user.defName,
       addTime: date.formatDate(),
       isDel: 0,
     });
@@ -464,6 +467,178 @@ module.exports = {
     if (result) {
       reportItems = result.map((m) => {
         return m.dataValues.cGetTimeTime;
+      });
+    }
+
+    ctx.body = reportItems;
+  },
+  manageGetReportHouseBy2: async (ctx) => {
+    let userType = ctx.request.body.userType || 0;
+    let userId = ctx.request.body.userId || 0;
+    let userToken = ctx.request.body.userToken || '';
+
+    cp.isNumberGreaterThan0(userType);
+    cp.isNumberGreaterThan0(userId);
+    cp.isEmpty(userToken);
+
+    let user = await ctx.orm('youhouse').yh_users.findOne({
+      where: {
+        id: userId,
+        userType: userType,
+        isDel: 0,
+      },
+    });
+    assert.ok(user !== null, '您的帐号不存在！');
+    assert.ok(user.userStatus === 1, '您的帐号被停用，请联系管理员！');
+    assert.ok(
+      user.userToken === userToken,
+      '您的帐号已在别处登录，请退出后重新登录！'
+    );
+
+    let result = await ctx.orm('youhouse').yh_report.findAll({
+      where: {
+        defId: user.id,
+        isDel: 0,
+      },
+      order: [['addTime', 'desc']],
+    });
+
+    let reportItems = [];
+    if (result) {
+      reportItems = result.map((m) => {
+        let data = m.dataValues;
+        return {
+          id: data.id,
+          hName: data.hName,
+          hImgUrl: data.hImgUrl,
+          cName: data.cName,
+          cPhone: data.cPhone,
+          cSex: data.cSex,
+          cGetTime: date.formatDate(data.cGetTime, 'YYYY年MM月DD日'),
+          uId: data.uId,
+          uName: data.uName,
+          uCompName: data.uCompName,
+          defId: data.defId,
+          defName: data.defName,
+          status: data.status,
+          statusName: data.statusName,
+          addTime: date.formatDate(data.addTime, 'YYYY年MM月DD日 HH:mm:ss'),
+        };
+      });
+    }
+
+    ctx.body = reportItems;
+  },
+  manageGetReportHouseBy3: async (ctx) => {
+    let userType = ctx.request.body.userType || 0;
+    let userId = ctx.request.body.userId || 0;
+    let userToken = ctx.request.body.userToken || '';
+
+    cp.isNumberGreaterThan0(userType);
+    cp.isNumberGreaterThan0(userId);
+    cp.isEmpty(userToken);
+
+    let user = await ctx.orm('youhouse').yh_users.findOne({
+      where: {
+        id: userId,
+        userType: userType,
+        isDel: 0,
+      },
+    });
+    assert.ok(user !== null, '您的帐号不存在！');
+    assert.ok(user.userStatus === 1, '您的帐号被停用，请联系管理员！');
+    assert.ok(
+      user.userToken === userToken,
+      '您的帐号已在别处登录，请退出后重新登录！'
+    );
+
+    let result = await ctx.orm('youhouse').yh_report.findAll({
+      where: {
+        zcId: user.id,
+        isDel: 0,
+      },
+      order: [['addTime', 'desc']],
+    });
+
+    let reportItems = [];
+    if (result) {
+      reportItems = result.map((m) => {
+        let data = m.dataValues;
+        return {
+          id: data.id,
+          hName: data.hName,
+          hImgUrl: data.hImgUrl,
+          cName: data.cName,
+          cPhone: data.cPhone,
+          cSex: data.cSex,
+          cGetTime: date.formatDate(data.cGetTime, 'YYYY年MM月DD日'),
+          uId: data.uId,
+          uName: data.uName,
+          uCompName: data.uCompName,
+          defId: data.defId,
+          defName: data.defName,
+          status: data.status,
+          statusName: data.statusName,
+          addTime: date.formatDate(data.addTime, 'YYYY年MM月DD日 HH:mm:ss'),
+        };
+      });
+    }
+
+    ctx.body = reportItems;
+  },
+  manageGetReportDecoBy4: async (ctx) => {
+    let userType = ctx.request.body.userType || 0;
+    let userId = ctx.request.body.userId || 0;
+    let userToken = ctx.request.body.userToken || '';
+
+    cp.isNumberGreaterThan0(userType);
+    cp.isNumberGreaterThan0(userId);
+    cp.isEmpty(userToken);
+
+    let user = await ctx.orm('youhouse').yh_users.findOne({
+      where: {
+        id: userId,
+        userType: userType,
+        isDel: 0,
+      },
+    });
+    assert.ok(user !== null, '您的帐号不存在！');
+    assert.ok(user.userStatus === 1, '您的帐号被停用，请联系管理员！');
+    assert.ok(
+      user.userToken === userToken,
+      '您的帐号已在别处登录，请退出后重新登录！'
+    );
+
+    let result = await ctx.orm('youhouse').yh_report_deco.findAll({
+      where: {
+        disgId: user.id,
+        isDel: 0,
+      },
+      order: [['addTime', 'desc']],
+    });
+
+    let reportItems = [];
+    if (result) {
+      reportItems = result.map((m) => {
+        let data = m.dataValues;
+        return {
+          id: data.id,
+          cName: data.cName,
+          cPhone: data.cPhone,
+          cSex: data.cSex,
+          cGetTime:
+            date.formatDate(data.cGetTimeDate, 'YYYY年MM月DD日') +
+            ' ' +
+            data.cGetTimeTime,
+          cGetTimeDate: date.formatDate(data.cGetTimeDate, 'YYYY年MM月DD日'),
+          cGetTimeTime: data.cGetTimeTime,
+          status: data.status,
+          statusName: data.statusName,
+          cCost: data.cCost,
+          disgId: data.disgId,
+          disgName: data.disgName,
+          addTime: date.formatDate(data.addTime, 'YYYY年MM月DD日 HH:mm:ss'),
+        };
       });
     }
 
