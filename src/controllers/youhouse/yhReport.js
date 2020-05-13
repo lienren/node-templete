@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2020-04-29 18:53:41
  * @Last Modified by: Lienren
- * @Last Modified time: 2020-05-12 11:53:42
+ * @Last Modified time: 2020-05-12 16:27:22
  */
 'use strict';
 
@@ -69,6 +69,19 @@ module.exports = {
       },
     });
     assert.ok(house !== null, '您选择的楼盘不存在！');
+
+    // 相同楼盘，不是“无效客户”情况下，就不能预约
+    let houseRepeat = await ctx.orm('youhouse').yh_report.findOne({
+      where: {
+        cPhone: cPhone,
+        hId: house.id,
+        statusName: {
+          $ne: '无效客户',
+        },
+        isDel: 0,
+      },
+    });
+    assert.ok(houseRepeat === null, '客户已经预约过此楼盘，不能再次预约！');
 
     let report = await ctx.orm('youhouse').yh_report.create({
       hId: house.id,
@@ -302,6 +315,21 @@ module.exports = {
       },
     });
     assert.ok(decoTime === null, '您选择的预约时间已被占用，请重新选择！');
+
+    // 同一天，不能预约多次
+    let decoRepeat = await ctx.orm('youhouse').yh_report_deco.findOne({
+      where: {
+        cPhone: cPhone,
+        addTime: {
+          $between: [
+            date.formatDate(new Date(), 'YYYY-MM-DD 00:00:00'),
+            date.formatDate(new Date(), 'YYYY-MM-DD 23:59:59'),
+          ],
+        },
+        isDel: 0,
+      },
+    });
+    assert.ok(decoRepeat === null, '客户今天已经预约过了，不能再次预约！');
 
     let disgUser = null;
     if (disgId > 0) {
