@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2020-04-29 18:25:38
  * @Last Modified by: Lienren
- * @Last Modified time: 2020-05-12 10:10:24
+ * @Last Modified time: 2020-05-12 17:05:08
  */
 'use strict';
 
@@ -11,6 +11,41 @@ const comm = require('../../utils/comm');
 const date = require('../../utils/date');
 const encrypt = require('../../utils/encrypt');
 const cp = require('./checkParam');
+
+async function checkImageCode(ctx, imgCodeToken, imgCode) {
+  let now = date.getTimeStamp();
+
+  // 验证图形验证码
+  let resultImgCodeToken = await ctx.orm().BaseImgCode.findOne({
+    where: {
+      token: imgCodeToken,
+      imgCode: imgCode.toLocaleUpperCase(),
+      isUse: 0,
+      overTime: {
+        $gt: now,
+      },
+    },
+  });
+
+  if (resultImgCodeToken) {
+    // 设置图形验证码已使用
+    ctx.orm().BaseImgCode.update(
+      {
+        isUse: 1,
+      },
+      {
+        where: {
+          token: imgCodeToken,
+          imgCode: imgCode,
+        },
+      }
+    );
+
+    return true;
+  }
+
+  return false;
+}
 
 module.exports = {
   notifySms: async (ctx) => {
@@ -49,6 +84,30 @@ module.exports = {
         };
       });
     }
+
+    ctx.body = msgItems;
+  },
+  sendSmsCode: async (ctx) => {
+    let userPhone = ctx.request.body.userPhone || '';
+    let imgCode = ctx.request.body.imgCode || '';
+    let imgCodeToken = ctx.request.body.imgCodeToken || '';
+
+    cp.isEmpty(userPhone);
+    cp.isEmpty(imgCode);
+    cp.isEmpty(imgCodeToken);
+
+    let imgCodeResult = await checkImageCode(ctx, imgCodeToken, imgCode);
+    assert.ok(imgCodeResult, '验证码错误或已过期！');
+
+    let user = await ctx.orm('youhouse').yh_users.findOne({
+      where: {
+        userPhone: userPhone,
+        isDel: 0,
+      },
+    });
+
+    assert.ok(user !== null, '您的帐号不存在！');
+    assert.ok(user.userStatus === 1, '您的帐号被停用，请联系管理员！');
 
     ctx.body = msgItems;
   },

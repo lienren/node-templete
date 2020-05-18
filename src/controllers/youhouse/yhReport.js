@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2020-04-29 18:53:41
  * @Last Modified by: Lienren
- * @Last Modified time: 2020-05-13 14:40:56
+ * @Last Modified time: 2020-05-14 11:37:05
  */
 'use strict';
 
@@ -437,6 +437,8 @@ module.exports = {
           cCost: data.cCost,
           disgId: data.disgId,
           disgName: data.disgName,
+          community: data.community,
+          address: data.address,
           addTime: date.formatDate(data.addTime, 'YYYY年MM月DD日 HH:mm:ss'),
         };
       });
@@ -637,11 +639,140 @@ module.exports = {
           cCost: data.cCost,
           disgId: data.disgId,
           disgName: data.disgName,
+          community: data.community,
+          address: data.address,
           addTime: date.formatDate(data.addTime, 'YYYY年MM月DD日 HH:mm:ss'),
         };
       });
     }
 
     ctx.body = reportItems;
+  },
+  editReportHouseStatus: async (ctx) => {
+    let id = ctx.request.body.id || 0;
+    let newStatus = ctx.request.body.newStatus || 0;
+    let newStatusName = ctx.request.body.newStatusName || '';
+    let userType = ctx.request.body.userType || 0;
+    let userId = ctx.request.body.userId || 0;
+    let userToken = ctx.request.body.userToken || '';
+
+    cp.isNumberGreaterThan0(id);
+    cp.isNumberGreaterThan0(newStatus);
+    cp.isEmpty(newStatusName);
+    cp.isNumberGreaterThan0(userType);
+    cp.isNumberGreaterThan0(userId);
+    cp.isEmpty(userToken);
+
+    let user = await ctx.orm('youhouse').yh_users.findOne({
+      where: {
+        id: userId,
+        userType: userType,
+        isDel: 0,
+      },
+    });
+    assert.ok(user !== null, '您的帐号不存在！');
+    assert.ok(user.userStatus === 1, '您的帐号被停用，请联系管理员！');
+    assert.ok(
+      user.userToken === userToken,
+      '您的帐号已在别处登录，请退出后重新登录！'
+    );
+
+    await ctx.orm('youhouse').yh_report.update(
+      {
+        status: newStatus,
+        statusName: newStatusName,
+      },
+      {
+        where: {
+          id: id,
+          zcId: user.id,
+          isDel: 0,
+        },
+      }
+    );
+  },
+  editReportDecoStatus: async (ctx) => {
+    let id = ctx.request.body.id || 0;
+    let newStatus = ctx.request.body.newStatus || 0;
+    let newStatusName = ctx.request.body.newStatusName || '';
+    let userType = ctx.request.body.userType || 0;
+    let userId = ctx.request.body.userId || 0;
+    let userToken = ctx.request.body.userToken || '';
+
+    cp.isNumberGreaterThan0(id);
+    cp.isNumberGreaterThan0(newStatus);
+    cp.isEmpty(newStatusName);
+    cp.isNumberGreaterThan0(userType);
+    cp.isNumberGreaterThan0(userId);
+    cp.isEmpty(userToken);
+
+    let user = await ctx.orm('youhouse').yh_users.findOne({
+      where: {
+        id: userId,
+        userType: userType,
+        isDel: 0,
+      },
+    });
+    assert.ok(user !== null, '您的帐号不存在！');
+    assert.ok(user.userStatus === 1, '您的帐号被停用，请联系管理员！');
+    assert.ok(
+      user.userToken === userToken,
+      '您的帐号已在别处登录，请退出后重新登录！'
+    );
+
+    await ctx.orm('youhouse').yh_report_deco.update(
+      {
+        status: newStatus,
+        statusName: newStatusName,
+      },
+      {
+        where: {
+          id: id,
+          disgId: user.id,
+          isDel: 0,
+        },
+      }
+    );
+  },
+  editReportDecoAddress: async (ctx) => {
+    let id = ctx.request.body.id || 0;
+    let community = ctx.request.body.community || '';
+    let address = ctx.request.body.address || '';
+    let userType = ctx.request.body.userType || 0;
+    let userId = ctx.request.body.userId || 0;
+    let userToken = ctx.request.body.userToken || '';
+
+    cp.isNumberGreaterThan0(id);
+    cp.isNumberGreaterThan0(userType);
+    cp.isNumberGreaterThan0(userId);
+    cp.isEmpty(userToken);
+
+    let user = await ctx.orm('youhouse').yh_users.findOne({
+      where: {
+        id: userId,
+        userType: userType,
+        isDel: 0,
+      },
+    });
+    assert.ok(user !== null, '您的帐号不存在！');
+    assert.ok(user.userStatus === 1, '您的帐号被停用，请联系管理员！');
+    assert.ok(
+      user.userToken === userToken,
+      '您的帐号已在别处登录，请退出后重新登录！'
+    );
+
+    await ctx.orm('youhouse').yh_report_deco.update(
+      {
+        community: community,
+        address: address,
+      },
+      {
+        where: {
+          id: id,
+          disgId: user.id,
+          isDel: 0,
+        },
+      }
+    );
   },
 };

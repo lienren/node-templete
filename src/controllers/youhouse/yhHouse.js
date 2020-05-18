@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2020-04-29 18:25:38
  * @Last Modified by: Lienren
- * @Last Modified time: 2020-05-07 18:17:59
+ * @Last Modified time: 2020-05-14 15:21:23
  */
 'use strict';
 
@@ -18,6 +18,19 @@ const enumHouseStatusName = {
   2: '已上线',
   3: '已下线',
 };
+const enumHouseSecondTypeName = {
+  1: '普通房源',
+  2: '精选房源',
+};
+const enumHouseSecondVerifyName = {
+  1: '未审核',
+  2: '已审核',
+};
+const enumHouseSecondStatusName = {
+  1: '已下线',
+  2: '已上线',
+};
+
 module.exports = {
   getRecommHouse: async (ctx) => {
     let result = await ctx.orm('youhouse').yh_house.findAll({
@@ -73,5 +86,262 @@ module.exports = {
     }
 
     ctx.body = houseItems;
+  },
+  getHouseSecond: async (ctx) => {
+    let hType = ctx.request.body.hType || 0;
+
+    let where = {
+      isVerify: 2,
+      status: 2,
+      isDel: 0,
+    };
+
+    if (hType > 0) {
+      where.hType = hType;
+    }
+
+    let result = await ctx.orm('youhouse').yh_house_second.findAll({
+      where: where,
+      order: [['addTime', 'desc']],
+    });
+
+    let houseItems = [];
+    if (result) {
+      houseItems = result.map((m) => {
+        let data = m.dataValues;
+        return {
+          ...data,
+          imgUrl: JSON.parse(data.imgUrl),
+        };
+      });
+    }
+
+    ctx.body = houseItems;
+  },
+  submitHouseSecond: async (ctx) => {
+    let id = ctx.request.body.name || 0;
+    let name = ctx.request.body.name || '';
+    let imgUrl = ctx.request.body.imgUrl || [];
+    let price = ctx.request.body.price || '';
+    let city = ctx.request.body.city || '';
+    let area = ctx.request.body.area || '';
+    let community = ctx.request.body.community || '';
+    let acreage = ctx.request.body.acreage || '';
+    let floor = ctx.request.body.floor || '';
+    let isLift = ctx.request.body.isLift || '';
+    let deco = ctx.request.body.deco || '';
+    let remark = ctx.request.body.remark || '';
+    let userId = ctx.request.body.userId || 0;
+    let userPhone = ctx.request.body.userPhone || '';
+    let userToken = ctx.request.body.userToken || '';
+    let status = ctx.request.body.status || 1;
+
+    cp.isEmpty(name);
+    cp.isArrayLengthGreaterThan0(imgUrl);
+    cp.isEmpty(price);
+    cp.isEmpty(community);
+    cp.isEmpty(acreage);
+    cp.isEmpty(floor);
+    cp.isEmpty(isLift);
+    cp.isEmpty(deco);
+    cp.isNumberGreaterThan0(userId);
+    cp.isEmpty(userPhone);
+    cp.isEmpty(userToken);
+    cp.isNumberGreaterThan0(status);
+
+    let user = await ctx.orm('youhouse').yh_users.findOne({
+      where: {
+        id: userId,
+        isDel: 0,
+      },
+    });
+    assert.ok(user !== null, '您的帐号不存在！');
+    assert.ok(user.userStatus === 1, '您的帐号被停用，请联系管理员！');
+    assert.ok(
+      user.userToken === userToken,
+      '您的帐号已在别处登录，请退出后重新登录！'
+    );
+
+    if (id > 0) {
+      await ctx.orm('youhouse').yh_house_second.update(
+        {
+          name: name,
+          imgUrl: JSON.stringify(imgUrl),
+          price: price,
+          city: city,
+          area: area,
+          community: community,
+          acreage: acreage,
+          floor: floor,
+          isLift: isLift,
+          deco: deco,
+          remark: remark,
+          uPhone: userPhone,
+          status: status,
+          statusName: enumHouseSecondStatusName[status],
+          isVerify: 1,
+          isVerifyName: enumHouseSecondVerifyName[1],
+        },
+        {
+          where: {
+            id: id,
+            uId: user.id,
+            isDel: 0,
+          },
+        }
+      );
+
+      ctx.body = {
+        id: id,
+      };
+    } else {
+      let result = await ctx.orm('youhouse').yh_house_second.create({
+        name: name,
+        imgUrl: JSON.stringify(imgUrl),
+        price: price,
+        city: city,
+        area: area,
+        community: community,
+        acreage: acreage,
+        floor: floor,
+        isLift: isLift,
+        deco: deco,
+        remark: remark,
+        uId: user.id,
+        uName: user.userName,
+        uPhone: userPhone,
+        uCompName: user.userCompName,
+        status: status,
+        statusName: enumHouseSecondStatusName[status],
+        hType: 1,
+        hTypeName: enumHouseSecondTypeName[1],
+        addTime: date.formatDate(),
+        isDel: 0,
+        isVerify: 1,
+        isVerifyName: enumHouseSecondVerifyName[1],
+      });
+
+      ctx.body = {
+        id: result.id,
+      };
+    }
+  },
+  getUserHouseSecond: async (ctx) => {
+    let userId = ctx.request.body.userId || 0;
+    let userToken = ctx.request.body.userToken || '';
+
+    cp.isNumberGreaterThan0(userId);
+    cp.isEmpty(userToken);
+
+    let user = await ctx.orm('youhouse').yh_users.findOne({
+      where: {
+        id: userId,
+        isDel: 0,
+      },
+    });
+    assert.ok(user !== null, '您的帐号不存在！');
+    assert.ok(user.userStatus === 1, '您的帐号被停用，请联系管理员！');
+    assert.ok(
+      user.userToken === userToken,
+      '您的帐号已在别处登录，请退出后重新登录！'
+    );
+
+    let result = await ctx.orm('youhouse').yh_house_second.findAll({
+      where: {
+        uId: user.id,
+        isDel: 0,
+      },
+      order: [['addTime', 'desc']],
+    });
+
+    let houseItems = [];
+    if (result) {
+      houseItems = result.map((m) => {
+        let data = m.dataValues;
+        return {
+          ...data,
+          imgUrl: JSON.parse(data.imgUrl),
+        };
+      });
+    }
+
+    ctx.body = houseItems;
+  },
+  deleteHoueSecond: async (ctx) => {
+    let id = ctx.request.body.name || 0;
+    let userId = ctx.request.body.userId || 0;
+    let userToken = ctx.request.body.userToken || '';
+
+    cp.isNumberGreaterThan0(id);
+    cp.isNumberGreaterThan0(userId);
+    cp.isEmpty(userToken);
+
+    let user = await ctx.orm('youhouse').yh_users.findOne({
+      where: {
+        id: userId,
+        isDel: 0,
+      },
+    });
+    assert.ok(user !== null, '您的帐号不存在！');
+    assert.ok(user.userStatus === 1, '您的帐号被停用，请联系管理员！');
+    assert.ok(
+      user.userToken === userToken,
+      '您的帐号已在别处登录，请退出后重新登录！'
+    );
+
+    await ctx.orm('youhouse').yh_house_second.update(
+      {
+        isDel: 1,
+      },
+      {
+        where: {
+          id: id,
+          uId: user.id,
+          isDel: 0,
+        },
+      }
+    );
+
+    ctx.body = {};
+  },
+  editHouseSecondStatus: async (ctx) => {
+    let id = ctx.request.body.name || 0;
+    let userId = ctx.request.body.userId || 0;
+    let userToken = ctx.request.body.userToken || '';
+    let status = ctx.request.body.status || 1;
+
+    cp.isNumberGreaterThan0(id);
+    cp.isNumberGreaterThan0(userId);
+    cp.isEmpty(userToken);
+    cp.isNumberGreaterThan0(status);
+
+    let user = await ctx.orm('youhouse').yh_users.findOne({
+      where: {
+        id: userId,
+        isDel: 0,
+      },
+    });
+    assert.ok(user !== null, '您的帐号不存在！');
+    assert.ok(user.userStatus === 1, '您的帐号被停用，请联系管理员！');
+    assert.ok(
+      user.userToken === userToken,
+      '您的帐号已在别处登录，请退出后重新登录！'
+    );
+
+    await ctx.orm('youhouse').yh_house_second.update(
+      {
+        status: status,
+        statusName: enumHouseSecondStatusName[status],
+      },
+      {
+        where: {
+          id: id,
+          uId: user.id,
+          isDel: 0,
+        },
+      }
+    );
+
+    ctx.body = {};
   },
 };
