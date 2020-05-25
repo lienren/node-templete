@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-18 13:49:27
  * @Last Modified by: Lienren
- * @Last Modified time: 2020-05-12 10:05:18
+ * @Last Modified time: 2020-05-25 09:16:46
  */
 'use strict';
 
@@ -25,7 +25,7 @@ const enumSendStatusName = {
 
 const sendSmsUrl = 'https://sms.yunpian.com/v2/sms/single_send.json';
 const sendSmsApiKey = '7bfc0759484c0d840f932c45233ada10';
-const sendSmsNotifyUrl = 'https://fruit.billgenius.cn/yh/yhComm/notifySms';
+const sendSmsNotifyUrl = 'https://youhouse.billgenius.cn/yh/yhComm/notifySms';
 
 // 自动发短信
 let automaticSendSmsJob = null;
