@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2020-04-29 18:25:38
  * @Last Modified by: Lienren
- * @Last Modified time: 2020-05-14 15:21:23
+ * @Last Modified time: 2020-05-27 21:48:28
  */
 'use strict';
 
@@ -119,7 +119,7 @@ module.exports = {
     ctx.body = houseItems;
   },
   submitHouseSecond: async (ctx) => {
-    let id = ctx.request.body.name || 0;
+    let id = ctx.request.body.id || 0;
     let name = ctx.request.body.name || '';
     let imgUrl = ctx.request.body.imgUrl || [];
     let price = ctx.request.body.price || '';
@@ -305,7 +305,7 @@ module.exports = {
     ctx.body = {};
   },
   editHouseSecondStatus: async (ctx) => {
-    let id = ctx.request.body.name || 0;
+    let id = ctx.request.body.id || 0;
     let userId = ctx.request.body.userId || 0;
     let userToken = ctx.request.body.userToken || '';
     let status = ctx.request.body.status || 1;

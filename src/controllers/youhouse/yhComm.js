@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2020-04-29 18:25:38
  * @Last Modified by: Lienren
- * @Last Modified time: 2020-05-18 15:35:50
+ * @Last Modified time: 2020-06-02 11:25:37
  */
 'use strict';
 
@@ -11,6 +11,7 @@ const comm = require('../../utils/comm');
 const date = require('../../utils/date');
 const encrypt = require('../../utils/encrypt');
 const cp = require('./checkParam');
+const sendmsg = require('./yhSendMsg');
 
 async function checkImageCode(ctx, imgCodeToken, imgCode) {
   let now = date.getTimeStamp();
@@ -28,19 +29,6 @@ async function checkImageCode(ctx, imgCodeToken, imgCode) {
   });
 
   if (resultImgCodeToken) {
-    // 设置图形验证码已使用
-    ctx.orm().BaseImgCode.update(
-      {
-        isUse: 1,
-      },
-      {
-        where: {
-          token: imgCodeToken,
-          imgCode: imgCode,
-        },
-      }
-    );
-
     return true;
   }
 
@@ -99,16 +87,40 @@ module.exports = {
     let imgCodeResult = await checkImageCode(ctx, imgCodeToken, imgCode);
     assert.ok(imgCodeResult, '验证码错误或已过期！');
 
-    let user = await ctx.orm('youhouse').yh_users.findOne({
+    let now = date.formatDate();
+    // 验证是否有未过期短信
+    let sendSms = await ctx.orm('youhouse').yh_sms_code.findOne({
       where: {
-        userPhone: userPhone,
+        phone: userPhone,
+        isUse: 0,
+        overTime: {
+          $lte: now,
+        },
         isDel: 0,
       },
     });
 
-    assert.ok(user !== null, '您的帐号不存在！');
-    assert.ok(user.userStatus === 1, '您的帐号被停用，请联系管理员！');
+    assert.ok(sendSms === null, '不能重复发送验证码！');
 
-    ctx.body = msgItems;
+    // 生成短信验证码
+    let code = comm.randNumber(4);
+    let overTime = date.formatDate(date.getTimeStamp(120));
+    await ctx.orm('youhouse').yh_sms_code.create({
+      phone: userPhone,
+      code: code,
+      isUse: 0,
+      overTime: overTime,
+      addTime: now,
+      isDel: 0,
+    });
+
+    // 发送验证码
+    sendmsg.create(ctx, {
+      smsTitle: '登录短信验证码',
+      smsContent: `【悠房】您的验证码是${code}。如非本人操作，请忽略本短信`,
+      smsPhones: userPhone,
+    });
+
+    ctx.body = {};
   },
 };

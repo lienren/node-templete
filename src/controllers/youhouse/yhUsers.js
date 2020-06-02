@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2020-04-29 15:22:15
  * @Last Modified by: Lienren
- * @Last Modified time: 2020-05-08 16:33:54
+ * @Last Modified time: 2020-06-02 12:23:12
  */
 'use strict';
 
@@ -23,7 +23,7 @@ const enumUserStatusName = {
 };
 const enumUserTypeName = {
   1: '房产经纪人',
-  2: '悠房维护人员',
+  2: '悠房项目经理',
   3: '悠房驻场人员',
   4: '装修设计师',
   999: '系统人员',
@@ -64,10 +64,46 @@ async function checkImageCode(ctx, imgCodeToken, imgCode) {
   return false;
 }
 
+async function checkSmsCode(ctx, phone, code) {
+  let now = date.formatDate();
+
+  // 验证图形验证码
+  let resultSmsCode = await ctx.orm().yh_sms_code.findOne({
+    where: {
+      phone: phone,
+      code: code,
+      isUse: 0,
+      overTime: {
+        $gt: now,
+      },
+      isDel: 0,
+    },
+  });
+
+  if (resultSmsCode) {
+    // 设置图形验证码已使用
+    ctx.orm().yh_sms_code.update(
+      {
+        isUse: 1,
+      },
+      {
+        where: {
+          phone: phone,
+          isDel: 0,
+        },
+      }
+    );
+
+    return true;
+  }
+
+  return false;
+}
+
 module.exports = {
   register: async (ctx) => {
     let userPhone = ctx.request.body.userPhone || '';
-    let userPwd = ctx.request.body.userPwd || '';
+    let smsCode = ctx.request.body.smsCode || '';
     let userName = ctx.request.body.userName || '';
     let defId = ctx.request.body.defId || 0;
     let userCompName = ctx.request.body.userCompName || '';
@@ -75,7 +111,7 @@ module.exports = {
     let imgCodeToken = ctx.request.body.imgCodeToken || '';
 
     cp.isEmpty(userPhone);
-    cp.isEmpty(userPwd);
+    cp.isEmpty(smsCode);
     cp.isEmpty(userName);
     cp.isNumberGreaterThan0(defId);
     cp.isEmpty(userCompName);
@@ -83,7 +119,10 @@ module.exports = {
     cp.isEmpty(imgCodeToken);
 
     let imgCodeResult = await checkImageCode(ctx, imgCodeToken, imgCode);
-    assert.ok(imgCodeResult, '验证码错误或已过期！');
+    assert.ok(imgCodeResult, '图形验证码错误或已过期！');
+
+    let smsCodeResult = await checkSmsCode(ctx, userPhone, smsCode);
+    assert.ok(smsCodeResult, '短信验证码错误或已过期！');
 
     let user = await ctx.orm('youhouse').yh_users.findOne({
       where: {
@@ -104,12 +143,10 @@ module.exports = {
 
     assert.ok(defUser !== null, '您选择的维护人不存在！');
 
-    let salt = comm.randNumberCode(6);
-    let pwd = encrypt.getMd5(userPwd + '|' + salt);
     user = await ctx.orm('youhouse').yh_users.create({
       userPhone: userPhone,
-      userPwd: pwd,
-      userSalt: salt,
+      userPwd: '',
+      userSalt: '',
       userName: userName,
       defId: defUser.id,
       defName: defUser.userName,
@@ -126,17 +163,20 @@ module.exports = {
   },
   login: async (ctx) => {
     let userPhone = ctx.request.body.userPhone || '';
-    let userPwd = ctx.request.body.userPwd || '';
+    let smsCode = ctx.request.body.smsCode || '';
     let imgCode = ctx.request.body.imgCode || '';
     let imgCodeToken = ctx.request.body.imgCodeToken || '';
 
     cp.isEmpty(userPhone);
-    cp.isEmpty(userPwd);
+    cp.isEmpty(smsCode);
     cp.isEmpty(imgCode);
     cp.isEmpty(imgCodeToken);
 
     let imgCodeResult = await checkImageCode(ctx, imgCodeToken, imgCode);
-    assert.ok(imgCodeResult, '验证码错误或已过期！');
+    assert.ok(imgCodeResult, '图形验证码错误或已过期！');
+
+    let smsCodeResult = await checkSmsCode(ctx, userPhone, smsCode);
+    assert.ok(smsCodeResult, '短信验证码错误或已过期！');
 
     let user = await ctx.orm('youhouse').yh_users.findOne({
       where: {
@@ -147,11 +187,6 @@ module.exports = {
 
     assert.ok(user !== null, '您的帐号不存在！');
     assert.ok(user.userStatus === 1, '您的帐号被停用，请联系管理员！');
-
-    let salt = user.userSalt;
-    let pwd = encrypt.getMd5(userPwd + '|' + salt);
-
-    assert.ok(user.userPwd === pwd, '您的密码不正确！');
 
     let defUser = await ctx.orm('youhouse').yh_users.findOne({
       where: {
