@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2020-04-29 18:25:38
  * @Last Modified by: Lienren
- * @Last Modified time: 2020-06-02 11:25:37
+ * @Last Modified time: 2020-06-02 23:24:35
  */
 'use strict';
 
@@ -94,7 +94,7 @@ module.exports = {
         phone: userPhone,
         isUse: 0,
         overTime: {
-          $lte: now,
+          $gt: now,
         },
         isDel: 0,
       },

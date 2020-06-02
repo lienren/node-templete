@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-10-18 13:49:27
  * @Last Modified by: Lienren
- * @Last Modified time: 2020-05-25 09:16:46
+ * @Last Modified time: 2020-06-02 23:29:56
  */
 'use strict';
 
@@ -96,7 +96,10 @@ async function automaticSendSms() {
           {
             sendStatus: 3,
             sendStatusName: enumSendStatusName[3],
-            receiveVal: JSON.stringify(result.data),
+            receiveVal:
+              typeof result.data === 'object'
+                ? JSON.stringify(result.data)
+                : result.data,
             receiveTime: date.formatDate(),
           },
           {
