@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2020-04-29 15:22:15
  * @Last Modified by: Lienren
- * @Last Modified time: 2020-06-02 12:23:12
+ * @Last Modified time: 2020-06-05 07:42:04
  */
 'use strict';
 
@@ -154,6 +154,8 @@ module.exports = {
       userStatus: 1,
       userStatusName: enumUserStatusName[1],
       addTime: date.formatDate(),
+      userType: 1,
+      userTypeName: enumUserTypeName[1],
       isDel: 0,
     });
 
