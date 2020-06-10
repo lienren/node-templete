@@ -99,6 +99,10 @@ module.exports = function(sequelize, DataTypes) {
     isVerifyName: {
       type: DataTypes.STRING(20),
       allowNull: true
+    },
+    province: {
+      type: DataTypes.STRING(50),
+      allowNull: true
     }
   }, {
     tableName: 'yh_house_second'

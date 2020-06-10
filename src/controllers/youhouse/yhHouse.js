@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2020-04-29 18:25:38
  * @Last Modified by: Lienren
- * @Last Modified time: 2020-06-10 15:15:24
+ * @Last Modified time: 2020-06-10 22:42:29
  */
 'use strict';
 
@@ -106,6 +106,112 @@ module.exports = {
 
     ctx.body = {};
   },
+  submitHouse: async (ctx) => {
+    let id = ctx.request.body.id || 0;
+    let name = ctx.request.body.name || '';
+    let imgUrl = ctx.request.body.imgUrl || '';
+    let price = ctx.request.body.price || '';
+    let yj = ctx.request.body.yj || [];
+    let stopTime = ctx.request.body.stopTime || date.formatDate();
+    let jians = ctx.request.body.jians || [];
+    let address = ctx.request.body.address || '';
+    let report = ctx.request.body.report || '';
+    let remark = ctx.request.body.remark || '';
+    let zcId = ctx.request.body.zcId || 0;
+    let zc = ctx.request.body.zc || '';
+    let zcName = ctx.request.body.zcName || '';
+    let province = ctx.request.body.province || '';
+    let city = ctx.request.body.city || '';
+    let area = ctx.request.body.area || '';
+    let street = ctx.request.body.street || '';
+    let isRecomm = ctx.request.body.isRecomm || 0;
+    let pmId = ctx.request.body.pmId || 0;
+    let pmPhone = ctx.request.body.pmPhone || '';
+    let pmName = ctx.request.body.pmName || '';
+
+    cp.isEmpty(name);
+    cp.isEmpty(imgUrl);
+    cp.isEmpty(price);
+    cp.isEmpty(address);
+    cp.isEmpty(report);
+    cp.isEmpty(remark);
+    cp.isNumberGreaterThan0(zcId);
+    cp.isEmpty(zc);
+    cp.isEmpty(zcName);
+    cp.isEmpty(province);
+    cp.isEmpty(city);
+    cp.isEmpty(area);
+    cp.isNumberGreaterThan0(pmId);
+    cp.isEmpty(pmPhone);
+    cp.isEmpty(pmName);
+
+    if (id > 0) {
+      await ctx.orm('youhouse').yh_house.update(
+        {
+          name: name,
+          imgUrl: imgUrl,
+          price: price,
+          yj: JSON.stringify(yj),
+          stopTime: stopTime,
+          jians: JSON.stringify(jians),
+          address: address,
+          report: report,
+          remark: remark,
+          zcId: zcId,
+          zc: zc,
+          zcName: zcName,
+          province: province,
+          city: city,
+          area: area,
+          street: street,
+          isRecomm: isRecomm,
+          pmId: pmId,
+          pmPhone: pmPhone,
+          pmName: pmName,
+        },
+        {
+          where: {
+            id: id,
+            isDel: 0,
+          },
+        }
+      );
+
+      ctx.body = {
+        id: id,
+      };
+    } else {
+      let result = await ctx.orm('youhouse').yh_house.create({
+        name: name,
+        imgUrl: imgUrl,
+        price: price,
+        yj: JSON.stringify(yj),
+        stopTime: stopTime,
+        jians: JSON.stringify(jians),
+        address: address,
+        report: report,
+        remark: remark,
+        zcId: zcId,
+        zc: zc,
+        zcName: zcName,
+        status: 2,
+        statusName: enumHouseStatusName[2],
+        province: province,
+        city: city,
+        area: area,
+        street: street,
+        isRecomm: isRecomm,
+        addTime: date.formatDate(),
+        isDel: 0,
+        pmId: pmId,
+        pmPhone: pmPhone,
+        pmName: pmName,
+      });
+      ctx.body = {
+        id: result.id,
+      };
+    }
+  },
   getHouseSecond: async (ctx) => {
     let hType = ctx.request.body.hType || 0;
 
@@ -142,6 +248,7 @@ module.exports = {
     let name = ctx.request.body.name || '';
     let imgUrl = ctx.request.body.imgUrl || [];
     let price = ctx.request.body.price || '';
+    let province = ctx.request.body.province || '';
     let city = ctx.request.body.city || '';
     let area = ctx.request.body.area || '';
     let community = ctx.request.body.community || '';
@@ -158,6 +265,9 @@ module.exports = {
     cp.isEmpty(name);
     cp.isArrayLengthGreaterThan0(imgUrl);
     cp.isEmpty(price);
+    cp.isEmpty(province);
+    cp.isEmpty(city);
+    cp.isEmpty(area);
     cp.isEmpty(community);
     cp.isEmpty(acreage);
     cp.isEmpty(floor);
@@ -187,6 +297,7 @@ module.exports = {
           name: name,
           imgUrl: JSON.stringify(imgUrl),
           price: price,
+          province: province,
           city: city,
           area: area,
           community: community,
@@ -218,6 +329,7 @@ module.exports = {
         name: name,
         imgUrl: JSON.stringify(imgUrl),
         price: price,
+        province: province,
         city: city,
         area: area,
         community: community,
