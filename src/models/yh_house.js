@@ -87,6 +87,18 @@ module.exports = function(sequelize, DataTypes) {
     isDel: {
       type: DataTypes.INTEGER(11),
       allowNull: true
+    },
+    pmId: {
+      type: DataTypes.INTEGER(11),
+      allowNull: true
+    },
+    pmPhone: {
+      type: DataTypes.STRING(20),
+      allowNull: true
+    },
+    pmName: {
+      type: DataTypes.STRING(20),
+      allowNull: true
     }
   }, {
     tableName: 'yh_house'

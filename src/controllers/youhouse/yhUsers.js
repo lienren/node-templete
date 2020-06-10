@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2020-04-29 15:22:15
  * @Last Modified by: Lienren
- * @Last Modified time: 2020-06-05 07:42:04
+ * @Last Modified time: 2020-06-06 15:32:37
  */
 'use strict';
 
@@ -23,9 +23,10 @@ const enumUserStatusName = {
 };
 const enumUserTypeName = {
   1: '房产经纪人',
-  2: '悠房项目经理',
+  2: '悠房渠道对接人',
   3: '悠房驻场人员',
   4: '装修设计师',
+  5: '悠房项目经理',
   999: '系统人员',
 };
 

@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2020-04-29 18:25:38
  * @Last Modified by: Lienren
- * @Last Modified time: 2020-05-27 21:48:28
+ * @Last Modified time: 2020-06-10 15:15:24
  */
 'use strict';
 
@@ -86,6 +86,25 @@ module.exports = {
     }
 
     ctx.body = houseItems;
+  },
+  deleteHouse: async (ctx) => {
+    let id = ctx.request.body.id || 0;
+
+    cp.isNumberGreaterThan0(id);
+
+    await ctx.orm('youhouse').yh_house.update(
+      {
+        isDel: 1,
+      },
+      {
+        where: {
+          id: id,
+          isDel: 0,
+        },
+      }
+    );
+
+    ctx.body = {};
   },
   getHouseSecond: async (ctx) => {
     let hType = ctx.request.body.hType || 0;
