@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2020-04-29 18:25:38
  * @Last Modified by: Lienren
- * @Last Modified time: 2020-06-10 22:42:29
+ * @Last Modified time: 2020-06-11 00:14:36
  */
 'use strict';
 
@@ -25,6 +25,7 @@ const enumHouseSecondTypeName = {
 const enumHouseSecondVerifyName = {
   1: '未审核',
   2: '已审核',
+  3: '未通过',
 };
 const enumHouseSecondStatusName = {
   1: '已下线',
@@ -468,6 +469,104 @@ module.exports = {
         where: {
           id: id,
           uId: user.id,
+          isDel: 0,
+        },
+      }
+    );
+
+    ctx.body = {};
+  },
+  manageGetHouseSecond: async (ctx) => {
+    let isVerify = ctx.request.body.isVerify || 0;
+    let hType = ctx.request.body.hType || 0;
+
+    let where = {
+      status: 2,
+      isDel: 0,
+    };
+
+    if (isVerify > 0) {
+      where.isVerify = isVerify;
+    }
+
+    if (hType > 0) {
+      where.hType = hType;
+    }
+
+    let result = await ctx.orm('youhouse').yh_house_second.findAll({
+      where: where,
+      order: [['addTime', 'desc']],
+    });
+
+    let houseItems = [];
+    if (result) {
+      houseItems = result.map((m) => {
+        let data = m.dataValues;
+        return {
+          ...data,
+          imgUrl: JSON.parse(data.imgUrl),
+        };
+      });
+    }
+
+    ctx.body = houseItems;
+  },
+  manageEditHouseSecondVerify: async (ctx) => {
+    let id = ctx.request.body.id || 0;
+    let verifyStatus = ctx.request.body.verifyStatus || 1;
+
+    cp.isNumberGreaterThan0(id);
+    cp.isNumberGreaterThan0(verifyStatus);
+
+    await ctx.orm('youhouse').yh_house_second.update(
+      {
+        isVerify: verifyStatus,
+        isVerifyName: enumHouseSecondVerifyName[verifyStatus],
+      },
+      {
+        where: {
+          id: id,
+          isDel: 0,
+        },
+      }
+    );
+
+    ctx.body = {};
+  },
+  manageDeleteHouseSecond: async (ctx) => {
+    let id = ctx.request.body.id || 0;
+
+    cp.isNumberGreaterThan0(id);
+
+    await ctx.orm('youhouse').yh_house_second.update(
+      {
+        isDel: 1,
+      },
+      {
+        where: {
+          id: id,
+          isDel: 0,
+        },
+      }
+    );
+
+    ctx.body = {};
+  },
+  manageEditHouseSecondType: async (ctx) => {
+    let id = ctx.request.body.id || 0;
+    let hType = ctx.request.body.hType || 0;
+
+    cp.isNumberGreaterThan0(id);
+    cp.isNumberGreaterThan0(hType);
+
+    await ctx.orm('youhouse').yh_house_second.update(
+      {
+        hType: hType,
+        hTypeName: enumHouseSecondTypeName[hType],
+      },
+      {
+        where: {
+          id: id,
           isDel: 0,
         },
       }
