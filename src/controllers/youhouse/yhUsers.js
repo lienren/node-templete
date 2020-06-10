@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2020-04-29 15:22:15
  * @Last Modified by: Lienren
- * @Last Modified time: 2020-06-06 15:32:37
+ * @Last Modified time: 2020-06-10 15:54:39
  */
 'use strict';
 
@@ -262,6 +262,30 @@ module.exports = {
         id: data.id,
         userName: data.userName,
         userPhone: data.userPhone,
+      };
+    });
+
+    ctx.body = users;
+  },
+  getSysUsers: async (ctx) => {
+    let result = await ctx.orm('youhouse').yh_users.findAll({
+      where: {
+        userStatus: 1,
+        userType: {
+          $in: [2, 3, 4, 5],
+        },
+        isDel: 0,
+      },
+    });
+
+    let users = result.map((m) => {
+      let data = m.dataValues;
+      return {
+        id: data.id,
+        userName: data.userName,
+        userPhone: data.userPhone,
+        userType: data.userType,
+        userTypeName: data.userTypeName,
       };
     });
 
