@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2020-04-29 18:25:38
  * @Last Modified by: Lienren
- * @Last Modified time: 2020-06-02 23:24:35
+ * @Last Modified time: 2020-06-12 14:04:54
  */
 'use strict';
 
@@ -120,6 +120,52 @@ module.exports = {
       smsContent: `【悠房】您的验证码是${code}。如非本人操作，请忽略本短信`,
       smsPhones: userPhone,
     });
+
+    ctx.body = {};
+  },
+  manageGetMsg: async (ctx) => {
+    let result = await ctx.orm('youhouse').yh_msg.findAll({
+      where: {
+        isDel: 0,
+      },
+      order: [['addTime', 'desc']],
+    });
+
+    ctx.body = result;
+  },
+  manageSendMsg: async (ctx) => {
+    let msgTitle = ctx.request.body.msgTitle || '';
+    let msgContent = ctx.request.body.msgContent || '';
+
+    cp.isEmpty(msgContent);
+
+    let result = await ctx.orm('youhouse').yh_msg.create({
+      msgTitle: msgTitle,
+      msgContent: msgContent,
+      addTime: date.formatDate(),
+      isDel: 0,
+    });
+
+    ctx.body = {
+      id: result.id,
+    };
+  },
+  manageDeleteMsg: async (ctx) => {
+    let id = ctx.request.body.id || 0;
+
+    cp.isNumberGreaterThan0(id);
+
+    await ctx.orm('youhouse').yh_msg.update(
+      {
+        isDel: 1,
+      },
+      {
+        where: {
+          id: id,
+          isDel: 0,
+        },
+      }
+    );
 
     ctx.body = {};
   },

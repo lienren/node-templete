@@ -103,6 +103,10 @@ module.exports = function(sequelize, DataTypes) {
     pmName: {
       type: DataTypes.STRING(20),
       allowNull: true
+    },
+    pmType: {
+      type: DataTypes.STRING(20),
+      allowNull: true
     }
   }, {
     tableName: 'yh_house'

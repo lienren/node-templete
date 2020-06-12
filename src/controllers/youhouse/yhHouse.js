@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2020-04-29 18:25:38
  * @Last Modified by: Lienren
- * @Last Modified time: 2020-06-11 00:14:36
+ * @Last Modified time: 2020-06-12 14:24:24
  */
 'use strict';
 
@@ -129,6 +129,7 @@ module.exports = {
     let pmId = ctx.request.body.pmId || 0;
     let pmPhone = ctx.request.body.pmPhone || '';
     let pmName = ctx.request.body.pmName || '';
+    let pmType = ctx.request.body.pmType || '';
 
     cp.isEmpty(name);
     cp.isEmpty(imgUrl);
@@ -169,6 +170,7 @@ module.exports = {
           pmId: pmId,
           pmPhone: pmPhone,
           pmName: pmName,
+          pmType: pmType,
         },
         {
           where: {
@@ -207,6 +209,7 @@ module.exports = {
         pmId: pmId,
         pmPhone: pmPhone,
         pmName: pmName,
+        pmType: pmType,
       });
       ctx.body = {
         id: result.id,

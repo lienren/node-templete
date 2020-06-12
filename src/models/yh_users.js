@@ -10,7 +10,8 @@ module.exports = function(sequelize, DataTypes) {
     },
     userPhone: {
       type: DataTypes.STRING(20),
-      allowNull: true
+      allowNull: true,
+      unique: true
     },
     userPwd: {
       type: DataTypes.STRING(255),
