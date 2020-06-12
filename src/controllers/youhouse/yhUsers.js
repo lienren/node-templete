@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2020-04-29 15:22:15
  * @Last Modified by: Lienren
- * @Last Modified time: 2020-06-10 15:54:39
+ * @Last Modified time: 2020-06-11 22:09:22
  */
 'use strict';
 
@@ -268,27 +268,139 @@ module.exports = {
     ctx.body = users;
   },
   getSysUsers: async (ctx) => {
-    let result = await ctx.orm('youhouse').yh_users.findAll({
-      where: {
-        userStatus: 1,
-        userType: {
-          $in: [2, 3, 4, 5],
-        },
-        isDel: 0,
+    let userStatus = ctx.request.body.userStatus;
+
+    let where = {
+      userType: {
+        $in: [2, 3, 4, 5],
       },
+      isDel: 0,
+    };
+    if (userStatus > -1) {
+      where.userStatus = userStatus;
+    }
+
+    let result = await ctx.orm('youhouse').yh_users.findAll({
+      where: where,
+      order: [['addTime', 'desc']],
     });
 
-    let users = result.map((m) => {
-      let data = m.dataValues;
-      return {
-        id: data.id,
-        userName: data.userName,
-        userPhone: data.userPhone,
-        userType: data.userType,
-        userTypeName: data.userTypeName,
+    ctx.body = result;
+  },
+  getUsers: async (ctx) => {
+    let userStatus = ctx.request.body.userStatus;
+
+    let where = {
+      userType: 1,
+      isDel: 0,
+    };
+    if (userStatus > -1) {
+      where.userStatus = userStatus;
+    }
+
+    let result = await ctx.orm('youhouse').yh_users.findAll({
+      where: where,
+      order: [['addTime', 'desc']],
+    });
+
+    ctx.body = result;
+  },
+  manageEditUserStatus: async (ctx) => {
+    let id = ctx.request.body.id || 0;
+    let userStatus = ctx.request.body.userStatus || 2;
+
+    cp.isNumberGreaterThan0(id);
+
+    await ctx.orm('youhouse').yh_users.update(
+      {
+        userStatus: userStatus,
+        userStatusName: enumUserStatusName[userStatus],
+      },
+      {
+        where: {
+          id: id,
+          isDel: 0,
+        },
+      }
+    );
+
+    ctx.body = {};
+  },
+  manageDeleteUser: async (ctx) => {
+    let id = ctx.request.body.id || 0;
+
+    cp.isNumberGreaterThan0(id);
+
+    await ctx.orm('youhouse').yh_users.update(
+      {
+        isDel: 1,
+      },
+      {
+        where: {
+          id: id,
+          isDel: 0,
+        },
+      }
+    );
+
+    ctx.body = {};
+  },
+  submitSysUser: async (ctx) => {
+    let id = ctx.request.body.id || 0;
+    let userPhone = ctx.request.body.userPhone || '';
+    let userName = ctx.request.body.userName || '';
+    let userCompName = ctx.request.body.userCompName || '';
+    let userStatus = ctx.request.body.userStatus || 1;
+    let userType = ctx.request.body.userType || 0;
+
+    cp.isEmpty(userPhone);
+    cp.isEmpty(userName);
+    cp.isEmpty(userCompName);
+    cp.isNumberGreaterThan0(userType);
+
+    if (id > 0) {
+      await ctx.orm('youhouse').yh_users.update(
+        {
+          userPhone: userPhone,
+          userName: userName,
+          userStatus: userStatus,
+          userStatusName: enumUserStatusName[userStatus],
+        },
+        {
+          where: {
+            id: id,
+            isDel: 0,
+          },
+        }
+      );
+      ctx.body = {
+        id: id,
       };
-    });
-
-    ctx.body = users;
+    } else {
+      let result = await ctx.orm('youhouse').yh_users.create(
+        {
+          userPhone: userPhone,
+          userName: userName,
+          defId: 0,
+          defName: '系统人员',
+          userCompName: userCompName,
+          userStatus: userStatus,
+          userStatusName: enumUserStatusName[userStatus],
+          addTime: date.formatDate(),
+          isDel: 0,
+          userType: userType,
+          userTypeName: enumUserTypeName[userType],
+        },
+        {
+          where: {
+            id: id,
+            isDel: 0,
+          },
+        }
+      );
+      ctx.body = {
+        id: result.id,
+      };
+    }
   },
 };

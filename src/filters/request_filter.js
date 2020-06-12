@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2018-04-19 13:38:30
  * @Last Modified by: Lienren
- * @Last Modified time: 2020-03-05 15:29:54
+ * @Last Modified time: 2020-06-12 10:24:52
  */
 'use strict';
 
@@ -35,16 +35,16 @@ module.exports = async function(ctx, next) {
   };
 
   // 根据请求目录转入指定静态目录
-  if (ctx.path.indexOf('adminweb') > -1) {
+  if (ctx.path.indexOf('yys') > -1) {
     await sendfile(
       ctx,
-      path.resolve(__dirname, '../../assets/adminweb/index.html')
+      path.resolve(__dirname, '../../assets/school_report/index.html')
     );
     return;
   }
 
   // 根据请求目录转入指定静态目录
-  if (ctx.path.indexOf('school_report') > -1) {
+  if (ctx.path.indexOf('youhouse-manage') > -1) {
     await sendfile(
       ctx,
       path.resolve(__dirname, '../../assets/school_report/index.html')

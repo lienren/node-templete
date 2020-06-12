@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2020-04-29 18:53:41
  * @Last Modified by: Lienren
- * @Last Modified time: 2020-05-14 11:37:05
+ * @Last Modified time: 2020-06-11 22:30:10
  */
 'use strict';
 
@@ -774,5 +774,85 @@ module.exports = {
         },
       }
     );
+  },
+  manageGetReportHouse: async (ctx) => {
+    let result = await ctx.orm('youhouse').yh_report.findAll({
+      where: {
+        isDel: 0,
+      },
+      order: [['addTime', 'desc']],
+    });
+
+    let reportItems = [];
+    if (result) {
+      reportItems = result.map((m) => {
+        let data = m.dataValues;
+        return {
+          ...data,
+          cGetTime: date.formatDate(data.cGetTime, 'YYYY年MM月DD日'),
+        };
+      });
+    }
+
+    ctx.body = reportItems;
+  },
+  manageDeleteReportHouse: async (ctx) => {
+    let id = ctx.request.body.id || 0;
+
+    await ctx.orm('youhouse').yh_report.update(
+      {
+        isDel: 1,
+      },
+      {
+        where: {
+          id: id,
+          isDel: 0,
+        },
+      }
+    );
+
+    ctx.body = {};
+  },
+  manageGetReportDeco: async (ctx) => {
+    let result = await ctx.orm('youhouse').yh_report_deco.findAll({
+      where: {
+        isDel: 0,
+      },
+      order: [['addTime', 'desc']],
+    });
+
+    let reportItems = [];
+    if (result) {
+      reportItems = result.map((m) => {
+        let data = m.dataValues;
+        return {
+          ...data,
+          cGetTime:
+            date.formatDate(data.cGetTimeDate, 'YYYY年MM月DD日') +
+            ' ' +
+            data.cGetTimeTime,
+          cGetTimeDate: date.formatDate(data.cGetTimeDate, 'YYYY年MM月DD日'),
+        };
+      });
+    }
+
+    ctx.body = reportItems;
+  },
+  manageDeleteReportDeco: async (ctx) => {
+    let id = ctx.request.body.id || 0;
+
+    await ctx.orm('youhouse').yh_report_deco.update(
+      {
+        isDel: 1,
+      },
+      {
+        where: {
+          id: id,
+          isDel: 0,
+        },
+      }
+    );
+
+    ctx.body = {};
   },
 };
