@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2020-04-29 18:25:38
  * @Last Modified by: Lienren
- * @Last Modified time: 2020-06-12 14:04:54
+ * @Last Modified time: 2020-06-12 14:57:16
  */
 'use strict';
 
@@ -156,6 +156,59 @@ module.exports = {
     cp.isNumberGreaterThan0(id);
 
     await ctx.orm('youhouse').yh_msg.update(
+      {
+        isDel: 1,
+      },
+      {
+        where: {
+          id: id,
+          isDel: 0,
+        },
+      }
+    );
+
+    ctx.body = {};
+  },
+  manageGetBanner: async (ctx) => {
+    let result = await ctx.orm('youhouse').yh_banners.findAll({
+      where: {
+        isDel: 0,
+      },
+      order: [['addTime', 'desc']],
+    });
+
+    ctx.body = result;
+  },
+  manageCreateBanner: async (ctx) => {
+    let imgUrl = ctx.request.body.imgUrl || '';
+    let imgText = ctx.request.body.imgText || '';
+    let linkUrl = ctx.request.body.linkUrl || '';
+    let linkParams = ctx.request.body.linkParams || '{}';
+    let imgState = ctx.request.body.imgState || 1;
+
+    cp.isEmpty(imgUrl);
+    cp.isEmpty(imgText);
+
+    let result = await ctx.orm('youhouse').yh_banners.create({
+      imgUrl: imgUrl,
+      imgText: imgText,
+      linkUrl: linkUrl,
+      linkParams: linkParams,
+      imgState: imgState,
+      addTime: date.formatDate(),
+      isDel: 0,
+    });
+
+    ctx.body = {
+      id: result.id,
+    };
+  },
+  manageDeleteBanner: async (ctx) => {
+    let id = ctx.request.body.id || 0;
+
+    cp.isNumberGreaterThan0(id);
+
+    await ctx.orm('youhouse').yh_banners.update(
       {
         isDel: 1,
       },
