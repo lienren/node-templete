@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2020-06-17 11:27:21
  * @Last Modified by: Lienren
- * @Last Modified time: 2020-06-17 14:54:30
+ * @Last Modified time: 2020-06-17 16:56:21
  */
 'use strict';
 
@@ -37,7 +37,7 @@ module.exports = {
 
     let cmp = result.map((m) => {
       let mark = cmpMark.find((f) => {
-        return (f.cpCode = m.new_code);
+        return f.cpCode === m.dataValues.new_code;
       });
       return {
         id: m.dataValues.id,
@@ -76,7 +76,7 @@ module.exports = {
 
     let cmp = cpOther.map((m) => {
       let mark = cmpMark.find((f) => {
-        return (f.cpCode = m.symbol);
+        return f.cpCode === m.dataValues.symbol;
       });
       return {
         id: m.dataValues.id,

@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2020-06-17 12:13:14
  * @Last Modified by: Lienren
- * @Last Modified time: 2020-06-17 14:42:58
+ * @Last Modified time: 2020-06-17 17:10:12
  */
 'use strict';
 
@@ -118,5 +118,38 @@ module.exports = {
     }
 
     ctx.body = {};
+  },
+  getCompanyMark: async (ctx) => {
+    let cpCode = ctx.request.body.cpCode || '';
+
+    cp.isEmpty(cpId);
+
+    let cmp = await ctx.orm('manual_marking').mk_company.findOne({
+      where: {
+        cpCode: cpCode,
+        isDel: 0,
+      },
+    });
+
+    if (cmp) {
+      let result = await ctx.orm('manual_marking').mk_company_data.findAll({
+        where: {
+          cpId: cmp.id,
+          isDel: 0,
+        },
+      });
+
+      let cmpData = result.map((m) => {
+        return {
+          key: m.dataValues.dataIndex,
+          name: m.dataValues.dataText,
+          val: m.dataValues.dataValue,
+        };
+      });
+
+      ctx.body = cmpData;
+    } else {
+      ctx.body = [];
+    }
   },
 };
