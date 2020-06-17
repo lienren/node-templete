@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2020-06-17 12:13:14
  * @Last Modified by: Lienren
- * @Last Modified time: 2020-06-17 13:40:35
+ * @Last Modified time: 2020-06-17 14:42:58
  */
 'use strict';
 
@@ -22,6 +22,7 @@ const cpTypeNameEnum = {
 module.exports = {
   editCompanyMark: async (ctx) => {
     let cpId = ctx.request.body.cpId || 0;
+    let cpCode = ctx.request.body.cpCode || '';
     let cpName = ctx.request.body.cpName || '';
     let opName = ctx.request.body.opName || '';
     let status = ctx.request.body.status || 1;
@@ -64,6 +65,7 @@ module.exports = {
       // 公司不存在，新增公司
       cmp = await ctx.orm('manual_marking').mk_company.create({
         cpName,
+        cpCode,
         opName,
         status,
         statusName: cpStatusNameEnum[status],

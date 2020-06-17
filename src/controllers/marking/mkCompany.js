@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2020-06-17 11:27:21
  * @Last Modified by: Lienren
- * @Last Modified time: 2020-06-17 12:13:36
+ * @Last Modified time: 2020-06-17 14:54:30
  */
 'use strict';
 
@@ -28,7 +28,28 @@ module.exports = {
       },
     });
 
-    ctx.body = result;
+    let cmpMark = await ctx.orm('manual_marking').mk_company.findAll({
+      where: {
+        status: 2,
+        isDel: 0,
+      },
+    });
+
+    let cmp = result.map((m) => {
+      let mark = cmpMark.find((f) => {
+        return (f.cpCode = m.new_code);
+      });
+      return {
+        id: m.dataValues.id,
+        code: m.dataValues.code,
+        name: m.dataValues.display_name,
+        newCode: m.dataValues.new_code,
+        type: 1,
+        isMark: mark ? true : false,
+      };
+    });
+
+    ctx.body = cmp;
   },
   getOtherCompanys: async (ctx) => {
     let cpAll = await ctx.orm('ocs_stock').stock_basic.findAll({});
@@ -46,7 +67,28 @@ module.exports = {
       return cp300Code.indexOf(f.symbol) < 0;
     });
 
-    ctx.body = cpOther;
+    let cmpMark = await ctx.orm('manual_marking').mk_company.findAll({
+      where: {
+        status: 2,
+        isDel: 0,
+      },
+    });
+
+    let cmp = cpOther.map((m) => {
+      let mark = cmpMark.find((f) => {
+        return (f.cpCode = m.symbol);
+      });
+      return {
+        id: m.dataValues.id,
+        code: m.dataValues.ts_code,
+        name: m.dataValues.name,
+        newCode: m.dataValues.symbol,
+        type: 999,
+        isMark: mark ? true : false,
+      };
+    });
+
+    ctx.body = cmp;
   },
   getHasMarkCompanys: async (ctx) => {
     let result = await ctx.orm('manual_marking').mk_company.findAll({

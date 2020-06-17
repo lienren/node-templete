@@ -12,6 +12,10 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING(255),
       allowNull: true
     },
+    cpCode: {
+      type: DataTypes.STRING(100),
+      allowNull: true
+    },
     opName: {
       type: DataTypes.STRING(255),
       allowNull: true
