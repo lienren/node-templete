@@ -1,7 +1,7 @@
 {
   "apps": [
     {
-      "name": "YouHouseApiSystem",
+      "name": "MKApiSystem",
       "script": "./src/app.js",
       "watch": false,
       "ignore_watch": [

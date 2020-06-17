@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2018-12-13 23:49:41
  * @Last Modified by: Lienren
- * @Last Modified time: 2020-05-25 09:16:11
+ * @Last Modified time: 2020-06-17 11:32:13
  */
 'use strict';
 
@@ -75,18 +75,56 @@ module.exports = {
       sitepath: path.resolve(__dirname, '../assets/adminweb/index.html'),
     },
   ],
-  // sequelize-auto -o "./src/models" -d youhouse -h 47.110.136.73 -u root -p 3306 -x Ler@2019 -e mysql
+  // sequelize-auto -o "./src/models" -d manual_marking -h 10.10.141.158 -u marking_platform -p 3306 -x Marking_platform1234 -e mysql
+  // sequelize-auto -o "./src/models" -d ocs_stock -h 10.10.188.159 -u lier -p 3306 -x Lier@2020 -e mysql
+  // sequelize-auto -o "./src/models" -d ocs_base -h 10.10.188.159 -u lier -p 3306 -x Lier@2020 -e mysql
   databases: [
     {
       modelPath: path.resolve(__dirname, './models'),
-      db: 'youhouse',
+      db: 'manual_marking',
       dialect: 'mysql',
       port: 3306,
       replication: {
         read: [
-          { host: 'localhost', username: 'root', password: 'Ler@2019' },
+          { host: '10.10.141.158', username: 'marking_platform', password: 'Marking_platform1234' },
         ],
-        write: { host: 'localhost', username: 'root', password: 'Ler@2019' },
+        write: { host: '10.10.141.158', username: 'marking_platform', password: 'Marking_platform1234' },
+      },
+      dialectOptions: {
+        dateStrings: true,
+        typeCast: function (field, next) {
+          if (field.type === 'DATETIME' || field.type === 'TIMESTAMP') {
+            let fieldDate = field.string();
+            if (fieldDate) {
+              return date.formatDate(fieldDate);
+            } else {
+              return fieldDate;
+            }
+          }
+          return next();
+        },
+      },
+      timezone: '+08:00',
+      pool: {
+        maxConnections: 200,
+        minConnections: 0,
+        maxIdleTime: 30000,
+      },
+      define: {
+        timestamps: false,
+      },
+      logging: false,
+    },
+    {
+      modelPath: path.resolve(__dirname, './models'),
+      db: 'ocs_stock',
+      dialect: 'mysql',
+      port: 3306,
+      replication: {
+        read: [
+          { host: '10.10.188.159', username: 'lier', password: 'Lier@2020' },
+        ],
+        write: { host: '10.10.188.159', username: 'lier', password: 'Lier@2020' },
       },
       dialectOptions: {
         dateStrings: true,

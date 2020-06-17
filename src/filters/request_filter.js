@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2018-04-19 13:38:30
  * @Last Modified by: Lienren
- * @Last Modified time: 2020-06-12 10:24:52
+ * @Last Modified time: 2020-06-17 11:26:43
  */
 'use strict';
 
@@ -13,14 +13,14 @@ const log = require('../utils/log');
 const redirect = require('./request_redirect');
 const auth = require('./request_authentication');
 
-module.exports = async function(ctx, next) {
+module.exports = async function (ctx, next) {
   // 响应开始时间
   const requestStartTime = new Date();
 
   // 整合query和body内容
   ctx.request.body = {
     ...ctx.request.query,
-    ...ctx.request.body
+    ...ctx.request.body,
   };
 
   ctx.work = {
@@ -31,7 +31,7 @@ module.exports = async function(ctx, next) {
     managerRealName: '', // 管理员真实姓名
     managerPhone: '', // 管理员手机号
     userId: 0, // 用户编号
-    alipayUserId: '' // 支付宝帐号
+    alipayUserId: '', // 支付宝帐号
   };
 
   // 根据请求目录转入指定静态目录
@@ -43,37 +43,12 @@ module.exports = async function(ctx, next) {
     return;
   }
 
-  // 根据请求目录转入指定静态目录
-  if (ctx.path.indexOf('youhouse-manage') > -1) {
-    await sendfile(
-      ctx,
-      path.resolve(__dirname, '../../assets/school_report/index.html')
-    );
-    return;
-  }
-
-  /* let sitepath = await redirect(ctx, async (ctx, requestUrl, sitepath) => {
-    let stats = await sendfile(ctx, sitepath);
-
-    console.log('stats:', stats);
-
-    return sitepath;
-  });
-
-  if (sitepath && sitepath.length > 0) {
-    console.log('stop!!!');
-    return;
-  } */
-
   try {
     // 鉴权验证
     let { isPass, authSource, authInfo, token } = await auth(
       ctx,
       async (ctx, requestUrl) => {
-        let api = await ctx
-          .orm()
-          .BaseApi.findOne({ where: { apiUrl: requestUrl } });
-        return api && api.isAuth === 1;
+        return false;
       },
       async (ctx, requestUrl, token, isPass, authInfo, authSource) => {
         if (isPass && authInfo) {
@@ -93,7 +68,7 @@ module.exports = async function(ctx, next) {
           isPass,
           authSource,
           authInfo,
-          token
+          token,
         };
       }
     );
@@ -112,7 +87,7 @@ module.exports = async function(ctx, next) {
       ctx.body = {
         code: ctx.work.code,
         message: ctx.work.message,
-        data: ctx.body || {}
+        data: ctx.body || {},
       };
     }
   } catch (error) {
@@ -127,7 +102,7 @@ module.exports = async function(ctx, next) {
     ctx.body = {
       code: error.code || error.name || error.message,
       message: error.message,
-      data: {}
+      data: {},
     };
   }
 };
