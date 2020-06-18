@@ -28,6 +28,10 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING(1000),
       allowNull: true
     },
+    dataSource: {
+      type: DataTypes.STRING(1000),
+      allowNull: true
+    },
     addTime: {
       type: DataTypes.DATE,
       allowNull: true

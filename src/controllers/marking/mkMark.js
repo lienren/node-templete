@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2020-06-17 12:13:14
  * @Last Modified by: Lienren
- * @Last Modified time: 2020-06-17 17:11:06
+ * @Last Modified time: 2020-06-18 15:22:26
  */
 'use strict';
 
@@ -37,7 +37,7 @@ module.exports = {
     // 获取公司信息
     let cmp = await ctx.orm('manual_marking').mk_company.findOne({
       where: {
-        id: cpId,
+        cpCode: cpCode,
         isDel: 0,
       },
     });
@@ -45,22 +45,19 @@ module.exports = {
     // 处理公司信息
     if (cmp) {
       // 公司存在，更新额度
-      await ctx.orm('manual_marking').mk_company.update(
-        {
-          opName: opName,
-          status: status,
-          statusName: cpStatusNameEnum[status],
-          cpType: cpType,
-          cpTypeName: cpTypeNameEnum[cpType],
-          modifyTime: date.formatDate(),
+      await ctx.orm('manual_marking').mk_company.update({
+        opName: opName,
+        status: status,
+        statusName: cpStatusNameEnum[status],
+        cpType: cpType,
+        cpTypeName: cpTypeNameEnum[cpType],
+        modifyTime: date.formatDate(),
+      }, {
+        where: {
+          id: cmp.id,
+          isDel: 0,
         },
-        {
-          where: {
-            id: cmp.id,
-            isDel: 0,
-          },
-        }
-      );
+      });
     } else {
       // 公司不存在，新增公司
       cmp = await ctx.orm('manual_marking').mk_company.create({
@@ -90,18 +87,16 @@ module.exports = {
       // 处理公司信息
       if (cmpData) {
         // 存在，更新
-        await ctx.orm('manual_marking').mk_company_data.update(
-          {
-            dataValue: data[i].val,
-            modifyTime: date.formatDate(),
+        await ctx.orm('manual_marking').mk_company_data.update({
+          dataValue: data[i].val,
+          dataSource: data[i].source,
+          modifyTime: date.formatDate(),
+        }, {
+          where: {
+            id: cmpData.id,
+            isDel: 0,
           },
-          {
-            where: {
-              id: cmpData.id,
-              isDel: 0,
-            },
-          }
-        );
+        });
       } else {
         // 不存在，新增
         await ctx.orm('manual_marking').mk_company_data.create({
@@ -110,6 +105,7 @@ module.exports = {
           dataIndex: data[i].key,
           dataText: data[i].name,
           dataValue: data[i].val,
+          dataSource: data[i].source,
           addTime: date.formatDate(),
           modifyTime: date.formatDate(),
           isDel: 0,
@@ -144,6 +140,7 @@ module.exports = {
           key: m.dataValues.dataIndex,
           name: m.dataValues.dataText,
           val: m.dataValues.dataValue,
+          source: m.dataValues.dataSource,
         };
       });
 
