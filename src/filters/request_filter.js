@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2018-04-19 13:38:30
  * @Last Modified by: Lienren
- * @Last Modified time: 2020-06-17 11:26:43
+ * @Last Modified time: 2020-06-17 17:17:35
  */
 'use strict';
 
@@ -35,7 +35,7 @@ module.exports = async function (ctx, next) {
   };
 
   // 根据请求目录转入指定静态目录
-  if (ctx.path.indexOf('yys') > -1) {
+  if (ctx.path.indexOf('axon_admin') > -1) {
     await sendfile(
       ctx,
       path.resolve(__dirname, '../../assets/school_report/index.html')

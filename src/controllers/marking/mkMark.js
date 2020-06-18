@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2020-06-17 12:13:14
  * @Last Modified by: Lienren
- * @Last Modified time: 2020-06-17 17:10:12
+ * @Last Modified time: 2020-06-17 17:11:06
  */
 'use strict';
 
@@ -122,7 +122,7 @@ module.exports = {
   getCompanyMark: async (ctx) => {
     let cpCode = ctx.request.body.cpCode || '';
 
-    cp.isEmpty(cpId);
+    cp.isEmpty(cpCode);
 
     let cmp = await ctx.orm('manual_marking').mk_company.findOne({
       where: {
