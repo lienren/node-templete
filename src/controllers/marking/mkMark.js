@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2020-06-17 12:13:14
  * @Last Modified by: Lienren
- * @Last Modified time: 2020-06-18 15:22:26
+ * @Last Modified time: 2020-06-18 17:12:16
  */
 'use strict';
 
@@ -84,11 +84,14 @@ module.exports = {
         },
       });
 
+      // 如果是数组，则序列化存储
+      let dataValue = data[i].val && Array.isArray(data[i].val) ? JSON.stringify(data[i].val) : data[i].val
+
       // 处理公司信息
       if (cmpData) {
         // 存在，更新
         await ctx.orm('manual_marking').mk_company_data.update({
-          dataValue: data[i].val,
+          dataValue: dataValue,
           dataSource: data[i].source,
           modifyTime: date.formatDate(),
         }, {
@@ -104,7 +107,7 @@ module.exports = {
           cpName: cmp.cpName,
           dataIndex: data[i].key,
           dataText: data[i].name,
-          dataValue: data[i].val,
+          dataValue: dataValue,
           dataSource: data[i].source,
           addTime: date.formatDate(),
           modifyTime: date.formatDate(),
@@ -139,7 +142,8 @@ module.exports = {
         return {
           key: m.dataValues.dataIndex,
           name: m.dataValues.dataText,
-          val: m.dataValues.dataValue,
+          // 如果是数组，则反序列化给前端
+          val: m.dataValues.dataValue && m.dataValues.dataValue.indexOf('[') >= 0 ? JSON.parse(m.dataValues.dataValue) : m.dataValues.dataValue,
           source: m.dataValues.dataSource,
         };
       });
