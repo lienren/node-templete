@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2020-06-17 11:27:21
  * @Last Modified by: Lienren
- * @Last Modified time: 2020-06-19 09:41:45
+ * @Last Modified time: 2020-06-19 11:20:11
  */
 'use strict';
 
@@ -31,7 +31,6 @@ module.exports = {
 
     let cmpMark = await ctx.orm('manual_marking').mk_company.findAll({
       where: {
-        status: 2,
         isDel: 0,
       },
     });
@@ -70,7 +69,6 @@ module.exports = {
 
     let cmpMark = await ctx.orm('manual_marking').mk_company.findAll({
       where: {
-        status: 2,
         isDel: 0,
       },
     });
@@ -91,12 +89,18 @@ module.exports = {
 
     ctx.body = cmp;
   },
-  getHasMarkCompanys: async (ctx) => {
+  getMarkCompanys: async (ctx) => {
+    let status = ctx.request.body.status || 0;
+
+    let where = {
+      isDel: 0,
+    }
+    if (status > 0) {
+      where.status = status
+    }
+
     let result = await ctx.orm('manual_marking').mk_company.findAll({
-      where: {
-        status: 2,
-        isDel: 0,
-      },
+      where: where
     });
 
     ctx.body = result;
