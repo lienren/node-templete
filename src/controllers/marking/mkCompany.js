@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2020-06-17 11:27:21
  * @Last Modified by: Lienren
- * @Last Modified time: 2020-06-17 16:56:21
+ * @Last Modified time: 2020-06-19 09:41:45
  */
 'use strict';
 
@@ -13,6 +13,7 @@ const date = require('../../utils/date');
 const cpStatusNameEnum = {
   1: '未打标',
   2: '已打标',
+  3: '审核通过',
 };
 
 const cpTypeNameEnum = {
@@ -45,7 +46,7 @@ module.exports = {
         name: m.dataValues.display_name,
         newCode: m.dataValues.new_code,
         type: 1,
-        isMark: mark ? true : false,
+        isMark: mark ? mark.status : 1,
       };
     });
 
@@ -84,7 +85,7 @@ module.exports = {
         name: m.dataValues.name,
         newCode: m.dataValues.symbol,
         type: 999,
-        isMark: mark ? true : false,
+        isMark: mark ? mark.status : 1,
       };
     });
 
@@ -99,5 +100,5 @@ module.exports = {
     });
 
     ctx.body = result;
-  },
+  }
 };

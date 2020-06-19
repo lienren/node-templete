@@ -47,6 +47,14 @@ module.exports = function(sequelize, DataTypes) {
     isDel: {
       type: DataTypes.INTEGER(11),
       allowNull: true
+    },
+    verifyName: {
+      type: DataTypes.STRING(255),
+      allowNull: true
+    },
+    verifyTime: {
+      type: DataTypes.DATE,
+      allowNull: true
     }
   }, {
     tableName: 'mk_company'

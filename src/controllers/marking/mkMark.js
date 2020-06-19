@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2020-06-17 12:13:14
  * @Last Modified by: Lienren
- * @Last Modified time: 2020-06-18 17:12:16
+ * @Last Modified time: 2020-06-19 09:37:00
  */
 'use strict';
 
@@ -12,6 +12,7 @@ const cp = require('./checkParam');
 const cpStatusNameEnum = {
   1: '未打标',
   2: '已打标',
+  3: '审核通过',
 };
 
 const cpTypeNameEnum = {
@@ -29,7 +30,7 @@ module.exports = {
     let cpType = ctx.request.body.cpType || 1;
     let data = ctx.request.body.data || [];
 
-    cp.isEmpty(cpId);
+    cp.isNumberGreaterThan0(cpId);
     cp.isEmpty(cpName);
     cp.isEmpty(opName);
     cp.isArrayLengthGreaterThan0(data);
@@ -153,4 +154,26 @@ module.exports = {
       ctx.body = [];
     }
   },
+  setCompanysStatus: async (ctx) => {
+    let cpId = ctx.request.body.cpId || 0;
+    let status = ctx.request.body.status || 1;
+    let opName = ctx.request.body.opName || '';
+
+    cp.isNumberGreaterThan0(cpId);
+    cp.isEmpty(opName);
+
+    // 公司存在，更新额度
+    await ctx.orm('manual_marking').mk_company.update({
+      status: status,
+      statusName: cpStatusNameEnum[status],
+      modifyTime: date.formatDate(),
+      verifyName: opName,
+      verifyTime: date.formatDate()
+    }, {
+      where: {
+        id: cpId,
+        isDel: 0,
+      },
+    });
+  }
 };
