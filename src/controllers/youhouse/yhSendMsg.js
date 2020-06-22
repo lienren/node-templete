@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2020-05-11 17:14:39
  * @Last Modified by: Lienren
- * @Last Modified time: 2020-06-02 09:52:25
+ * @Last Modified time: 2020-06-22 16:22:19
  */
 'use strict';
 
@@ -26,7 +26,7 @@ module.exports = {
     let smsContent = params.smsContent || '';
     let smsPhones = params.smsPhones || '';
 
-    if (smsTitle === '' || smsContent === '' || smsPhones === '') {
+    if (smsTitle === '' || smsContent === '' || smsPhones === '' || smsPhones === '12345678901') {
       return;
     }
 

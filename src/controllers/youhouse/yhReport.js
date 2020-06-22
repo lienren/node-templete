@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2020-04-29 18:53:41
  * @Last Modified by: Lienren
- * @Last Modified time: 2020-06-11 22:30:10
+ * @Last Modified time: 2020-06-22 16:20:53
  */
 'use strict';
 
@@ -115,15 +115,27 @@ module.exports = {
       )}提交购房客户信息，请您及时处理！`,
       smsPhones: house.zc,
     });
+
+    let defUser = await await ctx.orm('youhouse').yh_users.findOne({
+      where: {
+        id: user.defId,
+        userStatus: 1,
+        isDel: 0,
+      },
+    });
+
     // 发送维护人员信息
-    sendmsg.create(ctx, {
-      smsTitle: '发送维护人员购房信息',
-      smsContent: `【悠房】${user.userCompName}在${date.formatDate(
+    if (defUser) {
+      sendmsg.create(ctx, {
+        smsTitle: '发送维护人员购房信息',
+        smsContent: `【悠房】${user.userCompName}在${date.formatDate(
         new Date(),
         'MM月DD日 HH:mm'
       )}提交购房客户信息，请您及时关注！`,
-      smsPhones: house.zc,
-    });
+        smsPhones: defUser.userPhone,
+      });
+
+    }
 
     ctx.body = {
       id: report.id,
@@ -154,7 +166,9 @@ module.exports = {
         uId: user.id,
         isDel: 0,
       },
-      order: [['addTime', 'desc']],
+      order: [
+        ['addTime', 'desc']
+      ],
     });
 
     let reportItems = [];
@@ -206,7 +220,9 @@ module.exports = {
         hId: houseId,
         isDel: 0,
       },
-      order: [['addTime', 'desc']],
+      order: [
+        ['addTime', 'desc']
+      ],
     });
 
     let reportItems = [];
@@ -414,7 +430,9 @@ module.exports = {
         uId: user.id,
         isDel: 0,
       },
-      order: [['addTime', 'desc']],
+      order: [
+        ['addTime', 'desc']
+      ],
     });
 
     let reportItems = [];
@@ -426,8 +444,7 @@ module.exports = {
           cName: data.cName,
           cPhone: data.cPhone,
           cSex: data.cSex,
-          cGetTime:
-            date.formatDate(data.cGetTimeDate, 'YYYY年MM月DD日') +
+          cGetTime: date.formatDate(data.cGetTimeDate, 'YYYY年MM月DD日') +
             ' ' +
             data.cGetTimeTime,
           cGetTimeDate: date.formatDate(data.cGetTimeDate, 'YYYY年MM月DD日'),
@@ -462,7 +479,9 @@ module.exports = {
         statusName: '已预约',
         isDel: 0,
       },
-      order: [['addTime', 'desc']],
+      order: [
+        ['addTime', 'desc']
+      ],
     });
 
     let reportItems = [];
@@ -502,7 +521,9 @@ module.exports = {
         defId: user.id,
         isDel: 0,
       },
-      order: [['addTime', 'desc']],
+      order: [
+        ['addTime', 'desc']
+      ],
     });
 
     let reportItems = [];
@@ -559,7 +580,9 @@ module.exports = {
         zcId: user.id,
         isDel: 0,
       },
-      order: [['addTime', 'desc']],
+      order: [
+        ['addTime', 'desc']
+      ],
     });
 
     let reportItems = [];
@@ -616,7 +639,9 @@ module.exports = {
         disgId: user.id,
         isDel: 0,
       },
-      order: [['addTime', 'desc']],
+      order: [
+        ['addTime', 'desc']
+      ],
     });
 
     let reportItems = [];
@@ -628,8 +653,7 @@ module.exports = {
           cName: data.cName,
           cPhone: data.cPhone,
           cSex: data.cSex,
-          cGetTime:
-            date.formatDate(data.cGetTimeDate, 'YYYY年MM月DD日') +
+          cGetTime: date.formatDate(data.cGetTimeDate, 'YYYY年MM月DD日') +
             ' ' +
             data.cGetTimeTime,
           cGetTimeDate: date.formatDate(data.cGetTimeDate, 'YYYY年MM月DD日'),
@@ -677,19 +701,16 @@ module.exports = {
       '您的帐号已在别处登录，请退出后重新登录！'
     );
 
-    await ctx.orm('youhouse').yh_report.update(
-      {
-        status: newStatus,
-        statusName: newStatusName,
+    await ctx.orm('youhouse').yh_report.update({
+      status: newStatus,
+      statusName: newStatusName,
+    }, {
+      where: {
+        id: id,
+        zcId: user.id,
+        isDel: 0,
       },
-      {
-        where: {
-          id: id,
-          zcId: user.id,
-          isDel: 0,
-        },
-      }
-    );
+    });
   },
   editReportDecoStatus: async (ctx) => {
     let id = ctx.request.body.id || 0;
@@ -720,19 +741,16 @@ module.exports = {
       '您的帐号已在别处登录，请退出后重新登录！'
     );
 
-    await ctx.orm('youhouse').yh_report_deco.update(
-      {
-        status: newStatus,
-        statusName: newStatusName,
+    await ctx.orm('youhouse').yh_report_deco.update({
+      status: newStatus,
+      statusName: newStatusName,
+    }, {
+      where: {
+        id: id,
+        disgId: user.id,
+        isDel: 0,
       },
-      {
-        where: {
-          id: id,
-          disgId: user.id,
-          isDel: 0,
-        },
-      }
-    );
+    });
   },
   editReportDecoAddress: async (ctx) => {
     let id = ctx.request.body.id || 0;
@@ -761,26 +779,25 @@ module.exports = {
       '您的帐号已在别处登录，请退出后重新登录！'
     );
 
-    await ctx.orm('youhouse').yh_report_deco.update(
-      {
-        community: community,
-        address: address,
+    await ctx.orm('youhouse').yh_report_deco.update({
+      community: community,
+      address: address,
+    }, {
+      where: {
+        id: id,
+        disgId: user.id,
+        isDel: 0,
       },
-      {
-        where: {
-          id: id,
-          disgId: user.id,
-          isDel: 0,
-        },
-      }
-    );
+    });
   },
   manageGetReportHouse: async (ctx) => {
     let result = await ctx.orm('youhouse').yh_report.findAll({
       where: {
         isDel: 0,
       },
-      order: [['addTime', 'desc']],
+      order: [
+        ['addTime', 'desc']
+      ],
     });
 
     let reportItems = [];
@@ -799,17 +816,14 @@ module.exports = {
   manageDeleteReportHouse: async (ctx) => {
     let id = ctx.request.body.id || 0;
 
-    await ctx.orm('youhouse').yh_report.update(
-      {
-        isDel: 1,
+    await ctx.orm('youhouse').yh_report.update({
+      isDel: 1,
+    }, {
+      where: {
+        id: id,
+        isDel: 0,
       },
-      {
-        where: {
-          id: id,
-          isDel: 0,
-        },
-      }
-    );
+    });
 
     ctx.body = {};
   },
@@ -818,7 +832,9 @@ module.exports = {
       where: {
         isDel: 0,
       },
-      order: [['addTime', 'desc']],
+      order: [
+        ['addTime', 'desc']
+      ],
     });
 
     let reportItems = [];
@@ -827,8 +843,7 @@ module.exports = {
         let data = m.dataValues;
         return {
           ...data,
-          cGetTime:
-            date.formatDate(data.cGetTimeDate, 'YYYY年MM月DD日') +
+          cGetTime: date.formatDate(data.cGetTimeDate, 'YYYY年MM月DD日') +
             ' ' +
             data.cGetTimeTime,
           cGetTimeDate: date.formatDate(data.cGetTimeDate, 'YYYY年MM月DD日'),
@@ -841,17 +856,14 @@ module.exports = {
   manageDeleteReportDeco: async (ctx) => {
     let id = ctx.request.body.id || 0;
 
-    await ctx.orm('youhouse').yh_report_deco.update(
-      {
-        isDel: 1,
+    await ctx.orm('youhouse').yh_report_deco.update({
+      isDel: 1,
+    }, {
+      where: {
+        id: id,
+        isDel: 0,
       },
-      {
-        where: {
-          id: id,
-          isDel: 0,
-        },
-      }
-    );
+    });
 
     ctx.body = {};
   },
