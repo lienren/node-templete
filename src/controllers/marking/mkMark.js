@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2020-06-17 12:13:14
  * @Last Modified by: Lienren
- * @Last Modified time: 2020-06-22 14:17:25
+ * @Last Modified time: 2020-06-22 17:25:17
  */
 'use strict';
 
@@ -159,6 +159,7 @@ module.exports = {
     let cpId = ctx.request.body.cpId || 0;
     let status = ctx.request.body.status || 1;
     let opName = ctx.request.body.opName || '';
+    let remark = ctx.request.body.remark || '';
 
     cp.isNumberGreaterThan0(cpId);
     cp.isEmpty(opName);
@@ -169,7 +170,8 @@ module.exports = {
       statusName: cpStatusNameEnum[status],
       modifyTime: date.formatDate(),
       verifyName: opName,
-      verifyTime: date.formatDate()
+      verifyTime: date.formatDate(),
+      verifyRemark: remark
     }, {
       where: {
         id: cpId,

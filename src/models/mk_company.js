@@ -55,6 +55,10 @@ module.exports = function(sequelize, DataTypes) {
     verifyTime: {
       type: DataTypes.DATE,
       allowNull: true
+    },
+    verifyRemark: {
+      type: DataTypes.STRING(2000),
+      allowNull: true
     }
   }, {
     tableName: 'mk_company'
