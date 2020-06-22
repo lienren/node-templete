@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2020-06-17 11:27:21
  * @Last Modified by: Lienren
- * @Last Modified time: 2020-06-22 14:18:43
+ * @Last Modified time: 2020-06-22 18:02:43
  */
 'use strict';
 
@@ -47,6 +47,7 @@ module.exports = {
         newCode: m.dataValues.new_code,
         type: 1,
         isMark: mark ? mark.status : 1,
+        remark: mark ? mark.verifyRemark : ''
       };
     });
 
@@ -76,6 +77,7 @@ module.exports = {
         newCode: m.dataValues.symbol,
         type: 2,
         isMark: mark ? mark.status : 1,
+        remark: mark ? mark.verifyRemark : ''
       };
     });
 
@@ -124,6 +126,7 @@ module.exports = {
         newCode: m.dataValues.symbol,
         type: 999,
         isMark: mark ? mark.status : 1,
+        remark: mark ? mark.verifyRemark : ''
       };
     });
 
