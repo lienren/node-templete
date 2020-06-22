@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2020-06-17 12:13:14
  * @Last Modified by: Lienren
- * @Last Modified time: 2020-06-19 11:16:00
+ * @Last Modified time: 2020-06-22 14:17:25
  */
 'use strict';
 
@@ -17,6 +17,7 @@ const cpStatusNameEnum = {
 
 const cpTypeNameEnum = {
   1: '沪深300',
+  2: '中证500',
   999: '其它',
 };
 

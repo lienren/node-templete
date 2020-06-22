@@ -1,12 +1,16 @@
 /* jshint indent: 2 */
 
 module.exports = function(sequelize, DataTypes) {
-  return sequelize.define('news_flow', {
+  return sequelize.define('news_bulletin_flow', {
     id: {
       type: DataTypes.INTEGER(10).UNSIGNED,
       allowNull: false,
       primaryKey: true,
       autoIncrement: true
+    },
+    basic_id: {
+      type: DataTypes.INTEGER(255),
+      allowNull: false
     },
     source: {
       type: DataTypes.STRING(45),
@@ -16,20 +20,8 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING(255),
       allowNull: false
     },
-    subject: {
-      type: DataTypes.STRING(1000),
-      allowNull: false
-    },
-    author: {
-      type: DataTypes.STRING(45),
-      allowNull: false
-    },
     link: {
       type: DataTypes.STRING(255),
-      allowNull: false
-    },
-    newstype: {
-      type: DataTypes.INTEGER(10).UNSIGNED,
       allowNull: false
     },
     addtime: {
@@ -39,17 +31,8 @@ module.exports = function(sequelize, DataTypes) {
     pubtime: {
       type: DataTypes.DATE,
       allowNull: true
-    },
-    level: {
-      type: DataTypes.INTEGER(10).UNSIGNED,
-      allowNull: true,
-      defaultValue: '1'
-    },
-    lang: {
-      type: DataTypes.STRING(45),
-      allowNull: true
     }
   }, {
-    tableName: 'news_flow'
+    tableName: 'news_bulletin_flow'
   });
 };

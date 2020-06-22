@@ -39,6 +39,11 @@ module.exports = function(sequelize, DataTypes) {
     pubtime: {
       type: DataTypes.DATE,
       allowNull: true
+    },
+    lang: {
+      type: DataTypes.STRING(45),
+      allowNull: true,
+      defaultValue: 'zh'
     }
   }, {
     tableName: 'news_cloud'
