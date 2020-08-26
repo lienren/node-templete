@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2020-03-05 09:48:43
  * @Last Modified by: Lienren
- * @Last Modified time: 2020-08-26 12:13:46
+ * @Last Modified time: 2020-08-26 14:04:45
  */
 
 const assert = require('assert');
@@ -101,6 +101,10 @@ module.exports = {
       x19: user.x19,
       isBack: isBack,
       backInfo: backInfo,
+      x1: user.x1,
+      x5: user.x5,
+      x6: user.x6,
+      x20: user.x20,
       today: date.formatDate(new Date(), 'YYYY年MM月DD日'),
     };
   },
@@ -122,6 +126,7 @@ module.exports = {
     let x16 = ctx.request.body.x16 || '';
     let x17 = ctx.request.body.x17 || '';
     let x18 = ctx.request.body.x18 || '';
+    let x19 = ctx.request.body.x19 || '';
     let x21 = ctx.request.body.x21 || '';
 
     cp.isEmpty(openId);
@@ -130,6 +135,7 @@ module.exports = {
     cp.isEmpty(x7);
     cp.isEmpty(x8);
     cp.isEmpty(x9);
+    cp.isEmpty(x19);
 
     let user = await ctx.orm().school_users_v2.findOne({
       where: {
@@ -149,7 +155,6 @@ module.exports = {
       x7,
       x8,
       x9,
-      x10,
       x11,
       x12,
       x13,
@@ -158,6 +163,7 @@ module.exports = {
       x16,
       x17,
       x18,
+      x19,
       x21,
       xIsAdd: 0,
       state: 1,
@@ -184,7 +190,7 @@ module.exports = {
     // let x7 = ctx.request.body.x7 || '';
     // let x8 = ctx.request.body.x8 || '';
     // let x9 = ctx.request.body.x9 || '';
-    // let x10 = ctx.request.body.x10 || '';
+    let x10 = ctx.request.body.x10 || '';
     let x11 = ctx.request.body.x11 || '';
     let x12 = ctx.request.body.x12 || '';
     let x13 = ctx.request.body.x13 || 0;
@@ -226,6 +232,7 @@ module.exports = {
     assert.ok(user.xState === 0 && user.xIsAdd === 0, '您的信息已完成登记！');
 
     await ctx.orm().school_users_v2.update({
+      x10,
       x11,
       x12,
       x13,
@@ -394,6 +401,7 @@ module.exports = {
       x16: '',
       x17: '',
       x18: '',
+      x19: null,
       x21: '',
       x22: '',
       xIsAdd: 0,
@@ -477,6 +485,7 @@ module.exports = {
       x16: '',
       x17: '',
       x18: '',
+      x19: null,
       x21: '',
       x22: '',
       xIsAdd: 0,
