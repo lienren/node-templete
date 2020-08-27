@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2020-03-05 09:48:43
  * @Last Modified by: Lienren
- * @Last Modified time: 2020-08-26 14:04:45
+ * @Last Modified time: 2020-08-27 11:29:31
  */
 
 const assert = require('assert');
@@ -778,6 +778,27 @@ module.exports = {
     }, {
       where: {
         id: id,
+        state: 1
+      },
+    });
+
+    ctx.body = {};
+  },
+  submitBatchVerfiyState: async (ctx) => {
+    let id = ctx.request.body.id || [];
+    let verfiyState = ctx.request.body.verfiyState || 0;
+
+    cp.isArrayLengthGreaterThan0(id);
+
+    await ctx.orm().school_users_v2.update({
+      state: verfiyState,
+      stateName: stateEnum[verfiyState]
+    }, {
+      where: {
+        id: {
+          $in: id
+        },
+        state: 1
       },
     });
 
