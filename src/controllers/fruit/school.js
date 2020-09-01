@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2020-03-05 09:48:43
  * @Last Modified by: Lienren
- * @Last Modified time: 2020-09-01 14:25:50
+ * @Last Modified time: 2020-09-01 15:24:45
  */
 
 const assert = require('assert');
@@ -449,6 +449,7 @@ module.exports = {
       x17: '',
       x21: '',
       x22: '',
+      x31: null,
       xIsAdd: 0,
       xlsAddTime: date.formatDate()
     }, {
@@ -494,6 +495,7 @@ module.exports = {
       x19: null,
       x21: '',
       x22: '',
+      x31: null,
       xIsAdd: 0,
       xlsAddTime: date.formatDate(),
       state: 0,
