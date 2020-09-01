@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2020-03-05 09:48:43
  * @Last Modified by: Lienren
- * @Last Modified time: 2020-08-29 10:04:31
+ * @Last Modified time: 2020-09-01 14:25:50
  */
 
 const assert = require('assert');
@@ -199,9 +199,13 @@ module.exports = {
     let x16 = ctx.request.body.x16 || '';
     let x17 = ctx.request.body.x17 || '';
     // let x18 = ctx.request.body.x18 || '';
+    let x19 = ctx.request.body.x19 || '';
     let x21 = ctx.request.body.x21 || '';
+    let x31 = ctx.request.body.x31 || '';
 
     cp.isEmpty(openId);
+    cp.isEmpty(x19);
+    cp.isEmpty(x31);
 
     cp.isEmpty(x11);
     if (x11 === '自驾') {
@@ -240,7 +244,9 @@ module.exports = {
       x15,
       x16,
       x17,
+      x19,
       x21,
+      x31,
       xIsAdd: 1,
       xlsAddTime: date.formatDate(),
     }, {
