@@ -173,6 +173,10 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING(10),
       allowNull: true
     },
+    x32: {
+      type: DataTypes.STRING(100),
+      allowNull: true
+    },
     state: {
       type: DataTypes.INTEGER(11),
       allowNull: true
