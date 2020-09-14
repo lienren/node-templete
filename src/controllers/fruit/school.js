@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2020-03-05 09:48:43
  * @Last Modified by: Lienren
- * @Last Modified time: 2020-09-01 15:24:45
+ * @Last Modified time: 2020-09-04 13:50:13
  */
 
 const assert = require('assert');
@@ -626,7 +626,7 @@ module.exports = {
     let isAdd = ctx.request.body.isAdd || -1;
     let isAddSTime = ctx.request.body.isAddSTime || '';
     let isAddETime = ctx.request.body.isAddETime || '';
-    let state = ctx.request.body.state || -1;
+    let state = ctx.request.body.state;
     let verifyState = ctx.request.body.verifyState;
     let backSTime = ctx.request.body.backSTime || '';
     let backETime = ctx.request.body.backETime || '';
@@ -664,6 +664,7 @@ module.exports = {
       };
     }
 
+    state = state === undefined || state === null ? -1 : state
     if (state > -1) {
       where.xState = state;
     }
