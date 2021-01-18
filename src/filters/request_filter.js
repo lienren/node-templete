@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2018-04-19 13:38:30
  * @Last Modified by: Lienren
- * @Last Modified time: 2020-03-05 15:29:54
+ * @Last Modified time: 2021-01-18 11:16:49
  */
 'use strict';
 
@@ -42,16 +42,7 @@ module.exports = async function(ctx, next) {
     );
     return;
   }
-
-  // 根据请求目录转入指定静态目录
-  if (ctx.path.indexOf('school_report') > -1) {
-    await sendfile(
-      ctx,
-      path.resolve(__dirname, '../../assets/school_report/index.html')
-    );
-    return;
-  }
-
+  
   /* let sitepath = await redirect(ctx, async (ctx, requestUrl, sitepath) => {
     let stats = await sendfile(ctx, sitepath);
 

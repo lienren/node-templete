@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2018-12-13 23:49:41
  * @Last Modified by: Lienren
- * @Last Modified time: 2020-04-29 15:20:36
+ * @Last Modified time: 2021-01-18 11:32:53
  */
 'use strict';
 
@@ -75,18 +75,18 @@ module.exports = {
       sitepath: path.resolve(__dirname, '../assets/adminweb/index.html'),
     },
   ],
-  // sequelize-auto -o "./src/models" -d fruit -h 47.108.71.94 -u root -p 3306 -x Ler@2019 -e mysql
+  // sequelize-auto -o "./src/models" -d mall -h localhost -u root -p 3306 -x 123456 -e mysql
   databases: [
     {
       modelPath: path.resolve(__dirname, './models'),
-      db: 'fruit',
+      db: 'mall',
       dialect: 'mysql',
       port: 3306,
       replication: {
         read: [
-          { host: '47.108.71.94', username: 'root', password: 'Ler@2019' },
+          { host: 'localhost', username: 'root', password: '123456' },
         ],
-        write: { host: '47.108.71.94', username: 'root', password: 'Ler@2019' },
+        write: { host: 'localhost', username: 'root', password: '123456' },
       },
       dialectOptions: {
         dateStrings: true,
@@ -112,44 +112,7 @@ module.exports = {
         timestamps: false,
       },
       logging: false,
-    },
-    // sequelize-auto -o "./src/models" -d youhouse -h 47.108.71.94 -u root -p 3306 -x Ler@2019 -e mysql
-    {
-      modelPath: path.resolve(__dirname, './models'),
-      db: 'youhouse',
-      dialect: 'mysql',
-      port: 3306,
-      replication: {
-        read: [
-          { host: '47.108.71.94', username: 'root', password: 'Ler@2019' },
-        ],
-        write: { host: '47.108.71.94', username: 'root', password: 'Ler@2019' },
-      },
-      dialectOptions: {
-        dateStrings: true,
-        typeCast: function (field, next) {
-          if (field.type === 'DATETIME' || field.type === 'TIMESTAMP') {
-            let fieldDate = field.string();
-            if (fieldDate) {
-              return date.formatDate(fieldDate);
-            } else {
-              return fieldDate;
-            }
-          }
-          return next();
-        },
-      },
-      timezone: '+08:00',
-      pool: {
-        maxConnections: 200,
-        minConnections: 0,
-        maxIdleTime: 30000,
-      },
-      define: {
-        timestamps: false,
-      },
-      logging: false,
-    },
+    }
   ],
   redis: {
     host: 'localhost',
