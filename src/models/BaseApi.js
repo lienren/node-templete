@@ -28,8 +28,9 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     addTime: {
-      type: DataTypes.BIGINT,
-      allowNull: true
+      type: DataTypes.DATE,
+      allowNull: true,
+      defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
     }
   }, {
     tableName: 'BaseApi'

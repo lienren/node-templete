@@ -39,6 +39,11 @@ module.exports = function(sequelize, DataTypes) {
     hidden: {
       type: DataTypes.INTEGER(1),
       allowNull: true
+    },
+    is_del: {
+      type: DataTypes.INTEGER(11),
+      allowNull: true,
+      defaultValue: '0'
     }
   }, {
     tableName: 'ums_menu'

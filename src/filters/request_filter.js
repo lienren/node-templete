@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2018-04-19 13:38:30
  * @Last Modified by: Lienren
- * @Last Modified time: 2021-01-18 11:16:49
+ * @Last Modified time: 2021-01-20 22:13:38
  */
 'use strict';
 
@@ -13,7 +13,7 @@ const log = require('../utils/log');
 const redirect = require('./request_redirect');
 const auth = require('./request_authentication');
 
-module.exports = async function(ctx, next) {
+module.exports = async function (ctx, next) {
   // 响应开始时间
   const requestStartTime = new Date();
 
@@ -26,9 +26,11 @@ module.exports = async function(ctx, next) {
   ctx.work = {
     code: '000000',
     message: 'success',
+    token: '',
     managerId: 0, // 管理员编号
     managerLoginName: '', // 管理员帐号
     managerRealName: '', // 管理员真实姓名
+    managerEmail: '', // 管理员邮箱
     managerPhone: '', // 管理员手机号
     userId: 0, // 用户编号
     alipayUserId: '' // 支付宝帐号
@@ -42,7 +44,7 @@ module.exports = async function(ctx, next) {
     );
     return;
   }
-  
+
   /* let sitepath = await redirect(ctx, async (ctx, requestUrl, sitepath) => {
     let stats = await sendfile(ctx, sitepath);
 
@@ -58,35 +60,47 @@ module.exports = async function(ctx, next) {
 
   try {
     // 鉴权验证
-    let { isPass, authSource, authInfo, token } = await auth(
+    let {
+      isPass,
+      authSource,
+      authInfo,
+      token
+    } = await auth(
       ctx,
       async (ctx, requestUrl) => {
-        let api = await ctx
-          .orm()
-          .BaseApi.findOne({ where: { apiUrl: requestUrl } });
-        return api && api.isAuth === 1;
-      },
-      async (ctx, requestUrl, token, isPass, authInfo, authSource) => {
-        if (isPass && authInfo) {
-          // 验证通过
-          // 记录管理员信息
-          ctx.work.managerId = authInfo.managerId || 0;
-          ctx.work.managerLoginName = authInfo.managerLoginName;
-          ctx.work.managerRealName = authInfo.managerRealName;
-          ctx.work.managerPhone = authInfo.managerPhone;
-          ctx.work.userId = authInfo.userId || 0;
-          ctx.work.alipayUserId = authInfo.alipayUserId;
-        } else {
-          // 验证未通过
-        }
+          let api = await ctx
+            .orm()
+            .BaseApi.findOne({
+              where: {
+                apiUrl: requestUrl
+              }
+            });
+          return api && api.isAuth === 1;
+        },
+        async (ctx, requestUrl, token, isPass, authInfo, authSource) => {
+          ctx.work.token = token || '';
 
-        return {
-          isPass,
-          authSource,
-          authInfo,
-          token
-        };
-      }
+          if (isPass && authInfo) {
+            // 验证通过
+            // 记录管理员信息
+            ctx.work.managerId = authInfo.managerId || 0;
+            ctx.work.managerLoginName = authInfo.managerLoginName;
+            ctx.work.managerRealName = authInfo.managerRealName;
+            ctx.work.managerEmail = authInfo.managerEmail;
+            ctx.work.managerPhone = authInfo.managerPhone;
+            ctx.work.userId = authInfo.userId || 0;
+            ctx.work.alipayUserId = authInfo.alipayUserId;
+          } else {
+            // 验证未通过
+          }
+
+          return {
+            isPass,
+            authSource,
+            authInfo,
+            token
+          };
+        }
     );
 
     assert.ok(isPass, '登录验证异常');

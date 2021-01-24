@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2018-06-07 14:35:15
  * @Last Modified by: Lienren
- * @Last Modified time: 2020-03-05 11:43:17
+ * @Last Modified time: 2021-01-21 17:15:04
  */
 'use strict';
 
@@ -19,6 +19,8 @@ router
   // 上传文件
   .post('/base/uploadfile', uploadFile.getMulter('files').any(), ctrl.CtrlBase.uploadFile)
   .post('/super/login', ctrl.CtrlManager.login)
+  .post('/super/logout', ctrl.CtrlManager.logout)
+  .post('/super/info', ctrl.CtrlManager.info)
   .post('/super/setpassword', ctrl.CtrlManager.setPassword)
   /***************************** 管理员管理 *************************************/
   .post('/super/getmanagers', ctrl.CtrlManager.getManagers)
@@ -28,17 +30,22 @@ router
   .post('/super/delmanager', ctrl.CtrlManager.delManager)
   .post('/super/getmanagerrole', ctrl.CtrlManager.getManagerRole)
   .post('/super/setmanagerrole', ctrl.CtrlManager.setManagerRole)
-  .post('/super/getmanagermenu', ctrl.CtrlManager.getManagerMenu)
   /***************************** 角色管理 *************************************/
   .post('/super/getroles', ctrl.CtrlManager.getRoles)
+  .post('/super/getroleall', ctrl.CtrlManager.getRoleAll)
   .post('/super/addrole', ctrl.CtrlManager.addRole)
+  .post('/super/editrole', ctrl.CtrlManager.editRole)
+  .post('/super/editrolestatus', ctrl.CtrlManager.editRoleStatus)
   .post('/super/delrole', ctrl.CtrlManager.delRole)
   .post('/super/getrolemenu', ctrl.CtrlManager.getRoleMenu)
   .post('/super/setrolemenu', ctrl.CtrlManager.setRoleMenu)
   /***************************** 菜单管理 *************************************/
   .post('/super/getmenus', ctrl.CtrlManager.getMenus)
-  .post('/super/getmenulist', ctrl.CtrlManager.getMenuList)
+  .post('/super/getmenutree', ctrl.CtrlManager.getMenuTree)
+  .post('/super/getmenu', ctrl.CtrlManager.getMenu)
   .post('/super/addmenu', ctrl.CtrlManager.addMenu)
+  .post('/super/editmenu', ctrl.CtrlManager.editMenu)
+  .post('/super/hiddenmenu', ctrl.CtrlManager.hiddenMenu)
   .post('/super/delmenu', ctrl.CtrlManager.delMenu)
   /***************************** 日志管理 *************************************/
   .post('/super/getlogs', ctrl.CtrlManager.getLogs)

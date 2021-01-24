@@ -27,6 +27,11 @@ module.exports = function(sequelize, DataTypes) {
     category_id: {
       type: DataTypes.BIGINT,
       allowNull: true
+    },
+    is_del: {
+      type: DataTypes.INTEGER(11),
+      allowNull: true,
+      defaultValue: '0'
     }
   }, {
     tableName: 'ums_resource'

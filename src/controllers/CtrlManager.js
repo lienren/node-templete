@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2018-06-21 19:35:28
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-10-21 10:28:05
+ * @Last Modified time: 2021-01-21 18:02:44
  */
 'use strict';
 
@@ -18,13 +18,11 @@ const config = require('../config.js');
 function serializeMenu(menus, parentId) {
   let list = [];
   menus.forEach(menu => {
-    if (menu.parentId === parentId) {
+    if (menu.parent_id === parentId) {
       let menuObj = {
-        title: menu.menuName,
-        key: `${menu.id}`,
-        id: menu.menuLink,
-        icon: menu.menuIcon,
-        name: menu.menuName
+        ...menu,
+        parentId: menu.parent_id,
+        create_time: menu.createTime
       };
       menuObj.children = serializeMenu(menus, menu.id);
       list.push(menuObj);
@@ -53,34 +51,34 @@ module.exports = {
         token: imgCodeToken,
         imgCode: imgCode.toLocaleUpperCase(),
         isUse: 0,
-        overTime: { $gt: now }
+        overTime: {
+          $gt: now
+        }
       }
     });
     assert.notStrictEqual(resultImgCodeToken, null, configData.ERROR_KEY_ENUM.ImageCodeIsFail);
 
     // 设置图形验证码已使用
-    ctx.orm().BaseImgCode.update(
-      { isUse: 1 },
-      {
-        where: {
-          token: imgCodeToken,
-          imgCode: imgCode
-        }
-      }
-    );
-
-    let resultManager = await ctx.orm().SuperManagerInfo.findOne({
+    ctx.orm().BaseImgCode.update({
+      isUse: 1
+    }, {
       where: {
-        loginname: loginName,
-        state: 1,
-        isDel: 0
+        token: imgCodeToken,
+        imgCode: imgCode
+      }
+    });
+
+    let resultManager = await ctx.orm().ums_admin.findOne({
+      where: {
+        username: loginName,
+        status: 1
       }
     });
     assert.notStrictEqual(resultManager, null, configData.ERROR_KEY_ENUM.ManagerNotExists);
 
     // 生成验证密钥
     let encryptPwd = encrypt.getMd5(`${loginPwd}|${resultManager.salt}`);
-    assert.ok(resultManager.loginPwd === encryptPwd, configData.ERROR_KEY_ENUM.ManagerPasswordIsFail);
+    assert.ok(resultManager.password === encryptPwd, configData.ERROR_KEY_ENUM.ManagerPasswordIsFail);
 
     // 设置Token
     let ManagerTokenOverTime = await configData.getConfig(ctx, configData.CONFIG_KEY_ENUM.ManagerTokenOverTime);
@@ -88,38 +86,62 @@ module.exports = {
     // 生成Token
     let token = jwt.getToken({
       managerId: resultManager.id,
-      managerLoginName: resultManager.loginName,
-      managerRealName: resultManager.realName,
+      managerLoginName: resultManager.username,
+      managerRealName: resultManager.nick_name,
+      managerEmail: resultManager.email,
       managerPhone: resultManager.phone
     });
     let tokenOverTime = now + ManagerTokenOverTime * 60 * 1000;
 
-    ctx.orm().SuperManagerInfo.update(
-      {
-        token: token,
-        tokenOverTime: tokenOverTime,
-        lastTime: now
-      },
-      {
-        where: { id: resultManager.id }
-      }
-    );
-
-    // 获取管理员所有角色
-    let resultManagerRoles = await ctx.orm().SuperManagerRoleInfo.findAll({
+    ctx.orm().ums_admin.update({
+      token: token,
+      token_over_time: tokenOverTime,
+      last_time: now,
+      login_time: date.formatDate()
+    }, {
       where: {
-        managerId: resultManager.id
+        id: resultManager.id
       }
     });
 
+    ctx.orm().ums_admin_login_log.create({
+      admin_id: resultManager.id,
+      create_time: date.formatDate(),
+      ip: '',
+      address: '',
+      user_agent: ''
+    })
+
+    // 获取管理员所有角色
+    /* let resultManagerRoles = await ctx.orm().SuperManagerRoleInfo.findAll({
+      where: {
+        managerId: resultManager.id
+      }
+    }); */
+
     ctx.body = {
       id: resultManager.id,
-      loginName: resultManager.loginName,
-      realName: resultManager.realName,
+      username: resultManager.username,
+      nick_name: resultManager.nick_name,
+      email: resultManager.email,
       phone: resultManager.phone,
-      token: token,
-      roles: resultManagerRoles
+      icon: resultManager.icon,
+      token: token
     };
+  },
+  logout: async ctx => {
+    let now = date.getTimeStamp();
+
+    ctx.orm().ums_admin.update({
+      token: '',
+      token_over_time: 0
+    }, {
+      where: {
+        id: ctx.work.managerId
+      }
+    });
+
+    ctx.body = {};
   },
   setPassword: async ctx => {
     let oldPassword = ctx.request.body.oldPassword || '';
@@ -129,314 +151,302 @@ module.exports = {
     assert.notStrictEqual(oldPassword, '', configData.ERROR_KEY_ENUM.InputParamIsNull);
     assert.notStrictEqual(newPassword, '', configData.ERROR_KEY_ENUM.InputParamIsNull);
 
-    let resultManager = await ctx.orm().SuperManagerInfo.findOne({
+    let resultManager = await ctx.orm().ums_admin.findOne({
       where: {
         id: ctx.work.managerId,
-        state: 1,
-        isDel: 0
+        status: 1,
+        is_del: 0
       }
     });
     assert.notStrictEqual(resultManager, null, configData.ERROR_KEY_ENUM.ManagerNotExists);
 
     // 生成验证密钥
     let encryptOldPwd = encrypt.getMd5(`${oldPassword}|${resultManager.salt}`);
-    assert.ok(resultManager.loginPwd === encryptOldPwd, configData.ERROR_KEY_ENUM.ManagerOldPasswordIsFail);
+    assert.ok(resultManager.password === encryptOldPwd, configData.ERROR_KEY_ENUM.ManagerOldPasswordIsFail);
 
     // 重新生成密钥索引
     let ManagerPwdSaleCount = await configData.getConfig(ctx, configData.CONFIG_KEY_ENUM.ManagerPwdSaleCount);
     let salt = comm.randCode(ManagerPwdSaleCount);
 
-    ctx.orm().SuperManagerInfo.update(
-      {
-        loginPwd: encrypt.getMd5(`${newPassword}|${salt}`),
-        salt: salt,
-        lastTime: now,
-        token: '',
-        tokenOverTime: now
-      },
-      {
-        where: { id: ctx.work.managerId }
+    ctx.orm().ums_admin.update({
+      password: encrypt.getMd5(`${newPassword}|${salt}`),
+      salt: salt,
+      token: '',
+      tokenOverTime: 0
+    }, {
+      where: {
+        id: ctx.work.managerId
       }
-    );
+    });
 
     ctx.body = {};
   },
+  info: async ctx => {
+    let now = date.getTimeStamp();
+
+    let resultManager = await ctx.orm().ums_admin.findOne({
+      where: {
+        id: ctx.work.managerId,
+        token: ctx.work.token,
+        status: 1,
+        token_over_time: {
+          $gte: now
+        },
+      }
+    });
+    assert.notStrictEqual(resultManager, null, configData.ERROR_KEY_ENUM.ManagerNotExists);
+
+    let roles = await ctx.orm().query(`
+      select r.* from ums_admin_role_relation ar inner join ums_role r on ar.role_id = r.id and r.is_del = 0
+      where ar.admin_id = ${resultManager.id}`);
+
+    let menus = await ctx.orm().query(`
+      select
+          m.id id,
+          m.parent_id parentId,
+          m.create_time createTime,
+          m.title title,
+          m.level level,
+          m.sort sort,
+          m.name name,
+          m.icon icon,
+          m.hidden hidden
+      from ums_admin_role_relation arr
+      inner join ums_role r on arr.role_id = r.id and r.status = 1 and r.is_del = 0
+      inner join ums_role_menu_relation rmr on r.id = rmr.role_id
+      inner join ums_menu m on rmr.menu_id = m.id and m.is_del = 0
+      where
+        arr.admin_id = ${resultManager.id}
+        and m.id is not null
+      group by m.id`);
+
+    ctx.body = {
+      username: resultManager.username,
+      icon: resultManager.icon,
+      roles,
+      menus: menus.length > 0 ? menus[0] : menus
+    };
+  },
   /***************************** 管理员管理 *************************************/
   getManagers: async ctx => {
-    let current = ctx.request.body.current || 1;
+    let pageNum = ctx.request.body.pageNum || 1;
     let pageSize = ctx.request.body.pageSize || 20;
-    let loginName = ctx.request.body.loginName || '';
-    let realName = ctx.request.body.realName || '';
-    let phone = ctx.request.body.phone || '';
-    let state = ctx.request.body.state;
-    let startAddTime = ctx.request.body.startAddTime || 0;
-    let endAddTime = ctx.request.body.endAddTime || 0;
-    let condition = {};
+    let keyword = ctx.request.body.keyword || '';
+    let where = {
+      is_del: 0
+    };
 
-    if (loginName !== '') {
-      condition.loginName = {
-        $like: `%${loginName}%`
-      };
-    }
-    if (realName !== '') {
-      condition.realName = {
-        $like: `%${realName}%`
-      };
-    }
-    if (phone !== '') {
-      condition.phone = {
-        $like: `%${phone}%`
-      };
-    }
-    if (state !== -1) {
-      condition.state = state;
-    }
-    if (startAddTime > 0 && endAddTime > 0) {
-      condition.addTime = {
-        $between: [startAddTime, endAddTime]
-      };
+    if (keyword !== '') {
+      where.$or = [{
+        username: {
+          $like: `%${keyword}%`
+        }
+      }, {
+        phone: {
+          $like: `%${keyword}%`
+        }
+      }, {
+        nick_name: {
+          $like: `%${keyword}%`
+        }
+      }];
     }
 
-    condition.isDel = 0;
-
-    let resultCount = await ctx.orm().SuperManagerInfo.count({
-      where: condition
-    });
-    let result = await ctx.orm().SuperManagerInfo.findAll({
-      attributes: ['id', 'loginName', 'realName', 'phone', 'state', 'depName', 'sex', 'addTime', 'lastTime'],
-      offset: (current - 1) * pageSize,
+    let result = await ctx.orm().ums_admin.findAndCountAll({
+      attributes: ['id', 'username', 'icon', 'email', 'phone', 'nick_name', 'note', 'create_time', 'login_time', 'status'],
+      offset: (pageNum - 1) * pageSize,
       limit: pageSize,
-      where: condition,
-      order: [['addTime', 'DESC']]
+      where,
+      order: [
+        ['create_time', 'desc']
+      ]
     });
 
     ctx.body = {
-      total: resultCount,
-      list: result,
-      current,
-      pageSize
+      total: result.count,
+      list: result.rows.map(m => {
+        return {
+          ...m.dataValues,
+          nickName: m.dataValues.nick_name,
+          createTime: m.dataValues.create_time,
+          loginTime: m.dataValues.login_time
+        }
+      }),
     };
   },
   addManager: async ctx => {
-    let loginName = ctx.request.body.loginName || '';
-    let loginPwd = ctx.request.body.loginPwd || '';
-    let realName = ctx.request.body.realName || '';
+    let username = ctx.request.body.username;
+    let password = ctx.request.body.password || '';
+    let icon = ctx.request.body.icon || '';
+    let email = ctx.request.body.email || '';
     let phone = ctx.request.body.phone || '';
-    let state = ctx.request.body.state;
-    let sex = ctx.request.body.sex;
-    let depName = ctx.request.body.depName || '';
+    let nickName = ctx.request.body.nickName || '';
+    let note = ctx.request.body.note || '';
+    let status = ctx.request.body.status;
+
     let now = date.getTimeStamp();
 
-    assert.notStrictEqual(loginName, '', 'InputParamIsNull');
-    assert.notStrictEqual(loginPwd, '', 'InputParamIsNull');
-    assert.notStrictEqual(realName, '', 'InputParamIsNull');
-    assert.notStrictEqual(phone, '', 'InputParamIsNull');
+    assert.notStrictEqual(username, '', 'InputParamIsNull');
+    assert.notStrictEqual(password, '', 'InputParamIsNull');
+    assert.notStrictEqual(nickName, '', 'InputParamIsNull');
 
-    let sameManagerResult = await ctx.orm().SuperManagerInfo.findOne({
+    let sameManagerResult = await ctx.orm().ums_admin.findOne({
       where: {
-        loginName: loginName,
-        isDel: 0
+        username: username
       }
     });
 
-    assert.ok(sameManagerResult === null, 'ManagerLoginNameExists');
+    assert.ok(sameManagerResult === null, '帐号名称已存在！');
 
     // 重新生成密钥索引
     let ManagerPwdSaleCount = await configData.getConfig(ctx, configData.CONFIG_KEY_ENUM.ManagerPwdSaleCount);
     let salt = comm.randCode(ManagerPwdSaleCount);
 
-    let result = await ctx.orm().SuperManagerInfo.create({
-      loginName: loginName,
-      loginPwd: encrypt.getMd5(`${loginPwd}|${salt}`),
-      realName: realName,
-      phone: phone,
+    await ctx.orm().ums_admin.create({
+      username: username,
+      password: encrypt.getMd5(`${password}|${salt}`),
       salt: salt,
-      state: state,
-      sex: sex,
-      depName: depName,
-      token: '',
-      tokenOverTime: now,
-      addTime: now,
-      lastTime: now,
-      isDel: 0
+      icon: icon,
+      email: email,
+      phone: phone,
+      nick_name: nickName,
+      note: note,
+      create_time: date.formatDate(),
+      status: status,
+      is_del: 0
     });
 
-    ctx.body = result;
+    ctx.body = {};
   },
   editManager: async ctx => {
     let id = ctx.request.body.id || 0;
-    let loginName = ctx.request.body.loginName || '';
-    let loginPwd = ctx.request.body.loginPwd || '';
-    let realName = ctx.request.body.realName || '';
+    let username = ctx.request.body.username;
+    let password = ctx.request.body.password || '';
+    let icon = ctx.request.body.icon || '';
+    let email = ctx.request.body.email || '';
     let phone = ctx.request.body.phone || '';
-    let state = ctx.request.body.state;
-    let sex = ctx.request.body.sex;
-    let depName = ctx.request.body.depName || '';
+    let nickName = ctx.request.body.nickName || '';
+    let note = ctx.request.body.note || '';
+    let status = ctx.request.body.status;
+
     let now = date.getTimeStamp();
 
     assert.notStrictEqual(id, 0, 'InputParamIsNull');
-    assert.notStrictEqual(loginName, '', 'InputParamIsNull');
-    assert.notStrictEqual(realName, '', 'InputParamIsNull');
-    assert.notStrictEqual(phone, '', 'InputParamIsNull');
+    assert.notStrictEqual(username, '', 'InputParamIsNull');
+    assert.notStrictEqual(nickName, '', 'InputParamIsNull');
 
-    // 超级管理员禁止更新
-    assert.notStrictEqual(id, 1, 'SuperManagerNotUpdate');
-
-    let updateField = {};
-
-    let sameManagerResult = await ctx.orm().SuperManagerInfo.findOne({
+    let sameManagerResult = await ctx.orm().ums_admin.findOne({
       where: {
-        id: id,
-        isDel: 0
+        username: username,
+        id: {
+          $ne: id
+        }
       }
     });
 
-    assert.notStrictEqual(sameManagerResult, null, 'ManagerNotExists');
+    assert.ok(sameManagerResult === null, '帐号名称已存在！');
 
-    if (loginPwd !== '') {
+    if (password) {
       // 重新生成密钥索引
       let ManagerPwdSaleCount = await configData.getConfig(ctx, configData.CONFIG_KEY_ENUM.ManagerPwdSaleCount);
       let salt = comm.randCode(ManagerPwdSaleCount);
-      loginPwd = encrypt.getMd5(`${loginPwd}|${salt}`);
 
-      updateField.salt = salt;
-      updateField.loginPwd = loginPwd;
-    }
-
-    if (sameManagerResult.id === 1) {
-      // 超级管理员只能修改密码、手机号和部门
-      updateField.phone = phone;
-      updateField.depName = depName;
-      updateField.sex = sex;
+      await ctx.orm().ums_admin.update({
+        username: username,
+        password: encrypt.getMd5(`${password}|${salt}`),
+        salt: salt,
+        icon: icon,
+        email: email,
+        phone: phone,
+        nick_name: nickName,
+        note: note,
+        status: status,
+        token: '',
+        token_over_time: 0
+      }, {
+        where: {
+          id
+        }
+      });
     } else {
-      updateField.realName = realName;
-      updateField.phone = phone;
-      updateField.state = state;
-      updateField.depName = depName;
-      updateField.sex = sex;
-      if (state === 0) {
-        // 关闭状态时，清除token
-        updateField.token = '';
-      }
+      await ctx.orm().ums_admin.update({
+        username: username,
+        icon: icon,
+        email: email,
+        phone: phone,
+        nick_name: nickName,
+        note: note,
+        status: status,
+        token: '',
+        token_over_time: 0
+      }, {
+        where: {
+          id
+        }
+      });
     }
-    updateField.lastTime = now;
-
-    ctx.orm().SuperManagerInfo.update(updateField, {
-      where: {
-        id: id
-      }
-    });
 
     ctx.body = {};
   },
   editManagerState: async ctx => {
     let id = ctx.request.body.id || 0;
-    let state = ctx.request.body.state;
+    let status = ctx.request.body.status;
+
+    let now = date.getTimeStamp();
 
     assert.notStrictEqual(id, 0, 'InputParamIsNull');
 
-    // 超级管理员禁止更新
-    assert.notStrictEqual(id, 1, 'SuperManagerNotUpdate');
-
-    let sameManagerResult = await ctx.orm().SuperManagerInfo.findOne({
+    await ctx.orm().ums_admin.update({
+      status: status,
+      token: '',
+      token_over_time: 0
+    }, {
       where: {
-        id: id,
-        isDel: 0
+        id
       }
     });
-
-    assert.notStrictEqual(sameManagerResult, null, 'ManagerNotExists');
-
-    if (state === 0) {
-      // 关闭状态时，清除token
-      ctx.orm().SuperManagerInfo.update(
-        {
-          state: state,
-          toke: ''
-        },
-        {
-          where: {
-            id: id
-          }
-        }
-      );
-    } else {
-      ctx.orm().SuperManagerInfo.update(
-        {
-          state: state
-        },
-        {
-          where: {
-            id: id
-          }
-        }
-      );
-    }
 
     ctx.body = {};
   },
   delManager: async ctx => {
     let id = ctx.request.body.id || 0;
 
-    // 超级管理员禁止更新
-    assert.notStrictEqual(id, 1, 'SuperManagerNotUpdate');
-
-    let sameManagerResult = await ctx.orm().SuperManagerInfo.findOne({
+    // 删除时，清除token
+    ctx.orm().ums_admin.update({
+      token: '',
+      token_over_time: 0,
+      is_del: 1
+    }, {
       where: {
-        id: id,
-        isDel: 0
+        id
       }
     });
-
-    assert.notStrictEqual(sameManagerResult, null, 'ManagerNotExists');
-
-    // 删除时，清除token
-    ctx.orm().SuperManagerInfo.update(
-      {
-        token: '',
-        isDel: 1
-      },
-      {
-        where: {
-          id: id
-        }
-      }
-    );
 
     ctx.body = {};
   },
   getManagerRole: async ctx => {
     let id = ctx.request.body.id || 0;
 
-    // 超级管理员禁止更新
-    assert.notStrictEqual(id, 1, 'SuperManagerNotUpdate');
-
-    let sameManagerResult = await ctx.orm().SuperManagerInfo.findOne({
+    let sameManagerResult = await ctx.orm().ums_admin.findOne({
       where: {
         id: id,
-        isDel: 0
+        is_del: 0
       }
     });
 
     assert.notStrictEqual(sameManagerResult, null, 'ManagerNotExists');
 
-    let resultManagerRole = await ctx.orm().SuperManagerRoleInfo.findAll({
-      where: {
-        managerId: id
-      }
-    });
+    let roles = await ctx.orm().query(`
+    select r.* from ums_admin_role_relation ar inner join ums_role r on ar.role_id = r.id and r.is_del = 0
+    where ar.admin_id = ${id}`);
 
-    let resultRole = await ctx.orm().SuperRoleInfo.findAll({
-      where: {
-        id: {
-          $in: resultManagerRole.map(val => {
-            return val.roleId;
-          })
-        }
+    ctx.body = roles.map(m => {
+      return {
+        ...m,
+        adminCount: m.admin_count,
+        createTime: m.create_time
       }
-    });
-
-    ctx.body = resultRole;
+    })
   },
   setManagerRole: async ctx => {
     let id = ctx.request.body.id || 0;
@@ -446,10 +456,10 @@ module.exports = {
     // 超级管理员禁止更新
     assert.notStrictEqual(id, 1, 'SuperManagerNotUpdate');
 
-    let sameManagerResult = await ctx.orm().SuperManagerInfo.findOne({
+    let sameManagerResult = await ctx.orm().ums_admin.findOne({
       where: {
         id: id,
-        isDel: 0
+        is_del: 0
       }
     });
 
@@ -458,123 +468,141 @@ module.exports = {
     // 删除管理员所有角色
     await ctx
       .orm()
-      .query(`delete from SuperManagerRoleInfo where managerId = ${id}`)
+      .query(`delete from ums_admin_role_relation where admin_id = ${id}`)
       .spread((results, metadata) => {});
 
     // 添加管理员角色数据
     let data = roleIds.map(role => {
-      return { managerId: id, roleId: parseInt(role), addTime: now };
+      return {
+        admin_id: id,
+        role_id: parseInt(role)
+      };
     });
-    ctx.orm().SuperManagerRoleInfo.bulkCreate(data);
+    ctx.orm().ums_admin_role_relation.bulkCreate(data);
 
     ctx.body = {};
   },
-  getManagerMenu: async ctx => {
-    let id = ctx.work.managerId || 0;
-
-    // 超级管理员禁止更新
-    assert.notStrictEqual(id, 0, 'ManagerNotExists');
-
-    let sameManagerResult = await ctx.orm().SuperManagerInfo.findOne({
-      where: {
-        id: id,
-        isDel: 0
-      }
-    });
-
-    assert.notStrictEqual(sameManagerResult, null, 'ManagerNotExists');
-
-    let resultRoleIds = await ctx.orm().SuperManagerRoleInfo.findAll({
-      where: {
-        managerId: id
-      }
-    });
-
-    let resultMenuIds = await ctx.orm().SuperRoleMenuInfo.findAll({
-      where: {
-        roleId: {
-          $in: resultRoleIds.map(val => {
-            return val.roleId;
-          })
-        }
-      }
-    });
-
-    let menuIds = [];
-    resultMenuIds.forEach(menu => {
-      menuIds.push(menu.menuId);
-    });
-
-    let resultMenus = await ctx.orm().BaseMenu.findAll({
-      where: {
-        id: {
-          $in: menuIds
-        },
-        isDel: 0
-      },
-      order: [['sort']]
-    });
-
-    ctx.body = serializeMenu(resultMenus, 0);
-  },
   /***************************** 角色管理 *************************************/
   getRoles: async ctx => {
-    let current = ctx.request.body.current || 1;
-    let pageSize = ctx.request.body.pageSize || 20;
-    let roleName = ctx.request.body.roleName || '';
-    let startAddTime = ctx.request.body.startAddTime || 0;
-    let endAddTime = ctx.request.body.endAddTime || 0;
-    let condition = {};
+    let pageNum = ctx.request.body.pageNum || 1;
+    let pageSize = ctx.request.body.pageSize || 10;
+    let keyword = ctx.request.body.keyword || '';
 
-    if (roleName !== '') {
-      condition.roleName = {
-        $like: `%${roleName}%`
-      };
-    }
-    if (startAddTime > 0 && endAddTime > 0) {
-      condition.addTime = {
-        $between: [startAddTime, endAddTime]
+    let condition = {
+      is_del: 0
+    };
+
+    if (keyword !== '') {
+      condition.name = {
+        $like: `%${keyword}%`
       };
     }
 
-    condition.isDel = 0;
-
-    let resultCount = await ctx.orm().SuperRoleInfo.count({
-      where: condition
-    });
-    let result = await ctx.orm().SuperRoleInfo.findAll({
-      offset: (current - 1) * pageSize,
+    let result = await ctx.orm().ums_role.findAndCountAll({
+      offset: (pageNum - 1) * pageSize,
       limit: pageSize,
       where: condition,
-      order: [['addTime', 'DESC']]
+      order: [
+        ['sort']
+      ]
     });
 
     ctx.body = {
-      total: resultCount,
-      list: result,
-      current,
-      pageSize
+      total: result.count,
+      list: result.rows.map(m => {
+        return {
+          ...m.dataValues,
+          adminCount: m.dataValues.admin_count,
+          createTime: m.dataValues.create_time
+        }
+      }),
     };
   },
+  getRoleAll: async ctx => {
+    let condition = {
+      is_del: 0
+    };
+
+    let result = await ctx.orm().ums_role.findAll({
+      where: condition,
+      order: [
+        ['sort']
+      ]
+    });
+
+    ctx.body = result.map(m => {
+      return {
+        ...m.dataValues,
+        adminCount: m.dataValues.admin_count,
+        createTime: m.dataValues.create_time
+      }
+    });
+  },
   addRole: async ctx => {
-    let roleName = ctx.request.body.roleName || '';
+    let name = ctx.request.body.name || '';
+    let description = ctx.request.body.description || '';
+    let status = ctx.request.body.status || 0;
+    let sort = ctx.request.body.sort || 0;
     let now = date.getTimeStamp();
 
-    assert.notStrictEqual(roleName, '', 'InputParamIsNull');
+    assert.notStrictEqual(name, '', 'InputParamIsNull');
 
-    let sameResult = await ctx.orm().SuperRoleInfo.findOne({
+    let sameResult = await ctx.orm().ums_role.findOne({
       where: {
-        roleName: roleName,
-        isDel: 0
+        name: name
       }
     });
 
-    assert.ok(sameResult === null, 'RoleNameExists');
+    assert.ok(sameResult === null, '角色名称已存在！');
 
-    ctx.orm().SuperRoleInfo.create({
-      roleName: roleName,
-      addTime: now,
-      isDel: 0
+    ctx.orm().ums_role.create({
+      name: name,
+      description: description,
+      admin_count: 0,
+      create_time: date.formatDate(),
+      status: status,
+      sort: sort
+    });
+
+    ctx.body = {};
+  },
+  editRole: async ctx => {
+    let id = ctx.request.body.id || 0;
+    let name = ctx.request.body.name || '';
+    let description = ctx.request.body.description || '';
+    let status = ctx.request.body.status || 0;
+    let sort = ctx.request.body.sort || 0;
+    let now = date.getTimeStamp();
+
+    assert.notStrictEqual(id, 0, 'InputParamIsNull');
+    assert.notStrictEqual(name, '', 'InputParamIsNull');
+
+    ctx.orm().ums_role.update({
+      name: name,
+      description: description,
+      status: status,
+      sort: sort
+    }, {
+      where: {
+        id
+      }
+    });
+
+    ctx.body = {};
+  },
+  editRoleStatus: async ctx => {
+    let id = ctx.request.body.id || 0;
+    let status = ctx.request.body.status || 0;
+    let now = date.getTimeStamp();
+
+    assert.notStrictEqual(id, 0, 'InputParamIsNull');
+
+    ctx.orm().ums_role.update({
+      status: status
+    }, {
+      where: {
+        id
+      }
     });
 
     ctx.body = {};
@@ -585,63 +613,58 @@ module.exports = {
     // 超级管理员禁止更新
     assert.notStrictEqual(id, 1, 'SuperRoleNotUpdate');
 
-    let sameResult = await ctx.orm().SuperRoleInfo.findOne({
+    // 删除时，清除token
+    ctx.orm().ums_role.update({
+      is_del: 1
+    }, {
       where: {
-        id: id,
-        isDel: 0
+        id: id
       }
     });
-
-    assert.notStrictEqual(sameResult, null, 'RoleNotExists');
-
-    // 删除时，清除token
-    ctx.orm().SuperRoleInfo.update(
-      {
-        isDel: 1
-      },
-      {
-        where: {
-          id: id
-        }
-      }
-    );
 
     ctx.body = {};
   },
   getRoleMenu: async ctx => {
     let id = ctx.request.body.id || 0;
 
-    let sameResult = await ctx.orm().SuperRoleInfo.findOne({
+    let sameResult = await ctx.orm().ums_role.findOne({
       where: {
         id: id,
-        isDel: 0
+        is_del: 0
       }
     });
 
     assert.notStrictEqual(sameResult, null, 'RoleNotExists');
 
-    let result = await ctx.orm().SuperRoleMenuInfo.findAll({
-      where: {
-        roleId: id
-      }
-    });
+    let menus = await ctx.orm().query(`
+    SELECT
+        m.id id,
+        m.parent_id parentId,
+        m.create_time createTime,
+        m.title title,
+        m.level level,
+        m.sort sort,
+        m.name name,
+        m.icon icon,
+        m.hidden hidden
+    FROM
+        ums_role_menu_relation rmr
+    LEFT JOIN ums_menu m ON rmr.menu_id = m.id and m.is_del = 0
+    WHERE
+        rmr.role_id = ${id} AND m.id IS NOT NULL
+    GROUP BY m.id`);
 
-    ctx.body = result.map(val => {
-      return `${val.menuId}`;
-    });
+    ctx.body = menus.length > 0 ? menus[0] : menus
   },
   setRoleMenu: async ctx => {
     let id = ctx.request.body.id || 0;
     let menuIds = ctx.request.body.menuIds || [];
     let now = date.getTimeStamp();
 
-    // 超级管理员禁止更新
-    assert.notStrictEqual(id, 1, 'SuperRoleNotUpdate');
-
-    let sameResult = await ctx.orm().SuperRoleInfo.findOne({
+    let sameResult = await ctx.orm().ums_role.findOne({
       where: {
         id: id,
-        isDel: 0
+        is_del: 0
       }
     });
 
@@ -650,125 +673,190 @@ module.exports = {
     // 删除角色所有菜单
     await ctx
       .orm()
-      .query(`delete from SuperRoleMenuInfo where roleId = ${id}`)
+      .query(`delete from ums_role_menu_relation where role_id = ${id}`)
       .spread((results, metadata) => {});
 
     // 添加角色菜单数据
     let data = menuIds.map(menu => {
-      return { roleId: id, menuId: parseInt(menu), addTime: now };
+      return {
+        role_id: id,
+        menu_id: parseInt(menu)
+      };
     });
-    ctx.orm().SuperRoleMenuInfo.bulkCreate(data);
+    ctx.orm().ums_role_menu_relation.bulkCreate(data);
 
     ctx.body = {};
   },
   /***************************** 菜单管理 *************************************/
   getMenus: async ctx => {
-    let result = await ctx.orm().BaseMenu.findAll({
-      where: {
-        isDel: 0
-      },
-      order: [['sort']]
-    });
+    let pageNum = ctx.request.body.pageNum || 1;
+    let pageSize = ctx.request.body.pageSize || 10;
+    let parentId = ctx.request.body.parentId || 0;
 
-    let list = serializeMenu(result, 0);
-
-    ctx.body = list;
-  },
-  getMenuList: async ctx => {
-    let current = ctx.request.body.current || 1;
-    let pageSize = ctx.request.body.pageSize || 20;
-    let menuName = ctx.request.body.menuName || '';
-    let startAddTime = ctx.request.body.startAddTime || 0;
-    let endAddTime = ctx.request.body.endAddTime || 0;
-    let condition = {};
-
-    if (menuName !== '') {
-      condition.menuName = {
-        $like: `%${menuName}%`
-      };
-    }
-    if (startAddTime > 0 && endAddTime > 0) {
-      condition.addTime = {
-        $between: [startAddTime, endAddTime]
-      };
-    }
-
-    condition.isDel = 0;
-
-    let resultCount = await ctx.orm().BaseMenu.count({
-      where: condition
-    });
-    let result = await ctx.orm().BaseMenu.findAll({
-      offset: (current - 1) * pageSize,
+    let result = await ctx.orm().ums_menu.findAndCountAll({
+      offset: (pageNum - 1) * pageSize,
       limit: pageSize,
-      where: condition,
-      order: [['id'], ['sort']]
+      where: {
+        parent_id: parentId,
+        is_del: 0
+      },
+      order: [
+        ['sort']
+      ]
     });
 
     ctx.body = {
-      total: resultCount,
-      list: result,
-      current,
-      pageSize
+      total: result.count,
+      list: result.rows,
     };
   },
-  addMenu: async ctx => {
+  getMenuTree: async ctx => {
+    let result = await ctx.orm().ums_menu.findAll({
+      where: {
+        is_del: 0
+      },
+      order: [
+        ['sort']
+      ]
+    });
+
+    ctx.body = serializeMenu(result.map(m => m.dataValues), 0);
+  },
+  getMenu: async ctx => {
     let id = ctx.request.body.id || 0;
-    let menuName = ctx.request.body.menuName || '';
-    let menuLink = ctx.request.body.menuLink || '';
-    let menuIcon = ctx.request.body.menuIcon || '';
+
+    let result = await ctx.orm().ums_menu.findOne({
+      where: {
+        id,
+        is_del: 0
+      }
+    });
+
+    if (result) {
+      ctx.body = {
+        title: result.title,
+        parentId: result.parent_id,
+        name: result.name,
+        icon: result.icon,
+        hidden: result.hidden,
+        sort: result.sort
+      };
+    } else {
+      ctx.body = {};
+    }
+  },
+  addMenu: async ctx => {
+    let title = ctx.request.body.title || '';
     let parentId = ctx.request.body.parentId || 0;
+    let name = ctx.request.body.name || '';
+    let icon = ctx.request.body.icon || '';
+    let hidden = ctx.request.body.hidden || 0;
     let sort = ctx.request.body.sort || 0;
-    let level = 1;
-    let parentName = '';
-    let now = date.getTimeStamp();
+
+    let level = 0;
+
+    assert.notStrictEqual(title, '', 'InputParamIsNull');
+    assert.notStrictEqual(name, '', 'InputParamIsNull');
+    assert.notStrictEqual(icon, '', 'InputParamIsNull');
+
+    let sameResult1 = await ctx.orm().ums_menu.findOne({
+      where: {
+        title: title
+      }
+    });
+
+    assert.ok(sameResult1 === null, '菜单名称已经存在！');
+
+    let sameResult2 = await ctx.orm().ums_menu.findOne({
+      where: {
+        name: name
+      }
+    });
+
+    assert.ok(sameResult2 === null, '菜单名称已经存在！');
+
+    if (parentId > 0) {
+      let parentResult = await ctx.orm().ums_menu.findOne({
+        where: {
+          id: parentId
+        }
+      });
+
+      assert.notStrictEqual(parentResult, null, '父级菜单不存在！');
+
+      level = parentResult.level + 1;
+    }
+
+    ctx.orm().ums_menu.create({
+      parent_id: parentId,
+      create_time: date.formatDate(),
+      title: title,
+      level: level,
+      sort: sort,
+      name: name,
+      icon: icon,
+      hidden: hidden
+    });
+
+    ctx.body = {};
+  },
+  editMenu: async ctx => {
+    let id = ctx.request.body.id || 0;
+    let title = ctx.request.body.title || '';
+    let parentId = ctx.request.body.parentId || 0;
+    let name = ctx.request.body.name || '';
+    let icon = ctx.request.body.icon || '';
+    let hidden = ctx.request.body.hidden || 0;
+    let sort = ctx.request.body.sort || 0;
+
+    let level = 0;
 
     assert.notStrictEqual(id, 0, 'InputParamIsNull');
-    assert.notStrictEqual(menuName, '', 'InputParamIsNull');
-    assert.notStrictEqual(menuLink, '', 'InputParamIsNull');
+    assert.notStrictEqual(title, '', 'InputParamIsNull');
+    assert.notStrictEqual(name, '', 'InputParamIsNull');
+    assert.notStrictEqual(icon, '', 'InputParamIsNull');
 
-    let sameResult1 = await ctx.orm().BaseMenu.findOne({
+    if (parentId > 0) {
+      let parentResult = await ctx.orm().ums_menu.findOne({
+        where: {
+          id: parentId
+        }
+      });
+
+      assert.notStrictEqual(parentResult, null, '父级菜单不存在！');
+
+      level = parentResult.level + 1;
+    }
+
+    ctx.orm().ums_menu.update({
+      parent_id: parentId,
+      create_time: date.formatDate(),
+      title: title,
+      level: level,
+      sort: sort,
+      name: name,
+      icon: icon,
+      hidden: hidden
+    }, {
       where: {
         id: id
       }
     });
 
-    assert.ok(sameResult1 === null, 'MenuNameExists');
+    ctx.body = {};
+  },
+  hiddenMenu: async ctx => {
+    let id = ctx.request.body.id || 0;
+    let hidden = ctx.request.body.hidden || 0;
 
-    let sameResult2 = await ctx.orm().BaseMenu.findOne({
+    assert.notStrictEqual(id, 0, 'InputParamIsNull');
+
+    ctx.orm().ums_menu.update({
+      hidden: hidden
+    }, {
       where: {
-        menuName: menuName,
-        isDel: 0
+        id: id
       }
-    });
-
-    assert.ok(sameResult2 === null, 'MenuNameExists');
-
-    if (parentId > 0) {
-      let parentResult = await ctx.orm().BaseMenu.findOne({
-        where: {
-          id: parentId,
-          isDel: 0
-        }
-      });
-
-      assert.notStrictEqual(parentResult, null, 'ParentMenuExists');
-
-      level = parentResult.level + 1;
-      parentName = parentResult.menuName;
-    }
-
-    ctx.orm().BaseMenu.create({
-      id: id,
-      menuName: menuName,
-      menuLink: menuLink,
-      menuIcon: menuIcon,
-      parentId: parentId,
-      parentName: parentName,
-      level: level,
-      sort: sort,
-      addTime: now,
-      isDel: 0
     });
 
     ctx.body = {};
@@ -776,16 +864,13 @@ module.exports = {
   delMenu: async ctx => {
     let id = ctx.request.body.id || 0;
 
-    ctx.orm().BaseMenu.update(
-      {
-        isDel: 1
-      },
-      {
-        where: {
-          id: id
-        }
+    ctx.orm().ums_menu.update({
+      is_del: 1
+    }, {
+      where: {
+        id: id
       }
-    );
+    });
 
     ctx.body = {};
   },
@@ -843,7 +928,9 @@ module.exports = {
       offset: (current - 1) * pageSize,
       limit: pageSize,
       where: condition,
-      order: [['addTime', 'DESC']]
+      order: [
+        ['addTime', 'DESC']
+      ]
     });
 
     ctx.body = {

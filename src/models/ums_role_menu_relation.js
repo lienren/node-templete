@@ -15,6 +15,11 @@ module.exports = function(sequelize, DataTypes) {
     menu_id: {
       type: DataTypes.BIGINT,
       allowNull: true
+    },
+    create_time: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
     }
   }, {
     tableName: 'ums_role_menu_relation'

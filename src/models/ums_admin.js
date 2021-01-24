@@ -16,12 +16,20 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING(64),
       allowNull: true
     },
+    salt: {
+      type: DataTypes.STRING(100),
+      allowNull: true
+    },
     icon: {
       type: DataTypes.STRING(500),
       allowNull: true
     },
     email: {
       type: DataTypes.STRING(100),
+      allowNull: true
+    },
+    phone: {
+      type: DataTypes.STRING(20),
       allowNull: true
     },
     nick_name: {
@@ -44,6 +52,23 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.INTEGER(1),
       allowNull: true,
       defaultValue: '1'
+    },
+    token: {
+      type: DataTypes.STRING(1000),
+      allowNull: true
+    },
+    token_over_time: {
+      type: DataTypes.BIGINT,
+      allowNull: true
+    },
+    last_time: {
+      type: DataTypes.BIGINT,
+      allowNull: true
+    },
+    is_del: {
+      type: DataTypes.INTEGER(11),
+      allowNull: true,
+      defaultValue: '0'
     }
   }, {
     tableName: 'ums_admin'

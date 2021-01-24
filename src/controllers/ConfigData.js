@@ -2,7 +2,7 @@
  * @Author: Lienren 
  * @Date: 2018-06-21 19:51:37 
  * @Last Modified by: Lienren
- * @Last Modified time: 2018-06-21 23:53:58
+ * @Last Modified time: 2021-01-20 17:50:22
  */
 'use strict';
 
@@ -18,12 +18,12 @@ module.exports = {
     ManagerPwdSaleCount: 'ManagerPwdSaleCount'
   },
   ERROR_KEY_ENUM: {
-    InputParamIsNull: 'InputParamIsNull',
-    ImageCodeTokenIsNull: 'ImageCodeTokenIsNull',
-    ImageCodeIsFail: 'ImageCodeIsFail',
-    ManagerNotExists: 'ManagerNotExists',
-    ManagerPasswordIsFail: 'ManagerPasswordIsFail',
-    ManagerOldPasswordIsFail: 'ManagerOldPasswordIsFail'
+    InputParamIsNull: '入参不能为空',
+    ImageCodeTokenIsNull: '图形验证码Token不能为空',
+    ImageCodeIsFail: '图形验证码获取失败',
+    ManagerNotExists: '管理员帐号不存在',
+    ManagerPasswordIsFail: '管理员密码输入错误',
+    ManagerOldPasswordIsFail: '管理员原密码输入错误'
   },
   // 获取配置信息
   getConfig: async (ctx, configName) => {

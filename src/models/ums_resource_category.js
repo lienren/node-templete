@@ -19,6 +19,11 @@ module.exports = function(sequelize, DataTypes) {
     sort: {
       type: DataTypes.INTEGER(4),
       allowNull: true
+    },
+    is_del: {
+      type: DataTypes.INTEGER(11),
+      allowNull: true,
+      defaultValue: '0'
     }
   }, {
     tableName: 'ums_resource_category'
