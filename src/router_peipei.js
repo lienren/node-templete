@@ -2,15 +2,15 @@
  * @Author: Lienren
  * @Date: 2019-10-14 13:47:27
  * @Last Modified by: Lienren
- * @Last Modified time: 2020-04-29 16:07:40
+ * @Last Modified time: 2021-01-25 00:02:43
  */
 'use strict';
 
 const Router = require('koa-router');
-const ctrl = require('./controllers/youhouse/index.js');
+const ctrl = require('./controllers/peipei/index.js');
 
 const router = new Router({
-  prefix: '/yh'
+  prefix: '/peipei'
 });
 
 for (let className in ctrl) {

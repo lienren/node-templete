@@ -1,34 +1,31 @@
 /* jshint indent: 2 */
 
 module.exports = function(sequelize, DataTypes) {
-  return sequelize.define('yh_comp_def', {
+  return sequelize.define('svg_maps', {
     id: {
-      type: DataTypes.INTEGER(11),
+      type: DataTypes.INTEGER(255),
       allowNull: false,
       primaryKey: true,
       autoIncrement: true
     },
-    compName: {
+    dir: {
       type: DataTypes.STRING(100),
       allowNull: true
     },
-    defId: {
-      type: DataTypes.INTEGER(11),
-      allowNull: true
-    },
-    defName: {
+    svg: {
       type: DataTypes.STRING(100),
       allowNull: true
     },
-    addTime: {
+    xml: {
+      type: DataTypes.STRING(100),
+      allowNull: true
+    },
+    create_time: {
       type: DataTypes.DATE,
-      allowNull: true
-    },
-    isDel: {
-      type: DataTypes.INTEGER(11),
-      allowNull: true
+      allowNull: true,
+      defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
     }
   }, {
-    tableName: 'yh_comp_def'
+    tableName: 'svg_maps'
   });
 };
