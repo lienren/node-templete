@@ -2,7 +2,7 @@
  * @Author: Lienren 
  * @Date: 2021-01-25 00:24:48 
  * @Last Modified by: Lienren
- * @Last Modified time: 2021-01-25 09:16:14
+ * @Last Modified time: 2021-01-25 15:43:07
  */
 
 const fs = require('fs');
@@ -110,6 +110,11 @@ module.exports = {
           })
         })
       }
+
+      ctx.orm().svg_search.create({
+        search_value: searchValue,
+        manage_name: ctx.work.managerRealName,
+      });
 
       ctx.body = hits;
     } else {

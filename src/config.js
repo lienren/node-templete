@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2018-12-13 23:49:41
  * @Last Modified by: Lienren
- * @Last Modified time: 2021-01-24 23:56:04
+ * @Last Modified time: 2021-01-25 15:41:43
  */
 'use strict';
 
@@ -75,7 +75,7 @@ module.exports = {
       sitepath: path.resolve(__dirname, '../assets/adminweb/index.html'),
     },
   ],
-  // sequelize-auto -o "./src/models" -d peipei -h localhost -u root -p 3306 -x 123456 -e mysql
+  // sequelize-auto -o "./src/models" -d peipei -h 8.136.194.116 -u peipei -p 3306 -x Peipei@2021 -e mysql
   databases: [
     {
       modelPath: path.resolve(__dirname, './models'),
@@ -84,9 +84,9 @@ module.exports = {
       port: 3306,
       replication: {
         read: [
-          { host: 'localhost', username: 'root', password: '123456' },
+          { host: '8.136.194.116', username: 'peipei', password: 'Peipei@2021' },
         ],
-        write: { host: 'localhost', username: 'root', password: '123456' },
+        write: { host: '8.136.194.116', username: 'peipei', password: 'Peipei@2021' },
       },
       dialectOptions: {
         dateStrings: true,

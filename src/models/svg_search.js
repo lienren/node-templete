@@ -1,29 +1,20 @@
 /* jshint indent: 2 */
 
 module.exports = function(sequelize, DataTypes) {
-  return sequelize.define('svg_maps', {
+  return sequelize.define('svg_search', {
     id: {
-      type: DataTypes.INTEGER(255),
+      type: DataTypes.INTEGER(11),
       allowNull: false,
       primaryKey: true,
       autoIncrement: true
     },
-    dir: {
-      type: DataTypes.STRING(100),
+    search_value: {
+      type: DataTypes.STRING(2000),
       allowNull: true
     },
-    svg: {
+    manage_name: {
       type: DataTypes.STRING(100),
       allowNull: true
-    },
-    xml: {
-      type: DataTypes.STRING(100),
-      allowNull: true
-    },
-    is_del: {
-      type: DataTypes.INTEGER(11),
-      allowNull: true,
-      defaultValue: '0'
     },
     create_time: {
       type: DataTypes.DATE,
@@ -31,6 +22,6 @@ module.exports = function(sequelize, DataTypes) {
       defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
     }
   }, {
-    tableName: 'svg_maps'
+    tableName: 'svg_search'
   });
 };
