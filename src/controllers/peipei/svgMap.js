@@ -2,7 +2,7 @@
  * @Author: Lienren 
  * @Date: 2021-01-25 00:24:48 
  * @Last Modified by: Lienren
- * @Last Modified time: 2021-01-25 22:54:52
+ * @Last Modified time: 2021-01-26 20:32:22
  */
 
 const fs = require('fs');
@@ -105,6 +105,16 @@ module.exports = {
             })
           }
           break;
+        } else {
+          // 如果找不到，则通过关键字找地图
+          for (let x = 0, y = svgs[dirs[i]].length; x < y; x++) {
+            if (svgs[dirs[i]][x].svg.indexOf(searchValue) >= 0) {
+              hits.unshift({
+                ...svgs[dirs[i]][x],
+                title: svgs[dirs[i]][x].dir + '/' + svgs[dirs[i]][x].svg
+              })
+            }
+          }
         }
       }
 
