@@ -2,7 +2,7 @@
  * @Author: Lienren 
  * @Date: 2021-01-25 00:24:48 
  * @Last Modified by: Lienren
- * @Last Modified time: 2021-01-25 15:43:07
+ * @Last Modified time: 2021-01-25 22:54:52
  */
 
 const fs = require('fs');
@@ -95,6 +95,14 @@ module.exports = {
                 hot: natural.JaroWinklerDistance(searchValue, svgs[dirs[i]][x].svg)
               })
             }
+          }
+          break;
+        } else if (dirs[i].indexOf(searchValue) >= 0) {
+          for (let x = 0, y = svgs[dirs[i]].length; x < y; x++) {
+            hits.unshift({
+              ...svgs[dirs[i]][x],
+              title: svgs[dirs[i]][x].dir + '/' + svgs[dirs[i]][x].svg
+            })
           }
           break;
         }
