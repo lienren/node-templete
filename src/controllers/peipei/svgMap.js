@@ -2,7 +2,7 @@
  * @Author: Lienren 
  * @Date: 2021-01-25 00:24:48 
  * @Last Modified by: Lienren
- * @Last Modified time: 2021-01-26 20:32:22
+ * @Last Modified time: 2021-01-26 23:00:08
  */
 
 const fs = require('fs');
@@ -80,7 +80,7 @@ module.exports = {
       let dirs = Object.keys(svgs);
 
       for (let i = 0, j = dirs.length; i < j; i++) {
-        if (searchValue.indexOf(dirs[i]) >= 0) {
+        if (searchValue.indexOf(dirs[i]) >= 0 && searchValue !== dirs[i]) {
           for (let x = 0, y = svgs[dirs[i]].length; x < y; x++) {
             if (searchValue.indexOf(svgs[dirs[i]][x].svg) >= 0) {
               hits.unshift({
