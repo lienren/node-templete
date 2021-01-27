@@ -2,7 +2,7 @@
  * @Author: Lienren 
  * @Date: 2021-01-25 00:24:48 
  * @Last Modified by: Lienren
- * @Last Modified time: 2021-01-26 23:00:08
+ * @Last Modified time: 2021-01-27 15:32:25
  */
 
 const fs = require('fs');
@@ -138,6 +138,26 @@ module.exports = {
     } else {
       ctx.body = [];
     }
+  },
+  searchHistory: async ctx => {
+    let managerRealName = ctx.work.managerRealName;
+
+    let result = await ctx.orm().svg_search.findAll({
+      group: 'search_value',
+      where: {
+        manage_name: managerRealName
+      },
+      order: [
+        ['id', 'desc']
+      ],
+      limit: 20
+    })
+
+    ctx.body = result.map(m => {
+      return {
+        search_value: m.dataValues.search_value
+      }
+    });
   },
   scanning: async ctx => {
     let root = '/Users/lienren/Downloads/Compressed/jquery.panzoom-master/demo/docs'
