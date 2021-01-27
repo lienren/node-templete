@@ -73,7 +73,7 @@
 <body>
   <div class="page">
     <div class="pinch-zoom">
-      <img id="panzoom" />
+      <img src="./1.svg" />
     </div>
     <div class="buttons">
       <div class="reset">还原</div>
@@ -82,27 +82,6 @@
   </div>
 
   <script type="text/javascript">
-    var urlParam = null;
-    (function () {
-      var search = window.location.search.substring(1);
-      urlParam = new URLSearchParams(search);
-    })();
-
-    var dir = urlParam.get('dir');
-    var svg = urlParam.get('svg');
-    var xml = urlParam.get('xml');
-
-    dir = decodeURIComponent(dir);
-    svg = decodeURIComponent(svg);
-    xml = decodeURIComponent(xml);
-    $(document).attr('title', dir + "/" + svg.split('.')[0]);
-
-    console.log('dir:', dir);
-    console.log('svg:', svg);
-    console.log('xml:', xml);
-
-    $('#panzoom').attr('src', './docs/' + encodeURIComponent(dir) + '/' + encodeURIComponent(svg) + '.svg');
-
     var el = document.querySelector('div.pinch-zoom');
     var pz = new PinchZoom.default(el, {
       tapZoomFactor: 5,
