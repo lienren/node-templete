@@ -15,6 +15,11 @@ module.exports = function(sequelize, DataTypes) {
     role_id: {
       type: DataTypes.BIGINT,
       allowNull: true
+    },
+    create_time: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
     }
   }, {
     tableName: 'ums_admin_role_relation'

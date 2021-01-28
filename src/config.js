@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2018-12-13 23:49:41
  * @Last Modified by: Lienren
- * @Last Modified time: 2021-01-18 11:32:53
+ * @Last Modified time: 2021-01-28 21:03:56
  */
 'use strict';
 
@@ -14,7 +14,7 @@ module.exports = {
     port: 20000,
     staticPath: path.resolve(__dirname, '../assets/'),
     uploadFilePath: path.resolve(__dirname, '../assets/uploads/files'),
-    uploadVirtualFilePath: 'https://fruit.billgenius.cn/uploads/files/',
+    uploadVirtualFilePath: 'http://localhost:20000/uploads/files/',
     logConfig: {
       appenders: {
         resLogger: {
