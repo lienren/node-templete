@@ -2,7 +2,7 @@
  * @Author: Lienren 
  * @Date: 2021-01-28 20:30:57 
  * @Last Modified by: Lienren
- * @Last Modified time: 2021-01-28 20:35:51
+ * @Last Modified time: 2021-03-01 21:51:30
  */
 'use strict';
 
@@ -45,7 +45,7 @@ module.exports = {
     };
   },
   create: async (ctx) => {
-    let title = ctx.request.body.title || 0;
+    let title = ctx.request.body.title || '';
     let imgUrl = ctx.request.body.imgUrl || '';
     let context = ctx.request.body.context || '';
     let status = ctx.request.body.status;
@@ -63,7 +63,7 @@ module.exports = {
   },
   edit: async (ctx) => {
     let id = ctx.request.body.id || 0;
-    let title = ctx.request.body.title || 0;
+    let title = ctx.request.body.title || '';
     let imgUrl = ctx.request.body.imgUrl || '';
     let context = ctx.request.body.context || '';
     let status = ctx.request.body.status;
