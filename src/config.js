@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2018-12-13 23:49:41
  * @Last Modified by: Lienren
- * @Last Modified time: 2021-01-28 21:03:56
+ * @Last Modified time: 2021-03-01 15:53:51
  */
 'use strict';
 
@@ -14,7 +14,7 @@ module.exports = {
     port: 20000,
     staticPath: path.resolve(__dirname, '../assets/'),
     uploadFilePath: path.resolve(__dirname, '../assets/uploads/files'),
-    uploadVirtualFilePath: 'http://localhost:20000/uploads/files/',
+    uploadVirtualFilePath: 'https://www.lixianggo.com/uploads/files/',
     logConfig: {
       appenders: {
         resLogger: {
@@ -75,7 +75,7 @@ module.exports = {
       sitepath: path.resolve(__dirname, '../assets/adminweb/index.html'),
     },
   ],
-  // sequelize-auto -o "./src/models" -d mall -h localhost -u root -p 3306 -x 123456 -e mysql
+  // sequelize-auto -o "./src/models" -d mall -h 47.118.50.149 -u root -p 3306 -x Yangmiao@2021 -e mysql
   databases: [
     {
       modelPath: path.resolve(__dirname, './models'),
@@ -84,9 +84,9 @@ module.exports = {
       port: 3306,
       replication: {
         read: [
-          { host: 'localhost', username: 'root', password: '123456' },
+          { host: '47.118.50.149', username: 'root', password: 'Yangmiao@2021' },
         ],
-        write: { host: 'localhost', username: 'root', password: '123456' },
+        write: { host: '47.118.50.149', username: 'root', password: 'Yangmiao@2021' },
       },
       dialectOptions: {
         dateStrings: true,
