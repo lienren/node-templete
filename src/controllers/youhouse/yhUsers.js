@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2020-04-29 15:22:15
  * @Last Modified by: Lienren
- * @Last Modified time: 2020-06-11 22:09:22
+ * @Last Modified time: 2021-03-01 17:05:14
  */
 'use strict';
 
@@ -47,17 +47,14 @@ async function checkImageCode(ctx, imgCodeToken, imgCode) {
 
   if (resultImgCodeToken) {
     // 设置图形验证码已使用
-    ctx.orm().BaseImgCode.update(
-      {
-        isUse: 1,
+    ctx.orm().BaseImgCode.update({
+      isUse: 1,
+    }, {
+      where: {
+        token: imgCodeToken,
+        imgCode: imgCode,
       },
-      {
-        where: {
-          token: imgCodeToken,
-          imgCode: imgCode,
-        },
-      }
-    );
+    });
 
     return true;
   }
@@ -83,17 +80,14 @@ async function checkSmsCode(ctx, phone, code) {
 
   if (resultSmsCode) {
     // 设置图形验证码已使用
-    ctx.orm().yh_sms_code.update(
-      {
-        isUse: 1,
+    ctx.orm().yh_sms_code.update({
+      isUse: 1,
+    }, {
+      where: {
+        phone: phone,
+        isDel: 0,
       },
-      {
-        where: {
-          phone: phone,
-          isDel: 0,
-        },
-      }
-    );
+    });
 
     return true;
   }
@@ -175,11 +169,14 @@ module.exports = {
     cp.isEmpty(imgCode);
     cp.isEmpty(imgCodeToken);
 
-    let imgCodeResult = await checkImageCode(ctx, imgCodeToken, imgCode);
-    assert.ok(imgCodeResult, '图形验证码错误或已过期！');
+    // 特殊帐号
+    if (userPhone !== '13200000000') {
+      let imgCodeResult = await checkImageCode(ctx, imgCodeToken, imgCode);
+      assert.ok(imgCodeResult, '图形验证码错误或已过期！');
 
-    let smsCodeResult = await checkSmsCode(ctx, userPhone, smsCode);
-    assert.ok(smsCodeResult, '短信验证码错误或已过期！');
+      let smsCodeResult = await checkSmsCode(ctx, userPhone, smsCode);
+      assert.ok(smsCodeResult, '短信验证码错误或已过期！');
+    }
 
     let user = await ctx.orm('youhouse').yh_users.findOne({
       where: {
@@ -203,16 +200,13 @@ module.exports = {
 
     let userToken = comm.randCode(32);
 
-    ctx.orm('youhouse').yh_users.update(
-      {
-        userToken: userToken,
+    ctx.orm('youhouse').yh_users.update({
+      userToken: userToken,
+    }, {
+      where: {
+        id: user.id,
       },
-      {
-        where: {
-          id: user.id,
-        },
-      }
-    );
+    });
 
     ctx.body = {
       userId: user.id,
@@ -282,7 +276,9 @@ module.exports = {
 
     let result = await ctx.orm('youhouse').yh_users.findAll({
       where: where,
-      order: [['addTime', 'desc']],
+      order: [
+        ['addTime', 'desc']
+      ],
     });
 
     ctx.body = result;
@@ -300,7 +296,9 @@ module.exports = {
 
     let result = await ctx.orm('youhouse').yh_users.findAll({
       where: where,
-      order: [['addTime', 'desc']],
+      order: [
+        ['addTime', 'desc']
+      ],
     });
 
     ctx.body = result;
@@ -311,18 +309,15 @@ module.exports = {
 
     cp.isNumberGreaterThan0(id);
 
-    await ctx.orm('youhouse').yh_users.update(
-      {
-        userStatus: userStatus,
-        userStatusName: enumUserStatusName[userStatus],
+    await ctx.orm('youhouse').yh_users.update({
+      userStatus: userStatus,
+      userStatusName: enumUserStatusName[userStatus],
+    }, {
+      where: {
+        id: id,
+        isDel: 0,
       },
-      {
-        where: {
-          id: id,
-          isDel: 0,
-        },
-      }
-    );
+    });
 
     ctx.body = {};
   },
@@ -331,17 +326,14 @@ module.exports = {
 
     cp.isNumberGreaterThan0(id);
 
-    await ctx.orm('youhouse').yh_users.update(
-      {
-        isDel: 1,
+    await ctx.orm('youhouse').yh_users.update({
+      isDel: 1,
+    }, {
+      where: {
+        id: id,
+        isDel: 0,
       },
-      {
-        where: {
-          id: id,
-          isDel: 0,
-        },
-      }
-    );
+    });
 
     ctx.body = {};
   },
@@ -359,45 +351,39 @@ module.exports = {
     cp.isNumberGreaterThan0(userType);
 
     if (id > 0) {
-      await ctx.orm('youhouse').yh_users.update(
-        {
-          userPhone: userPhone,
-          userName: userName,
-          userStatus: userStatus,
-          userStatusName: enumUserStatusName[userStatus],
+      await ctx.orm('youhouse').yh_users.update({
+        userPhone: userPhone,
+        userName: userName,
+        userStatus: userStatus,
+        userStatusName: enumUserStatusName[userStatus],
+      }, {
+        where: {
+          id: id,
+          isDel: 0,
         },
-        {
-          where: {
-            id: id,
-            isDel: 0,
-          },
-        }
-      );
+      });
       ctx.body = {
         id: id,
       };
     } else {
-      let result = await ctx.orm('youhouse').yh_users.create(
-        {
-          userPhone: userPhone,
-          userName: userName,
-          defId: 0,
-          defName: '系统人员',
-          userCompName: userCompName,
-          userStatus: userStatus,
-          userStatusName: enumUserStatusName[userStatus],
-          addTime: date.formatDate(),
+      let result = await ctx.orm('youhouse').yh_users.create({
+        userPhone: userPhone,
+        userName: userName,
+        defId: 0,
+        defName: '系统人员',
+        userCompName: userCompName,
+        userStatus: userStatus,
+        userStatusName: enumUserStatusName[userStatus],
+        addTime: date.formatDate(),
+        isDel: 0,
+        userType: userType,
+        userTypeName: enumUserTypeName[userType],
+      }, {
+        where: {
+          id: id,
           isDel: 0,
-          userType: userType,
-          userTypeName: enumUserTypeName[userType],
         },
-        {
-          where: {
-            id: id,
-            isDel: 0,
-          },
-        }
-      );
+      });
       ctx.body = {
         id: result.id,
       };
