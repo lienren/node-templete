@@ -69,6 +69,34 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.INTEGER(11),
       allowNull: true,
       defaultValue: '0'
+    },
+    user_type: {
+      type: DataTypes.INTEGER(11),
+      allowNull: true,
+      defaultValue: '1'
+    },
+    user_type_name: {
+      type: DataTypes.STRING(10),
+      allowNull: true,
+      defaultValue: '管理员'
+    },
+    user_parentid: {
+      type: DataTypes.INTEGER(11),
+      allowNull: true,
+      defaultValue: '0'
+    },
+    user_company_id: {
+      type: DataTypes.INTEGER(11),
+      allowNull: true,
+      defaultValue: '0'
+    },
+    user_company_branch_name: {
+      type: DataTypes.STRING(255),
+      allowNull: true
+    },
+    user_dept_name: {
+      type: DataTypes.STRING(100),
+      allowNull: true
     }
   }, {
     tableName: 'ums_admin'

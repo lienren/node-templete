@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2018-04-19 11:52:42
  * @Last Modified by: Lienren
- * @Last Modified time: 2021-01-28 23:42:37
+ * @Last Modified time: 2021-03-10 14:33:56
  */
 'use strict';
 
@@ -14,6 +14,7 @@ const koa = require('koa');
 const koastatic = require('koa-static');
 const cors = require('koa2-cors');
 const bodyParser = require('koa-bodyparser');
+const { userAgent } = require('koa-useragent');
 const config = require('./config.js');
 
 const app = new koa();
@@ -49,6 +50,8 @@ app.use(
     formLimit: '100mb',
   })
 );
+
+app.use(userAgent);
 
 // 使用koa-orm中间件，sequelize，mysql
 if (config.databases) {

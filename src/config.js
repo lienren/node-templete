@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2018-12-13 23:49:41
  * @Last Modified by: Lienren
- * @Last Modified time: 2021-03-01 15:53:51
+ * @Last Modified time: 2021-03-01 23:23:34
  */
 'use strict';
 
@@ -14,7 +14,7 @@ module.exports = {
     port: 20000,
     staticPath: path.resolve(__dirname, '../assets/'),
     uploadFilePath: path.resolve(__dirname, '../assets/uploads/files'),
-    uploadVirtualFilePath: 'https://www.lixianggo.com/uploads/files/',
+    uploadVirtualFilePath: 'http://localhost:20000/uploads/files/',
     logConfig: {
       appenders: {
         resLogger: {

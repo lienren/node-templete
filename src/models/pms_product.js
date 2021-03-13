@@ -173,6 +173,11 @@ module.exports = function(sequelize, DataTypes) {
     product_category_name: {
       type: DataTypes.STRING(255),
       allowNull: true
+    },
+    is_del: {
+      type: DataTypes.INTEGER(11),
+      allowNull: true,
+      defaultValue: '0'
     }
   }, {
     tableName: 'pms_product'

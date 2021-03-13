@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2018-06-21 19:35:28
  * @Last Modified by: Lienren
- * @Last Modified time: 2021-01-21 18:02:44
+ * @Last Modified time: 2021-03-11 23:18:30
  */
 'use strict';
 
@@ -11,6 +11,7 @@ const comm = require('../utils/comm');
 const date = require('../utils/date');
 const encrypt = require('../utils/encrypt');
 const jwt = require('../utils/jwt');
+const ip = require('../utils/ip');
 
 const configData = require('./ConfigData');
 const config = require('../config.js');
@@ -107,9 +108,9 @@ module.exports = {
     ctx.orm().ums_admin_login_log.create({
       admin_id: resultManager.id,
       create_time: date.formatDate(),
-      ip: '',
+      ip: ip.getClientIP(ctx),
       address: '',
-      user_agent: ''
+      user_agent: JSON.stringify(ctx.userAgent)
     })
 
     // 获取管理员所有角色
@@ -232,9 +233,17 @@ module.exports = {
     let pageNum = ctx.request.body.pageNum || 1;
     let pageSize = ctx.request.body.pageSize || 20;
     let keyword = ctx.request.body.keyword || '';
+    let userType = ctx.request.body.userType || 1;
+    let userCompanyId = ctx.request.body.userCompanyId || 0;
+
     let where = {
+      user_type: userType,
       is_del: 0
     };
+
+    if (userCompanyId > 0) {
+      where.user_company_id = userCompanyId
+    }
 
     if (keyword !== '') {
       where.$or = [{
@@ -253,7 +262,7 @@ module.exports = {
     }
 
     let result = await ctx.orm().ums_admin.findAndCountAll({
-      attributes: ['id', 'username', 'icon', 'email', 'phone', 'nick_name', 'note', 'create_time', 'login_time', 'status'],
+      attributes: ['id', 'username', 'icon', 'email', 'phone', 'nick_name', 'note', 'create_time', 'login_time', 'status', 'user_type', 'user_type_name', 'user_parentid', 'user_company_id', 'user_company_branch_name', 'user_dept_name'],
       offset: (pageNum - 1) * pageSize,
       limit: pageSize,
       where,
@@ -269,7 +278,13 @@ module.exports = {
           ...m.dataValues,
           nickName: m.dataValues.nick_name,
           createTime: m.dataValues.create_time,
-          loginTime: m.dataValues.login_time
+          loginTime: m.dataValues.login_time,
+          userType: m.dataValues.user_type,
+          userTypeName: m.dataValues.user_type_name,
+          userParentid: m.dataValues.user_parentid,
+          userCompanyId: m.dataValues.user_company_id,
+          userCompanyBranchName: m.dataValues.user_company_branch_name,
+          userDeptName: m.dataValues.user_dept_name
         }
       }),
     };
@@ -283,8 +298,12 @@ module.exports = {
     let nickName = ctx.request.body.nickName || '';
     let note = ctx.request.body.note || '';
     let status = ctx.request.body.status;
-
-    let now = date.getTimeStamp();
+    let userType = ctx.request.body.userType || 1;
+    let userTypeName = ctx.request.body.userTypeName || '管理员';
+    let userParentid = ctx.request.body.userParentid || 0;
+    let userCompanyId = ctx.request.body.userCompanyId || 0;
+    let userCompanyBranchName = ctx.request.body.userCompanyBranchName || '';
+    let userDeptName = ctx.request.body.userDeptName || '';
 
     assert.notStrictEqual(username, '', 'InputParamIsNull');
     assert.notStrictEqual(password, '', 'InputParamIsNull');
@@ -313,7 +332,13 @@ module.exports = {
       note: note,
       create_time: date.formatDate(),
       status: status,
-      is_del: 0
+      is_del: 0,
+      user_type: userType,
+      user_type_name: userTypeName,
+      user_parentid: userParentid,
+      user_company_id: userCompanyId,
+      user_company_branch_name: userCompanyBranchName,
+      user_dept_name: userDeptName
     });
 
     ctx.body = {};
@@ -328,8 +353,12 @@ module.exports = {
     let nickName = ctx.request.body.nickName || '';
     let note = ctx.request.body.note || '';
     let status = ctx.request.body.status;
-
-    let now = date.getTimeStamp();
+    let userType = ctx.request.body.userType || 1;
+    let userTypeName = ctx.request.body.userTypeName || '管理员';
+    let userParentid = ctx.request.body.userParentid || 0;
+    let userCompanyId = ctx.request.body.userCompanyId || 0;
+    let userCompanyBranchName = ctx.request.body.userCompanyBranchName || '';
+    let userDeptName = ctx.request.body.userDeptName || '';
 
     assert.notStrictEqual(id, 0, 'InputParamIsNull');
     assert.notStrictEqual(username, '', 'InputParamIsNull');
@@ -362,7 +391,13 @@ module.exports = {
         note: note,
         status: status,
         token: '',
-        token_over_time: 0
+        token_over_time: 0,
+        user_type: userType,
+        user_type_name: userTypeName,
+        user_parentid: userParentid,
+        user_company_id: userCompanyId,
+        user_company_branch_name: userCompanyBranchName,
+        user_dept_name: userDeptName
       }, {
         where: {
           id
@@ -378,7 +413,13 @@ module.exports = {
         note: note,
         status: status,
         token: '',
-        token_over_time: 0
+        token_over_time: 0,
+        user_type: userType,
+        user_type_name: userTypeName,
+        user_parentid: userParentid,
+        user_company_id: userCompanyId,
+        user_company_branch_name: userCompanyBranchName,
+        user_dept_name: userDeptName
       }, {
         where: {
           id
@@ -410,6 +451,7 @@ module.exports = {
   },
   delManager: async ctx => {
     let id = ctx.request.body.id || 0;
+    let userType = ctx.request.body.userType || 1;
 
     // 删除时，清除token
     ctx.orm().ums_admin.update({
@@ -418,7 +460,8 @@ module.exports = {
       is_del: 1
     }, {
       where: {
-        id
+        id,
+        user_type: userType
       }
     });
 

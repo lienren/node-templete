@@ -51,6 +51,11 @@ module.exports = function(sequelize, DataTypes) {
     description: {
       type: DataTypes.TEXT,
       allowNull: true
+    },
+    is_del: {
+      type: DataTypes.INTEGER(11),
+      allowNull: true,
+      defaultValue: '0'
     }
   }, {
     tableName: 'pms_product_category'
