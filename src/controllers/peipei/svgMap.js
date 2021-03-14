@@ -2,7 +2,7 @@
  * @Author: Lienren 
  * @Date: 2021-01-25 00:24:48 
  * @Last Modified by: Lienren
- * @Last Modified time: 2021-01-27 15:32:25
+ * @Last Modified time: 2021-03-13 22:01:21
  */
 
 const fs = require('fs');
@@ -167,5 +167,21 @@ module.exports = {
     ctx.orm().svg_maps.bulkCreate(items);
 
     ctx.body = {}
+  },
+  searchGps: async ctx => {
+    let searchValue = ctx.request.body.searchValue || '';
+
+    let where = {};
+    if (searchValue) {
+      where.title = {
+        $like: `%${searchValue}%`
+      }
+    }
+
+    let result = await ctx.orm().gps_maps.findAll({
+      where
+    });
+
+    ctx.body = result;
   }
 };
