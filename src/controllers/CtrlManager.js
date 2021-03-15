@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2018-06-21 19:35:28
  * @Last Modified by: Lienren
- * @Last Modified time: 2021-03-11 23:18:30
+ * @Last Modified time: 2021-03-15 00:03:36
  */
 'use strict';
 
@@ -222,6 +222,7 @@ module.exports = {
       group by m.id`);
 
     ctx.body = {
+      id: resultManager.id,
       username: resultManager.username,
       icon: resultManager.icon,
       roles,
@@ -321,7 +322,7 @@ module.exports = {
     let ManagerPwdSaleCount = await configData.getConfig(ctx, configData.CONFIG_KEY_ENUM.ManagerPwdSaleCount);
     let salt = comm.randCode(ManagerPwdSaleCount);
 
-    await ctx.orm().ums_admin.create({
+    let admin = await ctx.orm().ums_admin.create({
       username: username,
       password: encrypt.getMd5(`${password}|${salt}`),
       salt: salt,
@@ -340,6 +341,20 @@ module.exports = {
       user_company_branch_name: userCompanyBranchName,
       user_dept_name: userDeptName
     });
+
+    if (admin && admin.id > 0 && userType === 2) {
+      // 公司管理员，自动添加角色
+      // 删除管理员所有角色
+      await ctx
+        .orm()
+        .query(`delete from ums_admin_role_relation where admin_id = ${id}`)
+        .spread((results, metadata) => {});
+
+      ctx.orm().ums_admin_role_relation.create({
+        admin_id: admin.id,
+        role_id: 9
+      })
+    }
 
     ctx.body = {};
   },
