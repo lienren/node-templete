@@ -36,6 +36,10 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING(255),
       allowNull: true
     },
+    a7: {
+      type: DataTypes.STRING(255),
+      allowNull: true
+    },
     latitude: {
       type: DataTypes.STRING(255),
       allowNull: true
