@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2018-06-21 19:35:28
  * @Last Modified by: Lienren
- * @Last Modified time: 2021-03-15 00:03:36
+ * @Last Modified time: 2021-03-16 11:49:24
  */
 'use strict';
 
@@ -237,58 +237,46 @@ module.exports = {
     let userType = ctx.request.body.userType || 1;
     let userCompanyId = ctx.request.body.userCompanyId || 0;
 
-    let where = {
-      user_type: userType,
-      is_del: 0
-    };
+    let where = ` 1=1 and a.user_type = ${userType} and a.is_del = 0`
 
     if (userCompanyId > 0) {
-      where.user_company_id = userCompanyId
+      where += ` and a.user_company_id = ${userCompanyId}`
     }
 
     if (keyword !== '') {
-      where.$or = [{
-        username: {
-          $like: `%${keyword}%`
-        }
-      }, {
-        phone: {
-          $like: `%${keyword}%`
-        }
-      }, {
-        nick_name: {
-          $like: `%${keyword}%`
-        }
-      }];
+      where += ` and (a.username like '%${keyword}%' or a.phone like '%${keyword}%' or a.nick_name like '%${keyword}%')`
     }
 
-    let result = await ctx.orm().ums_admin.findAndCountAll({
-      attributes: ['id', 'username', 'icon', 'email', 'phone', 'nick_name', 'note', 'create_time', 'login_time', 'status', 'user_type', 'user_type_name', 'user_parentid', 'user_company_id', 'user_company_branch_name', 'user_dept_name'],
-      offset: (pageNum - 1) * pageSize,
-      limit: pageSize,
-      where,
-      order: [
-        ['create_time', 'desc']
-      ]
-    });
+    let adminCount = await ctx.orm().query(`select count(1) num from ums_admin a where ${where}`);
+
+    let admins = await ctx.orm().query(`
+    select a.id, a.username, a.icon, a.email, a.phone, a.nick_name, a.note, 
+    a.create_time, a.login_time, a.status, a.user_type, a.user_type_name, a.user_parentid, 
+    a.user_company_id, a.user_company_branch_name, a.user_dept_name, 
+    ifnull(c.user_currency, 0) user_currency, ifnull(c.user_consume, 0) user_consume from ums_admin a 
+    left join cms_user_currency c on c.user_id = a.id and c.user_type = 2 
+    where ${where} 
+    order by a.create_time desc limit ${pageSize} offset ${(pageNum - 1) * pageSize}`);
 
     ctx.body = {
-      total: result.count,
-      list: result.rows.map(m => {
+      total: adminCount[0].num,
+      list: admins.map(m => {
         return {
-          ...m.dataValues,
-          nickName: m.dataValues.nick_name,
-          createTime: m.dataValues.create_time,
-          loginTime: m.dataValues.login_time,
-          userType: m.dataValues.user_type,
-          userTypeName: m.dataValues.user_type_name,
-          userParentid: m.dataValues.user_parentid,
-          userCompanyId: m.dataValues.user_company_id,
-          userCompanyBranchName: m.dataValues.user_company_branch_name,
-          userDeptName: m.dataValues.user_dept_name
+          ...m,
+          nickName: m.nick_name,
+          createTime: m.create_time,
+          loginTime: m.login_time,
+          userType: m.user_type,
+          userTypeName: m.user_type_name,
+          userParentid: m.user_parentid,
+          userCompanyId: m.user_company_id,
+          userCompanyBranchName: m.user_company_branch_name,
+          userDeptName: m.user_dept_name,
+          userCurrency: m.user_currency,
+          userConsume: m.user_consume
         }
-      }),
-    };
+      })
+    }
   },
   addManager: async ctx => {
     let username = ctx.request.body.username;
@@ -344,15 +332,29 @@ module.exports = {
 
     if (admin && admin.id > 0 && userType === 2) {
       // 公司管理员，自动添加角色
-      // 删除管理员所有角色
-      await ctx
-        .orm()
-        .query(`delete from ums_admin_role_relation where admin_id = ${id}`)
-        .spread((results, metadata) => {});
-
       ctx.orm().ums_admin_role_relation.create({
         admin_id: admin.id,
         role_id: 9
+      })
+
+      // 获取公司信息
+      let company = await ctx.orm().cmp_info.findOne({
+        where: {
+          id: userCompanyId,
+          is_del: 0
+        }
+      })
+
+      // 添加管理员金额表记录
+      ctx.orm().cms_user_currency.create({
+        user_id: admin.id,
+        user_name: admin.nick_name,
+        user_type: 2,
+        user_type_name: '公司管理员',
+        cmp_id: admin.user_company_id,
+        cmp_name: company ? company.name : '未知',
+        user_currency: 0,
+        user_consume: 0
       })
     }
 
@@ -440,6 +442,28 @@ module.exports = {
           id
         }
       });
+    }
+
+    if (id > 0 && userType === 2) {
+      // 获取公司信息
+      let company = await ctx.orm().cmp_info.findOne({
+        where: {
+          id: userCompanyId,
+          is_del: 0
+        }
+      })
+
+      // 添加管理员金额表记录
+      ctx.orm().cms_user_currency.update({
+        user_name: nickName,
+        cmp_id: userCompanyId,
+        cmp_name: company ? company.name : '未知'
+      }, {
+        where: {
+          user_id: id,
+          user_type: 2
+        }
+      })
     }
 
     ctx.body = {};

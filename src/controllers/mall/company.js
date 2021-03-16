@@ -2,11 +2,12 @@
  * @Author: Lienren 
  * @Date: 2021-03-11 15:14:00 
  * @Last Modified by: Lienren
- * @Last Modified time: 2021-03-15 00:33:20
+ * @Last Modified time: 2021-03-16 08:58:06
  */
 'use strict';
 
 const assert = require('assert');
+const sequelize = require('sequelize');
 const comm = require('../../utils/comm');
 const date = require('../../utils/date');
 const encrypt = require('../../utils/encrypt');
@@ -48,7 +49,10 @@ module.exports = {
     let result = await ctx.orm().cmp_info.findAndCountAll({
       offset: (pageNum - 1) * pageSize,
       limit: pageSize,
-      where
+      where,
+      order: [
+        ['create_time', 'desc']
+      ]
     });
 
     ctx.body = {
@@ -180,7 +184,10 @@ module.exports = {
     let result = await ctx.orm().cmp_recharge.findAndCountAll({
       offset: (pageNum - 1) * pageSize,
       limit: pageSize,
-      where
+      where,
+      order: [
+        ['create_time', 'desc']
+      ]
     });
 
     ctx.body = {
@@ -307,7 +314,7 @@ module.exports = {
       arrive_state_name: arriveStateEnum[arrive_state],
       arrive_state_img1: arrive_state_img1,
       arrive_state_img2: arrive_state_img2,
-      arrive_price: cmpRecharge.arrive_price + arrive_price
+      arrive_price: parseFloat(cmpRecharge.arrive_price) + parseFloat(arrive_price)
     }, {
       where: {
         id: cmpRecharge.id,
@@ -317,8 +324,7 @@ module.exports = {
       }
     });
 
-    console.log('updateRow:', updateRow)
-    if (updateRow) {
+    if (updateRow && updateRow.length > 0 && updateRow[0] > 0) {
       await ctx.orm().cmp_recharge_log.create({
         cmp_recharge_id: cmpRecharge.id,
         state_context: `更新到帐状态为【${arriveStateEnum[arrive_state]}】，到帐金额为【${arrive_price}】`,
@@ -365,8 +371,7 @@ module.exports = {
       }
     });
 
-    console.log('updateRow:', updateRow)
-    if (updateRow) {
+    if (updateRow && updateRow.length > 0 && updateRow[0] > 0) {
       await ctx.orm().cmp_recharge_log.create({
         cmp_recharge_id: cmpRecharge.id,
         state_context: `更新审核状态为【${verifyStateEnum[verify_state]}】`,
@@ -413,8 +418,7 @@ module.exports = {
       }
     });
 
-    console.log('updateRow:', updateRow)
-    if (updateRow) {
+    if (updateRow && updateRow.length > 0 && updateRow[0] > 0) {
       await ctx.orm().cmp_recharge_log.create({
         cmp_recharge_id: cmpRecharge.id,
         state_context: `更新审核状态为【${verifyStateEnum[verify_state]}】`,
@@ -426,8 +430,38 @@ module.exports = {
 
     if (verify_state === 3) {
       // 二审通过，需要给用户充值
+      ctx.orm().cms_user_currency.update({
+        user_currency: sequelize.literal(`user_currency + ${cmpRecharge.amount}`)
+      }, {
+        where: {
+          user_id: cmpRecharge.cmp_admin_id,
+          user_type: 2
+        }
+      })
     }
 
     ctx.body = {}
   },
+  cmpRechargeVerifyLog: async (ctx) => {
+    let id = ctx.request.body.id || 0;
+
+    let result = await ctx.orm().cmp_recharge_log.findAll({
+      where: {
+        cmp_recharge_id: id
+      }
+    });
+
+    ctx.body = result.map(m => {
+      return {
+        ...m.dataValues,
+        cmpRechargeId: m.dataValues.cmp_recharge_id,
+        stateContext: m.dataValues.state_context,
+        stateTime: m.dataValues.state_time,
+        opAdminId: m.dataValues.op_admin_id,
+        opAdminName: m.dataValues.op_admin_name,
+        remark: m.dataValues.remark,
+        createTime: m.dataValues.create_time
+      }
+    })
+  }
 };
