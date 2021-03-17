@@ -2,7 +2,7 @@
  * @Author: Lienren 
  * @Date: 2021-01-25 00:24:48 
  * @Last Modified by: Lienren
- * @Last Modified time: 2021-03-13 22:01:21
+ * @Last Modified time: 2021-03-17 10:34:03
  */
 
 const fs = require('fs');
@@ -183,5 +183,48 @@ module.exports = {
     });
 
     ctx.body = result;
+  },
+  getGps: async ctx => {
+    let id = ctx.request.body.id || 0;
+
+    let result = await ctx.orm().gps_maps.findOne({
+      where: {
+        id
+      }
+    });
+
+    ctx.body = result;
+  },
+  editGps: async ctx => {
+    let id = ctx.request.body.id || 0;
+    let title = ctx.request.body.title || '';
+    let a1 = ctx.request.body.a1 || '';
+    let a2 = ctx.request.body.a2 || '';
+    let a3 = ctx.request.body.a3 || '';
+    let a4 = ctx.request.body.a4 || '';
+    let a5 = ctx.request.body.a5 || '';
+    let a6 = ctx.request.body.a6 || '';
+    let a7 = ctx.request.body.a7 || '';
+    let latitude = ctx.request.body.latitude || '';
+    let longitude = ctx.request.body.longitude || '';
+
+    await ctx.orm().gps_maps.update({
+      title,
+      a1,
+      a2,
+      a3,
+      a4,
+      a5,
+      a6,
+      a7,
+      latitude,
+      longitude
+    }, {
+      where: {
+        id
+      }
+    });
+
+    ctx.body = {};
   }
 };
