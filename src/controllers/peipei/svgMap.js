@@ -2,7 +2,7 @@
  * @Author: Lienren 
  * @Date: 2021-01-25 00:24:48 
  * @Last Modified by: Lienren
- * @Last Modified time: 2021-03-17 10:34:03
+ * @Last Modified time: 2021-03-17 22:37:01
  */
 
 const fs = require('fs');
@@ -226,5 +226,18 @@ module.exports = {
     });
 
     ctx.body = {};
+  },
+  getCheckPerson: async ctx => {
+    let id = ctx.request.body.id || 0;
+
+    let admin = await ctx.orm().SuperManagerInfo.findOne({
+      where: {
+        id
+      }
+    });
+    
+    ctx.body = {
+      isCheckPerson: admin.isCheckPerson > 0
+    }
   }
 };
