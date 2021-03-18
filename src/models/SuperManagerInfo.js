@@ -50,7 +50,8 @@ module.exports = function(sequelize, DataTypes) {
     },
     isCheckPerson: {
       type: DataTypes.INTEGER(11),
-      allowNull: true
+      allowNull: true,
+      defaultValue: '0'
     },
     addTime: {
       type: DataTypes.BIGINT,

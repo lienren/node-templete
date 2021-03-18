@@ -2,12 +2,13 @@
  * @Author: Lienren 
  * @Date: 2021-01-25 00:24:48 
  * @Last Modified by: Lienren
- * @Last Modified time: 2021-03-17 22:37:01
+ * @Last Modified time: 2021-03-19 00:53:35
  */
 
 const fs = require('fs');
 const path = require('path');
 const natural = require('natural');
+const date = require('../../utils/date');
 
 var list = [];
 
@@ -235,9 +236,58 @@ module.exports = {
         id
       }
     });
-    
+
     ctx.body = {
       isCheckPerson: admin.isCheckPerson > 0
     }
+  },
+  getGPSAssessList: async ctx => {
+    let gpsMapId = ctx.request.body.gpsMapId || 0;
+
+    let gpsMapAssessList = await ctx.orm().gps_map_assess.findAll({
+      where: {
+        gps_map_id: gpsMapId
+      },
+      order: [['assess_time', 'desc']]
+    });
+
+    ctx.body = gpsMapAssessList.map(m => {
+      return {
+        ...m.dataValues,
+        assessTime: date.formatDate(m.dataValues.assess_time, 'YYYY年MM月DD日'),
+        assessContext: m.dataValues.assess_context.split(',')
+      }
+    })
+  },
+  createGPSAssess: async ctx => {
+    let gpsMapId = ctx.request.body.gpsMapId || 0;
+    let adminId = ctx.request.body.adminId || 0;
+    let assessContext = ctx.request.body.assessContext || [];
+
+    let admin = await ctx.orm().SuperManagerInfo.findOne({
+      where: {
+        id: adminId,
+        isDel: 0
+      }
+    })
+
+    if (admin && assessContext.length > 0) {
+      let assessSum = assessContext.reduce((total, current) => {
+        total += parseInt(current);
+        return total;
+      }, 0)
+
+      await ctx.orm().gps_map_assess.create({
+        gps_map_id: gpsMapId,
+        admin_id: admin.id,
+        admin_name: admin.realName,
+        assess_context: assessContext.map(m => {
+          return m
+        }).join(','),
+        assess_sum: assessSum
+      });
+    }
+
+    ctx.body = {};
   }
 };
