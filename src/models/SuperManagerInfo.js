@@ -8,6 +8,10 @@ module.exports = function(sequelize, DataTypes) {
       primaryKey: true,
       autoIncrement: true
     },
+    openId: {
+      type: DataTypes.STRING(100),
+      allowNull: true
+    },
     loginName: {
       type: DataTypes.STRING(100),
       allowNull: true

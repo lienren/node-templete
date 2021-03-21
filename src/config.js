@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2018-12-13 23:49:41
  * @Last Modified by: Lienren
- * @Last Modified time: 2021-03-21 11:46:26
+ * @Last Modified time: 2021-03-21 14:02:34
  */
 'use strict';
 
@@ -10,10 +10,10 @@ const path = require('path');
 
 module.exports = {
   sys: {
-    port: 20000,
+    port: 20001,
     staticPath: path.resolve(__dirname, '../assets/'),
     uploadFilePath: path.resolve(__dirname, '../assets/uploads/'),
-    uploadVirtualFilePath: 'https://sat.billgenius.cn/uploads',
+    uploadVirtualFilePath: 'https://jssnuvisitor.billgenius.cn/uploads',
     logConfig: {
       appenders: {
         resLogger: {
