@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2018-06-21 19:35:28
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-08-20 17:05:27
+ * @Last Modified time: 2021-03-21 15:41:11
  */
 'use strict';
 
@@ -36,12 +36,14 @@ function serializeMenu(menus, parentId) {
 
 module.exports = {
   login: async ctx => {
+    let openId = ctx.request.body.openId || '';
     let loginName = ctx.request.body.loginName || '';
     let loginPwd = ctx.request.body.loginPwd || '';
     let imgCode = ctx.request.body.imgCode || '';
     let imgCodeToken = ctx.request.body.imgCodeToken || '';
     let now = date.getTimeStamp();
 
+    assert.notStrictEqual(openId, '', configData.ERROR_KEY_ENUM.InputParamIsNull);
     assert.notStrictEqual(loginName, '', configData.ERROR_KEY_ENUM.InputParamIsNull);
     assert.notStrictEqual(loginPwd, '', configData.ERROR_KEY_ENUM.InputParamIsNull);
     assert.notStrictEqual(imgCode, '', configData.ERROR_KEY_ENUM.InputParamIsNull);
@@ -96,6 +98,7 @@ module.exports = {
 
     ctx.orm().SuperManagerInfo.update(
       {
+        openId: openId,
         token: token,
         tokenOverTime: tokenOverTime,
         lastTime: now
@@ -118,7 +121,9 @@ module.exports = {
       realName: resultManager.realName,
       phone: resultManager.phone,
       token: token,
-      roles: resultManagerRoles
+      roles: resultManagerRoles,
+      depName: resultManager.depName,
+      verifyLevel: resultManager.verifyLevel
     };
   },
   setPassword: async ctx => {

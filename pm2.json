@@ -1,7 +1,7 @@
 {
   "apps": [
     {
-      "name": "SAT",
+      "name": "jssnuvisitor",
       "script": "./src/app.js",
       "watch": false,
       "ignore_watch": ["node_modules", "build", "logs"],

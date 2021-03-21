@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2018-06-21 19:37:43
  * @Last Modified by: Lienren
- * @Last Modified time: 2021-03-21 13:40:07
+ * @Last Modified time: 2021-03-21 21:40:01
  */
 'use strict';
 
@@ -52,7 +52,7 @@ module.exports = {
   uploadFile: async ctx => {
     if (ctx.req.files && ctx.req.files.length > 0) {
       ctx.body = {
-        filePath: config.sys.uploadVirtualFilePath + '/files/' + ctx.req.files[0].filename
+        filePath: config.sys.uploadVirtualFilePath + '/' + ctx.req.files[0].filename
       };
     } else {
       ctx.body = {};
