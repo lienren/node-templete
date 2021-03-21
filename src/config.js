@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2018-12-13 23:49:41
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-08-29 11:17:45
+ * @Last Modified time: 2021-03-21 11:46:26
  */
 'use strict';
 
@@ -74,11 +74,11 @@ module.exports = {
       sitepath: path.resolve(__dirname, '../assets/adminweb/index.html')
     }
   ],
-  // sequelize-auto -o "./src/models" -d sat -h 47.111.64.7 -u root -p 3306 -x Ler@2019 -e mysql
+  // sequelize-auto -o "./src/models" -d jssnuvisitor -h 47.111.64.7 -u root -p 3306 -x Ler@2019 -e mysql
   databases: [
     {
       modelPath: path.resolve(__dirname, './models'),
-      db: 'sat',
+      db: 'jssnuvisitor',
       dialect: 'mysql',
       port: 3306,
       replication: {
