@@ -2,7 +2,7 @@
  * @Author: Lienren 
  * @Date: 2021-03-21 11:48:45 
  * @Last Modified by: Lienren
- * @Last Modified time: 2021-03-21 22:09:41
+ * @Last Modified time: 2021-03-23 10:10:33
  */
 'use strict';
 
@@ -59,8 +59,16 @@ module.exports = {
         return m.dataValues.realName
       }).join(',') + ',';
 
-      let verifyAdminId2 = ',8,';
-      let verifyAdminIdName2 = ',8,';
+      let verifyAdminIdOver = 0;
+      let verifyAdminNameOver = '';
+      let verifyAdminId2 = ',24,25,139,140,';
+      let verifyAdminIdName2 = ',贺志武,王建宏,宋惠贤,马隽,';
+
+      if(department === '保卫处') {
+        status = 2
+        verifyAdminIdOver = 24
+        verifyAdminNameOver = '贺志武'
+      }
 
       let result = await ctx.orm().applyInfo.create({
         code,
@@ -81,8 +89,8 @@ module.exports = {
         statusName: statusNameEnum[status],
         verifyAdminId1,
         verifyAdminIdName1,
-        verifyAdminIdOver: 0,
-        verifyAdminNameOver: '',
+        verifyAdminIdOver: verifyAdminIdOver,
+        verifyAdminNameOver: verifyAdminNameOver,
         verifyAdminId2: verifyAdminId2,
         verifyAdminIdName2: verifyAdminIdName2,
         verifyAdminIdOver2: 0,
