@@ -40,6 +40,10 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.DATE,
       allowNull: true
     },
+    visitorEndTime: {
+      type: DataTypes.DATE,
+      allowNull: true
+    },
     visitorDay: {
       type: DataTypes.INTEGER(11),
       allowNull: true
@@ -61,6 +65,10 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     img2: {
+      type: DataTypes.STRING(1000),
+      allowNull: true
+    },
+    img3: {
       type: DataTypes.STRING(1000),
       allowNull: true
     },
@@ -116,6 +124,14 @@ module.exports = function(sequelize, DataTypes) {
     },
     isDel: {
       type: DataTypes.INTEGER(11),
+      allowNull: true
+    },
+    visitorTimeNum: {
+      type: DataTypes.STRING(10),
+      allowNull: true
+    },
+    visitorEndTimeNum: {
+      type: DataTypes.STRING(10),
       allowNull: true
     }
   }, {

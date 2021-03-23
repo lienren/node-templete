@@ -2,7 +2,7 @@
  * @Author: Lienren 
  * @Date: 2021-03-21 11:48:45 
  * @Last Modified by: Lienren
- * @Last Modified time: 2021-03-23 10:10:33
+ * @Last Modified time: 2021-03-23 14:49:55
  */
 'use strict';
 
@@ -33,15 +33,24 @@ module.exports = {
     let company = ctx.request.body.company || '';
     let campus = ctx.request.body.campus || '';
     let visitTime = ctx.request.body.visitTime || '';
+    let visitTimeNum = ctx.request.body.visitTimeNum || '';
+    let visitEndTime = ctx.request.body.visitEndTime || '';
+    let visitEndTimeNum = ctx.request.body.visitEndTimeNum || '';
     let visitDay = ctx.request.body.visitDay || 1;
     let car = ctx.request.body.car || '';
     let department = ctx.request.body.department || '';
     let visitReason = ctx.request.body.visitReason || '';
     let img1 = ctx.request.body.img1 || '';
     let img2 = ctx.request.body.img2 || '';
+    let img3 = ctx.request.body.img3 || '';
 
     let code = comm.getGuid();
     let status = 1;
+
+    let scope = date.dataScope(visitTime, visitEndTime);
+    if (scope && scope.length > 1) {
+      visitDay = scope.length
+    }
 
     let admins = await ctx.orm().SuperManagerInfo.findAll({
       where: {
@@ -64,7 +73,7 @@ module.exports = {
       let verifyAdminId2 = ',24,25,139,140,';
       let verifyAdminIdName2 = ',贺志武,王建宏,宋惠贤,马隽,';
 
-      if(department === '保卫处') {
+      if (department === '保卫处') {
         status = 2
         verifyAdminIdOver = 24
         verifyAdminNameOver = '贺志武'
@@ -79,12 +88,16 @@ module.exports = {
         visitorCompany: company,
         visitorCampus: campus,
         visitorTime: visitTime,
+        visitorEndTime: visitEndTime,
+        visitorTimeNum: visitTimeNum,
+        visitorEndTimeNum: visitEndTimeNum,
         visitorDay: visitDay,
         visitorCar: car,
         visitorDepartment: department,
         visitReason,
         img1,
         img2,
+        img3,
         status,
         statusName: statusNameEnum[status],
         verifyAdminId1,
@@ -150,7 +163,9 @@ module.exports = {
       return {
         ...m.dataValues,
         _visitorTime: m.dataValues.visitorTime,
-        visitorTime: date.formatDate(m.dataValues.visitorTime, 'YYYY年MM月DD日')
+        visitorTime: date.formatDate(m.dataValues.visitorTime, 'YYYY年MM月DD日'),
+        _visitorEndTime: m.dataValues.visitorEndTime,
+        visitorEndTime: date.formatDate(m.dataValues.visitorEndTime, 'YYYY年MM月DD日')
       }
     });
   },
@@ -177,7 +192,9 @@ module.exports = {
     ctx.body = {
       ...result.dataValues,
       _visitorTime: result.dataValues.visitorTime,
-      visitorTime: date.formatDate(result.dataValues.visitorTime, 'YYYY年MM月DD日')
+      visitorTime: date.formatDate(result.dataValues.visitorTime, 'YYYY年MM月DD日'),
+      _visitorEndTime: result.dataValues.visitorEndTime,
+      visitorEndTime: date.formatDate(result.dataValues.visitorEndTime, 'YYYY年MM月DD日')
     }
   },
   verifyApply1: async ctx => {
