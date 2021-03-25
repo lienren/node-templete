@@ -2,7 +2,7 @@
  * @Author: Lienren 
  * @Date: 2021-03-21 11:48:45 
  * @Last Modified by: Lienren
- * @Last Modified time: 2021-03-23 14:49:55
+ * @Last Modified time: 2021-03-25 14:05:57
  */
 'use strict';
 
@@ -39,13 +39,11 @@ module.exports = {
     let visitDay = ctx.request.body.visitDay || 1;
     let car = ctx.request.body.car || '';
     let department = ctx.request.body.department || '';
+    let departmentLeader = ctx.request.body.departmentLeader || '';
     let visitReason = ctx.request.body.visitReason || '';
     let img1 = ctx.request.body.img1 || '';
     let img2 = ctx.request.body.img2 || '';
     let img3 = ctx.request.body.img3 || '';
-
-    let code = comm.getGuid();
-    let status = 1;
 
     let scope = date.dataScope(visitTime, visitEndTime);
     if (scope && scope.length > 1) {
@@ -59,24 +57,57 @@ module.exports = {
       }
     })
 
-    if (admins && admins.length > 0) {
-      let verifyAdminId1 = ',' + admins.map(m => {
+    let admin2s = await ctx.orm().SuperManagerInfo.findAll({
+      where: {
+        depName: '保卫处',
+        isDel: 0
+      }
+    })
+
+    if (admins && admins.length > 0 && admin2s && admin2s.length > 0) {
+      let code = comm.getGuid();
+      let status = 1;
+
+      let verifyAdminId1 = ''
+      let verifyAdminIdName1 = ''
+      let verifyAdminIdOver = 0;
+      let verifyAdminNameOver = '';
+      let verifyAdminId2 = ',' + admin2s.map(m => {
         return m.dataValues.id
       }).join(',') + ',';
-
-      let verifyAdminIdName1 = ',' + admins.map(m => {
+      let verifyAdminIdName2 = ',' + admin2s.map(m => {
         return m.dataValues.realName
       }).join(',') + ',';
 
-      let verifyAdminIdOver = 0;
-      let verifyAdminNameOver = '';
-      let verifyAdminId2 = ',24,25,139,140,';
-      let verifyAdminIdName2 = ',贺志武,王建宏,宋惠贤,马隽,';
-
       if (department === '保卫处') {
-        status = 2
-        verifyAdminIdOver = 24
-        verifyAdminNameOver = '贺志武'
+        status = 2;
+        verifyAdminIdOver = 24;
+        verifyAdminNameOver = '贺志武';
+      }
+
+      if (department === '校级访客通道') {
+        const found = admins.find(admin => admin.loginName === departmentLeader);
+        if (found) {
+          // 更新一级审核人名
+          verifyAdminId1 = `,${found.id},`;
+          verifyAdminIdName1 = `,${found.realName},`;
+
+          // 更新一级审核通过信息
+          status = 2;
+          verifyAdminIdOver = found.id;
+          verifyAdminNameOver = found.realName;
+
+          verifyAdminId2 = `,${found.id},`;
+          verifyAdminIdName2 = `,${found.realName},`;
+        }
+      } else {
+        verifyAdminId1 = ',' + admins.map(m => {
+          return m.dataValues.id
+        }).join(',') + ',';
+
+        verifyAdminIdName1 = ',' + admins.map(m => {
+          return m.dataValues.realName
+        }).join(',') + ',';
       }
 
       let result = await ctx.orm().applyInfo.create({
@@ -141,8 +172,26 @@ module.exports = {
     }
 
     if (verifyAdminId2) {
-      where.verifyAdminId2 = {
-        $like: `%,${verifyAdminId2},%`
+      let admin = ctx.orm().SuperManagerInfo.findOne({
+        where: {
+          id: parseInt(verifyAdminId2),
+          depName: '保卫处',
+          isDel: 0
+        }
+      })
+
+      if (admin != null && status.includes(4)) {
+        where.$or = [{
+          visitorDepartment: '校级访客通道'
+        }, {
+          verifyAdminId2: {
+            $like: `%,${verifyAdminId2},%`
+          }
+        }]
+      } else {
+        where.verifyAdminId2 = {
+          $like: `%,${verifyAdminId2},%`
+        }
       }
     }
 
