@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-08-17 10:55:19
  * @Last Modified by: Lienren
- * @Last Modified time: 2021-03-27 01:43:42
+ * @Last Modified time: 2021-03-27 02:10:32
  */
 'use strict';
 
@@ -110,7 +110,7 @@ let wxHelper = {
         template_id: templateId,
         page: page ? page : `pages/visitor/index`,
         data: data,
-        miniprogram_state: 'trial'
+        // miniprogram_state: 'trial'
       }
     });
   },

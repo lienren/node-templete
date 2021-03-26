@@ -2,7 +2,7 @@
  * @Author: Lienren 
  * @Date: 2021-03-21 11:48:45 
  * @Last Modified by: Lienren
- * @Last Modified time: 2021-03-27 00:58:02
+ * @Last Modified time: 2021-03-27 02:08:17
  */
 'use strict';
 
@@ -550,5 +550,37 @@ module.exports = {
     }
 
     ctx.body = {}
-  }
+  },
+  getApplyInfoByBA: async ctx => {
+    let openid = ctx.request.body.openid || '';
+    let code = ctx.request.body.code || '';
+
+    let ba = await ctx.orm().baInfo.findOne({
+      where: {
+        openId: openid
+      }
+    })
+
+    assert.ok(ba !== null, '无权读取信息！');
+
+    let where = {
+      isDel: 0
+    }
+
+    if (code) {
+      where.code = code
+    }
+
+    let result = await ctx.orm().applyInfo.findOne({
+      where
+    })
+
+    ctx.body = {
+      ...result.dataValues,
+      _visitorTime: result.dataValues.visitorTime,
+      visitorTime: date.formatDate(result.dataValues.visitorTime, 'YYYY年MM月DD日'),
+      _visitorEndTime: result.dataValues.visitorEndTime,
+      visitorEndTime: date.formatDate(result.dataValues.visitorEndTime, 'YYYY年MM月DD日')
+    }
+  },
 }
