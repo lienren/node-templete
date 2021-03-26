@@ -2,7 +2,7 @@
  * @Author: Lienren 
  * @Date: 2021-03-21 11:48:45 
  * @Last Modified by: Lienren
- * @Last Modified time: 2021-03-25 16:10:41
+ * @Last Modified time: 2021-03-27 00:58:02
  */
 'use strict';
 
@@ -11,6 +11,7 @@ const fs = require('fs');
 const path = require('path');
 const comm = require('../../utils/comm');
 const date = require('../../utils/date');
+const wx = require('./wx');
 
 const statusNameEnum = {
   0: '未知',
@@ -25,6 +26,24 @@ const statusNameEnum = {
 }
 
 module.exports = {
+  getDepartmentLeader: async ctx => {
+    let result = await ctx.orm().SuperManagerInfo.findAll({
+      where: {
+        loginName: {
+          $ne: 'admin'
+        },
+        state: 1,
+        isDel: 0
+      }
+    });
+
+    ctx.body = result.map(m => {
+      return {
+        depName: m.dataValues.depName,
+        realName: m.dataValues.realName
+      }
+    })
+  },
   createApply: async ctx => {
     let openId = ctx.request.body.openId || '';
     let name = ctx.request.body.name || '';
@@ -50,9 +69,10 @@ module.exports = {
       visitDay = scope.length
     }
 
-    let admins = await ctx.orm().SuperManagerInfo.findAll({
+    let admin = await ctx.orm().SuperManagerInfo.findOne({
       where: {
         depName: department,
+        realName: departmentLeader,
         isDel: 0
       }
     })
@@ -64,7 +84,7 @@ module.exports = {
       }
     })
 
-    if (admins && admins.length > 0 && admin2s && admin2s.length > 0) {
+    if (admin && admin2s && admin2s.length > 0) {
       let code = comm.getGuid();
       let status = 1;
 
@@ -79,35 +99,18 @@ module.exports = {
         return m.dataValues.realName
       }).join(',') + ',';
 
-      if (department === '保卫处') {
+      if (department === '保卫处' || department === '校级访客通道') {
         status = 2;
-        verifyAdminIdOver = 24;
-        verifyAdminNameOver = '贺志武';
-      }
+        verifyAdminId1 = `,${admin.id},`;
+        verifyAdminIdName1 = `,${admin.realName},`;
+        verifyAdminIdOver = admin.id;
+        verifyAdminNameOver = admin.realName;
 
-      if (department === '校级访客通道') {
-        const found = admins.find(admin => admin.loginName === departmentLeader);
-        if (found) {
-          // 更新一级审核人名
-          verifyAdminId1 = `,${found.id},`;
-          verifyAdminIdName1 = `,${found.realName},`;
-
-          // 更新一级审核通过信息
-          status = 2;
-          verifyAdminIdOver = found.id;
-          verifyAdminNameOver = found.realName;
-
-          verifyAdminId2 = `,${found.id},`;
-          verifyAdminIdName2 = `,${found.realName},`;
-        }
+        verifyAdminId2 = `,${admin.id},`;
+        verifyAdminIdName2 = `,${admin.realName},`;
       } else {
-        verifyAdminId1 = ',' + admins.map(m => {
-          return m.dataValues.id
-        }).join(',') + ',';
-
-        verifyAdminIdName1 = ',' + admins.map(m => {
-          return m.dataValues.realName
-        }).join(',') + ',';
+        verifyAdminId1 = `,${admin.id},`;
+        verifyAdminIdName1 = `,${admin.realName},`
       }
 
       let result = await ctx.orm().applyInfo.create({
@@ -141,6 +144,23 @@ module.exports = {
         verifyAdminNameOver2: '',
         isDel: 0
       });
+
+      if (admin.openId) {
+        wx.sendMessage(admin.openId, 'B2MGYS99bH2CoXtXgre0Y3GWMINfCAY94qjcILAbqac', null, {
+          "thing1": {
+            "value": `${result.visitorUserName}申请访校`
+          },
+          "thing2": {
+            "value": "已提交访校申请"
+          },
+          "thing3": {
+            "value": result.visitReason
+          },
+          "date4": {
+            "value": date.formatDate(new Date(), 'YYYY年MM月DD日 HH:mm')
+          }
+        })
+      }
 
       ctx.body = {
         id: result.id
@@ -291,6 +311,41 @@ module.exports = {
         status,
         statusName: statusNameEnum[status]
       })
+
+      if (status === 2) {
+        // 审核通过，提示二级审核人
+        let verifyAdminId2 = result.verifyAdminId2.substring(1, result.verifyAdminId2.length - 1).split(',');
+        let admin2s = await ctx.orm().SuperManagerInfo.findAll({
+          where: {
+            id: {
+              $in: verifyAdminId2
+            },
+            state: 1,
+            isDel: 0
+          }
+        });
+
+        if (admin2s && admin2s.length > 0) {
+          for (let i = 0, j = admin2s.length; i < j; i++) {
+            if (admin2s[i].openId) {
+              wx.sendMessage(admin2s[i].openId, 'B2MGYS99bH2CoXtXgre0Y3GWMINfCAY94qjcILAbqac', null, {
+                "thing1": {
+                  "value": `${result.visitorUserName}申请访校`
+                },
+                "thing2": {
+                  "value": `${admin.realName}已经审核通过`
+                },
+                "thing3": {
+                  "value": result.visitReason
+                },
+                "date4": {
+                  "value": date.formatDate(new Date(), 'YYYY年MM月DD日 HH:mm')
+                }
+              })
+            }
+          }
+        }
+      }
     }
 
     ctx.body = {}
@@ -340,6 +395,39 @@ module.exports = {
         status,
         statusName: statusNameEnum[status]
       })
+
+      if (status === 4) {
+        if (result.openId) {
+          wx.sendMessage(result.openId, 'qfFp3pDFc_sfmLJPXzfhF5nOYv2begNN4QVx9iRh9ko', null, {
+            "thing1": {
+              "value": `${result.visitorUserName}`
+            },
+            "thing2": {
+              "value": `访客登记预约成功`
+            },
+            "character_string3": {
+              "value": result.id
+            },
+            "time4": {
+              "value": `${date.formatDate(result.visitorTime, 'YYYY年MM月DD日')} ${result.visitorTimeNum}`
+            }
+          })
+        }
+
+        if (result.visitorDepartment === '校级访客通道') {
+          wx.getwxacode(result.code, `pages/visitor/applyCheck?code=${result.code}`, {
+            "r": 103,
+            "g": 194,
+            "b": 58
+          })
+        } else {
+          wx.getwxacode(result.code, `pages/visitor/applyCheck?code=${result.code}`, {
+            "r": 0,
+            "g": 0,
+            "b": 0
+          })
+        }
+      }
     }
 
     ctx.body = {}
@@ -429,6 +517,37 @@ module.exports = {
       };
     });
     ctx.orm().applyLogs.bulkCreate(data);
+
+    if (status === 4) {
+      let applyInfos = await ctx.orm().applyInfo.findAll({
+        where: {
+          id: {
+            $in: id
+          },
+          verifyAdminId2: {
+            $like: `%,${admin.id},%`
+          },
+          isDel: 0
+        }
+      })
+      if (applyInfos && applyInfos.length > 0) {
+        for (let i = 0, j = applyInfos.length; i < j; i++) {
+          if (applyInfos[i].visitorDepartment === '校级访客通道') {
+            wx.getwxacode(applyInfos[i].code, `pages/visitor/applyCheck?code=${applyInfos[i].code}`, {
+              "r": 103,
+              "g": 194,
+              "b": 58
+            })
+          } else {
+            wx.getwxacode(applyInfos[i].code, `pages/visitor/applyCheck?code=${applyInfos[i].code}`, {
+              "r": 0,
+              "g": 0,
+              "b": 0
+            })
+          }
+        }
+      }
+    }
 
     ctx.body = {}
   }
