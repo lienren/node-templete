@@ -1,23 +1,23 @@
 /* jshint indent: 2 */
 
 module.exports = function(sequelize, DataTypes) {
-  return sequelize.define('baInfo', {
+  return sequelize.define('baLogs', {
     id: {
       type: DataTypes.INTEGER(11),
       allowNull: false,
       primaryKey: true,
       autoIncrement: true
     },
-    openId: {
-      type: DataTypes.STRING(100),
+    baId: {
+      type: DataTypes.INTEGER(11),
       allowNull: true
     },
     baName: {
       type: DataTypes.STRING(10),
       allowNull: true
     },
-    baPhone: {
-      type: DataTypes.STRING(20),
+    applyId: {
+      type: DataTypes.INTEGER(11),
       allowNull: true
     },
     createTime: {
@@ -26,6 +26,6 @@ module.exports = function(sequelize, DataTypes) {
       defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
     }
   }, {
-    tableName: 'baInfo'
+    tableName: 'baLogs'
   });
 };

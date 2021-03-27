@@ -2,7 +2,7 @@
  * @Author: Lienren 
  * @Date: 2021-03-21 11:48:45 
  * @Last Modified by: Lienren
- * @Last Modified time: 2021-03-27 02:08:17
+ * @Last Modified time: 2021-03-27 13:02:51
  */
 'use strict';
 
@@ -573,6 +573,13 @@ module.exports = {
 
     let result = await ctx.orm().applyInfo.findOne({
       where
+    })
+
+    // 记录打开日志
+    ctx.orm().baLogs.create({
+      baId: ba.id,
+      baName: ba.baName,
+      applyId: result.id
     })
 
     ctx.body = {
