@@ -2,7 +2,7 @@
  * @Author: Lienren 
  * @Date: 2021-03-21 11:48:45 
  * @Last Modified by: Lienren
- * @Last Modified time: 2021-03-27 13:02:51
+ * @Last Modified time: 2021-03-30 07:42:45
  */
 'use strict';
 
@@ -92,12 +92,25 @@ module.exports = {
       let verifyAdminIdName1 = ''
       let verifyAdminIdOver = 0;
       let verifyAdminNameOver = '';
-      let verifyAdminId2 = ',' + admin2s.map(m => {
-        return m.dataValues.id
-      }).join(',') + ',';
-      let verifyAdminIdName2 = ',' + admin2s.map(m => {
-        return m.dataValues.realName
-      }).join(',') + ',';
+
+      let verifyAdminId2 = '';
+      let verifyAdminIdName2 = '';
+
+      if (campus === '石湫校区') {
+        verifyAdminId2 = ',' + admin2s.filter(f => f.realName !== '马隽').map(m => {
+          return m.dataValues.id
+        }).join(',') + ',';
+        verifyAdminIdName2 = ',' + admin2s.filter(f => f.realName !== '马隽').map(m => {
+          return m.dataValues.realName
+        }).join(',') + ',';
+      } else if (campus === '草场门校区') {
+        verifyAdminId2 = ',' + admin2s.filter(f => f.realName !== '宋惠贤').map(m => {
+          return m.dataValues.id
+        }).join(',') + ',';
+        verifyAdminIdName2 = ',' + admin2s.filter(f => f.realName !== '宋惠贤').map(m => {
+          return m.dataValues.realName
+        }).join(',') + ',';
+      }
 
       if (department === '保卫处' || department === '校级访客通道') {
         status = 2;
@@ -328,20 +341,37 @@ module.exports = {
         if (admin2s && admin2s.length > 0) {
           for (let i = 0, j = admin2s.length; i < j; i++) {
             if (admin2s[i].openId) {
-              wx.sendMessage(admin2s[i].openId, 'B2MGYS99bH2CoXtXgre0Y3GWMINfCAY94qjcILAbqac', null, {
-                "thing1": {
-                  "value": `${result.visitorUserName}申请访校`
-                },
-                "thing2": {
-                  "value": `${admin.realName}已经审核通过`
-                },
-                "thing3": {
-                  "value": result.visitReason
-                },
-                "date4": {
-                  "value": date.formatDate(new Date(), 'YYYY年MM月DD日 HH:mm')
-                }
-              })
+              if (result.visitorCampus === '石湫校区' && admin2s[i].realName === '宋惠贤') {
+                wx.sendMessage(admin2s[i].openId, 'B2MGYS99bH2CoXtXgre0Y3GWMINfCAY94qjcILAbqac', null, {
+                  "thing1": {
+                    "value": `${result.visitorUserName}申请访校`
+                  },
+                  "thing2": {
+                    "value": `${admin.realName}已经审核通过`
+                  },
+                  "thing3": {
+                    "value": result.visitReason
+                  },
+                  "date4": {
+                    "value": date.formatDate(new Date(), 'YYYY年MM月DD日 HH:mm')
+                  }
+                })
+              } else if (result.visitorCampus === '草场门校区' && admin2s[i].realName === '马隽') {
+                wx.sendMessage(admin2s[i].openId, 'B2MGYS99bH2CoXtXgre0Y3GWMINfCAY94qjcILAbqac', null, {
+                  "thing1": {
+                    "value": `${result.visitorUserName}申请访校`
+                  },
+                  "thing2": {
+                    "value": `${admin.realName}已经审核通过`
+                  },
+                  "thing3": {
+                    "value": result.visitReason
+                  },
+                  "date4": {
+                    "value": date.formatDate(new Date(), 'YYYY年MM月DD日 HH:mm')
+                  }
+                })
+              }
             }
           }
         }

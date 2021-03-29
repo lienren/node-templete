@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2019-08-17 10:55:19
  * @Last Modified by: Lienren
- * @Last Modified time: 2021-03-27 02:10:32
+ * @Last Modified time: 2021-03-29 12:02:33
  */
 'use strict';
 
@@ -113,6 +113,8 @@ let wxHelper = {
         // miniprogram_state: 'trial'
       }
     });
+
+    console.log('result:', result.data);
   },
   getwxacode: async (id, wxPath, line_color) => {
     let token = wxHelper.readFileToken();
