@@ -137,6 +137,10 @@ module.exports = function(sequelize, DataTypes) {
     veriyReason: {
       type: DataTypes.STRING(500),
       allowNull: true
+    },
+    parkingType: {
+      type: DataTypes.STRING(20),
+      allowNull: true
     }
   }, {
     tableName: 'applyInfo'

@@ -2,7 +2,7 @@
  * @Author: Lienren 
  * @Date: 2021-03-21 11:48:45 
  * @Last Modified by: Lienren
- * @Last Modified time: 2021-03-30 08:10:44
+ * @Last Modified time: 2021-03-30 19:46:14
  */
 'use strict';
 
@@ -284,6 +284,7 @@ module.exports = {
     let adminId = ctx.request.body.adminId || 0;
     let status = ctx.request.body.status || 0;
     let veriyReason = ctx.request.body.veriyReason || '';
+    let parkingType = ctx.request.body.parkingType || '停车费自付';
 
     let admin = await ctx.orm().SuperManagerInfo.findOne({
       where: {
@@ -310,7 +311,8 @@ module.exports = {
         verifyAdminNameOver: admin.realName,
         status,
         statusName: statusNameEnum[status],
-        veriyReason
+        veriyReason,
+        parkingType
       }, {
         where: {
           id: result.id,
@@ -470,6 +472,8 @@ module.exports = {
     let id = ctx.request.body.id || [];
     let adminId = ctx.request.body.adminId || 0;
     let status = ctx.request.body.status || 0;
+    let veriyReason = ctx.request.body.veriyReason || '';
+    let parkingType = ctx.request.body.parkingType || '停车费自付';
 
     let admin = await ctx.orm().SuperManagerInfo.findOne({
       where: {
@@ -483,7 +487,9 @@ module.exports = {
       verifyAdminIdOver: admin.id,
       verifyAdminNameOver: admin.realName,
       status,
-      statusName: statusNameEnum[status]
+      statusName: statusNameEnum[status],
+      veriyReason,
+      parkingType
     }, {
       where: {
         id: {
@@ -595,7 +601,7 @@ module.exports = {
       }
     })
 
-    assert.ok(ba !== null, '无权读取信息！');
+    assert.ok(ba !== null, '您没有权限打开访客信息！');
 
     let where = {
       isDel: 0
@@ -608,6 +614,13 @@ module.exports = {
     let result = await ctx.orm().applyInfo.findOne({
       where
     })
+
+    let now = date.getTimeStamp();
+    let startTime = date.timeToTimeStamp(`${date.formatDate(result.visitorTime, 'YYYY-MM-DD')} ${result.visitorTimeNum}:00`);
+    let endTime = date.timeToTimeStamp(`${date.formatDate(result.visitorEndTime, 'YYYY-MM-DD')} ${result.visitorEndTimeNum}:00`);
+
+    assert.ok(!(now < startTime - 3600000), '此次访客信息未到时间！')
+    assert.ok(!(now > endTime + 3600000), '此次访客信息已过期！')
 
     // 记录打开日志
     ctx.orm().baLogs.create({
