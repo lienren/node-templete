@@ -2,7 +2,7 @@
  * @Author: Lienren 
  * @Date: 2021-03-21 11:48:45 
  * @Last Modified by: Lienren
- * @Last Modified time: 2021-03-30 07:42:45
+ * @Last Modified time: 2021-03-30 08:10:44
  */
 'use strict';
 
@@ -283,6 +283,7 @@ module.exports = {
     let id = ctx.request.body.id || 0;
     let adminId = ctx.request.body.adminId || 0;
     let status = ctx.request.body.status || 0;
+    let veriyReason = ctx.request.body.veriyReason || '';
 
     let admin = await ctx.orm().SuperManagerInfo.findOne({
       where: {
@@ -308,7 +309,8 @@ module.exports = {
         verifyAdminIdOver: admin.id,
         verifyAdminNameOver: admin.realName,
         status,
-        statusName: statusNameEnum[status]
+        statusName: statusNameEnum[status],
+        veriyReason
       }, {
         where: {
           id: result.id,
@@ -384,6 +386,7 @@ module.exports = {
     let id = ctx.request.body.id || 0;
     let adminId = ctx.request.body.adminId || 0;
     let status = ctx.request.body.status || 0;
+    let veriyReason = ctx.request.body.veriyReason || '';
 
     let admin = await ctx.orm().SuperManagerInfo.findOne({
       where: {
@@ -409,7 +412,8 @@ module.exports = {
         verifyAdminIdOver2: admin.id,
         verifyAdminNameOver2: admin.realName,
         status,
-        statusName: statusNameEnum[status]
+        statusName: statusNameEnum[status],
+        veriyReason
       }, {
         where: {
           id: result.id,

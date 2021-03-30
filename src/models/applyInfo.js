@@ -133,6 +133,10 @@ module.exports = function(sequelize, DataTypes) {
     visitorEndTimeNum: {
       type: DataTypes.STRING(10),
       allowNull: true
+    },
+    veriyReason: {
+      type: DataTypes.STRING(500),
+      allowNull: true
     }
   }, {
     tableName: 'applyInfo'
