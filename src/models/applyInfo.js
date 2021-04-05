@@ -141,6 +141,11 @@ module.exports = function(sequelize, DataTypes) {
     parkingType: {
       type: DataTypes.STRING(20),
       allowNull: true
+    },
+    carInCome: {
+      type: DataTypes.INTEGER(11),
+      allowNull: true,
+      defaultValue: '1'
     }
   }, {
     tableName: 'applyInfo'

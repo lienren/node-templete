@@ -2,7 +2,7 @@
  * @Author: Lienren 
  * @Date: 2021-03-21 11:48:45 
  * @Last Modified by: Lienren
- * @Last Modified time: 2021-03-30 19:46:14
+ * @Last Modified time: 2021-04-03 11:40:12
  */
 'use strict';
 
@@ -63,6 +63,16 @@ module.exports = {
     let img1 = ctx.request.body.img1 || '';
     let img2 = ctx.request.body.img2 || '';
     let img3 = ctx.request.body.img3 || '';
+
+
+    let now = date.getTimeStamp();
+    let dateStart = date.timeToTimeStamp(`${visitTime} ${visitTimeNum}:00`);
+    let dateEnd = date.timeToTimeStamp(`${visitEndTime} ${visitEndTimeNum}:00`);
+    var difValue = (dateEnd - dateStart) / (3600000 * 24);
+
+    assert.ok(now.getTime() <= dateStart.getTime(), '来访时间不能小于当前时间')
+    assert.ok(difValue >= 0, '离校时间不能小于来访时间')
+    assert.ok(difValue <= 6, '来访时间不能超过7日')
 
     let scope = date.dataScope(visitTime, visitEndTime);
     if (scope && scope.length > 1) {
@@ -247,7 +257,9 @@ module.exports = {
         _visitorTime: m.dataValues.visitorTime,
         visitorTime: date.formatDate(m.dataValues.visitorTime, 'YYYY年MM月DD日'),
         _visitorEndTime: m.dataValues.visitorEndTime,
-        visitorEndTime: date.formatDate(m.dataValues.visitorEndTime, 'YYYY年MM月DD日')
+        visitorEndTime: date.formatDate(m.dataValues.visitorEndTime, 'YYYY年MM月DD日'),
+        createTime: date.formatDate(m.dataValues.createTime, 'YYYY年MM月DD日 HH:mm:ss'),
+        updateTime: date.formatDate(m.dataValues.updateTime, 'YYYY年MM月DD日 HH:mm:ss')
       }
     });
   },
@@ -276,7 +288,9 @@ module.exports = {
       _visitorTime: result.dataValues.visitorTime,
       visitorTime: date.formatDate(result.dataValues.visitorTime, 'YYYY年MM月DD日'),
       _visitorEndTime: result.dataValues.visitorEndTime,
-      visitorEndTime: date.formatDate(result.dataValues.visitorEndTime, 'YYYY年MM月DD日')
+      visitorEndTime: date.formatDate(result.dataValues.visitorEndTime, 'YYYY年MM月DD日'),
+      createTime: date.formatDate(m.dataValues.createTime, 'YYYY年MM月DD日 HH:mm:ss'),
+      updateTime: date.formatDate(m.dataValues.updateTime, 'YYYY年MM月DD日 HH:mm:ss')
     }
   },
   verifyApply1: async ctx => {
@@ -284,7 +298,7 @@ module.exports = {
     let adminId = ctx.request.body.adminId || 0;
     let status = ctx.request.body.status || 0;
     let veriyReason = ctx.request.body.veriyReason || '';
-    let parkingType = ctx.request.body.parkingType || '停车费自付';
+    let parkingType = ctx.request.body.parkingType || '收费';
 
     let admin = await ctx.orm().SuperManagerInfo.findOne({
       where: {
@@ -389,6 +403,7 @@ module.exports = {
     let adminId = ctx.request.body.adminId || 0;
     let status = ctx.request.body.status || 0;
     let veriyReason = ctx.request.body.veriyReason || '';
+    let carInCome = ctx.request.body.carInCome || 1;
 
     let admin = await ctx.orm().SuperManagerInfo.findOne({
       where: {
@@ -415,7 +430,8 @@ module.exports = {
         verifyAdminNameOver2: admin.realName,
         status,
         statusName: statusNameEnum[status],
-        veriyReason
+        veriyReason,
+        carInCome
       }, {
         where: {
           id: result.id,
@@ -473,7 +489,7 @@ module.exports = {
     let adminId = ctx.request.body.adminId || 0;
     let status = ctx.request.body.status || 0;
     let veriyReason = ctx.request.body.veriyReason || '';
-    let parkingType = ctx.request.body.parkingType || '停车费自付';
+    let parkingType = ctx.request.body.parkingType || '收费';
 
     let admin = await ctx.orm().SuperManagerInfo.findOne({
       where: {
@@ -619,8 +635,8 @@ module.exports = {
     let startTime = date.timeToTimeStamp(`${date.formatDate(result.visitorTime, 'YYYY-MM-DD')} ${result.visitorTimeNum}:00`);
     let endTime = date.timeToTimeStamp(`${date.formatDate(result.visitorEndTime, 'YYYY-MM-DD')} ${result.visitorEndTimeNum}:00`);
 
-    assert.ok(!(now < startTime - 3600000), '此次访客信息未到时间！')
-    assert.ok(!(now > endTime + 3600000), '此次访客信息已过期！')
+    assert.ok(now > startTime - 3600000, '此次访客信息未到时间！')
+    assert.ok(now < endTime + 3600000, '此次访客信息已过期！')
 
     // 记录打开日志
     ctx.orm().baLogs.create({
