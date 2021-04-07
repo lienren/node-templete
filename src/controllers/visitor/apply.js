@@ -2,7 +2,7 @@
  * @Author: Lienren 
  * @Date: 2021-03-21 11:48:45 
  * @Last Modified by: Lienren
- * @Last Modified time: 2021-04-03 11:40:12
+ * @Last Modified time: 2021-04-07 00:57:54
  */
 'use strict';
 
@@ -70,9 +70,9 @@ module.exports = {
     let dateEnd = date.timeToTimeStamp(`${visitEndTime} ${visitEndTimeNum}:00`);
     var difValue = (dateEnd - dateStart) / (3600000 * 24);
 
-    assert.ok(now.getTime() <= dateStart.getTime(), '来访时间不能小于当前时间')
-    assert.ok(difValue >= 0, '离校时间不能小于来访时间')
-    assert.ok(difValue <= 6, '来访时间不能超过7日')
+    // assert.ok(now.getTime() <= dateStart.getTime(), '来访时间不能小于当前时间')
+    // assert.ok(difValue >= 0, '离校时间不能小于来访时间')
+    // assert.ok(difValue <= 6, '来访时间不能超过7日')
 
     let scope = date.dataScope(visitTime, visitEndTime);
     if (scope && scope.length > 1) {
@@ -289,8 +289,8 @@ module.exports = {
       visitorTime: date.formatDate(result.dataValues.visitorTime, 'YYYY年MM月DD日'),
       _visitorEndTime: result.dataValues.visitorEndTime,
       visitorEndTime: date.formatDate(result.dataValues.visitorEndTime, 'YYYY年MM月DD日'),
-      createTime: date.formatDate(m.dataValues.createTime, 'YYYY年MM月DD日 HH:mm:ss'),
-      updateTime: date.formatDate(m.dataValues.updateTime, 'YYYY年MM月DD日 HH:mm:ss')
+      createTime: date.formatDate(result.dataValues.createTime, 'YYYY年MM月DD日 HH:mm:ss'),
+      updateTime: date.formatDate(result.dataValues.updateTime, 'YYYY年MM月DD日 HH:mm:ss')
     }
   },
   verifyApply1: async ctx => {
@@ -652,5 +652,81 @@ module.exports = {
       _visitorEndTime: result.dataValues.visitorEndTime,
       visitorEndTime: date.formatDate(result.dataValues.visitorEndTime, 'YYYY年MM月DD日')
     }
+  },
+  getApplyFetch: async ctx => {
+    let pageIndex = ctx.request.body.pageIndex || 1;
+    let pageSize = ctx.request.body.pageSize || 20;
+    let visitorCampus = ctx.request.body.visitorCampus || '';
+    let visitorDepartment = ctx.request.body.visitorDepartment || '';
+    let visitorUserName = ctx.request.body.visitorUserName || '';
+    let visitorIdcard = ctx.request.body.visitorIdcard || '';
+    let visitorPhone = ctx.request.body.visitorPhone || '';
+    let status = ctx.request.body.status || 0;
+    let visitorSTime = ctx.request.body.visitorSTime || '';
+    let visitorETime = ctx.request.body.visitorETime || '';
+    let visitorEndSTime = ctx.request.body.visitorEndSTime || '';
+    let visitorEndETime = ctx.request.body.visitorEndETime || '';
+
+    let where = `isDel = 0`;
+
+    if (visitorCampus) {
+      where += ` and visitorCampus = '${visitorCampus}'`;
+    }
+
+    if (visitorDepartment) {
+      where += ` and visitorDepartment = '${visitorDepartment}'`;
+    }
+
+    if (visitorUserName) {
+      where += ` and visitorUserName like '%${visitorUserName}%'`;
+    }
+
+    if (visitorIdcard) {
+      where += ` and visitorIdcard = '${visitorIdcard}'`;
+    }
+
+    if (visitorPhone) {
+      where += ` and visitorPhone = '${visitorPhone}'`;
+    }
+
+    if (status) {
+      where += ` and status = ${status}`;
+    }
+
+    if (visitorSTime && visitorETime) {
+      where += ` and concat(date_format(visitorTime,'%Y-%m-%d'), ' ', visitorTimeNum, ':00') between '${visitorSTime}' and '${visitorETime}'`
+    }
+
+    if (visitorEndSTime && visitorEndETime) {
+      where += ` and concat(date_format(visitorEndTime,'%Y-%m-%d'), ' ', visitorEndTimeNum, ':00') between '${visitorSTime}' and '${visitorETime}'`
+    }
+
+    let applyCount = await ctx.orm().query(`select count(1) num from applyInfo where ${where}`);
+
+    let applyList = await ctx.orm().query(`
+    select *,
+    (select createTime from baLogs where applyId = a.id order by createTime desc limit 1) inTime 
+    from (
+    select * from applyInfo 
+    where ${where} 
+    order by createTime desc limit ${pageSize} offset ${(pageIndex - 1) * pageSize}) a`);
+
+    ctx.body = {
+      total: applyCount[0].num,
+      list: applyList.map(m => {
+        return {
+          ...m,
+          _visitorTime: m.visitorTime,
+          visitorTime: date.formatDate(m.visitorTime, 'YYYY年MM月DD日'),
+          _visitorEndTime: m.visitorEndTime,
+          visitorEndTime: date.formatDate(m.visitorEndTime, 'YYYY年MM月DD日'),
+          inTime: m.inTime ? date.formatDate(m.inTime, 'YYYY年MM月DD日 HH:mm:ss') : '',
+          createTime: date.formatDate(m.createTime, 'YYYY年MM月DD日 HH:mm:ss'),
+          updateTime: date.formatDate(m.updateTime, 'YYYY年MM月DD日 HH:mm:ss')
+        }
+      }),
+      pageIndex,
+      pageSize
+    };
   },
 }
