@@ -146,6 +146,16 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.INTEGER(11),
       allowNull: true,
       defaultValue: '1'
+    },
+    userType: {
+      type: DataTypes.INTEGER(11),
+      allowNull: true,
+      defaultValue: '1'
+    },
+    userTypeName: {
+      type: DataTypes.STRING(20),
+      allowNull: true,
+      defaultValue: '自主申请'
     }
   }, {
     tableName: 'applyInfo'

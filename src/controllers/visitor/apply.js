@@ -2,7 +2,7 @@
  * @Author: Lienren 
  * @Date: 2021-03-21 11:48:45 
  * @Last Modified by: Lienren
- * @Last Modified time: 2021-04-07 00:57:54
+ * @Last Modified time: 2021-04-09 15:31:28
  */
 'use strict';
 
@@ -23,6 +23,11 @@ const statusNameEnum = {
   6: '已进学校',
   7: '已离开学校',
   999: '作废'
+}
+
+const userTypeEnum = {
+  1: '自主申请',
+  2: '批量导入'
 }
 
 module.exports = {
@@ -165,7 +170,9 @@ module.exports = {
         verifyAdminIdName2: verifyAdminIdName2,
         verifyAdminIdOver2: 0,
         verifyAdminNameOver2: '',
-        isDel: 0
+        isDel: 0,
+        userType: 1,
+        userTypeName: userTypeEnum[1]
       });
 
       if (admin.openId) {
@@ -199,6 +206,8 @@ module.exports = {
     let verifyAdminId1 = ctx.request.body.verifyAdminId1 || '';
     let verifyAdminId2 = ctx.request.body.verifyAdminId2 || '';
     let status = ctx.request.body.status || [];
+    let pageIndex = ctx.request.body.pageIndex || 1;
+    let pageSize = ctx.request.body.pageSize || 50;
 
     let where = {
       isDel: 0
@@ -244,14 +253,25 @@ module.exports = {
       }
     }
 
-    let result = await ctx.orm().applyInfo.findAll({
+    let result = await ctx.orm().applyInfo.findAndCountAll({
+      offset: (pageIndex - 1) * pageSize,
+      limit: pageSize,
       where,
       order: [
         ['createTime', 'desc']
       ]
     });
 
-    ctx.body = result.map(m => {
+    // 过滤超期一级未审核和二级未审核
+    let data = result.rows.filter((f) => {
+      if (f.dataValues.status === 1 || f.dataValues.status === 2) {
+        return date.getTimeStamp() <= date.timeToTimeStamp(date.formatDate(f.dataValues.visitorEndTime, 'YYYY-MM-DD') + ' ' + f.dataValues.visitorEndTimeNum + ':00');
+      }
+
+      return true;
+    });
+
+    ctx.body = data.map(m => {
       return {
         ...m.dataValues,
         _visitorTime: m.dataValues.visitorTime,
@@ -657,6 +677,7 @@ module.exports = {
     let pageIndex = ctx.request.body.pageIndex || 1;
     let pageSize = ctx.request.body.pageSize || 20;
     let visitorCampus = ctx.request.body.visitorCampus || '';
+    let visitorCompany = ctx.request.body.visitorCompany || '';
     let visitorDepartment = ctx.request.body.visitorDepartment || '';
     let visitorUserName = ctx.request.body.visitorUserName || '';
     let visitorIdcard = ctx.request.body.visitorIdcard || '';
@@ -666,11 +687,16 @@ module.exports = {
     let visitorETime = ctx.request.body.visitorETime || '';
     let visitorEndSTime = ctx.request.body.visitorEndSTime || '';
     let visitorEndETime = ctx.request.body.visitorEndETime || '';
+    let userType = ctx.request.body.userType || 1;
 
-    let where = `isDel = 0`;
+    let where = `isDel = 0 and userType = ${userType}`;
 
     if (visitorCampus) {
       where += ` and visitorCampus = '${visitorCampus}'`;
+    }
+
+    if (visitorCompany) {
+      where += ` and visitorCompany = '${visitorCompany}'`;
     }
 
     if (visitorDepartment) {
@@ -729,4 +755,120 @@ module.exports = {
       pageSize
     };
   },
+  importApply: async ctx => {
+    let userInfo = ctx.request.body.userInfo || [];
+    let company = ctx.request.body.company || '';
+    let campus = ctx.request.body.campus || '';
+    let visitTime = ctx.request.body.visitTime || '';
+    let visitTimeNum = ctx.request.body.visitTimeNum || '';
+    let visitEndTime = ctx.request.body.visitEndTime || '';
+    let visitEndTimeNum = ctx.request.body.visitEndTimeNum || '';
+    let visitReason = ctx.request.body.visitReason || '';
+    let parkingType = ctx.request.body.parkingType || '收费';
+
+    let visitDay = 1;
+    let car = '无';
+    let department = '保卫处';
+    let img1 = '';
+    let img2 = '';
+    let img3 = '';
+    let status = 4;
+    let userType = 2;
+
+    let verifyAdminId1 = ',139,'
+    let verifyAdminIdName1 = ',宋惠贤,'
+    let verifyAdminIdOver = 139;
+    let verifyAdminNameOver = '宋惠贤';
+    let verifyAdminId2 = ',139,';
+    let verifyAdminIdName2 = ',宋惠贤,';
+    let verifyAdminIdOver2 = 139;
+    let verifyAdminNameOver2 = '宋惠贤';
+
+    let scope = date.dataScope(visitTime, visitEndTime);
+    if (scope && scope.length > 1) {
+      visitDay = scope.length;
+    }
+
+    // 添加角色菜单数据
+    if (userInfo && userInfo.length > 0) {
+      let data = userInfo.map(user => {
+        let code = comm.getGuid();
+        let openId = comm.getGuid();
+        return {
+          code,
+          openId,
+          visitorUserName: user.name,
+          visitorIdcard: user.idcard,
+          visitorPhone: user.phone,
+          visitorCompany: company,
+          visitorCampus: campus,
+          visitorTime: visitTime,
+          visitorEndTime: visitEndTime,
+          visitorTimeNum: visitTimeNum,
+          visitorEndTimeNum: visitEndTimeNum,
+          visitorDay: visitDay,
+          visitorCar: car,
+          visitorDepartment: department,
+          visitReason,
+          img1,
+          img2,
+          img3,
+          status,
+          statusName: statusNameEnum[status],
+          verifyAdminId1,
+          verifyAdminIdName1,
+          verifyAdminIdOver,
+          verifyAdminNameOver,
+          verifyAdminId2,
+          verifyAdminIdName2,
+          verifyAdminIdOver2,
+          verifyAdminNameOver2,
+          isDel: 0,
+          parkingType,
+          userType,
+          userTypeName: userTypeEnum[userType]
+        };
+      });
+      await ctx.orm().applyInfo.bulkCreate(data);
+
+      for (let i = 0, j = data.length; i < j; i++) {
+        console.log(`data[${i}].code:`, data[i].code)
+        wx.getwxacode(data[i].code, `pages/visitor/applyCheck?code=${data[i].code}`, {
+          "r": 0,
+          "g": 0,
+          "b": 0
+        })
+        await sleep(200);
+      }
+    }
+
+    ctx.body = {};
+  },
+  testApply: async ctx => {
+    let result = await ctx.orm().applyInfo.findAll({
+      where: {
+        userType: 2,
+        isDel: 0
+      }
+    });
+
+    for (let i = 0, j = result.length; i < j; i++) {
+      console.log(`result[${i}].code:`, result[i].code)
+      wx.getwxacode(result[i].code, `pages/visitor/applyCheck?code=${result[i].code}`, {
+        "r": 0,
+        "g": 0,
+        "b": 0
+      })
+
+      await sleep(200);
+    }
+  }
+}
+
+function sleep (time) {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      resolve();
+    }, time);
+  });
 }
