@@ -2,7 +2,7 @@
  * @Author: Lienren 
  * @Date: 2021-03-21 11:48:45 
  * @Last Modified by: Lienren
- * @Last Modified time: 2021-04-09 15:31:28
+ * @Last Modified time: 2021-04-11 11:04:39
  */
 'use strict';
 
@@ -73,11 +73,11 @@ module.exports = {
     let now = date.getTimeStamp();
     let dateStart = date.timeToTimeStamp(`${visitTime} ${visitTimeNum}:00`);
     let dateEnd = date.timeToTimeStamp(`${visitEndTime} ${visitEndTimeNum}:00`);
-    var difValue = (dateEnd - dateStart) / (3600000 * 24);
+    let difValue = (dateEnd - dateStart) / (3600000 * 24);
 
-    // assert.ok(now.getTime() <= dateStart.getTime(), '来访时间不能小于当前时间')
-    // assert.ok(difValue >= 0, '离校时间不能小于来访时间')
-    // assert.ok(difValue <= 6, '来访时间不能超过7日')
+    assert.ok(now <= dateStart.getTime(), '来访时间不能小于当前时间')
+    assert.ok(difValue >= 0, '离校时间不能小于来访时间')
+    assert.ok(difValue <= 6, '来访时间不能超过7日')
 
     let scope = date.dataScope(visitTime, visitEndTime);
     if (scope && scope.length > 1) {
