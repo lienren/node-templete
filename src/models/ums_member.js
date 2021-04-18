@@ -81,6 +81,24 @@ module.exports = function(sequelize, DataTypes) {
     history_integration: {
       type: DataTypes.INTEGER(11),
       allowNull: true
+    },
+    user_company_id: {
+      type: DataTypes.INTEGER(11),
+      allowNull: true,
+      defaultValue: '0'
+    },
+    is_del: {
+      type: DataTypes.INTEGER(11),
+      allowNull: true,
+      defaultValue: '0'
+    },
+    cmp_admin_id: {
+      type: DataTypes.INTEGER(11),
+      allowNull: true
+    },
+    cmp_admin_name: {
+      type: DataTypes.STRING(64),
+      allowNull: true
     }
   }, {
     tableName: 'ums_member'
