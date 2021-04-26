@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2018-04-19 13:38:30
  * @Last Modified by: Lienren
- * @Last Modified time: 2021-01-20 22:13:38
+ * @Last Modified time: 2021-04-26 17:46:44
  */
 'use strict';
 
@@ -37,10 +37,10 @@ module.exports = async function (ctx, next) {
   };
 
   // 根据请求目录转入指定静态目录
-  if (ctx.path.indexOf('adminweb') > -1) {
+  if (ctx.path.indexOf('mall_shop_mobile') > -1) {
     await sendfile(
       ctx,
-      path.resolve(__dirname, '../../assets/adminweb/index.html')
+      path.resolve(__dirname, '../../assets/mall_shop_mobile/index.html')
     );
     return;
   }
