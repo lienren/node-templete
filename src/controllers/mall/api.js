@@ -2,7 +2,7 @@
  * @Author: Lienren 
  * @Date: 2021-04-11 23:48:19 
  * @Last Modified by: Lienren
- * @Last Modified time: 2021-04-24 14:42:56
+ * @Last Modified time: 2021-04-27 11:59:18
  */
 'use strict';
 
@@ -694,7 +694,8 @@ module.exports = {
 
     let orders = await ctx.orm().oms_order.findAll({
       where: {
-        member_id: member.id
+        member_id: member.id,
+        delete_status: 0
       },
       order: [['create_time', 'desc']]
     });
