@@ -2,7 +2,7 @@
  * @Author: Lienren 
  * @Date: 2021-04-11 23:48:19 
  * @Last Modified by: Lienren
- * @Last Modified time: 2021-04-27 11:59:18
+ * @Last Modified time: 2021-05-08 00:18:24
  */
 'use strict';
 
@@ -10,6 +10,7 @@ const assert = require('assert');
 const sequelize = require('sequelize');
 const comm = require('../../utils/comm');
 const date = require('../../utils/date');
+const ip = require('../../utils/ip');
 const encrypt = require('../../utils/encrypt');
 const cp = require('./checkParam');
 
@@ -113,9 +114,7 @@ module.exports = {
       offset: (pageNum - 1) * pageSize,
       limit: pageSize,
       where,
-      order: [
-        ['id', 'desc']
-      ]
+      order: [['sort']]
     });
 
     ctx.body = {
@@ -274,7 +273,8 @@ module.exports = {
     let result = await ctx.orm().pms_product_category.findAndCountAll({
       offset: (pageNum - 1) * pageSize,
       limit: pageSize,
-      where
+      where,
+      order: [['sort']]
     });
 
     ctx.body = {
@@ -481,7 +481,10 @@ module.exports = {
             real_amount: 0,
             gift_integration: 0,
             gift_growth: 0,
-            product_attr: JSON.stringify(goods[i].attr)
+            product_attr: JSON.stringify(goods[i].attr),
+            is_comment: 0,
+            comment_star: null,
+            comment_content: null
           })
         } else {
           assert.ok(false, `【${goods[i].goods.name}】已下架`);
@@ -865,4 +868,231 @@ module.exports = {
       list: result.rows
     };
   },
+  memberOrderReceipt: async (ctx) => {
+    let orderId = ctx.request.body.orderId || 0;
+    let memberId = ctx.request.body.memberId || 0;
+
+    // 获取会员信息
+    let member = await ctx.orm().ums_member.findOne({
+      where: {
+        id: memberId,
+        status: 1,
+        is_del: 0
+      }
+    });
+
+    assert.ok(member != null, '输入帐号不存在！');
+
+    let updateOrder = await ctx.orm().oms_order.update({
+      confirm_status: 1,
+      receive_time: date.formatDate(),
+      modify_time: date.formatDate()
+    }, {
+      where: {
+        id: orderId,
+        member_id: member.id,
+        status: 2,
+        confirm_status: 0,
+        delete_status: 0
+      }
+    })
+
+    if (updateOrder && updateOrder.length > 0 && updateOrder[0] > 0) {
+      ctx.orm().oms_order_operate_history.create({
+        order_id: orderId,
+        operate_man: `【用户】${member.nickname}`,
+        create_time: date.formatDate(),
+        order_status: 2,
+        note: '订单确认收货'
+      })
+    }
+
+    ctx.body = {};
+  },
+  memberOrderComment: async (ctx) => {
+    let orderId = ctx.request.body.orderId || 0;
+    let orderItemId = ctx.request.body.orderItemId || 0;
+    let memberId = ctx.request.body.memberId || 0;
+    let commentStar = ctx.request.body.commentStar || 0;
+    let commentContent = ctx.request.body.commentContent || '';
+
+    // 获取会员信息
+    let member = await ctx.orm().ums_member.findOne({
+      where: {
+        id: memberId,
+        status: 1,
+        is_del: 0
+      }
+    });
+
+    assert.ok(member != null, '输入帐号不存在！');
+
+    let order = await ctx.orm().oms_order.findOne({
+      where: {
+        id: orderId,
+        member_id: member.id,
+        status: 2,
+        confirm_status: 1
+      }
+    })
+
+    assert.ok(order != null, '订单不存在！');
+
+    let orderItem = await ctx.orm().oms_order_item.findOne({
+      where: {
+        id: orderItemId,
+        order_id: order.id,
+        is_comment: 0
+      }
+    })
+
+    assert.ok(orderItem != null, '订单商品不存在！');
+
+    // 更新评价数据
+    let updateOrderItem = await ctx.orm().oms_order_item.update({
+      is_comment: 1,
+      comment_star: commentStar,
+      comment_content: commentContent
+    }, {
+      where: {
+        id: orderItem.id,
+        order_id: order.id,
+        is_comment: 0
+      }
+    })
+
+    if (updateOrderItem && updateOrderItem.length > 0 && updateOrderItem[0] > 0) {
+      // 记录评价数据
+      await ctx.orm().pms_comment.create({
+        product_id: orderItem.product_id,
+        member_nick_name: member.nickname,
+        product_name: orderItem.product_name,
+        star: commentStar,
+        member_ip: ip.getClientIP(ctx),
+        create_time: date.formatDate(),
+        show_status: 0,
+        product_attribute: orderItem.product_attr,
+        collect_couont: 0,
+        read_count: 0,
+        content: commentContent,
+        pics: '',
+        member_icon: member.icon,
+        replay_count: 0
+      })
+
+
+      let orderItemNoComment = await ctx.orm().oms_order_item.findAll({
+        where: {
+          order_id: order.id,
+          is_comment: 0
+        }
+      })
+
+      if (orderItemNoComment.length === 0) {
+        // 都评价了
+        // 更新订单状态
+        await ctx.orm().oms_order.update({
+          status: 3,
+          comment_time: date.formatDate(),
+          modify_time: date.formatDate()
+        }, {
+          where: {
+            id: order.id,
+            member_id: member.id,
+            status: 2,
+            confirm_status: 1
+          }
+        })
+
+        ctx.orm().oms_order_operate_history.create({
+          order_id: order.id,
+          operate_man: `【用户】${member.nickname}`,
+          create_time: date.formatDate(),
+          order_status: 3,
+          note: '订单评价完成'
+        })
+      }
+    }
+  },
+  memberIndexLayout: async (ctx) => {
+    let cmpId = ctx.request.body.cmpId || 0;
+
+    let banners = await ctx.orm().cmp_banners.findAll({
+      where: {
+        cmp_id: cmpId,
+        is_del: 0
+      },
+      order: [['sort']]
+    })
+
+    let layouts = await ctx.orm().cmp_index_layouts.findAll({
+      where: {
+        cmp_id: cmpId,
+        is_del: 0
+      },
+      order: [['sort']]
+    })
+
+
+    let layoutIndexs = [];
+    for (let i = 0, j = layouts.length; i < j; i++) {
+      let layoutIndex = {
+        ...layouts[i].dataValues,
+        pros: []
+      }
+      let ids = JSON.parse(layouts[i].dataValues.pro_ids);
+
+      for (let x = 0, y = ids.length; x < y; x++) {
+        let pro = await ctx.orm().pms_product.findOne({
+          where: {
+            id: parseInt(ids[x]),
+            is_del: 0
+          }
+        });
+
+        if (pro) {
+          layoutIndex.pros.push({
+            ...pro.dataValues,
+            brandId: pro.dataValues.brand_id,
+            productCategoryId: pro.dataValues.product_category_id,
+            feightTemplateId: pro.dataValues.feight_template_id,
+            productAttributeCategoryId: pro.dataValues.product_attribute_category_id,
+            productSn: pro.dataValues.product_sn,
+            deleteStatus: pro.dataValues.delete_status,
+            publishStatus: pro.dataValues.publish_status,
+            newStatus: pro.dataValues.new_status,
+            recommandStatus: pro.dataValues.recommand_status,
+            verifyStatus: pro.dataValues.verify_status,
+            promotionPrice: pro.dataValues.promotion_price,
+            giftGrowth: pro.dataValues.gift_growth,
+            giftPoint: pro.dataValues.gift_point,
+            usePointLimit: pro.dataValues.use_point_limit,
+            subTitle: pro.dataValues.sub_title,
+            originalPrice: pro.dataValues.original_price,
+            lowStock: pro.dataValues.low_stock,
+            previewStatus: pro.dataValues.preview_status,
+            serviceIds: pro.dataValues.service_ids,
+            albumPics: pro.dataValues.album_pics,
+            detailTitle: pro.dataValues.detail_title,
+            detailDesc: pro.dataValues.detail_desc,
+            detailHtml: pro.dataValues.detail_html,
+            detailMobileHtml: pro.dataValues.detail_mobile_html,
+            promotionStartTime: pro.dataValues.promotion_start_time,
+            promotionEndTime: pro.dataValues.promotion_end_time,
+            promotionPerLimit: pro.dataValues.promotion_per_limit,
+            promotionType: pro.dataValues.promotion_type,
+            brandName: pro.dataValues.brand_name,
+            productCategoryName: pro.dataValues.product_category_name
+          })
+        }
+      }
+
+      layoutIndexs.push(layoutIndex);
+    }
+
+    ctx.body = {
+      banners,
+      layoutIndexs
+    }
+  }
 };

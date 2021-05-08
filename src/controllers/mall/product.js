@@ -2,7 +2,7 @@
  * @Author: Lienren 
  * @Date: 2021-03-01 21:22:47 
  * @Last Modified by: Lienren
- * @Last Modified time: 2021-03-10 11:48:50
+ * @Last Modified time: 2021-05-07 23:38:58
  */
 'use strict';
 
@@ -26,6 +26,8 @@ function handleSkuStockCode(productId, skuStockList) {
       }
     })
   }
+
+  return skuStockList;
 }
 
 module.exports = {
@@ -1190,7 +1192,7 @@ module.exports = {
     });
 
     if (product && product.id > 0 && data.skuStockList && data.skuStockList.length > 0) {
-      product.skuStockList = handleSkuStockCode(product.id, product.skuStockList);
+      data.skuStockList = handleSkuStockCode(product.id, data.skuStockList);
 
       let skus = data.skuStockList.map(m => {
         return {
@@ -1328,5 +1330,31 @@ module.exports = {
         id: data.id
       }
     });
+
+    data.skuStockList = handleSkuStockCode(data.id, data.skuStockList);
+
+    // 删除SKU
+    await ctx.orm().pms_sku_stock.destroy({
+      where: {
+        product_id: data.id
+      }
+    })
+
+    // 新增SKU
+    let skus = data.skuStockList.map(m => {
+      return {
+        product_id: data.id,
+        sku_code: m.skuCode,
+        price: m.price,
+        stock: m.stock,
+        low_stock: m.lowStock,
+        pic: m.pic,
+        sale: 0,
+        promotion_price: 0,
+        lock_stock: 0,
+        sp_data: m.spData
+      }
+    });
+    await ctx.orm().pms_sku_stock.bulkCreate(skus);
   }
 }

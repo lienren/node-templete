@@ -89,6 +89,19 @@ module.exports = function(sequelize, DataTypes) {
     product_attr: {
       type: DataTypes.STRING(500),
       allowNull: true
+    },
+    is_comment: {
+      type: DataTypes.INTEGER(11),
+      allowNull: true,
+      defaultValue: '0'
+    },
+    comment_star: {
+      type: DataTypes.INTEGER(11),
+      allowNull: true
+    },
+    comment_content: {
+      type: DataTypes.STRING(1000),
+      allowNull: true
     }
   }, {
     tableName: 'oms_order_item'

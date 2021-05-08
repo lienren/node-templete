@@ -2,7 +2,7 @@
  * @Author: Lienren 
  * @Date: 2021-03-11 15:14:00 
  * @Last Modified by: Lienren
- * @Last Modified time: 2021-04-11 20:47:55
+ * @Last Modified time: 2021-05-07 23:57:08
  */
 'use strict';
 
@@ -28,6 +28,13 @@ const verifyStateEnum = {
   3: '二审通过',
   31: '二审未通过',
   999: '作废'
+}
+
+const layoutTypeNameEnum = {
+  0: '未知',
+  1: '一行两列',
+  2: '一行三列',
+  3: '一行四列',
 }
 
 module.exports = {
@@ -463,5 +470,141 @@ module.exports = {
         createTime: m.dataValues.create_time
       }
     })
-  }
+  },
+  cmpBannerList: async (ctx) => {
+    let cmp_id = ctx.request.body.cmp_id || 0;
+
+    let result = await ctx.orm().cmp_banners.findAll({
+      where: {
+        cmp_id: cmp_id,
+        is_del: 0
+      },
+      order: [['sort']]
+    })
+
+    ctx.body = result;
+  },
+  cmpBannerCreate: async (ctx) => {
+    let title = ctx.request.body.title || '';
+    let cmp_id = ctx.request.body.cmp_id || 0;
+    let sort = ctx.request.body.sort || 0;
+    let img_url = ctx.request.body.img_url || '';
+    let link_url = ctx.request.body.link_url || '';
+
+    await ctx.orm().cmp_banners.create({
+      title,
+      cmp_id,
+      sort,
+      img_url,
+      link_url,
+      is_del: 0
+    });
+
+    ctx.body = {}
+  },
+  cmpBannerEdit: async (ctx) => {
+    let id = ctx.request.body.id || 0;
+    let title = ctx.request.body.title || '';
+    let cmp_id = ctx.request.body.cmp_id || 0;
+    let sort = ctx.request.body.sort || 0;
+    let img_url = ctx.request.body.img_url || '';
+    let link_url = ctx.request.body.link_url || '';
+
+    await ctx.orm().cmp_banners.update({
+      title,
+      cmp_id,
+      sort,
+      img_url,
+      link_url,
+      is_del: 0
+    }, {
+      where: {
+        id
+      }
+    });
+
+    ctx.body = {}
+  },
+  cmpBannerDel: async (ctx) => {
+    let id = ctx.request.body.id || 0;
+
+    await ctx.orm().cmp_banners.update({
+      is_del: 1
+    }, {
+      where: {
+        id
+      }
+    });
+
+    ctx.body = {}
+  },
+  cmpLayoutList: async (ctx) => {
+    let cmp_id = ctx.request.body.cmp_id || 0;
+
+    let result = await ctx.orm().cmp_index_layouts.findAll({
+      where: {
+        cmp_id: cmp_id,
+        is_del: 0
+      },
+      order: [['sort']]
+    })
+
+    ctx.body = result;
+  },
+  cmpLayoutCreate: async (ctx) => {
+    let cmp_id = ctx.request.body.cmp_id || 0;
+    let sort = ctx.request.body.sort || 0;
+    let title = ctx.request.body.title || '';
+    let pro_ids = ctx.request.body.pro_ids || [];
+    let layout_type = ctx.request.body.layout_type || 0;
+
+    await ctx.orm().cmp_index_layouts.create({
+      title,
+      cmp_id,
+      pro_ids: JSON.stringify(pro_ids),
+      layout_type,
+      layout_type_name: layoutTypeNameEnum[layout_type],
+      sort,
+      is_del: 0
+    });
+
+    ctx.body = {}
+  },
+  cmpLayoutEdit: async (ctx) => {
+    let id = ctx.request.body.id || 0;
+    let cmp_id = ctx.request.body.cmp_id || 0;
+    let sort = ctx.request.body.sort || 0;
+    let title = ctx.request.body.title || '';
+    let pro_ids = ctx.request.body.pro_ids || [];
+    let layout_type = ctx.request.body.layout_type || 0;
+
+    await ctx.orm().cmp_index_layouts.update({
+      title,
+      cmp_id,
+      pro_ids: JSON.stringify(pro_ids),
+      layout_type,
+      layout_type_name: layoutTypeNameEnum[layout_type],
+      sort,
+      is_del: 0
+    }, {
+      where: {
+        id
+      }
+    });
+
+    ctx.body = {}
+  },
+  cmpLayoutDel: async (ctx) => {
+    let id = ctx.request.body.id || 0;
+
+    await ctx.orm().cmp_index_layouts.update({
+      is_del: 1
+    }, {
+      where: {
+        id
+      }
+    });
+
+    ctx.body = {}
+  },
 };

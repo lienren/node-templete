@@ -2,7 +2,7 @@
  * @Author: Lienren 
  * @Date: 2021-03-10 14:38:35 
  * @Last Modified by: Lienren
- * @Last Modified time: 2021-03-10 14:38:56
+ * @Last Modified time: 2021-04-28 11:49:07
  */
 'use strict';
 
@@ -20,6 +20,5 @@ module.exports = {
       ip = ip.replace('::ffff:', '')
     }
     return ip;
-
   }
 };

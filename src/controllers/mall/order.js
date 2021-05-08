@@ -2,7 +2,7 @@
  * @Author: Lienren 
  * @Date: 2021-04-27 11:15:17 
  * @Last Modified by: Lienren
- * @Last Modified time: 2021-04-27 14:27:23
+ * @Last Modified time: 2021-04-28 12:26:03
  */
 'use strict';
 
@@ -285,6 +285,7 @@ module.exports = {
         status: 2,
         delivery_company: orders[i].deliveryCompany,
         delivery_sn: orders[i].deliverySn,
+        delivery_time: date.formatDate(),
         modify_time: date.formatDate()
       }, {
         where: {
