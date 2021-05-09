@@ -156,6 +156,11 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING(20),
       allowNull: true,
       defaultValue: '自主申请'
+    },
+    checkQCode: {
+      type: DataTypes.INTEGER(11),
+      allowNull: true,
+      defaultValue: '0'
     }
   }, {
     tableName: 'applyInfo'
