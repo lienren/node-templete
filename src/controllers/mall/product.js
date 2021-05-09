@@ -2,7 +2,7 @@
  * @Author: Lienren 
  * @Date: 2021-03-01 21:22:47 
  * @Last Modified by: Lienren
- * @Last Modified time: 2021-05-07 23:38:58
+ * @Last Modified time: 2021-05-09 15:36:41
  */
 'use strict';
 
@@ -1356,5 +1356,31 @@ module.exports = {
       }
     });
     await ctx.orm().pms_sku_stock.bulkCreate(skus);
-  }
+  },
+  proEditVerifyStatus: async (ctx) => {
+    let ids = ctx.request.body.ids || [];
+    let verifyStatus = ctx.request.body.verifyStatus || 0;
+
+    if (Array.isArray(ids)) {
+      await ctx.orm().pms_product.update({
+        verify_status: verifyStatus
+      }, {
+        where: {
+          id: {
+            $in: ids
+          }
+        }
+      });
+    } else {
+      await ctx.orm().pms_product.update({
+        verify_status: verifyStatus
+      }, {
+        where: {
+          id: ids
+        }
+      });
+    }
+
+    ctx.body = {};
+  },
 }
