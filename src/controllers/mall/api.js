@@ -2,7 +2,7 @@
  * @Author: Lienren 
  * @Date: 2021-04-11 23:48:19 
  * @Last Modified by: Lienren
- * @Last Modified time: 2021-05-08 00:18:24
+ * @Last Modified time: 2021-05-13 20:13:38
  */
 'use strict';
 
@@ -151,7 +151,8 @@ module.exports = {
           promotionPerLimit: m.dataValues.promotion_per_limit,
           promotionType: m.dataValues.promotion_type,
           brandName: m.dataValues.brand_name,
-          productCategoryName: m.dataValues.product_category_name
+          productCategoryName: m.dataValues.product_category_name,
+          minSaleStock: m.dataValues.min_sale_stock
         }
       }),
     };
@@ -258,6 +259,7 @@ module.exports = {
       promotionType: result.dataValues.promotion_type,
       brandName: result.dataValues.brand_name,
       productCategoryName: result.dataValues.product_category_name,
+      minSaleStock: result.dataValues.min_sale_stock,
       skuStockList,
       productAttributeValueList
     };

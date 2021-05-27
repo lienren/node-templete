@@ -174,6 +174,11 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING(255),
       allowNull: true
     },
+    min_sale_stock: {
+      type: DataTypes.INTEGER(11),
+      allowNull: true,
+      defaultValue: '1'
+    },
     is_del: {
       type: DataTypes.INTEGER(11),
       allowNull: true,
