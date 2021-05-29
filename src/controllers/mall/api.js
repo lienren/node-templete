@@ -2,7 +2,7 @@
  * @Author: Lienren 
  * @Date: 2021-04-11 23:48:19 
  * @Last Modified by: Lienren
- * @Last Modified time: 2021-05-13 20:13:38
+ * @Last Modified time: 2021-05-29 16:20:29
  */
 'use strict';
 
@@ -71,6 +71,7 @@ module.exports = {
   },
   memberProductList: async (ctx) => {
     let keyword = ctx.request.body.keyword || '';
+    let proIds = ctx.request.body.proIds || '';
     let publishStatus = ctx.request.body.publishStatus;
     let verifyStatus = ctx.request.body.verifyStatus;
     let productSn = ctx.request.body.productSn || '';
@@ -87,6 +88,12 @@ module.exports = {
     if (keyword) {
       where.name = {
         $like: `%${keyword}%`
+      }
+    }
+
+    if (proIds) {
+      where.id = {
+        $in: proIds.split(',')
       }
     }
 
