@@ -2,7 +2,7 @@
  * @Author: Lienren 
  * @Date: 2021-03-01 21:22:47 
  * @Last Modified by: Lienren
- * @Last Modified time: 2021-05-13 20:12:17
+ * @Last Modified time: 2021-05-31 23:58:50
  */
 'use strict';
 
@@ -1189,7 +1189,7 @@ module.exports = {
       promotion_per_limit: data.promotionPerLimit,
       promotion_type: data.promotionType,
       brand_name: data.brandName,
-      product_category_name: data.product_category_name,
+      product_category_name: data.productCategoryName,
       min_sale_stock: data.minSaleStock,
       is_del: 0
     });
