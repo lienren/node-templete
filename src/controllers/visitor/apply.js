@@ -2,7 +2,7 @@
  * @Author: Lienren 
  * @Date: 2021-03-21 11:48:45 
  * @Last Modified by: Lienren
- * @Last Modified time: 2021-04-11 11:04:39
+ * @Last Modified time: 2021-06-02 23:50:11
  */
 'use strict';
 
@@ -843,6 +843,30 @@ module.exports = {
     }
 
     ctx.body = {};
+  },
+  applyLogs: async ctx => {
+    let id = ctx.request.body.id || 0;
+
+    let result = await ctx.orm().applyLogs.findAll({
+      where: {
+        applyId: id
+      },
+      order: [['createTime', 'desc']]
+    })
+
+    ctx.body = result;
+  },
+  applyBaLogs: async ctx => {
+    let id = ctx.request.body.id || 0;
+
+    let result = await ctx.orm().baLogs.findAll({
+      where: {
+        applyId: id
+      },
+      order: [['createTime', 'desc']]
+    })
+
+    ctx.body = result;
   },
   testApply: async ctx => {
     let result = await ctx.orm().applyInfo.findAll({
