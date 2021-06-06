@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2018-12-13 23:49:41
  * @Last Modified by: Lienren
- * @Last Modified time: 2021-03-21 14:02:34
+ * @Last Modified time: 2021-06-06 11:48:59
  */
 'use strict';
 
@@ -10,7 +10,7 @@ const path = require('path');
 
 module.exports = {
   sys: {
-    port: 20001,
+    port: 20002,
     staticPath: path.resolve(__dirname, '../assets/'),
     uploadFilePath: path.resolve(__dirname, '../assets/uploads/'),
     uploadVirtualFilePath: 'https://jssnuvisitor.billgenius.cn/uploads',
@@ -74,11 +74,11 @@ module.exports = {
       sitepath: path.resolve(__dirname, '../assets/adminweb/index.html')
     }
   ],
-  // sequelize-auto -o "./src/models" -d jssnuvisitor -h 47.111.64.7 -u root -p 3306 -x Ler@2019 -e mysql
+  // sequelize-auto -o "./src/models" -d cumt -h 47.111.64.7 -u root -p 3306 -x Ler@2019 -e mysql
   databases: [
     {
       modelPath: path.resolve(__dirname, './models'),
-      db: 'jssnuvisitor',
+      db: 'cumt',
       dialect: 'mysql',
       port: 3306,
       replication: {

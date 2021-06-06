@@ -8,108 +8,28 @@ module.exports = function(sequelize, DataTypes) {
       primaryKey: true,
       autoIncrement: true
     },
-    code: {
+    name: {
       type: DataTypes.STRING(100),
       allowNull: true
     },
-    openId: {
-      type: DataTypes.STRING(100),
-      allowNull: true
-    },
-    visitorUserName: {
-      type: DataTypes.STRING(100),
-      allowNull: true
-    },
-    visitorIdcard: {
-      type: DataTypes.STRING(30),
-      allowNull: true
-    },
-    visitorPhone: {
+    phone: {
       type: DataTypes.STRING(20),
       allowNull: true
     },
-    visitorCompany: {
+    depname: {
       type: DataTypes.STRING(100),
       allowNull: true
     },
-    visitorCampus: {
-      type: DataTypes.STRING(20),
-      allowNull: true
-    },
-    visitorTime: {
-      type: DataTypes.DATE,
-      allowNull: true
-    },
-    visitorEndTime: {
-      type: DataTypes.DATE,
-      allowNull: true
-    },
-    visitorDay: {
-      type: DataTypes.INTEGER(11),
-      allowNull: true
-    },
-    visitorCar: {
-      type: DataTypes.STRING(100),
-      allowNull: true
-    },
-    visitorDepartment: {
-      type: DataTypes.STRING(100),
-      allowNull: true
-    },
-    visitReason: {
-      type: DataTypes.STRING(500),
-      allowNull: true
-    },
-    img1: {
+    remark: {
       type: DataTypes.STRING(1000),
       allowNull: true
     },
-    img2: {
-      type: DataTypes.STRING(1000),
-      allowNull: true
-    },
-    img3: {
-      type: DataTypes.STRING(1000),
-      allowNull: true
-    },
-    status: {
+    imgcount: {
       type: DataTypes.INTEGER(11),
       allowNull: true
     },
-    statusName: {
-      type: DataTypes.STRING(100),
-      allowNull: true
-    },
-    verifyAdminId1: {
-      type: DataTypes.STRING(100),
-      allowNull: true
-    },
-    verifyAdminIdName1: {
-      type: DataTypes.STRING(100),
-      allowNull: true
-    },
-    verifyAdminIdOver: {
-      type: DataTypes.INTEGER(11),
-      allowNull: true
-    },
-    verifyAdminNameOver: {
-      type: DataTypes.STRING(100),
-      allowNull: true
-    },
-    verifyAdminId2: {
-      type: DataTypes.STRING(100),
-      allowNull: true
-    },
-    verifyAdminIdName2: {
-      type: DataTypes.STRING(100),
-      allowNull: true
-    },
-    verifyAdminIdOver2: {
-      type: DataTypes.INTEGER(11),
-      allowNull: true
-    },
-    verifyAdminNameOver2: {
-      type: DataTypes.STRING(100),
+    imglist: {
+      type: DataTypes.STRING(5000),
       allowNull: true
     },
     createTime: {
@@ -122,45 +42,25 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true,
       defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
     },
-    isDel: {
+    state: {
       type: DataTypes.INTEGER(11),
       allowNull: true
     },
-    visitorTimeNum: {
-      type: DataTypes.STRING(10),
+    stateName: {
+      type: DataTypes.STRING(100),
       allowNull: true
     },
-    visitorEndTimeNum: {
-      type: DataTypes.STRING(10),
+    opName: {
+      type: DataTypes.STRING(100),
       allowNull: true
     },
-    veriyReason: {
-      type: DataTypes.STRING(500),
+    opRemark: {
+      type: DataTypes.STRING(1000),
       allowNull: true
     },
-    parkingType: {
-      type: DataTypes.STRING(20),
+    opTime: {
+      type: DataTypes.DATE,
       allowNull: true
-    },
-    carInCome: {
-      type: DataTypes.INTEGER(11),
-      allowNull: true,
-      defaultValue: '1'
-    },
-    userType: {
-      type: DataTypes.INTEGER(11),
-      allowNull: true,
-      defaultValue: '1'
-    },
-    userTypeName: {
-      type: DataTypes.STRING(20),
-      allowNull: true,
-      defaultValue: '自主申请'
-    },
-    checkQCode: {
-      type: DataTypes.INTEGER(11),
-      allowNull: true,
-      defaultValue: '0'
     }
   }, {
     tableName: 'applyInfo'
