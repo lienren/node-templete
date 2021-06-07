@@ -1,7 +1,7 @@
 {
   "apps": [
     {
-      "name": "jssnuvisitor",
+      "name": "cumt",
       "script": "./src/app.js",
       "watch": false,
       "ignore_watch": ["node_modules", "build", "logs"],
