@@ -100,6 +100,10 @@ module.exports = function(sequelize, DataTypes) {
     cmp_admin_name: {
       type: DataTypes.STRING(64),
       allowNull: true
+    },
+    token: {
+      type: DataTypes.STRING(100),
+      allowNull: true
     }
   }, {
     tableName: 'ums_member'
