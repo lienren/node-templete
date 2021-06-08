@@ -2,7 +2,7 @@
  * @Author: Lienren 
  * @Date: 2021-06-08 10:00:29 
  * @Last Modified by: Lienren
- * @Last Modified time: 2021-06-08 11:41:12
+ * @Last Modified time: 2021-06-08 12:11:43
  */
 'use strict';
 
@@ -38,11 +38,17 @@ module.exports = {
     assert.ok(!!utype, '入参不正确！');
     assert.ok(!!sign, '入参不正确！');
 
-    let appsecret = `35B64A4C8F0FD7F1A0E71D12A338B9D5`;
+    let app = await ctx.orm().ums_appid.findOne({
+      where: {
+        appid
+      }
+    })
+
+    assert.ok(!!app, 'appId不存在，请联系管理员！');
 
     let param = {
       appid,
-      appsecret,
+      appsecret: app.appsecret,
       ucode,
       uname,
       uphone,
@@ -62,7 +68,7 @@ module.exports = {
     let encryptSign = encrypt.getMd5(sort).toLowerCase();
     assert.ok(sign === encryptSign, '签名不正确！');
 
-    let userCompanyId = 1;
+    let userCompanyId = app.user_company_id;
 
     // 验证当前用户是否存在
     // 存在则返回token进行登录
