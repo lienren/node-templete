@@ -1,7 +1,7 @@
 {
   "apps": [
     {
-      "name": "FruitApiSystem",
+      "name": "ApiSystem",
       "script": "./src/app.js",
       "watch": false,
       "ignore_watch": [
