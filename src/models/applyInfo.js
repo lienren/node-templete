@@ -24,6 +24,10 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING(100),
       allowNull: true
     },
+    place: {
+      type: DataTypes.STRING(100),
+      allowNull: true
+    },
     remark: {
       type: DataTypes.STRING(1000),
       allowNull: true

@@ -2,7 +2,7 @@
  * @Author: Lienren 
  * @Date: 2021-06-06 11:41:44 
  * @Last Modified by: Lienren
- * @Last Modified time: 2021-06-07 15:47:28
+ * @Last Modified time: 2021-06-17 12:00:58
  */
 'use strict';
 
@@ -25,6 +25,7 @@ module.exports = {
     let name = ctx.request.body.name || '';
     let phone = ctx.request.body.phone || '';
     let depname = ctx.request.body.depname || '';
+    let place = ctx.request.body.place || '';
     let remark = ctx.request.body.remark || '';
     let imglist = ctx.request.body.imgList || [];
     let imgCode = ctx.request.body.imgCode || '';
@@ -63,11 +64,12 @@ module.exports = {
     let imgcount = imglist ? imglist.length : 0;
     let state = 1;
 
-    ctx.orm().applyInfo.create({
+    await ctx.orm().applyInfo.create({
       openId,
       name,
       phone,
       depname,
+      place,
       remark,
       imgcount,
       imglist: imglist ? JSON.stringify(imglist) : [],
@@ -134,7 +136,7 @@ module.exports = {
     });
 
     ctx.body = {
-      total: result.total,
+      total: result.count,
       list: result.rows.map(m => {
         return {
           ...m.dataValues,
@@ -143,6 +145,56 @@ module.exports = {
       }),
       pageIndex,
       pageSize
+    };
+  },
+  ownerApply: async ctx => {
+    let openId = ctx.request.body.openId || '';
+    let pageIndex = ctx.request.body.pageIndex || 1;
+    let pageSize = ctx.request.body.pageSize || 50;
+
+    let where = {};
+
+    if (!!openId) {
+      where.openId = openId;
+    }
+
+    let result = await ctx.orm().applyInfo.findAndCountAll({
+      attributes: ['id', 'place', 'remark', 'imglist', 'createTime', 'state', 'stateName'],
+      offset: (pageIndex - 1) * pageSize,
+      limit: pageSize,
+      where,
+      order: [
+        ['createTime', 'desc']
+      ]
+    });
+
+    ctx.body = {
+      total: result.count,
+      list: result.rows.map(m => {
+        return {
+          ...m.dataValues,
+          imglist: JSON.parse(m.dataValues.imglist)
+        }
+      }),
+      pageIndex,
+      pageSize
+    };
+  },
+  ownerApplyDetail: async ctx => {
+    let id = ctx.request.body.id || 0;
+
+    let where = {
+      id: id
+    };
+
+    let result = await ctx.orm().applyInfo.findOne({
+      attributes: ['id', 'place', 'remark', 'imglist', 'createTime', 'state', 'stateName', 'opRemark', 'opTime'],
+      where
+    });
+
+    ctx.body = {
+      ...result.dataValues,
+      imglist: JSON.parse(result.dataValues.imglist)
     };
   },
   editApplyState: async ctx => {
