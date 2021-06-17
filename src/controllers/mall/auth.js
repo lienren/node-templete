@@ -2,7 +2,7 @@
  * @Author: Lienren 
  * @Date: 2021-06-08 10:00:29 
  * @Last Modified by: Lienren
- * @Last Modified time: 2021-06-08 12:11:43
+ * @Last Modified time: 2021-06-16 23:33:47
  */
 'use strict';
 
@@ -66,6 +66,7 @@ module.exports = {
       .join('|');
 
     let encryptSign = encrypt.getMd5(sort).toLowerCase();
+    console.log('encryptSign:', encryptSign);
     assert.ok(sign === encryptSign, '签名不正确！');
 
     let userCompanyId = app.user_company_id;
