@@ -2,7 +2,7 @@
  * @Author: Lienren 
  * @Date: 2021-03-21 11:48:45 
  * @Last Modified by: Lienren
- * @Last Modified time: 2021-06-03 08:55:13
+ * @Last Modified time: 2021-06-22 11:04:51
  */
 'use strict';
 
@@ -731,7 +731,8 @@ module.exports = {
 
     let applyList = await ctx.orm().query(`
     select *,
-    (select createTime from baLogs where applyId = a.id order by createTime desc limit 1) inTime 
+    (select createTime from baLogs where applyId = a.id order by createTime desc limit 1) inTime, 
+    (select count(1) from baLogs where applyId = a.id) inCount 
     from (
     select * from applyInfo 
     where ${where} 
@@ -886,6 +887,89 @@ module.exports = {
 
       await sleep(200);
     }
+
+    ctx.body = {};
+  },
+  createBa: async ctx => {
+    let id = ctx.request.body.id || 0;
+
+    let applyInfo = await ctx.orm().applyInfo.findOne({
+      where: {
+        id
+      }
+    });
+
+    assert.ok(applyInfo, '信息不存在！');
+
+    if (applyInfo) {
+      let ba = await ctx.orm().baInfo.findOne({
+        where: {
+          openId: applyInfo.openId
+        }
+      });
+
+      assert.ok(!ba, '信息已存在，请勿重复添加！');
+
+      await ctx.orm().baInfo.create({
+        openId: applyInfo.openId,
+        baName: applyInfo.visitorUserName,
+        baPhone: applyInfo.visitorPhone
+      });
+    }
+
+    ctx.body = {};
+  },
+  getBaList: async ctx => {
+    let baName = ctx.request.body.baName || '';
+    let baPhone = ctx.request.body.baPhone || '';
+    let pageIndex = ctx.request.body.pageIndex || 1;
+    let pageSize = ctx.request.body.pageSize || 50;
+
+    let where = {}
+
+    if (baName) {
+      where.baName = {
+        $like: `%${baName}%`
+      }
+    }
+
+    if (baPhone) {
+      where.baPhone = {
+        $like: `%${baPhone}%`
+      }
+    }
+
+    let result = await ctx.orm().baInfo.findAndCountAll({
+      offset: (pageIndex - 1) * pageSize,
+      limit: pageSize,
+      where,
+      order: [
+        ['createTime', 'desc']
+      ]
+    });
+
+    ctx.body = {
+      total: result.count,
+      list: result.rows.map(m => {
+        return {
+          ...m.dataValues,
+          createTime: date.formatDate(m.dataValues.createTime, 'YYYY年MM月DD日 HH:mm:ss')
+        }
+      }),
+      pageIndex,
+      pageSize
+    }
+  },
+  delBa: async ctx => {
+    let id = ctx.request.body.id || 0;
+
+    await ctx.orm().baInfo.destroy({
+      where: {
+        id
+      }
+    })
+
+    ctx.body = {}
   }
 }
 
