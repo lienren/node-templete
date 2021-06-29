@@ -2,7 +2,7 @@
  * @Author: Lienren 
  * @Date: 2021-01-25 00:24:48 
  * @Last Modified by: Lienren
- * @Last Modified time: 2021-03-19 00:53:35
+ * @Last Modified time: 2021-06-29 08:02:09
  */
 
 const fs = require('fs');
@@ -12,7 +12,7 @@ const date = require('../../utils/date');
 
 var list = [];
 
-function listFile(dir, dirName, fileNames) {
+function listFile (dir, dirName, fileNames) {
   let arr = fs.readdirSync(dir);
 
   arr.forEach(function (item) {
@@ -41,6 +41,15 @@ function listFile(dir, dirName, fileNames) {
 module.exports = {
   search: async ctx => {
     let searchValue = ctx.request.body.searchValue || '';
+
+    if (ctx.work.managerId) {
+      ctx.orm().SuperManagerOpLogs.create({
+        manageId: ctx.work.managerId,
+        manageName: ctx.work.managerRealName,
+        opTitle: '查询SVG单线图',
+        opContext: `查询内容【${searchValue}】`
+      })
+    }
 
     if (searchValue) {
       let svgs = await ctx.orm().svg_maps.findAll({
@@ -143,6 +152,15 @@ module.exports = {
   searchHistory: async ctx => {
     let managerRealName = ctx.work.managerRealName;
 
+    if (ctx.work.managerId) {
+      ctx.orm().SuperManagerOpLogs.create({
+        manageId: ctx.work.managerId,
+        manageName: ctx.work.managerRealName,
+        opTitle: '查询历史',
+        opContext: `查询SVG单线图历史内容`
+      })
+    }
+
     let result = await ctx.orm().svg_search.findAll({
       group: 'search_value',
       where: {
@@ -172,6 +190,15 @@ module.exports = {
   searchGps: async ctx => {
     let searchValue = ctx.request.body.searchValue || '';
 
+    if (ctx.work.managerId) {
+      ctx.orm().SuperManagerOpLogs.create({
+        manageId: ctx.work.managerId,
+        manageName: ctx.work.managerRealName,
+        opTitle: '查询低压驻点列表',
+        opContext: `查询内容【${searchValue}】`
+      })
+    }
+
     let where = {};
     if (searchValue) {
       where.title = {
@@ -194,6 +221,15 @@ module.exports = {
       }
     });
 
+    if (ctx.work.managerId && result) {
+      ctx.orm().SuperManagerOpLogs.create({
+        manageId: ctx.work.managerId,
+        manageName: ctx.work.managerRealName,
+        opTitle: '获取低压驻点',
+        opContext: `驻点名称【${result.title}】`
+      })
+    }
+
     ctx.body = result;
   },
   editGps: async ctx => {
@@ -208,6 +244,15 @@ module.exports = {
     let a7 = ctx.request.body.a7 || '';
     let latitude = ctx.request.body.latitude || '';
     let longitude = ctx.request.body.longitude || '';
+
+    if (ctx.work.managerId) {
+      ctx.orm().SuperManagerOpLogs.create({
+        manageId: ctx.work.managerId,
+        manageName: ctx.work.managerRealName,
+        opTitle: '编辑低压驻点',
+        opContext: `驻点编号【${id}】`
+      })
+    }
 
     await ctx.orm().gps_maps.update({
       title,
@@ -244,6 +289,15 @@ module.exports = {
   getGPSAssessList: async ctx => {
     let gpsMapId = ctx.request.body.gpsMapId || 0;
 
+    if (ctx.work.managerId) {
+      ctx.orm().SuperManagerOpLogs.create({
+        manageId: ctx.work.managerId,
+        manageName: ctx.work.managerRealName,
+        opTitle: '获取低压驻点评估列表',
+        opContext: `获取低压驻点评估列表，编号【${gpsMapId}】`
+      })
+    }
+
     let gpsMapAssessList = await ctx.orm().gps_map_assess.findAll({
       where: {
         gps_map_id: gpsMapId
@@ -263,6 +317,15 @@ module.exports = {
     let gpsMapId = ctx.request.body.gpsMapId || 0;
     let adminId = ctx.request.body.adminId || 0;
     let assessContext = ctx.request.body.assessContext || [];
+
+    if (ctx.work.managerId) {
+      ctx.orm().SuperManagerOpLogs.create({
+        manageId: ctx.work.managerId,
+        manageName: ctx.work.managerRealName,
+        opTitle: '新增低压驻点评估结果',
+        opContext: `新增低压驻点评估结果，管理员编号【${adminId}】，驻点编号【${gpsMapId}】`
+      })
+    }
 
     let admin = await ctx.orm().SuperManagerInfo.findOne({
       where: {
