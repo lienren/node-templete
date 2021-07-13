@@ -179,6 +179,15 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true,
       defaultValue: '1'
     },
+    provider_id: {
+      type: DataTypes.INTEGER(11),
+      allowNull: true,
+      defaultValue: '1'
+    },
+    provider_name: {
+      type: DataTypes.STRING(100),
+      allowNull: true
+    },
     is_del: {
       type: DataTypes.INTEGER(11),
       allowNull: true,

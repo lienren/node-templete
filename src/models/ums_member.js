@@ -27,8 +27,7 @@ module.exports = function(sequelize, DataTypes) {
     },
     phone: {
       type: DataTypes.STRING(64),
-      allowNull: true,
-      unique: true
+      allowNull: true
     },
     status: {
       type: DataTypes.INTEGER(1),

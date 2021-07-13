@@ -2,7 +2,7 @@
  * @Author: Lienren 
  * @Date: 2021-03-01 21:22:47 
  * @Last Modified by: Lienren
- * @Last Modified time: 2021-05-31 23:58:50
+ * @Last Modified time: 2021-07-13 08:37:16
  */
 'use strict';
 
@@ -12,17 +12,17 @@ const date = require('../../utils/date');
 const encrypt = require('../../utils/encrypt');
 const cp = require('./checkParam');
 
-function zeroPad(nr, base) {
+function zeroPad (nr, base) {
   var len = (String(base).length - String(nr).length) + 1;
   return len > 0 ? new Array(len).join('0') + nr : nr;
 }
 
-function handleSkuStockCode(productId, skuStockList) {
+function handleSkuStockCode (productId, skuStockList) {
   if (skuStockList && skuStockList.length > 0) {
     let now = date.formatDate(new Date(), 'YYYYMMDD');
     skuStockList.map((m, i) => {
       if (!m.skuCode) {
-        m.skuCode = `${now}${zeroPad(productId, 1000)}${zeroPad(i+1, 100)}`;
+        m.skuCode = `${now}${zeroPad(productId, 1000)}${zeroPad(i + 1, 100)}`;
       }
     })
   }
@@ -295,10 +295,10 @@ module.exports = {
     if (ids.length > 0) {
       await ctx
         .orm()
-        .query(`update pms_product_attribute set is_del = 1 where id in (${ids.map(m=>{
+        .query(`update pms_product_attribute set is_del = 1 where id in (${ids.map(m => {
           return m
         }).join(',')})`)
-        .spread((results, metadata) => {});
+        .spread((results, metadata) => { });
 
       await ctx
         .orm()
@@ -716,7 +716,7 @@ module.exports = {
       await ctx
         .orm()
         .query(`delete from pms_product_category_attribute_relation where product_category_id = ${cate.id}`)
-        .spread((results, metadata) => {});
+        .spread((results, metadata) => { });
 
       // 添加
       let data = productAttributeIdList.map(attrId => {
@@ -775,7 +775,7 @@ module.exports = {
       await ctx
         .orm()
         .query(`delete from pms_product_category_attribute_relation where product_category_id = ${id}`)
-        .spread((results, metadata) => {});
+        .spread((results, metadata) => { });
 
       // 添加
       let data = productAttributeIdList.map(attrId => {
@@ -874,7 +874,9 @@ module.exports = {
           promotionType: m.dataValues.promotion_type,
           brandName: m.dataValues.brand_name,
           productCategoryName: m.dataValues.product_category_name,
-          minSaleStock: m.dataValues.min_sale_stock
+          minSaleStock: m.dataValues.min_sale_stock,
+          providerId: m.dataValues.provider_id,
+          providerName: m.dataValues.provider_name
         }
       }),
     };
@@ -983,7 +985,9 @@ module.exports = {
       productCategoryName: result.dataValues.product_category_name,
       minSaleStock: result.dataValues.min_sale_stock,
       skuStockList,
-      productAttributeValueList
+      productAttributeValueList,
+      providerId: result.dataValues.provider_id,
+      providerName: result.dataValues.provider_name
     };
   },
   proDel: async (ctx) => {
@@ -1191,6 +1195,8 @@ module.exports = {
       brand_name: data.brandName,
       product_category_name: data.productCategoryName,
       min_sale_stock: data.minSaleStock,
+      provider_id: data.providerId,
+      provider_name: data.providerName,
       is_del: 0
     });
 
@@ -1328,6 +1334,8 @@ module.exports = {
       brand_name: data.brandName,
       product_category_name: data.product_category_name,
       min_sale_stock: data.minSaleStock,
+      provider_id: data.providerId,
+      provider_name: data.providerName,
       is_del: 0
     }, {
       where: {
