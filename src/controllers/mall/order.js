@@ -2,7 +2,7 @@
  * @Author: Lienren 
  * @Date: 2021-04-27 11:15:17 
  * @Last Modified by: Lienren
- * @Last Modified time: 2021-04-28 12:26:03
+ * @Last Modified time: 2021-07-13 09:07:56
  */
 'use strict';
 
@@ -204,7 +204,9 @@ module.exports = {
           realAmount: m.dataValues.real_amount,
           giftIntegration: m.dataValues.gift_integration,
           giftGrowth: m.dataValues.gift_growth,
-          productAttr: m.dataValues.product_attr
+          productAttr: m.dataValues.product_attr,
+          providerId: m.dataValues.provider_id,
+          providerName: m.dataValues.provider_name
         }
       }),
       historyList: historys.map(m => {
