@@ -87,7 +87,7 @@ module.exports = function(sequelize, DataTypes) {
       defaultValue: '0'
     },
     product_attr: {
-      type: DataTypes.STRING(500),
+      type: DataTypes.STRING(1000),
       allowNull: true
     },
     is_comment: {
@@ -101,6 +101,14 @@ module.exports = function(sequelize, DataTypes) {
     },
     comment_content: {
       type: DataTypes.STRING(1000),
+      allowNull: true
+    },
+    provider_id: {
+      type: DataTypes.INTEGER(11),
+      allowNull: true
+    },
+    provider_name: {
+      type: DataTypes.STRING(100),
       allowNull: true
     }
   }, {

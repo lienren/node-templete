@@ -2,7 +2,7 @@
  * @Author: Lienren 
  * @Date: 2021-04-11 23:48:19 
  * @Last Modified by: Lienren
- * @Last Modified time: 2021-05-29 16:20:29
+ * @Last Modified time: 2021-07-13 09:00:31
  */
 'use strict';
 
@@ -493,7 +493,9 @@ module.exports = {
             product_attr: JSON.stringify(goods[i].attr),
             is_comment: 0,
             comment_star: null,
-            comment_content: null
+            comment_content: null,
+            provider_id: product.provider_id,
+            provider_name: product.provider_name
           })
         } else {
           assert.ok(false, `【${goods[i].goods.name}】已下架`);
