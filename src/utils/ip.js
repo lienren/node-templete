@@ -6,9 +6,6 @@
  */
 'use strict';
 
-const jsonwebtoken = require('jsonwebtoken');
-const auth = require('../config.js').auth;
-
 module.exports = {
   getClientIP: (req) => {
     let ip = req.headers['x-forwarded-for'] || // 判断是否有反向代理 IP
@@ -17,7 +14,7 @@ module.exports = {
       req.socket.remoteAddress || // 判断后端的 socket 的 IP
       req.connection.socket.remoteAddress || ''
     if (ip) {
-      ip = ip.replace('::ffff:', '')
+      ip = ip.replace('::ffff:', '').replace('127.0.0.1, ', '')
     }
     return ip;
   }

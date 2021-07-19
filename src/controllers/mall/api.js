@@ -673,6 +673,54 @@ module.exports = {
       assert.ok(false, `提交订单失败，请联系管理员`);
     }
   },
+  memberOrder: async (ctx) => {
+    let id = ctx.request.body.id || 0;
+    let orderId = ctx.request.body.orderId || 0;
+    let orderSn = ctx.request.body.orderSn || '';
+
+    assert.ok(orderId !== 0 || orderSn !== '', '请选择订单');
+
+    // 获取会员信息
+    let member = await ctx.orm().ums_member.findOne({
+      where: {
+        id,
+        status: 1,
+        is_del: 0
+      }
+    });
+
+    assert.ok(member != null, '输入帐号不存在！');
+
+    let where = {
+      member_id: member.id,
+      delete_status: 0
+    }
+
+    if (orderId > 0) {
+      where.id = orderId;
+    }
+
+    if (orderSn !== '') {
+      where.order_sn = orderSn;
+    }
+
+    let order = await ctx.orm().oms_order.findOne({
+      where
+    });
+
+    assert.ok(order != null, '订单不存在！');
+
+    let orderItems = await ctx.orm().oms_order_item.findAll({
+      where: {
+        order_id: order.id
+      }
+    });
+
+    ctx.body = {
+      order,
+      orderItems
+    }
+  },
   memberOrders: async (ctx) => {
     let id = ctx.request.body.id || 0;
 
