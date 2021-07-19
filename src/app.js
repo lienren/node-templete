@@ -37,7 +37,8 @@ app.use(async (ctx, next) => {
 
   let path = ctx.path.toLowerCase();
 
-  if (path.indexOf('/base/getimagecodebybase64') >= 0) {
+  if (path.indexOf('/base/getimagecodebybase64') >= 0 ||
+    path.indexOf('/mall/notify/weipay') >= 0) {
     ctx.disableBodyParserReturn = true;
   }
   await next();
@@ -45,7 +46,10 @@ app.use(async (ctx, next) => {
 
 app.use(
   bodyParser({
-    enableTypes: ['json', 'form'],
+    enableTypes: ['json', 'form', 'text'],
+    extendTypes: {
+      text: ['text/xml', 'application/xml']
+    },
     jsonLimit: '100mb',
     formLimit: '100mb',
   })

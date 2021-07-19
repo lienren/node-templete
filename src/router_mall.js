@@ -8,6 +8,14 @@
 
 const Router = require('koa-router');
 const ctrl = require('./controllers/mall/index.js');
+const tenpay = require('tenpay');
+
+const tenpayAPI = new tenpay({
+  appid: 'wx17112a11c395f6e3',
+  mchid: '1610949193',
+  partnerKey: '06E9561F6D35212879AE5A272FE7D6BA',
+  notify_url: 'https://mall.lixianggo.com/mall/notify/weipay'
+}, true);
 
 const router = new Router({
   prefix: '/mall'
@@ -20,7 +28,11 @@ for (let className in ctrl) {
   }
 
   for (let funName in ctrl[className]) {
-    router.all(`/${className}/${funName}`, ctrl[className][funName]);
+    if (className === 'notify' && funName === 'weipay') {
+      router.all(`/${className}/${funName}`, tenpayAPI.middleware('pay'), ctrl[className][funName]);
+    } else {
+      router.all(`/${className}/${funName}`, ctrl[className][funName]);
+    }
   }
 }
 

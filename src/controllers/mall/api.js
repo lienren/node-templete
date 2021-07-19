@@ -13,6 +13,24 @@ const date = require('../../utils/date');
 const ip = require('../../utils/ip');
 const encrypt = require('../../utils/encrypt');
 const cp = require('./checkParam');
+const tenpay = require('tenpay');
+
+const tenpayAPI = new tenpay({
+  appid: 'wx17112a11c395f6e3',
+  mchid: '1610949193',
+  partnerKey: '06E9561F6D35212879AE5A272FE7D6BA',
+  notify_url: 'https://mall.lixianggo.com/mall/notify/weipay'
+}, true);
+
+/*
+中车信息
+商户号：1610949193
+商户名称：南车投资管理有限公司
+商家简称：中车智程商旅平台
+appId:wx17112a11c395f6e3（中车智程公众号）
+mchid:1610949193
+partnerKey:06E9561F6D35212879AE5A272FE7D6BA
+*/
 
 module.exports = {
   memberLogin: async (ctx) => {
@@ -505,42 +523,6 @@ module.exports = {
       }
     }
 
-    // 扣余额
-    if (orderPrice > 0) {
-      let updateIntegration = await ctx.orm().ums_member.update({
-        integration: sequelize.literal(`integration - ${orderPrice}`)
-      }, {
-        where: {
-          id: member.id,
-          integration: {
-            $gte: orderPrice
-          },
-          status: 1,
-          is_del: 0
-        }
-      })
-
-      if (updateIntegration && updateIntegration.length > 0 && updateIntegration[0] > 0) {
-        // 余额扣减成功
-        // 记录使用余额记录
-        await ctx.orm().cms_user_currency_log.create({
-          cmp_admin_id: 0,
-          cmp_admin_name: '',
-          cmp_member_id: member.id,
-          cmp_member_name: member.nickname,
-          state_context: `用户消费${orderPrice}`,
-          state_time: date.formatDate(),
-          remark: '用户消费',
-          op_admin_id: 0,
-          op_admin_name: ''
-        });
-      } else {
-        assert.ok(false, `您的余额不足`);
-      }
-    } else {
-      assert.ok(false, `扣减余额异常，请联系管理员`);
-    }
-
     // 拉取商品SKU清单，并减库存
     for (let i = 0, j = goods.length; i < j; i++) {
       let updateStock = await ctx.orm().pms_sku_stock.update({
@@ -637,9 +619,9 @@ module.exports = {
       integration_amount: integrationAmount,
       coupon_amount: couponAmount,
       discount_amount: 0,
-      pay_type: 3,
+      pay_type: 0,
       source_type: 1,
-      status: 1,
+      status: 0,
       order_type: 0,
       delivery_company: '待确认',
       delivery_sn: '',
@@ -662,8 +644,7 @@ module.exports = {
       note: '',
       confirm_status: 0,
       delete_status: 0,
-      use_integration: useIntegration,
-      payment_time: now
+      use_integration: useIntegration
     })
 
     if (order) {
@@ -679,8 +660,8 @@ module.exports = {
         order_id: order.id,
         operate_man: '用户',
         create_time: now,
-        order_status: 1,
-        note: `${member.nickname}在${now}成功下单，并用余额支付成功`
+        order_status: 0,
+        note: `${member.nickname}在${now}成功下单`
       })
 
       ctx.body = {
@@ -1104,6 +1085,146 @@ module.exports = {
     ctx.body = {
       banners,
       layoutIndexs
+    }
+  },
+  memberOrderH5Pay: async (ctx) => {
+    let id = ctx.request.body.id || 0;
+    let orderId = ctx.request.body.orderId || 0;
+    let orderSn = ctx.request.body.orderSn || '';
+    let payType = ctx.request.body.payType || 0;
+
+    assert.ok(payType !== 0, '支付类型不正确！');
+
+    // 获取会员信息
+    let member = await ctx.orm().ums_member.findOne({
+      where: {
+        id,
+        status: 1,
+        is_del: 0
+      }
+    });
+
+    assert.ok(member != null, '输入帐号不存在！');
+
+    // 获取未支付订单
+    let order = await ctx.orm().oms_order.findOne({
+      where: {
+        id: orderId,
+        order_sn: orderSn,
+        status: 0,
+        member_id: member.id,
+        delete_status: 0
+      }
+    });
+
+    assert.ok(order != null, '订单不存在或已支付！');
+
+    let now = date.formatDate();
+    let orderPrice = order.pay_amount;
+
+    let result = null;
+
+    switch (payType) {
+      case 1:
+        // 更新支付类型
+        await ctx.orm().oms_order.update({
+          pay_type: payType,
+          modify_time: now
+        }, {
+          where: {
+            id: order.id
+          }
+        })
+
+        // 支付宝
+        ctx.body = {
+          webPayUrl: ''
+        }
+        break;
+      case 2:
+        // 微信
+        result = await tenpayAPI.unifiedOrder({
+          out_trade_no: orderSn,
+          body: '商城商品支付订单',
+          total_fee: parseInt(orderPrice * 100),
+          openid: '',
+          trade_type: 'MWEB',
+          spbill_create_ip: ip.getClientIP(ctx)
+        });
+
+        // 更新支付类型
+        await ctx.orm().oms_order.update({
+          pay_type: payType,
+          modify_time: now
+        }, {
+          where: {
+            id: order.id
+          }
+        })
+
+        ctx.body = {
+          webPayUrl: result.return_code === 'SUCCESS' ? result.mweb_url : ''
+        }
+        break;
+      case 3:
+        // 扣余额
+        let updateIntegration = await ctx.orm().ums_member.update({
+          integration: sequelize.literal(`integration - ${orderPrice}`)
+        }, {
+          where: {
+            id: member.id,
+            integration: {
+              $gte: orderPrice
+            },
+            status: 1,
+            is_del: 0
+          }
+        })
+
+        if (updateIntegration && updateIntegration.length > 0 && updateIntegration[0] > 0) {
+          // 余额扣减成功
+          // 记录使用余额记录
+          await ctx.orm().cms_user_currency_log.create({
+            cmp_admin_id: 0,
+            cmp_admin_name: '',
+            cmp_member_id: member.id,
+            cmp_member_name: member.nickname,
+            state_context: `用户消费${orderPrice}`,
+            state_time: now,
+            remark: '用户消费',
+            op_admin_id: 0,
+            op_admin_name: ''
+          });
+        } else {
+          assert.ok(false, `您的余额不足`);
+        }
+
+        // 支付成功
+        await ctx.orm().oms_order.update({
+          status: 1,
+          pay_type: payType,
+          payment_time: now,
+          modify_time: now
+        }, {
+          where: {
+            id: order.id
+          }
+        })
+
+        await ctx.orm().oms_order_operate_history.create({
+          order_id: order.id,
+          operate_man: '用户',
+          create_time: now,
+          order_status: 1,
+          note: `${member.nickname}在${now}用余额支付成功`
+        })
+
+        // 积分
+        ctx.body = {}
+        break;
+      default:
+        ctx.body = {}
+        break;
     }
   }
 };
