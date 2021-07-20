@@ -17,11 +17,13 @@ module.exports = async function (ctx, next) {
   // 响应开始时间
   const requestStartTime = new Date();
 
-  // 整合query和body内容
-  ctx.request.body = {
-    ...ctx.request.query,
-    ...ctx.request.body
-  };
+  if (!ctx.disableBodyParserMerge) {
+    // 整合query和body内容
+    ctx.request.body = {
+      ...ctx.request.query,
+      ...ctx.request.body
+    };
+  }
 
   ctx.work = {
     code: '000000',
@@ -68,39 +70,39 @@ module.exports = async function (ctx, next) {
     } = await auth(
       ctx,
       async (ctx, requestUrl) => {
-          let api = await ctx
-            .orm()
-            .BaseApi.findOne({
-              where: {
-                apiUrl: requestUrl
-              }
-            });
-          return api && api.isAuth === 1;
-        },
-        async (ctx, requestUrl, token, isPass, authInfo, authSource) => {
-          ctx.work.token = token || '';
+        let api = await ctx
+          .orm()
+          .BaseApi.findOne({
+            where: {
+              apiUrl: requestUrl
+            }
+          });
+        return api && api.isAuth === 1;
+      },
+      async (ctx, requestUrl, token, isPass, authInfo, authSource) => {
+        ctx.work.token = token || '';
 
-          if (isPass && authInfo) {
-            // 验证通过
-            // 记录管理员信息
-            ctx.work.managerId = authInfo.managerId || 0;
-            ctx.work.managerLoginName = authInfo.managerLoginName;
-            ctx.work.managerRealName = authInfo.managerRealName;
-            ctx.work.managerEmail = authInfo.managerEmail;
-            ctx.work.managerPhone = authInfo.managerPhone;
-            ctx.work.userId = authInfo.userId || 0;
-            ctx.work.alipayUserId = authInfo.alipayUserId;
-          } else {
-            // 验证未通过
-          }
-
-          return {
-            isPass,
-            authSource,
-            authInfo,
-            token
-          };
+        if (isPass && authInfo) {
+          // 验证通过
+          // 记录管理员信息
+          ctx.work.managerId = authInfo.managerId || 0;
+          ctx.work.managerLoginName = authInfo.managerLoginName;
+          ctx.work.managerRealName = authInfo.managerRealName;
+          ctx.work.managerEmail = authInfo.managerEmail;
+          ctx.work.managerPhone = authInfo.managerPhone;
+          ctx.work.userId = authInfo.userId || 0;
+          ctx.work.alipayUserId = authInfo.alipayUserId;
+        } else {
+          // 验证未通过
         }
+
+        return {
+          isPass,
+          authSource,
+          authInfo,
+          token
+        };
+      }
     );
 
     assert.ok(isPass, '登录验证异常');

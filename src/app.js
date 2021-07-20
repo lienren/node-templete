@@ -34,12 +34,17 @@ app.use(async (ctx, next) => {
 // 使用koa-bodyparser中间件
 app.use(async (ctx, next) => {
   ctx.disableBodyParserReturn = false;
+  ctx.disableBodyParserMerge = false;
 
   let path = ctx.path.toLowerCase();
 
   if (path.indexOf('/base/getimagecodebybase64') >= 0 ||
     path.indexOf('/mall/notify/weipay') >= 0) {
     ctx.disableBodyParserReturn = true;
+  }
+
+  if (path.indexOf('/mall/notify/weipay') >= 0) {
+    ctx.disableBodyParserMerge = true;
   }
   await next();
 });
