@@ -97,6 +97,14 @@ module.exports = function(sequelize, DataTypes) {
     user_dept_name: {
       type: DataTypes.STRING(100),
       allowNull: true
+    },
+    provider_id: {
+      type: DataTypes.INTEGER(11),
+      allowNull: true
+    },
+    provider_name: {
+      type: DataTypes.STRING(100),
+      allowNull: true
     }
   }, {
     tableName: 'ums_admin'

@@ -799,9 +799,26 @@ module.exports = {
     let pageNum = ctx.request.body.pageNum || 1;
     let pageSize = ctx.request.body.pageSize || 10;
 
+    console.log('ctx.work:', ctx.work)
+
+    let manager = await ctx.orm().ums_admin.findOne({
+      where: {
+        id: ctx.work.managerId,
+        status: 1,
+        is_del: 0
+      }
+    });
+
+    assert.ok(manager != null, '获取管理员失败！');
+
     let where = {
       delete_status: 0,
       is_del: 0
+    }
+
+    // 如果是供应商，只能看自己商品
+    if (manager.provider_id) {
+      where.provider_id = manager.provider_id
     }
 
     if (keyword) {
