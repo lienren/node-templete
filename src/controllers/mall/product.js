@@ -799,8 +799,6 @@ module.exports = {
     let pageNum = ctx.request.body.pageNum || 1;
     let pageSize = ctx.request.body.pageSize || 10;
 
-    console.log('ctx.work:', ctx.work)
-
     let manager = await ctx.orm().ums_admin.findOne({
       where: {
         id: ctx.work.managerId,

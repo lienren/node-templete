@@ -39,11 +39,13 @@ app.use(async (ctx, next) => {
   let path = ctx.path.toLowerCase();
 
   if (path.indexOf('/base/getimagecodebybase64') >= 0 ||
-    path.indexOf('/mall/notify/weipay') >= 0) {
+    path.indexOf('/mall/notify/weipay') >= 0 ||
+    path.indexOf('/mall/notify/alipay') >= 0) {
     ctx.disableBodyParserReturn = true;
   }
 
-  if (path.indexOf('/mall/notify/weipay') >= 0) {
+  if (path.indexOf('/mall/notify/weipay') >= 0 ||
+    path.indexOf('/mall/notify/alipay') >= 0) {
     ctx.disableBodyParserMerge = true;
   }
   await next();

@@ -127,6 +127,8 @@ module.exports = {
       email: resultManager.email,
       phone: resultManager.phone,
       icon: resultManager.icon,
+      providerId: resultManager.provider_id,
+      providerName: resultManager.provider_name,
       token: token
     };
   },

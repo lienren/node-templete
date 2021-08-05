@@ -6,6 +6,7 @@
  */
 'use strict';
 
+const path = require('path');
 const assert = require('assert');
 const sequelize = require('sequelize');
 const comm = require('../../utils/comm');
@@ -14,15 +15,12 @@ const ip = require('../../utils/ip');
 const encrypt = require('../../utils/encrypt');
 const cp = require('./checkParam');
 const tenpay = require('tenpay');
-
-const tenpayAPI = new tenpay({
-  appid: 'wx17112a11c395f6e3',
-  mchid: '1610949193',
-  partnerKey: '06E9561F6D35212879AE5A272FE7D6BA',
-  notify_url: 'https://mall.lixianggo.com/mall/notify/weipay'
-}, true);
+// const Alipay = require('alipay-node-sdk');
+const alipay = require('../../extends/ali/index')
+const AlipayFormData = require('alipay-sdk/lib/form').default
 
 /*
+微信支付
 中车信息
 商户号：1610949193
 商户名称：南车投资管理有限公司
@@ -31,6 +29,27 @@ appId:wx17112a11c395f6e3（中车智程公众号）
 mchid:1610949193
 partnerKey:06E9561F6D35212879AE5A272FE7D6BA
 */
+
+/*
+支付宝支付
+appId:2021002161667283
+*/
+
+const tenpayAPI = new tenpay({
+  appid: 'wx17112a11c395f6e3',
+  mchid: '1610949193',
+  partnerKey: '06E9561F6D35212879AE5A272FE7D6BA',
+  notify_url: 'https://mall.lixianggo.com/mall/notify/weipay'
+}, true);
+
+/* const alipayAPI = new Alipay({
+  appId: '2021002161667283',
+  notifyUrl: 'https://mall.lixianggo.com/mall/notify/alipay',
+  rsaPrivate: path.resolve(__dirname, './pem/ali-private-key.pem'),
+  rsaPublic: path.resolve(__dirname, './pem/ali-public-key.pem'),
+  sandbox: false,
+  signType: 'RSA'
+}); */
 
 module.exports = {
   memberLogin: async (ctx) => {
@@ -100,6 +119,7 @@ module.exports = {
 
     let where = {
       delete_status: 0,
+      publish_status: 1,
       is_del: 0
     }
 
@@ -187,6 +207,8 @@ module.exports = {
 
     let where = {
       id,
+      delete_status: 0,
+      publish_status: 1,
       is_del: 0
     }
 
@@ -481,6 +503,7 @@ module.exports = {
           where: {
             id: sku.product_id,
             delete_status: 0,
+            publish_status: 1,
             is_del: 0
           }
         })
@@ -1086,6 +1109,8 @@ module.exports = {
         let pro = await ctx.orm().pms_product.findOne({
           where: {
             id: parseInt(ids[x]),
+            delete_status: 0,
+            publish_status: 1,
             is_del: 0
           }
         });
@@ -1169,11 +1194,39 @@ module.exports = {
 
     let now = date.formatDate();
     let orderPrice = order.pay_amount;
+    let returnUrl = `https://mall.lixianggo.com/mall_shop_mobile/order?orderId=${order.id}&orderSn=${order.order_sn}`;
 
     let result = null;
 
     switch (payType) {
       case 1:
+        // 支付宝
+        const formData = new AlipayFormData();
+        formData.setMethod('get');
+        formData.addField('notifyUrl', 'https://mall.lixianggo.com/mall/notify/alipay');
+        formData.addField('returnUrl', returnUrl); 
+        formData.addField('bizContent', {
+          outTradeNo: orderSn,
+          productCode: 'FAST_INSTANT_TRADE_PAY',
+          totalAmount: Math.floor(orderPrice * 100) / 100,
+          subject: '商城订单',
+          body: '商城商品支付订单',
+        });
+
+        result = await alipay.exec('alipay.trade.wap.pay', {}, {
+          formData: formData
+        });
+        /* result = alipayAPI.wapPay({
+          subject: '商城订单',
+          body: '商城商品支付订单',
+          outTradeId: orderSn,
+          timeout: '10m',
+          amount: Math.floor(orderPrice * 100) / 100,
+          goodsType: '1',
+          return_url: encodeURIComponent(returnUrl)
+        });*/
+        console.log(result);
+
         // 更新支付类型
         await ctx.orm().oms_order.update({
           pay_type: payType,
@@ -1186,7 +1239,7 @@ module.exports = {
 
         // 支付宝
         ctx.body = {
-          webPayUrl: ''
+          webPayUrl: result
         }
         break;
       case 2:

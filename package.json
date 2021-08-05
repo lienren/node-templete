@@ -21,6 +21,7 @@
   "author": "Lienren",
   "license": "ISC",
   "dependencies": {
+    "alipay-node-sdk": "^1.1.9",
     "alipay-sdk": "^3.0.8",
     "amqplib": "^0.5.2",
     "await-busboy": "^1.0.3",
