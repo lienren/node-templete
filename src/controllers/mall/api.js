@@ -625,7 +625,7 @@ module.exports = {
     let payAmount = orderPrice;
     let freightAmount = 0;
     let promotionAmount = 0;
-    let integrationAmount = orderPrice;
+    let integrationAmount = 0;
     let couponAmount = 0;
     let useIntegration = orderPrice;
     let promotionInfo = '无优惠';
@@ -1304,6 +1304,7 @@ module.exports = {
         await ctx.orm().oms_order.update({
           status: 1,
           pay_type: payType,
+          integration_amount: orderPrice,
           payment_time: now,
           modify_time: now
         }, {
