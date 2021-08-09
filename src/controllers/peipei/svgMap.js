@@ -179,7 +179,7 @@ module.exports = {
     });
   },
   scanning: async ctx => {
-    let root = '/Users/lienren/Downloads/Compressed/jquery.panzoom-master/demo/docs'
+    let root = '/Users/lienren/Downloads/docs'
 
     let items = listFile(root, '', '');
     console.log('items:', items);
