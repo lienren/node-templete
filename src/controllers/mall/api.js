@@ -536,7 +536,8 @@ module.exports = {
             comment_star: null,
             comment_content: null,
             provider_id: product.provider_id,
-            provider_name: product.provider_name
+            provider_name: product.provider_name,
+            is_delivery: 0
           })
         } else {
           assert.ok(false, `【${goods[i].goods.name}】已下架`);

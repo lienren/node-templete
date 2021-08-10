@@ -110,6 +110,22 @@ module.exports = function(sequelize, DataTypes) {
     provider_name: {
       type: DataTypes.STRING(100),
       allowNull: true
+    },
+    is_delivery: {
+      type: DataTypes.INTEGER(11),
+      allowNull: true
+    },
+    delivery_time: {
+      type: DataTypes.DATE,
+      allowNull: true
+    },
+    delivery_company: {
+      type: DataTypes.STRING(64),
+      allowNull: true
+    },
+    delivery_sn: {
+      type: DataTypes.STRING(64),
+      allowNull: true
     }
   }, {
     tableName: 'oms_order_item'

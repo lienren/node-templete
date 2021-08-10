@@ -328,6 +328,17 @@ module.exports = {
           id: orders[i].orderId
         }
       });
+
+      await ctx.orm().oms_order_item.update({
+        is_delivery: 1,
+        delivery_time: date.formatDate(),
+        delivery_company: orders[i].deliveryCompany,
+        delivery_sn: orders[i].deliverySn
+      }, {
+        where: {
+          order_id: orders[i].orderId
+        }
+      });
     }
 
     let data = orders.map(order => {
@@ -526,7 +537,6 @@ module.exports = {
       '收货人电话',
       '收货人省/市/区',
       '收货人详细地址',
-      '收货详细地址',
       '确认收货状态',
       '支付时间',
       '发货时间',
@@ -553,9 +563,9 @@ module.exports = {
       if (findPros) {
         for (let x = 0, y = findPros.length; x < y; x++) {
           let arr = new Array();
-          arr.push(order.order_sn);
-          arr.push(order.create_time);
-          arr.push(order.member_username);
+          arr.push(order.order_sn || '');
+          arr.push(order.create_time || '');
+          arr.push(order.member_username || '');
           arr.push(order.total_amount);
           arr.push(order.pay_amount);
           arr.push(order.freight_amount);
@@ -565,26 +575,26 @@ module.exports = {
           arr.push(order.discount_amount);
           arr.push(payTypeOptions[order.pay_type]);
           arr.push(statusOptions[order.status]);
-          arr.push(order.delivery_company);
-          arr.push(order.delivery_sn);
-          arr.push(order.receiver_name);
-          arr.push(order.receiver_phone);
+          arr.push(order.delivery_company || '');
+          arr.push(order.delivery_sn || '');
+          arr.push(order.receiver_name || '');
+          arr.push(order.receiver_phone || '');
           arr.push(`${order.receiver_province}/${order.receiver_city}/${order.receiver_region}`);
-          arr.push(order.receiver_detail_address);
+          arr.push(order.receiver_detail_address || '');
           arr.push(confirmStatusOptions[order.confirm_status]);
-          arr.push(order.payment_time);
-          arr.push(order.delivery_time);
-          arr.push(order.receive_time);
-          arr.push(order.comment_time);
-          arr.push(findPros[x].product_id);
-          arr.push(findPros[x].product_name);
-          arr.push(findPros[x].product_sn);
-          arr.push(findPros[x].product_price);
-          arr.push(findPros[x].product_quantity);
-          arr.push(findPros[x].product_sku_id);
-          arr.push(findPros[x].product_sku_code);
-          arr.push(findPros[x].product_attr);
-          arr.push(findPros[x].provider_name);
+          arr.push(order.payment_time || '');
+          arr.push(order.delivery_time || '');
+          arr.push(order.receive_time || '');
+          arr.push(order.comment_time || '');
+          arr.push(findPros[x].product_id || '');
+          arr.push(findPros[x].product_name || '');
+          arr.push(findPros[x].product_sn || '');
+          arr.push(findPros[x].product_price || '');
+          arr.push(findPros[x].product_quantity || '');
+          arr.push(findPros[x].product_sku_id || '');
+          arr.push(findPros[x].product_sku_code || '');
+          arr.push(findPros[x].product_attr || '');
+          arr.push(findPros[x].provider_name || '');
 
           orderitems.push(arr);
         }
