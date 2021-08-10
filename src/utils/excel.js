@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-08-09 11:16:24
- * @LastEditTime: 2021-08-09 16:05:45
+ * @LastEditTime: 2021-08-10 08:37:37
  * @LastEditors: Lienren
  * @Description: 生成Excel
  * @FilePath: /node-templete/src/utils/excel.js
@@ -25,6 +25,9 @@ module.exports = {
       xlsxObj[0].data.push(m);
     })
 
+    return xlsx.build(xlsxObj, options);
+  },
+  exportMoreSheetExcel: (xlsxObj = [], options = {}) => {
     return xlsx.build(xlsxObj, options);
   }
 }

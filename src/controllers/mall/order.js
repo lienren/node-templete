@@ -518,7 +518,17 @@ module.exports = {
       }
     });
 
-    let header = [
+    let xlsxObj = [];
+    xlsxObj.push({
+      name: '订单列表',
+      data: []
+    })
+    xlsxObj.push({
+      name: '订单商品列表',
+      data: []
+    })
+
+    xlsxObj[0].data.push([
       '订单号',
       '创建时间',
       '会员帐号',
@@ -541,7 +551,41 @@ module.exports = {
       '支付时间',
       '发货时间',
       '确认收货时间',
-      '评价时间',
+      '评价时间'
+    ])
+    for (let i = 0, j = orders.length; i < j; i++) {
+      let order = orders[i];
+
+      let arr = new Array();
+      arr.push(order.order_sn || '');
+      arr.push(order.create_time || '');
+      arr.push(order.member_username || '');
+      arr.push(order.total_amount);
+      arr.push(order.pay_amount);
+      arr.push(order.freight_amount);
+      arr.push(order.promotion_amount);
+      arr.push(order.integration_amount);
+      arr.push(order.coupon_amount);
+      arr.push(order.discount_amount);
+      arr.push(payTypeOptions[order.pay_type]);
+      arr.push(statusOptions[order.status]);
+      arr.push(order.delivery_company || '');
+      arr.push(order.delivery_sn || '');
+      arr.push(order.receiver_name || '');
+      arr.push(order.receiver_phone || '');
+      arr.push(`${order.receiver_province}/${order.receiver_city}/${order.receiver_region}`);
+      arr.push(order.receiver_detail_address || '');
+      arr.push(confirmStatusOptions[order.confirm_status]);
+      arr.push(order.payment_time || '');
+      arr.push(order.delivery_time || '');
+      arr.push(order.receive_time || '');
+      arr.push(order.comment_time || '');
+
+      xlsxObj[0].data.push(arr)
+    }
+
+    xlsxObj[1].data.push([
+      '订单号',
       '商品编号',
       '商品名称',
       '商品条码',
@@ -551,57 +595,26 @@ module.exports = {
       'SKU条码',
       'SKU属性',
       '供应商名称'
-    ];
-    let orderitems = new Array();
+    ])
+    for (let i = 0, j = orderPros.length; i < j; i++) {
+      let pro = orderPros[i];
 
-    for (let i = 0, j = orders.length; i < j; i++) {
-      let order = orders[i];
-      let findPros = orderPros.filter(f => {
-        return f.order_id === order.id
-      })
+      let arr = new Array();
+      arr.push(pro.order_sn || '');
+      arr.push(pro.product_id || '');
+      arr.push(pro.product_name || '');
+      arr.push(pro.product_sn || '');
+      arr.push(pro.product_price || '');
+      arr.push(pro.product_quantity || '');
+      arr.push(pro.product_sku_id || '');
+      arr.push(pro.product_sku_code || '');
+      arr.push(pro.product_attr || '');
+      arr.push(pro.provider_name || '');
 
-      if (findPros) {
-        for (let x = 0, y = findPros.length; x < y; x++) {
-          let arr = new Array();
-          arr.push(order.order_sn || '');
-          arr.push(order.create_time || '');
-          arr.push(order.member_username || '');
-          arr.push(order.total_amount);
-          arr.push(order.pay_amount);
-          arr.push(order.freight_amount);
-          arr.push(order.promotion_amount);
-          arr.push(order.integration_amount);
-          arr.push(order.coupon_amount);
-          arr.push(order.discount_amount);
-          arr.push(payTypeOptions[order.pay_type]);
-          arr.push(statusOptions[order.status]);
-          arr.push(order.delivery_company || '');
-          arr.push(order.delivery_sn || '');
-          arr.push(order.receiver_name || '');
-          arr.push(order.receiver_phone || '');
-          arr.push(`${order.receiver_province}/${order.receiver_city}/${order.receiver_region}`);
-          arr.push(order.receiver_detail_address || '');
-          arr.push(confirmStatusOptions[order.confirm_status]);
-          arr.push(order.payment_time || '');
-          arr.push(order.delivery_time || '');
-          arr.push(order.receive_time || '');
-          arr.push(order.comment_time || '');
-          arr.push(findPros[x].product_id || '');
-          arr.push(findPros[x].product_name || '');
-          arr.push(findPros[x].product_sn || '');
-          arr.push(findPros[x].product_price || '');
-          arr.push(findPros[x].product_quantity || '');
-          arr.push(findPros[x].product_sku_id || '');
-          arr.push(findPros[x].product_sku_code || '');
-          arr.push(findPros[x].product_attr || '');
-          arr.push(findPros[x].provider_name || '');
-
-          orderitems.push(arr);
-        }
-      }
+      xlsxObj[1].data.push(arr)
     }
 
-    let excelFile = excel.exportExcel('订单列表', header, orderitems);
+    let excelFile = excel.exportMoreSheetExcel(xlsxObj);
 
     ctx.set('Content-Type', 'application/vnd.openxmlformats');
     ctx.set('Access-Control-Expose-Headers', 'Content-Disposition')
