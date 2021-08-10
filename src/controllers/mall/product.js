@@ -796,6 +796,7 @@ module.exports = {
     let productSn = ctx.request.body.productSn || '';
     let productCategoryId = ctx.request.body.productCategoryId || 0;
     let brandId = ctx.request.body.brandId || 0;
+    let providerId = ctx.request.body.providerId || 0;
     let pageNum = ctx.request.body.pageNum || 1;
     let pageSize = ctx.request.body.pageSize || 10;
 
@@ -817,6 +818,10 @@ module.exports = {
     // 如果是供应商，只能看自己商品
     if (manager.provider_id) {
       where.provider_id = manager.provider_id
+    }
+
+    if (providerId) {
+      where.provider_id = providerId
     }
 
     if (keyword) {

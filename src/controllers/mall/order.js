@@ -44,11 +44,18 @@ module.exports = {
     let createTime = ctx.request.body.createTime || '';
     let nickName = ctx.request.body.nickName || '';
     let userName = ctx.request.body.userName || '';
+    let providerId = ctx.request.body.providerId || 0;
     let pageNum = ctx.request.body.pageNum || 1;
     let pageSize = ctx.request.body.pageSize || 10;
 
     let where = {
       delete_status: 0
+    }
+
+    if (providerId) {
+      where.$and = [
+        sequelize.literal(`exists (select * from oms_order_item where order_id = oms_order.id and provider_id = ${providerId})`)
+      ]
     }
 
     if (nickName) {
@@ -455,9 +462,16 @@ module.exports = {
     let createTime = ctx.request.body.createTime || '';
     let nickName = ctx.request.body.nickName || '';
     let userName = ctx.request.body.userName || '';
+    let providerId = ctx.request.body.providerId || 0;
 
     let where = {
       delete_status: 0
+    }
+
+    if (providerId) {
+      where.$and = [
+        sequelize.literal(`exists (select * from oms_order_item where order_id = oms_order.id and provider_id = ${providerId})`)
+      ]
     }
 
     if (nickName) {
