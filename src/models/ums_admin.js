@@ -100,7 +100,8 @@ module.exports = function(sequelize, DataTypes) {
     },
     provider_id: {
       type: DataTypes.INTEGER(11),
-      allowNull: true
+      allowNull: true,
+      defaultValue: '0'
     },
     provider_name: {
       type: DataTypes.STRING(100),

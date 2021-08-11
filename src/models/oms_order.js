@@ -180,6 +180,30 @@ module.exports = function(sequelize, DataTypes) {
     modify_time: {
       type: DataTypes.DATE,
       allowNull: true
+    },
+    bill_sort: {
+      type: DataTypes.STRING(10),
+      allowNull: true
+    },
+    bill_company_name: {
+      type: DataTypes.STRING(100),
+      allowNull: true
+    },
+    bill_tax: {
+      type: DataTypes.STRING(50),
+      allowNull: true
+    },
+    bill_account_bank: {
+      type: DataTypes.STRING(50),
+      allowNull: true
+    },
+    bill_account_num: {
+      type: DataTypes.STRING(50),
+      allowNull: true
+    },
+    bill_address: {
+      type: DataTypes.STRING(200),
+      allowNull: true
     }
   }, {
     tableName: 'oms_order'

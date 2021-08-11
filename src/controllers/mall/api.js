@@ -628,7 +628,7 @@ module.exports = {
     let promotionAmount = 0;
     let integrationAmount = 0;
     let couponAmount = 0;
-    let useIntegration = orderPrice;
+    let useIntegration = 0;
     let promotionInfo = '无优惠';
     let order = await ctx.orm().oms_order.create({
       member_id: member.id,
@@ -1166,8 +1166,16 @@ module.exports = {
     let orderId = ctx.request.body.orderId || 0;
     let orderSn = ctx.request.body.orderSn || '';
     let payType = ctx.request.body.payType || 0;
+    let billSort = ctx.request.body.billSort || '';
+    let billInfo = ctx.request.body.billInfo || null;
+    let orderNote = ctx.request.body.orderNote || '';
 
     assert.ok(payType !== 0, '支付类型不正确！');
+
+    if (payType === 99) {
+      assert.ok(billSort === '普票' || billSort === '专票', '货到付款必须填写发票信息')
+      assert.ok(billInfo !== '' || billInfo !== null, '货到付款必须填写发票信息')
+    }
 
     // 获取会员信息
     let member = await ctx.orm().ums_member.findOne({
@@ -1205,7 +1213,7 @@ module.exports = {
         const formData = new AlipayFormData();
         formData.setMethod('get');
         formData.addField('notifyUrl', 'https://mall.lixianggo.com/mall/notify/alipay');
-        formData.addField('returnUrl', returnUrl); 
+        formData.addField('returnUrl', returnUrl);
         formData.addField('bizContent', {
           outTradeNo: orderSn,
           productCode: 'FAST_INSTANT_TRADE_PAY',
@@ -1231,7 +1239,8 @@ module.exports = {
         // 更新支付类型
         await ctx.orm().oms_order.update({
           pay_type: payType,
-          modify_time: now
+          modify_time: now,
+          note: orderNote
         }, {
           where: {
             id: order.id
@@ -1257,7 +1266,8 @@ module.exports = {
         // 更新支付类型
         await ctx.orm().oms_order.update({
           pay_type: payType,
-          modify_time: now
+          modify_time: now,
+          note: orderNote
         }, {
           where: {
             id: order.id
@@ -1269,6 +1279,7 @@ module.exports = {
         }
         break;
       case 3:
+        // 余额支付
         // 扣余额
         let updateIntegration = await ctx.orm().ums_member.update({
           integration: sequelize.literal(`integration - ${orderPrice}`)
@@ -1306,8 +1317,10 @@ module.exports = {
           status: 1,
           pay_type: payType,
           integration_amount: orderPrice,
+          use_integration: orderPrice,
           payment_time: now,
-          modify_time: now
+          modify_time: now,
+          note: orderNote
         }, {
           where: {
             id: order.id
@@ -1322,7 +1335,38 @@ module.exports = {
           note: `${member.nickname}在${now}用余额支付成功`
         })
 
-        // 积分
+        ctx.body = {}
+        break;
+      case 99:
+        // 货到付款，支付成功
+        await ctx.orm().oms_order.update({
+          status: 1,
+          pay_type: payType,
+          payment_time: now,
+          modify_time: now,
+          bill_sort: billSort,
+          bill_company_name: billInfo.companyName,
+          bill_tax: billInfo.tax,
+          bill_account_bank: billSort === '专票' ? billInfo.accountBank : '',
+          bill_account_num: billSort === '专票' ? billInfo.accountNum : '',
+          bill_address: billSort === '专票' ? billInfo.billAddress : '',
+          bill_receiver_phone: billSort === '专票' ? billInfo.billPhone : '',
+          bill_receiver_email: billSort === '专票' ? billInfo.billEmail : '',
+          note: orderNote
+        }, {
+          where: {
+            id: order.id
+          }
+        })
+
+        await ctx.orm().oms_order_operate_history.create({
+          order_id: order.id,
+          operate_man: '用户',
+          create_time: now,
+          order_status: 1,
+          note: `${member.nickname}在${now}用货到付款支付成功`
+        })
+
         ctx.body = {}
         break;
       default:

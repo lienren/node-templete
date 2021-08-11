@@ -26,7 +26,8 @@ const payTypeOptions = {
   0: '未选择',
   1: '支付宝',
   2: '微信',
-  3: '余额'
+  3: '余额',
+  99: '货到付款'
 }
 
 const confirmStatusOptions = {
@@ -41,6 +42,7 @@ module.exports = {
     let status = ctx.request.body.status;
     let orderType = ctx.request.body.orderType;
     let sourceType = ctx.request.body.sourceType;
+    let payType = ctx.request.body.payType;
     let createTime = ctx.request.body.createTime || '';
     let nickName = ctx.request.body.nickName || '';
     let userName = ctx.request.body.userName || '';
@@ -50,6 +52,10 @@ module.exports = {
 
     let where = {
       delete_status: 0
+    }
+
+    if (!(payType === null || payType === undefined || payType === '')) {
+      where.pay_type = payType
     }
 
     if (providerId) {
@@ -154,7 +160,13 @@ module.exports = {
           deliveryTime: m.dataValues.delivery_time,
           receiveTime: m.dataValues.receive_time,
           commentTime: m.dataValues.comment_time,
-          modifyTime: m.dataValues.modify_time
+          modifyTime: m.dataValues.modify_time,
+          billSort: m.dataValues.bill_sort,
+          billCompanyName: m.dataValues.bill_company_name,
+          billTax: m.dataValues.bill_tax,
+          billAccountBank: m.dataValues.bill_account_bank,
+          billAccountNum: m.dataValues.bill_account_num,
+          billAddress: m.dataValues.bill_address
         }
       }),
     };
@@ -223,6 +235,12 @@ module.exports = {
       receiveTime: result.dataValues.receive_time,
       commentTime: result.dataValues.comment_time,
       modifyTime: result.dataValues.modify_time,
+      billSort: result.dataValues.bill_sort,
+      billCompanyName: result.dataValues.bill_company_name,
+      billTax: result.dataValues.bill_tax,
+      billAccountBank: result.dataValues.bill_account_bank,
+      billAccountNum: result.dataValues.bill_account_num,
+      billAddress: result.dataValues.bill_address,
       orderItemList: orderItems.map(m => {
         return {
           ...m.dataValues,
@@ -459,6 +477,7 @@ module.exports = {
     let status = ctx.request.body.status;
     let orderType = ctx.request.body.orderType;
     let sourceType = ctx.request.body.sourceType;
+    let payType = ctx.request.body.payType;
     let createTime = ctx.request.body.createTime || '';
     let nickName = ctx.request.body.nickName || '';
     let userName = ctx.request.body.userName || '';
@@ -466,6 +485,10 @@ module.exports = {
 
     let where = {
       delete_status: 0
+    }
+
+    if (!(payType === null || payType === undefined || payType === '')) {
+      where.pay_type = payType
     }
 
     if (providerId) {
@@ -565,7 +588,15 @@ module.exports = {
       '支付时间',
       '发货时间',
       '确认收货时间',
-      '评价时间'
+      '评价时间',
+      '开票种类',
+      '发票单位名称',
+      '发票单位税号',
+      '发票开户行',
+      '发票开户行帐号',
+      '收票人地址',
+      '收票人电话',
+      '收票人邮箱'
     ])
     for (let i = 0, j = orders.length; i < j; i++) {
       let order = orders[i];
@@ -594,6 +625,16 @@ module.exports = {
       arr.push(order.delivery_time || '');
       arr.push(order.receive_time || '');
       arr.push(order.comment_time || '');
+
+      // 发票信息
+      arr.push(order.bill_sort || '');
+      arr.push(order.bill_company_name || '');
+      arr.push(order.bill_tax || '');
+      arr.push(order.bill_account_bank || '');
+      arr.push(order.bill_account_num || '');
+      arr.push(order.bill_address || '');
+      arr.push(order.bill_receiver_phone || '');
+      arr.push(order.bill_receiver_email || '');
 
       xlsxObj[0].data.push(arr)
     }
