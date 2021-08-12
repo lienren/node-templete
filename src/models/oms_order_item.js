@@ -40,6 +40,14 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.DECIMAL,
       allowNull: true
     },
+    product_total: {
+      type: DataTypes.DECIMAL,
+      allowNull: true
+    },
+    product_pay_amount: {
+      type: DataTypes.DECIMAL,
+      allowNull: true
+    },
     product_quantity: {
       type: DataTypes.INTEGER(11),
       allowNull: true

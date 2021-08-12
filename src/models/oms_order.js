@@ -183,7 +183,8 @@ module.exports = function(sequelize, DataTypes) {
     },
     bill_sort: {
       type: DataTypes.STRING(10),
-      allowNull: true
+      allowNull: true,
+      defaultValue: '不开票'
     },
     bill_company_name: {
       type: DataTypes.STRING(100),

@@ -9,13 +9,11 @@
 const path = require('path');
 const assert = require('assert');
 const sequelize = require('sequelize');
-const comm = require('../../utils/comm');
+const _ = require('lodash');
 const date = require('../../utils/date');
 const ip = require('../../utils/ip');
 const encrypt = require('../../utils/encrypt');
-const cp = require('./checkParam');
 const tenpay = require('tenpay');
-// const Alipay = require('alipay-node-sdk');
 const alipay = require('../../extends/ali/index')
 const AlipayFormData = require('alipay-sdk/lib/form').default
 
@@ -159,7 +157,7 @@ module.exports = {
       offset: (pageNum - 1) * pageSize,
       limit: pageSize,
       where,
-      order: [['sort']]
+      order: [['sort', 'desc']]
     });
 
     ctx.body = {
@@ -316,14 +314,15 @@ module.exports = {
     let pageSize = ctx.request.body.pageSize || 10;
 
     let where = {
-      is_del: 0
+      is_del: 0,
+      show_status: 1
     }
 
     let result = await ctx.orm().pms_product_category.findAndCountAll({
       offset: (pageNum - 1) * pageSize,
       limit: pageSize,
       where,
-      order: [['sort']]
+      order: [['sort', 'desc']]
     });
 
     ctx.body = {
@@ -509,7 +508,9 @@ module.exports = {
         })
 
         if (product) {
-          orderPrice += sku.price * goods[i].num
+          let productTotal = sku.price * goods[i].num;
+          let productPayAmount = productTotal;
+          orderPrice += productTotal
 
           orderItems.push({
             order_id: 0,
@@ -520,6 +521,8 @@ module.exports = {
             product_brand: product.brand_name,
             product_sn: product.product_sn,
             product_price: sku.price,
+            product_total: productTotal,
+            product_pay_amount: productPayAmount,
             product_quantity: goods[i].num,
             product_sku_id: sku.id,
             product_sku_code: sku.sku_code,
@@ -1169,6 +1172,7 @@ module.exports = {
     let billSort = ctx.request.body.billSort || '';
     let billInfo = ctx.request.body.billInfo || null;
     let orderNote = ctx.request.body.orderNote || '';
+    let coupon = ctx.request.body.coupon || null;
 
     assert.ok(payType !== 0, '支付类型不正确！');
 
@@ -1198,84 +1202,245 @@ module.exports = {
         delete_status: 0
       }
     });
-
     assert.ok(order != null, '订单不存在或已支付！');
 
+    let orderItems = await ctx.orm().oms_order_item.findAll({
+      where: {
+        order_id: order.id
+      }
+    });
+    assert.ok(orderItems != null && orderItems.length > 0, '订单不存在或已支付！');
+
     let now = date.formatDate();
-    let orderPrice = order.pay_amount;
+    let orderPrice = Math.round(order.pay_amount * 100) / 100;
     let returnUrl = `https://mall.lixianggo.com/mall_shop_mobile/order?orderId=${order.id}&orderSn=${order.order_sn}`;
+
+    if (coupon && coupon.id > 0) {
+      // 验证用券
+      let memberCoupons = await ctx.orm().query(`
+      select h.id, h.member_id, h.coupon_id, c.name, c.amount, c.start_time, c.end_time, c.use_type, c.note from sms_coupon_history h 
+      inner join sms_coupon c on c.id = h.coupon_id where h.id = ${coupon.id} and c.id = ${coupon.couponId} and h.member_id = ${member.id} and h.use_status = 0 and c.start_time < '${now}' and '${now}' < c.end_time;`);
+      assert.ok(memberCoupons != null && memberCoupons.length > 0, '您使用的优惠券不存在！');
+
+      let memberCoupon = memberCoupons[0];
+      let userIds = [];
+
+      let orderCategoryids = orderItems.map(m => m.dataValues.product_category_id)
+      let orderProids = orderItems.map(m => m.dataValues.product_id)
+
+      // 验证优惠券使用范围
+      if (memberCoupon.userType === 1) {
+        // 指定分类
+        let categoryids = await ctx.orm().sms_coupon_product_category_relation.findAll({
+          where: {
+            coupon_id: memberCoupon.coupon_id
+          }
+        });
+
+        if (categoryids && categoryids.length > 0) {
+          userIds = categoryids.map(m => {
+            return m.dataValues.product_category_id;
+          })
+        }
+
+        let result1 = _.intersection(userIds, orderCategoryids);
+        assert.ok(result1 != null && result1.length > 0, '订单中商品不在优惠券使用范围！');
+      }
+      else if (memberCoupon.userType === 2) {
+        // 指定商品
+        let proids = await ctx.orm().sms_coupon_product_relation.findAll({
+          where: {
+            coupon_id: memberCoupon.coupon_id
+          }
+        })
+
+        if (proids && proids.length > 0) {
+          userIds = proids.map(m => {
+            return m.dataValues.product_id;
+          })
+        }
+
+        let result2 = _.intersection(userIds, orderProids);
+        assert.ok(result2 != null && result2.length > 0, '订单中商品不在优惠券使用范围！');
+      }
+
+      // 更新用户优惠券状态为已使用
+      await ctx.orm().sms_coupon_history.update({
+        use_status: 1,
+        use_time: now,
+        order_id: order.id,
+        order_sn: order.order_sn
+      }, {
+        where: {
+          id: coupon.id,
+          member_id: member.id,
+          use_status: 0
+        }
+      })
+
+      // 开始减钱
+      // 更新商品使用优惠券
+      let memberCouponAmount = Math.round(memberCoupon.amount * 100) / 100;
+      let productCouponAmount = 0;
+
+      if (memberCoupon.use_type === 1) {
+        // 指定分类
+      }
+      else if (memberCoupon.use_type === 2) {
+        // 指定商品
+        for (let i = 0, j = orderItems.length; i < j; i++) {
+          let orderItem = orderItems[i];
+
+          if (memberCouponAmount > 0 && userIds.includes(orderItem.product_id) >= 0) {
+            let productPayAmount = Math.round(orderItem.product_pay_amount * 100) / 100;
+            let couponAmount = productPayAmount > memberCouponAmount ? memberCouponAmount : productPayAmount;
+            productPayAmount = productPayAmount - couponAmount;
+
+            // 更新商品销售价格
+            await ctx.orm().oms_order_item.update({
+              product_pay_amount: productPayAmount,
+              coupon_amount: couponAmount
+            }, {
+              where: {
+                id: orderItem.id
+              }
+            });
+
+            memberCouponAmount -= couponAmount;
+            productCouponAmount += couponAmount;
+          }
+        }
+      }
+
+      orderPrice -= orderPrice > productCouponAmount ? productCouponAmount : orderPrice;
+
+      // 更新订单金额
+      // 更新订单使用优惠券
+      await ctx.orm().oms_order.update({
+        coupon_id: coupon.couponId,
+        pay_amount: orderPrice,
+        coupon_amount: productCouponAmount
+      }, {
+        where: {
+          id: order.id
+        }
+      });
+    }
 
     let result = null;
 
     switch (payType) {
       case 1:
-        // 支付宝
-        const formData = new AlipayFormData();
-        formData.setMethod('get');
-        formData.addField('notifyUrl', 'https://mall.lixianggo.com/mall/notify/alipay');
-        formData.addField('returnUrl', returnUrl);
-        formData.addField('bizContent', {
-          outTradeNo: orderSn,
-          productCode: 'FAST_INSTANT_TRADE_PAY',
-          totalAmount: Math.floor(orderPrice * 100) / 100,
-          subject: '商城订单',
-          body: '商城商品支付订单',
-        });
+        if (orderPrice > 0) {
+          // 支付宝
+          const formData = new AlipayFormData();
+          formData.setMethod('get');
+          formData.addField('notifyUrl', 'https://mall.lixianggo.com/mall/notify/alipay');
+          formData.addField('returnUrl', returnUrl);
+          formData.addField('bizContent', {
+            outTradeNo: orderSn,
+            productCode: 'FAST_INSTANT_TRADE_PAY',
+            totalAmount: Math.floor(orderPrice * 100) / 100,
+            subject: '商城订单',
+            body: '商城商品支付订单',
+          });
 
-        result = await alipay.exec('alipay.trade.wap.pay', {}, {
-          formData: formData
-        });
-        /* result = alipayAPI.wapPay({
-          subject: '商城订单',
-          body: '商城商品支付订单',
-          outTradeId: orderSn,
-          timeout: '10m',
-          amount: Math.floor(orderPrice * 100) / 100,
-          goodsType: '1',
-          return_url: encodeURIComponent(returnUrl)
-        });*/
-        console.log(result);
+          result = await alipay.exec('alipay.trade.wap.pay', {}, {
+            formData: formData
+          });
 
-        // 更新支付类型
-        await ctx.orm().oms_order.update({
-          pay_type: payType,
-          modify_time: now,
-          note: orderNote
-        }, {
-          where: {
-            id: order.id
+          // 更新支付类型
+          await ctx.orm().oms_order.update({
+            pay_type: payType,
+            modify_time: now,
+            note: orderNote
+          }, {
+            where: {
+              id: order.id
+            }
+          })
+
+          ctx.body = {
+            webPayUrl: result
           }
-        })
+        } else {
+          // 更新支付类型
+          await ctx.orm().oms_order.update({
+            pay_type: payType,
+            status: 1,
+            payment_time: date.formatDate(),
+            modify_time: now,
+            note: orderNote
+          }, {
+            where: {
+              id: order.id
+            }
+          })
 
-        // 支付宝
-        ctx.body = {
-          webPayUrl: result
+          await ctx.orm().oms_order_operate_history.create({
+            order_id: order.id,
+            operate_man: '用户',
+            create_time: now,
+            order_status: 1,
+            note: `${member.nickname}在${now}用支付宝支付成功0元`
+          })
+
+          ctx.body = {
+            replaceUrl: `/order?orderId=${order.id}&orderSn=${order.order_sn}`
+          }
         }
         break;
       case 2:
-        // 微信
-        result = await tenpayAPI.unifiedOrder({
-          out_trade_no: orderSn,
-          body: '商城商品支付订单',
-          total_fee: parseInt(orderPrice * 100),
-          openid: '',
-          trade_type: 'MWEB',
-          spbill_create_ip: ip.getClientIP(ctx)
-        });
+        if (orderPrice > 0) {
+          // 微信
+          result = await tenpayAPI.unifiedOrder({
+            out_trade_no: orderSn,
+            body: '商城商品支付订单',
+            total_fee: parseInt(orderPrice * 100),
+            openid: '',
+            trade_type: 'MWEB',
+            spbill_create_ip: ip.getClientIP(ctx)
+          });
 
-        // 更新支付类型
-        await ctx.orm().oms_order.update({
-          pay_type: payType,
-          modify_time: now,
-          note: orderNote
-        }, {
-          where: {
-            id: order.id
+          // 更新支付类型
+          await ctx.orm().oms_order.update({
+            pay_type: payType,
+            modify_time: now,
+            note: orderNote
+          }, {
+            where: {
+              id: order.id
+            }
+          })
+
+          ctx.body = {
+            webPayUrl: result.return_code === 'SUCCESS' ? result.mweb_url : ''
           }
-        })
+        } else {
+          // 更新支付类型
+          await ctx.orm().oms_order.update({
+            pay_type: payType,
+            status: 1,
+            payment_time: date.formatDate(),
+            modify_time: now,
+            note: orderNote
+          }, {
+            where: {
+              id: order.id
+            }
+          })
 
-        ctx.body = {
-          webPayUrl: result.return_code === 'SUCCESS' ? result.mweb_url : ''
+          await ctx.orm().oms_order_operate_history.create({
+            order_id: order.id,
+            operate_man: '用户',
+            create_time: now,
+            order_status: 1,
+            note: `${member.nickname}在${now}用微信支付成功0元`
+          })
+
+          ctx.body = {
+            replaceUrl: `/order?orderId=${order.id}&orderSn=${order.order_sn}`
+          }
         }
         break;
       case 3:
@@ -1335,7 +1500,9 @@ module.exports = {
           note: `${member.nickname}在${now}用余额支付成功`
         })
 
-        ctx.body = {}
+        ctx.body = {
+          replaceUrl: `/order?orderId=${order.id}&orderSn=${order.order_sn}`
+        }
         break;
       case 99:
         // 货到付款，支付成功
@@ -1367,11 +1534,93 @@ module.exports = {
           note: `${member.nickname}在${now}用货到付款支付成功`
         })
 
-        ctx.body = {}
+        ctx.body = {
+          replaceUrl: `/order?orderId=${order.id}&orderSn=${order.order_sn}`
+        }
         break;
       default:
         ctx.body = {}
         break;
     }
+  },
+  memberCouponList: async (ctx) => {
+    let id = ctx.request.body.id || 0;
+
+    // 获取会员信息
+    let member = await ctx.orm().ums_member.findOne({
+      where: {
+        id,
+        status: 1,
+        is_del: 0
+      }
+    });
+
+    assert.ok(member != null, '输入帐号不存在！');
+
+    let memberCoupons = await ctx.orm().query(`
+    select h.id, h.member_id, h.coupon_id, c.name, c.amount, c.start_time, c.end_time, c.use_type, c.note from sms_coupon_history h 
+    inner join sms_coupon c on c.id = h.coupon_id where h.member_id = ${member.id} and h.use_status = 0;`);
+
+    let couponList = [];
+    if (memberCoupons && memberCoupons.length > 0) {
+      for (let i = 0, j = memberCoupons.length; i < j; i++) {
+        let memberCoupon = memberCoupons[i];
+
+        let available = date.isDateBetween(memberCoupon.start_time, memberCoupon.end_time, new Date()) ? 1 : 0;
+        let reason = available === 1 ? '' : '不在使用时间范围内';
+
+        let couponAmout = Math.round(memberCoupon.amount * 100) / 100;
+
+        let coupon = {
+          id: memberCoupon.id,
+          couponId: memberCoupon.coupon_id,
+          available: available,
+          condition: `指定商品\n最多优惠${couponAmout}元`,
+          description: memberCoupon.note,
+          reason: reason,
+          value: parseInt(couponAmout * 100),
+          name: memberCoupon.name,
+          startAt: parseInt(date.timeToTimeStamp(memberCoupon.start_time) / 1000),
+          endAt: parseInt(date.timeToTimeStamp(memberCoupon.end_time) / 1000),
+          valueDesc: `${couponAmout}`,
+          unitDesc: '元',
+          userType: memberCoupon.use_type,
+          userIds: []
+        }
+
+        if (coupon.userType === 1) {
+          // 指定分类
+          let categoryids = await ctx.orm().sms_coupon_product_category_relation.findAll({
+            where: {
+              coupon_id: coupon.couponId
+            }
+          });
+
+          if (categoryids && categoryids.length > 0) {
+            coupon.userIds = categoryids.map(m => {
+              return m.dataValues.product_category_id;
+            })
+          }
+        }
+        else if (coupon.userType === 2) {
+          // 指定商品
+          let proids = await ctx.orm().sms_coupon_product_relation.findAll({
+            where: {
+              coupon_id: coupon.couponId
+            }
+          })
+
+          if (proids && proids.length > 0) {
+            coupon.userIds = proids.map(m => {
+              return m.dataValues.product_id;
+            })
+          }
+        }
+
+        couponList.push(coupon);
+      }
+    }
+
+    ctx.body = couponList;
   }
 };
