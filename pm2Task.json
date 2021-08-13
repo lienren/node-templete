@@ -1,7 +1,7 @@
 {
   "apps": [
     {
-      "name": "FruitAutoTask",
+      "name": "AutoTask",
       "script": "./src/tasks/autoTask.js",
       "watch": false,
       "ignore_watch": [
