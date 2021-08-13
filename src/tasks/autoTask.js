@@ -26,7 +26,7 @@ async function orderRevertStock () {
   let now = date.formatDate();
   let sql = `select m.product_sku_id, m.product_quantity, o.id orderid, o.coupon_id, o.create_time from oms_order_item m 
   inner join oms_order o on o.id = m.order_id 
-  where o.status = 0 and now() > DATE_ADD(o.create_time, INTERVAL o.auto_confirm_day day);`;
+  where o.status = 0 and now() > DATE_ADD(o.create_time, INTERVAL 24 HOUR);`;
 
   let orderPros = await ctx.orm().query(sql);
 
