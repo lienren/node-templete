@@ -545,14 +545,19 @@ module.exports = {
       where
     });
 
-    let orderPros = await ctx.orm().oms_order_item.findAll({
-      where: {
-        order_id: {
-          $in: orders.map(m => {
-            return m.id
-          })
-        }
+    let orderProsWhere = {
+      order_id: {
+        $in: orders.map(m => {
+          return m.id
+        })
       }
+    }
+    if (providerId) {
+      orderProsWhere.provider_id = providerId
+    }
+
+    let orderPros = await ctx.orm().oms_order_item.findAll({
+      where: orderProsWhere
     });
 
     let xlsxObj = [];
@@ -644,8 +649,11 @@ module.exports = {
       '商品编号',
       '商品名称',
       '商品条码',
-      '商品销售价',
+      '商品销售单价',
       '商品购买数量',
+      '商品销售总价',
+      '商品支付总价',
+      '优惠券抵扣金额',
       'SKU编号',
       'SKU条码',
       'SKU属性',
@@ -656,17 +664,177 @@ module.exports = {
 
       let arr = new Array();
       arr.push(pro.order_sn || '');
-      arr.push(pro.product_id || '');
+      arr.push(pro.product_id);
       arr.push(pro.product_name || '');
       arr.push(pro.product_sn || '');
-      arr.push(pro.product_price || '');
-      arr.push(pro.product_quantity || '');
-      arr.push(pro.product_sku_id || '');
+      arr.push(pro.product_price);
+      arr.push(pro.product_quantity);
+      arr.push(pro.product_total);
+      arr.push(pro.product_pay_amount);
+      arr.push(pro.coupon_amount);
+      arr.push(pro.product_sku_id);
       arr.push(pro.product_sku_code || '');
       arr.push(pro.product_attr || '');
       arr.push(pro.provider_name || '');
 
       xlsxObj[1].data.push(arr)
+    }
+
+    let excelFile = excel.exportMoreSheetExcel(xlsxObj);
+
+    ctx.set('Content-Type', 'application/vnd.openxmlformats');
+    ctx.set('Access-Control-Expose-Headers', 'Content-Disposition')
+    ctx.set('Content-Disposition', 'attachment; filename=' + 'orders_export.xlsx');
+    ctx.body = excelFile;
+  },
+  exprotProviderOrders: async (ctx) => {
+    let orderSn = ctx.request.body.orderSn || '';
+    let receiverKeyword = ctx.request.body.receiverKeyword;
+    let status = ctx.request.body.status;
+    let orderType = ctx.request.body.orderType;
+    let sourceType = ctx.request.body.sourceType;
+    let payType = ctx.request.body.payType;
+    let createTime = ctx.request.body.createTime || '';
+    let nickName = ctx.request.body.nickName || '';
+    let userName = ctx.request.body.userName || '';
+    let providerId = ctx.request.body.providerId || 0;
+
+    let where = {
+      delete_status: 0
+    }
+
+    if (!(payType === null || payType === undefined || payType === '')) {
+      where.pay_type = payType
+    }
+
+    if (providerId) {
+      where.$and = [
+        sequelize.literal(`exists (select * from oms_order_item where order_id = oms_order.id and provider_id = ${providerId})`)
+      ]
+    }
+
+    if (nickName) {
+      where.$and = [
+        sequelize.literal(`exists (select * from ums_member where id = oms_order.member_id and nickname = '${nickName}')`)
+      ]
+    }
+
+    if (userName) {
+      where.member_username = userName
+    }
+
+    if (orderSn) {
+      where.order_sn = orderSn
+    }
+
+    if (receiverKeyword) {
+      where.$or = [{
+        receiver_name: {
+          $like: `%${receiverKeyword}%`
+        }
+      }, {
+        receiver_phone: {
+          $like: `%${receiverKeyword}%`
+        }
+      }];
+    }
+
+    if (!(status === null || status === undefined || status === '')) {
+      where.status = status
+    }
+
+    if (!(orderType === null || orderType === undefined || orderType === '')) {
+      where.order_type = orderType
+    }
+
+    if (!(sourceType === null || sourceType === undefined || sourceType === '')) {
+      where.source_type = sourceType
+    }
+
+    if (createTime && createTime.length > 1) {
+      where.create_time = {
+        $between: [`${createTime[0]} 00:00:00`, `${createTime[1]} 23:59:59`]
+      }
+    }
+
+    let orders = await ctx.orm().oms_order.findAll({
+      where
+    });
+
+    let orderProsWhere = {
+      order_id: {
+        $in: orders.map(m => {
+          return m.id
+        })
+      }
+    }
+    if (providerId) {
+      orderProsWhere.provider_id = providerId
+    }
+
+    let orderPros = await ctx.orm().oms_order_item.findAll({
+      where: orderProsWhere
+    });
+
+    let xlsxObj = [];
+    xlsxObj.push({
+      name: '订单列表',
+      data: []
+    })
+
+    xlsxObj[0].data.push([
+      '供应商名称',
+      '商品条码',
+      '商品名称',
+      'SKU编号',
+      'SKU条码',
+      'SKU属性',
+      '购买数量',
+      '商品单价',
+      '商品总价',
+      '优惠券抵扣金额',
+      '支付金额',
+      '支付类型',
+      '订单状态',
+      '支付时间',
+      '下单时间',
+      '订单号',
+      '收货人',
+      '收货人电话',
+      '收货人省市区',
+      '收货人地址'
+    ])
+
+    for (let i = 0, j = orderPros.length; i < j; i++) {
+      let orderPro = orderPros[i];
+
+      let arr = new Array();
+      arr.push(orderPro.provider_name || '');
+      arr.push(orderPro.product_sn || '');
+      arr.push(orderPro.product_name || '');
+      arr.push(orderPro.product_sku_id);
+      arr.push(orderPro.product_sku_code || '');
+      arr.push(orderPro.product_attr || '');
+      arr.push(orderPro.product_quantity);
+      arr.push(orderPro.product_price);
+      arr.push(orderPro.product_total);
+      arr.push(orderPro.coupon_amount);
+      arr.push(orderPro.product_pay_amount);
+
+      let order = orders.find(f => f.id === orderPro.order_id);
+      if (order) {
+        arr.push(payTypeOptions[order.pay_type]);
+        arr.push(statusOptions[order.status]);
+        arr.push(order.payment_time || '');
+        arr.push(order.create_time);
+        arr.push(order.order_sn || '');
+        arr.push(order.receiver_name || '');
+        arr.push(order.receiver_phone || '');
+        arr.push(`${order.receiver_province}/${order.receiver_city}/${order.receiver_region}`);
+        arr.push(order.receiver_detail_address || '');
+      }
+
+      xlsxObj[0].data.push(arr)
     }
 
     let excelFile = excel.exportMoreSheetExcel(xlsxObj);
