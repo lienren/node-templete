@@ -19,7 +19,8 @@ const statusOptions = {
   1: '待发货',
   2: '已发货',
   3: '已完成',
-  4: '已关闭'
+  4: '已关闭',
+  999: '已取消'
 }
 
 const payTypeOptions = {

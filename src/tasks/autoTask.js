@@ -12,10 +12,10 @@ const schedule = require('node-schedule');
 const sequelize = require('sequelize').Sequelize;
 const config = require('../config.js');
 const date = require('../utils/date');
-const dic = require('../controllers/fruit/fruitEnum');
 
 // 自动取消订单，还原订单库存
 let automaticOrderRevertStock = null;
+let automaticCouponExpired = null;
 let ctx = {};
 let next = function () {
   return true;
@@ -69,6 +69,28 @@ async function orderRevertStock () {
   console.log('orderRevertStock is over:%s', date.formatDate());
 }
 
+// 自动设置过期优惠券
+async function couponExpired () {
+  let sql = `select id from sms_coupon where end_time < now();`;
+
+  let coupons = await ctx.orm().query(sql);
+
+  if (coupons && coupons.length > 0) {
+    await ctx.orm().sms_coupon_history.update({
+      use_status: 2
+    }, {
+      where: {
+        coupon_id: {
+          $in: coupons.map(m => m.id)
+        },
+        use_status: 0
+      }
+    });
+  }
+
+  console.log('couponExpired is over:%s', date.formatDate());
+}
+
 async function main () {
   // 使用koa-orm中间件，sequelize，mysql
   if (config.databases) {
@@ -89,11 +111,20 @@ async function main () {
     automaticRule,
     orderRevertStock
   );
+
+  automaticCouponExpired = schedule.scheduleJob(
+    automaticRule,
+    couponExpired
+  );
 }
 
 process.on('SIGINT', function () {
   if (automaticOrderRevertStock) {
     automaticOrderRevertStock.cancel();
+  }
+
+  if (automaticCouponExpired) {
+    automaticCouponExpired.cancel();
   }
 
   process.exit(0);
