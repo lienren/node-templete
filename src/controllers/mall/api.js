@@ -1622,5 +1622,9 @@ module.exports = {
     }
 
     ctx.body = couponList;
+  },
+  memberInvoicInfo: async (ctx) => {
+    let result = await ctx.orm().invoic_info.findAll();
+    ctx.body = result;
   }
 };
