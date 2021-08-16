@@ -1517,7 +1517,9 @@ module.exports = {
           bill_account_bank: billSort === '专票' ? billInfo.accountBank : '',
           bill_account_num: billSort === '专票' ? billInfo.accountNum : '',
           bill_address: billSort === '专票' ? billInfo.billAddress : '',
-          bill_receiver_phone: billSort === '专票' ? billInfo.billPhone : '',
+          bill_phone: billSort === '专票' ? billInfo.billPhone : '',
+          bill_receiver_address: billSort === '专票' ? billInfo.billReceiveAddress : '',
+          bill_receiver_phone: billSort === '专票' ? billInfo.billReceivePhone : '',
           bill_receiver_email: billSort === '专票' ? billInfo.billEmail : '',
           note: orderNote
         }, {

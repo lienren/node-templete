@@ -205,6 +205,14 @@ module.exports = function(sequelize, DataTypes) {
     bill_address: {
       type: DataTypes.STRING(200),
       allowNull: true
+    },
+    bill_phone: {
+      type: DataTypes.STRING(20),
+      allowNull: true
+    },
+    bill_receiver_address: {
+      type: DataTypes.STRING(200),
+      allowNull: true
     }
   }, {
     tableName: 'oms_order'

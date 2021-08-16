@@ -167,7 +167,9 @@ module.exports = {
           billTax: m.dataValues.bill_tax,
           billAccountBank: m.dataValues.bill_account_bank,
           billAccountNum: m.dataValues.bill_account_num,
-          billAddress: m.dataValues.bill_address
+          billAddress: m.dataValues.bill_address,
+          billPhone: m.dataValues.bill_phone,
+          billReceiverAddress: m.dataValues.bill_receiver_address,
         }
       }),
     };
@@ -242,6 +244,8 @@ module.exports = {
       billAccountBank: result.dataValues.bill_account_bank,
       billAccountNum: result.dataValues.bill_account_num,
       billAddress: result.dataValues.bill_address,
+      billPhone: result.dataValues.bill_phone,
+      billReceiverAddress: result.dataValues.bill_receiver_address,
       orderItemList: orderItems.map(m => {
         return {
           ...m.dataValues,
