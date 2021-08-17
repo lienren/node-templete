@@ -65,6 +65,9 @@ async function orderRevertStock () {
         }
       })
 
+      // 还原优惠券
+
+
       // 记录订单取消
       await ctx.orm().oms_order_operate_history.create({
         order_id: orderPros[i].orderid,
@@ -123,6 +126,43 @@ async function refreshProductStock () {
   console.log('refreshProductStock is over:%s', date.formatDate());
 }
 
+// 订单自动确认收货
+async function autoConfirmOrder () {
+  let now = date.formatDate();
+  let sql = `select id from oms_order where status = 2 and confirm_status = 0 and delete_status = 0 and DATE_ADD(delivery_time,INTERVAL auto_confirm_day day) > now();`;
+
+  let orders = await ctx.orm().query(sql);
+
+  if (orders && orders.length > 0) {
+    for (let i = 0, j = orders.length; i < j; i++) {
+      let updateOrder = await ctx.orm().oms_order.update({
+        confirm_status: 1,
+        receive_time: date.formatDate(),
+        modify_time: date.formatDate()
+      }, {
+        where: {
+          id: orders[i].id,
+          status: 2,
+          confirm_status: 0,
+          delete_status: 0
+        }
+      })
+
+      if (updateOrder && updateOrder.length > 0 && updateOrder[0] > 0) {
+        ctx.orm().oms_order_operate_history.create({
+          order_id: orders[i].id,
+          operate_man: `系统自动`,
+          create_time: date.formatDate(),
+          order_status: 2,
+          note: `系统在${now}订单确认收货`
+        })
+      }
+    }
+  }
+
+  console.log('autoConfirmOrder is over:%s', date.formatDate());
+}
+
 async function main () {
   // 使用koa-orm中间件，sequelize，mysql
   if (config.databases) {
@@ -144,6 +184,7 @@ async function main () {
     async () => {
       await orderRevertStock();
       await refreshProductStock();
+      await autoConfirmOrder();
     }
   );
 
