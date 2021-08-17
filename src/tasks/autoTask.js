@@ -56,6 +56,16 @@ async function orderRevertStock () {
     })
 
     if (update && update.length > 0 && update[0] > 0) {
+      // 还原商品销售量
+      await ctx.orm().pms_product.update({
+        sale: sequelize.literal(`sale - ${orderPros[i].product_quantity}`)
+      }, {
+        where: {
+          id: orderPros[i].product_id
+        }
+      })
+
+      // 记录订单取消
       await ctx.orm().oms_order_operate_history.create({
         order_id: orderPros[i].orderid,
         operate_man: '系统自动',
@@ -91,6 +101,28 @@ async function couponExpired () {
   console.log('couponExpired is over:%s', date.formatDate());
 }
 
+// 自动更新商品库存
+async function refreshProductStock () {
+
+  // 更新销售量的sql
+  /*
+  update pms_product p, (
+  select m.product_id, sum(m.product_quantity) sale from oms_order o
+  inner join oms_order_item m on m.order_id = o.id
+  where o.`status` > 0
+  group by m.product_id) a
+  set p.sale = a.sale
+  where p.id = a.product_id; 
+  */
+
+  let sql = `update pms_product p, (select product_id, sum(stock) stock from pms_sku_stock group by product_id) a 
+  set p.stock = a.stock where p.id = a.product_id`;
+
+  await ctx.orm().query(sql, {}, { type: ctx.orm().sequelize.QueryTypes.UPDATE });
+
+  console.log('refreshProductStock is over:%s', date.formatDate());
+}
+
 async function main () {
   // 使用koa-orm中间件，sequelize，mysql
   if (config.databases) {
@@ -109,7 +141,10 @@ async function main () {
 
   automaticOrderRevertStock = schedule.scheduleJob(
     automaticRule,
-    orderRevertStock
+    async () => {
+      await orderRevertStock();
+      await refreshProductStock();
+    }
   );
 
   automaticCouponExpired = schedule.scheduleJob(
