@@ -129,7 +129,7 @@ async function refreshProductStock () {
 // 订单自动确认收货
 async function autoConfirmOrder () {
   let now = date.formatDate();
-  let sql = `select id from oms_order where status = 2 and confirm_status = 0 and delete_status = 0 and DATE_ADD(delivery_time,INTERVAL auto_confirm_day day) > now();`;
+  let sql = `select id from oms_order where status = 2 and confirm_status = 0 and delete_status = 0 and DATE_ADD(delivery_time,INTERVAL auto_confirm_day day) < now();`;
 
   let orders = await ctx.orm().query(sql);
 
