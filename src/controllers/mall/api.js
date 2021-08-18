@@ -1396,7 +1396,7 @@ module.exports = {
           result = await tenpayAPI.unifiedOrder({
             out_trade_no: orderSn,
             body: '商城商品支付订单',
-            total_fee: parseInt(orderPrice * 100),
+            total_fee: orderPrice * 100,
             openid: '',
             trade_type: 'MWEB',
             spbill_create_ip: ip.getClientIP(ctx)
