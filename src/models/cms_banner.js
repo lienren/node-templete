@@ -1,43 +1,27 @@
 /* jshint indent: 2 */
 
 module.exports = function(sequelize, DataTypes) {
-  return sequelize.define('applyInfo', {
+  return sequelize.define('cms_banner', {
     id: {
       type: DataTypes.INTEGER(11),
       allowNull: false,
       primaryKey: true,
       autoIncrement: true
     },
-    openId: {
-      type: DataTypes.STRING(100),
-      allowNull: true
-    },
     name: {
       type: DataTypes.STRING(100),
       allowNull: true
     },
-    phone: {
-      type: DataTypes.STRING(20),
-      allowNull: true
-    },
-    depname: {
-      type: DataTypes.STRING(100),
-      allowNull: true
-    },
-    place: {
-      type: DataTypes.STRING(100),
-      allowNull: true
-    },
-    remark: {
+    link: {
       type: DataTypes.STRING(1000),
       allowNull: true
     },
-    imgcount: {
-      type: DataTypes.INTEGER(11),
+    imgUrl: {
+      type: DataTypes.STRING(1000),
       allowNull: true
     },
-    imglist: {
-      type: DataTypes.STRING(5000),
+    index: {
+      type: DataTypes.INTEGER(11),
       allowNull: true
     },
     createTime: {
@@ -50,27 +34,11 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true,
       defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
     },
-    state: {
+    isDel: {
       type: DataTypes.INTEGER(11),
-      allowNull: true
-    },
-    stateName: {
-      type: DataTypes.STRING(100),
-      allowNull: true
-    },
-    opName: {
-      type: DataTypes.STRING(100),
-      allowNull: true
-    },
-    opRemark: {
-      type: DataTypes.STRING(1000),
-      allowNull: true
-    },
-    opTime: {
-      type: DataTypes.DATE,
       allowNull: true
     }
   }, {
-    tableName: 'applyInfo'
+    tableName: 'cms_banner'
   });
 };

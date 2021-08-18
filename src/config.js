@@ -74,16 +74,16 @@ module.exports = {
       sitepath: path.resolve(__dirname, '../assets/adminweb/index.html')
     }
   ],
-  // sequelize-auto -o "./src/models" -d cumt -h 47.111.64.7 -u root -p 3306 -x Ler@2019 -e mysql
+  // sequelize-auto -o "./src/models" -d aicy -h 47.110.136.73 -u root -p 3306 -x Ler@2019 -e mysql
   databases: [
     {
       modelPath: path.resolve(__dirname, './models'),
-      db: 'cumt',
+      db: 'aicy',
       dialect: 'mysql',
       port: 3306,
       replication: {
-        read: [{ host: '47.111.64.7', username: 'root', password: 'Ler@2019' }],
-        write: { host: '47.111.64.7', username: 'root', password: 'Ler@2019' }
+        read: [{ host: '47.110.136.73', username: 'root', password: 'Ler@2019' }],
+        write: { host: '47.110.136.73', username: 'root', password: 'Ler@2019' }
       },
       dialectOptions: {
         dateStrings: true,
