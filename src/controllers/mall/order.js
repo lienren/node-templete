@@ -488,6 +488,10 @@ module.exports = {
     let userName = ctx.request.body.userName || '';
     let providerId = ctx.request.body.providerId || 0;
 
+    if (!Array.isArray(createTime) && createTime.indexOf(',') >= 0) {
+      createTime = createTime.split(',')
+    }
+
     let where = {
       delete_status: 0
     }
