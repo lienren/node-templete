@@ -12,6 +12,10 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING(100),
       allowNull: true
     },
+    firstLetter: {
+      type: DataTypes.STRING(10),
+      allowNull: true
+    },
     communityId: {
       type: DataTypes.INTEGER(11),
       allowNull: true

@@ -10,6 +10,11 @@ module.exports = function(sequelize, DataTypes) {
     },
     customerId: {
       type: DataTypes.STRING(100),
+      allowNull: true,
+      unique: true
+    },
+    nickName: {
+      type: DataTypes.STRING(100),
       allowNull: true
     },
     userName: {
@@ -30,6 +35,10 @@ module.exports = function(sequelize, DataTypes) {
     },
     userSpeciality: {
       type: DataTypes.STRING(500),
+      allowNull: true
+    },
+    userHeadImg: {
+      type: DataTypes.STRING(1000),
       allowNull: true
     },
     isPartyMember: {
@@ -89,6 +98,16 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.DATE,
       allowNull: true,
       defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
+    },
+    userIntegral: {
+      type: DataTypes.INTEGER(11),
+      allowNull: true,
+      defaultValue: '0'
+    },
+    isComplete: {
+      type: DataTypes.INTEGER(11),
+      allowNull: true,
+      defaultValue: '0'
     }
   }, {
     tableName: 'info_user'

@@ -89,7 +89,7 @@ module.exports = {
         dateStrings: true,
         typeCast: function(field, next) {
           // for reading from database
-          if (field.type === 'DATETIME') {
+          if (field.type === 'DATETIME' || field.type === 'TIMESTAMP') {
             return field.string();
           }
           return next();
