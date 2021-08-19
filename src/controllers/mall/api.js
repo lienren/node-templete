@@ -16,6 +16,7 @@ const encrypt = require('../../utils/encrypt');
 const tenpay = require('tenpay');
 const alipay = require('../../extends/ali/index')
 const AlipayFormData = require('alipay-sdk/lib/form').default
+const NP = require('number-precision')
 
 /*
 微信支付
@@ -1212,7 +1213,7 @@ module.exports = {
     assert.ok(orderItems != null && orderItems.length > 0, '订单不存在或已支付！');
 
     let now = date.formatDate();
-    let orderPrice = Math.round(order.pay_amount * 100) / 100;
+    let orderPrice = NP.strip(order.pay_amount);
     let returnUrl = `https://mall.lixianggo.com/mall_shop_mobile/order?orderId=${order.id}&orderSn=${order.order_sn}`;
 
     if (coupon && coupon.id > 0) {
@@ -1280,7 +1281,7 @@ module.exports = {
 
       // 开始减钱
       // 更新商品使用优惠券
-      let memberCouponAmount = Math.round(memberCoupon.amount * 100) / 100;
+      let memberCouponAmount = NP.strip(memberCoupon.amount);
       let productCouponAmount = 0;
 
       if (memberCoupon.use_type === 1) {
@@ -1292,7 +1293,7 @@ module.exports = {
           let orderItem = orderItems[i];
 
           if (memberCouponAmount > 0 && userIds.includes(orderItem.product_id) >= 0) {
-            let productPayAmount = Math.round(orderItem.product_pay_amount * 100) / 100;
+            let productPayAmount = NP.strip(orderItem.product_pay_amount);
             let couponAmount = productPayAmount > memberCouponAmount ? memberCouponAmount : productPayAmount;
             productPayAmount = productPayAmount - couponAmount;
 
@@ -1340,7 +1341,7 @@ module.exports = {
           formData.addField('bizContent', {
             outTradeNo: orderSn,
             productCode: 'FAST_INSTANT_TRADE_PAY',
-            totalAmount: Math.floor(orderPrice * 100) / 100,
+            totalAmount: orderPrice,
             subject: '商城订单',
             body: '商城商品支付订单',
           });
@@ -1396,7 +1397,7 @@ module.exports = {
           result = await tenpayAPI.unifiedOrder({
             out_trade_no: orderSn,
             body: '商城商品支付订单',
-            total_fee: orderPrice * 100,
+            total_fee: NP.times(orderPrice, 100),
             openid: '',
             trade_type: 'MWEB',
             spbill_create_ip: ip.getClientIP(ctx)
@@ -1571,7 +1572,7 @@ module.exports = {
         let available = date.isDateBetween(memberCoupon.start_time, memberCoupon.end_time, new Date()) ? 1 : 0;
         let reason = available === 1 ? '' : '不在使用时间范围内';
 
-        let couponAmout = Math.round(memberCoupon.amount * 100) / 100;
+        let couponAmout = NP.strip(memberCoupon.amount);
 
         let coupon = {
           id: memberCoupon.id,
