@@ -29,6 +29,10 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING(20),
       allowNull: true
     },
+    userSex: {
+      type: DataTypes.STRING(10),
+      allowNull: true
+    },
     userAddress: {
       type: DataTypes.STRING(100),
       allowNull: true

@@ -20,6 +20,10 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.TEXT,
       allowNull: true
     },
+    addr: {
+      type: DataTypes.STRING(200),
+      allowNull: true
+    },
     isAll: {
       type: DataTypes.INTEGER(11),
       allowNull: true

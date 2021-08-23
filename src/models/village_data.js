@@ -29,7 +29,7 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     phone: {
-      type: DataTypes.STRING(20),
+      type: DataTypes.STRING(50),
       allowNull: true
     },
     headImg: {
@@ -46,7 +46,7 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     d2: {
-      type: DataTypes.STRING(100),
+      type: DataTypes.STRING(200),
       allowNull: true
     },
     d3: {

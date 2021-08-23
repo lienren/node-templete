@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-08-18 10:44:07
- * @LastEditTime: 2021-08-18 19:29:24
+ * @LastEditTime: 2021-08-21 23:12:57
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/aicy/api.js
@@ -12,6 +12,7 @@
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
+const sequelize = require('sequelize');
 const comm = require('../../utils/comm');
 const date = require('../../utils/date');
 
@@ -35,13 +36,22 @@ module.exports = {
     if (user) {
       // 用户存在
       await ctx.orm().info_user.update({
+        userHeadImg: headImg,
         customerJSON: JSON.stringify(ctx.request.body)
       }, {
         where: {
           id: user.id
         }
       });
+
+      user.userHeadImg = headImg;
+      user.customerJSON = JSON.stringify(ctx.request.body);
     } else {
+      let userSex = '男';
+      if (idCardNo && idCardNo.length === 18) {
+        userSex = parseInt(idCardNo.substr(16, 1)) % 2 === 1 ? "男" : "女"
+      }
+
       // 用户不存在
       user = await ctx.orm().info_user.create({
         customerId: userId,
@@ -49,6 +59,7 @@ module.exports = {
         userName: userRealName,
         userPhone: phoneNo,
         userIdCard: idCardNo,
+        userSex: userSex,
         userHeadImg: headImg,
         streetId: 0,
         communityId: 0,
@@ -100,6 +111,7 @@ module.exports = {
   setUserInfo: async ctx => {
     let id = ctx.request.body.id || 0;
     let userPhone = ctx.request.body.userPhone || '';
+    let userSex = ctx.request.body.userSex || '男';
     let userAddress = ctx.request.body.userAddress || '';
     let userSpeciality = ctx.request.body.userSpeciality || '';
     let isPartyMember = ctx.request.body.isPartyMember || 0;
@@ -108,6 +120,7 @@ module.exports = {
     assert.ok(id > 0, '提交信息异常！');
 
     await ctx.orm().info_user.update({
+      userSex: userSex,
       userPhone: userPhone,
       userAddress: userAddress,
       userSpeciality: userSpeciality,
@@ -175,5 +188,56 @@ module.exports = {
     })
 
     ctx.body = data;
+  },
+  getPlacard: async ctx => {
+    let villageId = ctx.request.body.villageId || 0;
+    let limit = ctx.request.body.limit || 0;
+
+    let where = {
+      isDel: 0,
+      $or: [
+        { isAll: 1 },
+        { $and: [sequelize.literal(`exists (select * from cms_placard_village where pid = cms_placard.id and villageId = ${villageId})`)] }
+      ]
+    }
+
+    let condition = {
+      where,
+      order: [['createTime', 'desc']]
+    }
+
+    if (limit && limit > 0) {
+      condition.limit = limit
+    }
+
+    let result = await ctx.orm().cms_placard.findAll(condition);
+
+    ctx.body = result;
+  },
+  getDynamic: async ctx => {
+    let villageId = ctx.request.body.villageId || 0;
+    let limit = ctx.request.body.limit || 0;
+
+    let where = {
+      isDel: 0,
+      reviewerStatus: 2,
+      $or: [
+        { isAll: 1 },
+        { $and: [sequelize.literal(`exists (select * from cms_dynamic_village where did = cms_dynamic.id and villageId = ${villageId})`)] }
+      ]
+    }
+
+    let condition = {
+      where,
+      order: [['createTime', 'desc']]
+    }
+
+    if (limit && limit > 0) {
+      condition.limit = limit
+    }
+
+    let result = await ctx.orm().cms_dynamic.findAll(condition);
+
+    ctx.body = result;
   }
 };
