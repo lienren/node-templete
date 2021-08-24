@@ -7,9 +7,10 @@
 'use strict';
 
 const axios = require('axios');
+const qs = require('qs');
 
 // 获取请求的headers，去掉host和connection
-function getHeader(headers) {
+function getHeader (headers) {
   let ret = {};
   if (headers) {
     for (var i in headers) {
@@ -39,5 +40,10 @@ module.exports = {
       data: data,
       headers: getHeader(headers)
     });
+  },
+  postForm ({ url = '', data = {}, headers = {} }) {
+    return axios.post(url, qs.stringify(data), {
+      headers
+    })
   }
 };

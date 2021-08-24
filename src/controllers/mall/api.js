@@ -13,6 +13,7 @@ const _ = require('lodash');
 const date = require('../../utils/date');
 const ip = require('../../utils/ip');
 const encrypt = require('../../utils/encrypt');
+const http = require('../../utils/http');
 const tenpay = require('tenpay');
 const alipay = require('../../extends/ali/index')
 const AlipayFormData = require('alipay-sdk/lib/form').default
@@ -49,6 +50,15 @@ const tenpayAPI = new tenpay({
   sandbox: false,
   signType: 'RSA'
 }); */
+
+
+const logisticsCompaniesToCode = {
+  '极兔物流': 'jtexpress', '顺丰速运': 'shunfeng', '京东快递': 'jd', '邮政EMS': 'ems', '中通快递': 'shentong', '韵达快递': 'yunda', '圆通快递': 'yuantong', '申通快递': 'zhongtong', '德邦快递': 'debangkuaidi', '百世快递': 'huitongkuaidi', '天天快递': 'tiantian'
+}
+
+const logisticsStateToCode = {
+  "0": "在途", "1": "揽收", "2": "疑难", "3": "签收", "4": "退签", "5": "派件", "6": "退回", "7": "转单", "10": "待清关", "11": "清关中", "12": "已清关", "13": "清关异常", "14": "拒签"
+}
 
 module.exports = {
   memberLogin: async (ctx) => {
@@ -1629,5 +1639,80 @@ module.exports = {
   memberInvoicInfo: async (ctx) => {
     let result = await ctx.orm().invoic_info.findAll();
     ctx.body = result;
+  },
+  memberOrderOrderExpress: async (ctx) => {
+    let id = ctx.request.body.id || 0;
+    let orderId = ctx.request.body.orderId || 0;
+    let orderSn = ctx.request.body.orderSn || '';
+
+    assert.ok(orderId !== 0 || orderSn !== '', '请选择订单');
+
+    let result = await ctx.orm().oms_order.findOne({
+      where: {
+        member_id: id,
+        id: orderId,
+        order_sn: orderSn,
+        status: {
+          $gte: 2
+        },
+        delete_status: 0
+      }
+    });
+
+    if (result && result.delivery_company !== '待确认' && result.delivery_sn) {
+      // http://poll.kuaidi100.com/poll/query.do?customer=583609A1CEBEC8EDEBE0423C707F412F&sign=E403A599D367C77812B7AE8ECD6E24EC&param={"com":"yuantong","num":"YT5740637822810","from":"","phone":"","to":"","resultv2":"2","show":"0","order":"desc"}
+
+      if (logisticsCompaniesToCode[result.delivery_company]) {
+        let customer = '583609A1CEBEC8EDEBE0423C707F412F';
+        let key = 'rIMovAlS65';
+
+        let deliverySn = result.delivery_sn;
+        if (deliverySn.indexOf(',')) {
+          deliverySn = deliverySn.split(',')[0]
+        }
+
+        let data = {
+          com: logisticsCompaniesToCode[result.delivery_company],
+          num: deliverySn,
+          resultv2: '2',
+          show: '0',
+          order: 'desc'
+        };
+        let param = JSON.stringify(data);
+
+        let sign = encrypt.getMd5(`${param}${key}${customer}`).toUpperCase();
+
+        let resultPoll = await http.postForm({
+          url: 'http://poll.kuaidi100.com/poll/query.do',
+          data: {
+            customer,
+            sign,
+            param
+          }
+        })
+
+        if (resultPoll && resultPoll.data && resultPoll.data.data) {
+          ctx.body = {
+            state: resultPoll.data.state,
+            stateName: logisticsStateToCode[resultPoll.data.state],
+            router: resultPoll.data.data
+          }
+          return
+        } else {
+          ctx.body = {
+            state: resultPoll.data.returnCode,
+            stateName: resultPoll.data.message,
+            router: []
+          }
+          return
+        }
+      }
+    }
+
+    ctx.body = {
+      state: '-999999',
+      stateName: '获取物流信息失败',
+      router: []
+    }
   }
 };
