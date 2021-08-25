@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-08-18 10:44:07
- * @LastEditTime: 2021-08-25 09:41:40
+ * @LastEditTime: 2021-08-25 11:29:09
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/aicy/api.js
@@ -478,5 +478,32 @@ module.exports = {
     })
 
     ctx.body = result;
-  }
+  },
+  submitSuggest: async ctx => {
+    let id = ctx.request.body.id || 0;
+    let userId = ctx.request.body.userId || '';
+    let content = ctx.request.body.content || '';
+    let phone = ctx.request.body.phone || '';
+
+    assert.ok(id > 0, '提交信息异常！');
+    assert.ok(!!userId, '提交信息异常！');
+    assert.ok(!!content, '提交信息异常！');
+    assert.ok(!!phone, '提交信息异常！');
+    let user = await ctx.orm().info_user.findOne({
+      where: {
+        id: id,
+        customerId: userId
+      }
+    })
+
+    assert.ok(user !== null, '用户不存在！');
+
+    await ctx.orm().info_suggest.create({
+      userId: user.id,
+      content,
+      phone
+    })
+
+    ctx.body = {};
+  },
 };
