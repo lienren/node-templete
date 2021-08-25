@@ -13,7 +13,7 @@ module.exports = {
     port: 20002,
     staticPath: path.resolve(__dirname, '../assets/'),
     uploadFilePath: path.resolve(__dirname, '../assets/uploads/'),
-    uploadVirtualFilePath: 'https://cumt.billgenius.cn/uploads',
+    uploadVirtualFilePath: 'http://localhost:20002/uploads',
     logConfig: {
       appenders: {
         resLogger: {

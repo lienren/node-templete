@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-08-18 10:44:07
- * @LastEditTime: 2021-08-21 23:12:57
+ * @LastEditTime: 2021-08-25 09:41:40
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/aicy/api.js
@@ -15,6 +15,26 @@ const path = require('path');
 const sequelize = require('sequelize');
 const comm = require('../../utils/comm');
 const date = require('../../utils/date');
+
+const handleStatusNameEnum = {
+  '1': '待办理',
+  '2': '办理中',
+  '3': '已办结',
+  '4': '延期'
+}
+
+const handleStatusNameEnum2 = {
+  '1': '待办理',
+  '2': '办理中',
+  '3': '已采纳',
+  '4': '延期'
+}
+
+const verifyStausNameEnum = {
+  '1': '待审核',
+  '2': '审核通过',
+  '3': '审核不通过'
+}
 
 module.exports = {
   getUserInfo: async ctx => {
@@ -237,6 +257,225 @@ module.exports = {
     }
 
     let result = await ctx.orm().cms_dynamic.findAll(condition);
+
+    ctx.body = result;
+  },
+  createAppeal: async ctx => {
+    let id = ctx.request.body.id || 0;
+    let userId = ctx.request.body.userId || '';
+    let title = ctx.request.body.title || '';
+    let type = ctx.request.body.type || '';
+    let content = ctx.request.body.content || '';
+    let imgUrl = ctx.request.body.imgUrl || '';
+    let gps = ctx.request.body.gps || '';
+    let gpsAddress = ctx.request.body.gpsAddress || '';
+
+    assert.ok(id > 0, '提交信息异常！');
+    assert.ok(!!userId, '提交信息异常！');
+    assert.ok(!!title, '提交信息异常！');
+    assert.ok(!!type, '提交信息异常！');
+    assert.ok(!!content, '提交信息异常！');
+
+    let user = await ctx.orm().info_user.findOne({
+      where: {
+        id: id,
+        customerId: userId
+      }
+    })
+
+    assert.ok(user !== null, '用户不存在！');
+    assert.ok(user.isComplete > 0, '请完善信息后，再发布诉求，谢谢！');
+    assert.ok(user.isMute === 0, '您已被禁言，请联系管理员！');
+
+    let result = await ctx.orm().bus_appeal.create({
+      title,
+      type,
+      content,
+      imgUrl,
+      gps,
+      gpsAddress,
+      userId: id,
+      handleStatus: 1,
+      handleStatusName: handleStatusNameEnum[`1`],
+      isDel: 0
+    })
+
+    ctx.body = {
+      id: result.id
+    }
+  },
+  getAppeal: async ctx => {
+    let id = ctx.request.body.id || 0;
+    let userId = ctx.request.body.userId || '';
+    let limit = ctx.request.body.limit || 0;
+
+    assert.ok(id > 0, '提交信息异常！');
+    assert.ok(!!userId, '提交信息异常！');
+    let user = await ctx.orm().info_user.findOne({
+      where: {
+        id: id,
+        customerId: userId
+      }
+    })
+
+    assert.ok(user !== null, '用户不存在！');
+
+    let result = await ctx.orm().bus_appeal.findAll({
+      limit: limit > 0 ? limit : null,
+      where: {
+        userId: user.id,
+        isDel: 0
+      },
+      order: [['createTime', 'desc']]
+    })
+
+    ctx.body = result;
+  },
+  createProposal: async ctx => {
+    let id = ctx.request.body.id || 0;
+    let userId = ctx.request.body.userId || '';
+    let title = ctx.request.body.title || '';
+    let type = ctx.request.body.type || '';
+    let content = ctx.request.body.content || '';
+    let imgUrl = ctx.request.body.imgUrl || '';
+    let gps = ctx.request.body.gps || '';
+    let gpsAddress = ctx.request.body.gpsAddress || '';
+
+    assert.ok(id > 0, '提交信息异常！');
+    assert.ok(!!userId, '提交信息异常！');
+    assert.ok(!!title, '提交信息异常！');
+    assert.ok(!!type, '提交信息异常！');
+    assert.ok(!!content, '提交信息异常！');
+
+    let user = await ctx.orm().info_user.findOne({
+      where: {
+        id: id,
+        customerId: userId
+      }
+    })
+
+    assert.ok(user !== null, '用户不存在！');
+    assert.ok(user.isComplete > 0, '请完善信息后，再发布诉求，谢谢！');
+    assert.ok(user.isMute === 0, '您已被禁言，请联系管理员！');
+
+    let result = await ctx.orm().bus_proposal.create({
+      title,
+      type,
+      content,
+      imgUrl,
+      gps,
+      gpsAddress,
+      userId: id,
+      handleStatus: 1,
+      handleStatusName: handleStatusNameEnum2[`1`],
+      isDel: 0
+    })
+
+    ctx.body = {
+      id: result.id
+    }
+  },
+  getProposal: async ctx => {
+    let id = ctx.request.body.id || 0;
+    let userId = ctx.request.body.userId || '';
+    let limit = ctx.request.body.limit || 0;
+
+    assert.ok(id > 0, '提交信息异常！');
+    assert.ok(!!userId, '提交信息异常！');
+    let user = await ctx.orm().info_user.findOne({
+      where: {
+        id: id,
+        customerId: userId
+      }
+    })
+
+    assert.ok(user !== null, '用户不存在！');
+
+    let result = await ctx.orm().bus_proposal.findAll({
+      limit: limit > 0 ? limit : null,
+      where: {
+        userId: user.id,
+        isDel: 0
+      },
+      order: [['createTime', 'desc']]
+    })
+
+    ctx.body = result;
+  },
+  submitApplyVolunteer: async ctx => {
+    let id = ctx.request.body.id || 0;
+    let userId = ctx.request.body.userId || '';
+    let serviceContent = ctx.request.body.serviceContent || '';
+    let remark = ctx.request.body.remark || '';
+    let imgUrl = ctx.request.body.imgUrl || '';
+
+    assert.ok(id > 0, '提交信息异常！');
+    assert.ok(!!userId, '提交信息异常！');
+    let user = await ctx.orm().info_user.findOne({
+      where: {
+        id: id,
+        customerId: userId
+      }
+    })
+
+    assert.ok(user !== null, '用户不存在！');
+
+    let apply = await ctx.orm().apply_volunteer.findOne({
+      where: {
+        userId: user.id,
+        isDel: 0
+      }
+    })
+
+    if (apply) {
+      assert.ok(apply.verifyStaus === 3, '申请状态异常！');
+
+      await ctx.orm().apply_volunteer.update({
+        serviceContent,
+        remark,
+        imgUrl,
+        verifyStaus: 1,
+        verifyStausName: verifyStausNameEnum[`1`]
+      }, {
+        where: {
+          id: apply.id
+        }
+      })
+    } else {
+      await ctx.orm().apply_volunteer.create({
+        userId: user.id,
+        serviceContent,
+        remark,
+        imgUrl,
+        verifyStaus: 1,
+        verifyStausName: verifyStausNameEnum[`1`],
+        isDel: 0
+      })
+    }
+
+    ctx.body = {};
+  },
+  getApplyVolunteer: async ctx => {
+    let id = ctx.request.body.id || 0;
+    let userId = ctx.request.body.userId || '';
+
+    assert.ok(id > 0, '提交信息异常！');
+    assert.ok(!!userId, '提交信息异常！');
+    let user = await ctx.orm().info_user.findOne({
+      where: {
+        id: id,
+        customerId: userId
+      }
+    })
+
+    assert.ok(user !== null, '用户不存在！');
+
+    let result = await ctx.orm().apply_volunteer.findOne({
+      where: {
+        userId: user.id,
+        isDel: 0
+      }
+    })
 
     ctx.body = result;
   }
