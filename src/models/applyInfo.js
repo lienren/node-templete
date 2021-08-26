@@ -161,6 +161,10 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.INTEGER(11),
       allowNull: true,
       defaultValue: '0'
+    },
+    img4: {
+      type: DataTypes.STRING(1000),
+      allowNull: true
     }
   }, {
     tableName: 'applyInfo'

@@ -68,6 +68,7 @@ module.exports = {
     let img1 = ctx.request.body.img1 || '';
     let img2 = ctx.request.body.img2 || '';
     let img3 = ctx.request.body.img3 || '';
+    let img4 = ctx.request.body.img4 || '';
 
 
     let now = date.getTimeStamp();
@@ -160,6 +161,7 @@ module.exports = {
         img1,
         img2,
         img3,
+        img4,
         status,
         statusName: statusNameEnum[status],
         verifyAdminId1,
