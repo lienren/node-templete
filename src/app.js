@@ -31,6 +31,17 @@ app.use(async (ctx, next) => {
 });
 
 // 使用koa-bodyparser中间件
+app.use(async (ctx, next) => {
+  ctx.disableBodyParserReturn = false;
+
+  let path = ctx.path.toLowerCase();
+
+  if (path.indexOf('/base/getimagecodebybase64') >= 0) {
+    ctx.disableBodyParserReturn = true;
+  }
+  await next();
+});
+
 app.use(
   bodyParser({
     enableTypes: ['json', 'form'],

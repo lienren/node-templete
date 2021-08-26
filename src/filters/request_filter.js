@@ -13,7 +13,7 @@ const log = require('../utils/log');
 const redirect = require('./request_redirect');
 const auth = require('./request_authentication');
 
-module.exports = async function(ctx, next) {
+module.exports = async function (ctx, next) {
   // 响应开始时间
   const requestStartTime = new Date();
 
@@ -33,8 +33,20 @@ module.exports = async function(ctx, next) {
   };
 
   // 根据请求目录转入指定静态目录
+  if (ctx.path.indexOf('h5') > -1) {
+    await sendfile(ctx, path.resolve(__dirname, '../../assets/h5/index.html'));
+    return;
+  }
+
+  // 根据请求目录转入指定静态目录
   if (ctx.path.indexOf('adminweb') > -1) {
     await sendfile(ctx, path.resolve(__dirname, '../../assets/adminweb/index.html'));
+    return;
+  }
+
+  // 根据请求目录转入指定静态目录
+  if (ctx.path.indexOf('school_report') > -1) {
+    await sendfile(ctx, path.resolve(__dirname, '../../assets/school_report/index.html'));
     return;
   }
 
@@ -90,11 +102,13 @@ module.exports = async function(ctx, next) {
     // 记录响应日志
     log.logResponse(ctx, ms);
 
-    ctx.body = {
-      code: ctx.work.code,
-      message: ctx.work.message,
-      data: ctx.body || {}
-    };
+    if (!ctx.disableBodyParserReturn) {
+      ctx.body = {
+        code: ctx.work.code,
+        message: ctx.work.message,
+        data: ctx.body || {}
+      };
+    }
   } catch (error) {
     // 响应间隔时间
     let ms = new Date() - requestStartTime;

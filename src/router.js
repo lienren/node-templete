@@ -15,6 +15,7 @@ const router = new Router();
 router
   // 获取图形验证码
   .post('/base/getimagecode', ctrl.CtrlBase.getImageCode)
+  .all('/base/getimagecodebybase64', ctrl.CtrlBase.getImageCodeByBase64)
   // 上传文件
   .post('/base/uploadfile', uploadFile.getMulter('files').any(), ctrl.CtrlBase.uploadFile)
   .post('/super/login', ctrl.CtrlManager.login)
