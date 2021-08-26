@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-08-23 10:32:14
- * @LastEditTime: 2021-08-25 16:18:55
+ * @LastEditTime: 2021-08-26 11:35:02
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/mall/sf.js
@@ -210,4 +210,51 @@ module.exports = {
       assert.ok(false, result.data.msg || '查询异常')
     }
   },
+  searchOrderFreight: async (ctx) => {
+    let userId = ctx.request.body.userId || 0;
+    let customId = ctx.request.body.customId || '';
+    let orderId = ctx.request.body.orderId || 0;
+
+    let order = await ctx.orm().exp_info.findOne({
+      where: {
+        id: orderId,
+        userId: userId,
+        customId: customId
+      }
+    });
+
+    assert.ok(order !== null, '订单不存在！');
+
+    let companyId = appId;
+
+    let dataSign = `{"companyId":"${companyId}","orderId":"${order.orderId}"}`;
+    let now = date.getTimeStamp();
+    let sign = genSign(dataSign, now);
+
+    console.log('dataSign:', dataSign)
+
+    let result = await http.post({
+      url: `${url}/public/order/v1/getListFreight`,
+      data: dataSign,
+      headers: {
+        sendAppId: appId,
+        timestamp: now,
+        sign: sign,
+        'Content-Type': 'application/json;charset=utf-8'
+      }
+    })
+
+    if (result && result.data && result.data.result) {
+      // 下单成功
+      let resultData = result.data.result;
+
+      ctx.body = {
+        resultData
+      }
+    } else {
+      // 下单失败
+      console.log('result.data:', result.data)
+      assert.ok(false, result.data.msg || '查询异常')
+    }
+  }
 }
