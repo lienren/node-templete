@@ -617,6 +617,8 @@ module.exports = {
       '发票单位税号',
       '发票开户行',
       '发票开户行帐号',
+      '发票地址',
+      '发票电话',
       '收票人地址',
       '收票人电话',
       '收票人邮箱'
@@ -656,6 +658,8 @@ module.exports = {
       arr.push(order.bill_account_bank || '');
       arr.push(order.bill_account_num || '');
       arr.push(order.bill_address || '');
+      arr.push(order.bill_phone || '');
+      arr.push(order.bill_receiver_address || '');
       arr.push(order.bill_receiver_phone || '');
       arr.push(order.bill_receiver_email || '');
 
@@ -820,7 +824,9 @@ module.exports = {
       '收货人',
       '收货人电话',
       '收货人省市区',
-      '收货人地址'
+      '收货人地址',
+      '开票种类',
+      '发票单位名称'
     ])
 
     for (let i = 0, j = orderPros.length; i < j; i++) {
@@ -850,6 +856,10 @@ module.exports = {
         arr.push(order.receiver_phone || '');
         arr.push(`${order.receiver_province}/${order.receiver_city}/${order.receiver_region}`);
         arr.push(order.receiver_detail_address || '');
+        
+        // 发票信息
+        arr.push(order.bill_sort || '');
+        arr.push(order.bill_company_name || '');
       }
 
       xlsxObj[0].data.push(arr)
