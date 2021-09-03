@@ -47,6 +47,14 @@ module.exports = async function (ctx, next) {
     return;
   }
 
+  if (ctx.path.indexOf('mall_shop_web') > -1) {
+    await sendfile(
+      ctx,
+      path.resolve(__dirname, '../../assets/mall_shop_web/index.html')
+    );
+    return;
+  }
+
   /* let sitepath = await redirect(ctx, async (ctx, requestUrl, sitepath) => {
     let stats = await sendfile(ctx, sitepath);
 
