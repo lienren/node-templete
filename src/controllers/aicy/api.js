@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-08-18 10:44:07
- * @LastEditTime: 2021-08-25 11:29:09
+ * @LastEditTime: 2021-09-06 19:37:07
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/aicy/api.js
@@ -84,7 +84,7 @@ module.exports = {
         streetId: 0,
         communityId: 0,
         villageId: 0,
-        isMute: 0,
+        isMute: 1,
         userIntegral: 0,
         isComplete: 0,
         customerJSON: JSON.stringify(ctx.request.body)
@@ -134,7 +134,7 @@ module.exports = {
     let userSex = ctx.request.body.userSex || '男';
     let userAddress = ctx.request.body.userAddress || '';
     let userSpeciality = ctx.request.body.userSpeciality || '';
-    let isPartyMember = ctx.request.body.isPartyMember || 0;
+    let isPartyMember = ctx.request.body.isPartyMember || 1;
     let partyMemberName = ctx.request.body.partyMemberName || '我不是党员';
 
     assert.ok(id > 0, '提交信息异常！');
@@ -260,6 +260,28 @@ module.exports = {
 
     ctx.body = result;
   },
+  updatePlacardViewCount: async ctx => {
+    let id = ctx.request.body.id || 0;
+
+    ctx.orm().cms_placard.update({
+      viewCount: sequelize.literal(`viewCount + 1`)
+    }, {
+      where: {
+        id
+      }
+    })
+  },
+  updateDynamicViewCount: async ctx => {
+    let id = ctx.request.body.id || 0;
+
+    ctx.orm().cms_dynamic.update({
+      viewCount: sequelize.literal(`viewCount + 1`)
+    }, {
+      where: {
+        id
+      }
+    })
+  },
   createAppeal: async ctx => {
     let id = ctx.request.body.id || 0;
     let userId = ctx.request.body.userId || '';
@@ -285,7 +307,7 @@ module.exports = {
 
     assert.ok(user !== null, '用户不存在！');
     assert.ok(user.isComplete > 0, '请完善信息后，再发布诉求，谢谢！');
-    assert.ok(user.isMute === 0, '您已被禁言，请联系管理员！');
+    assert.ok(user.isMute === 1, '您已被禁言，请联系管理员！');
 
     let result = await ctx.orm().bus_appeal.create({
       title,
@@ -356,7 +378,7 @@ module.exports = {
 
     assert.ok(user !== null, '用户不存在！');
     assert.ok(user.isComplete > 0, '请完善信息后，再发布诉求，谢谢！');
-    assert.ok(user.isMute === 0, '您已被禁言，请联系管理员！');
+    assert.ok(user.isMute === 1, '您已被禁言，请联系管理员！');
 
     let result = await ctx.orm().bus_proposal.create({
       title,
@@ -419,6 +441,7 @@ module.exports = {
     })
 
     assert.ok(user !== null, '用户不存在！');
+    assert.ok(user.isPartyMember === 2, '您不是党员，无法申请志愿者！');
 
     let apply = await ctx.orm().apply_volunteer.findOne({
       where: {
@@ -477,7 +500,11 @@ module.exports = {
       }
     })
 
-    ctx.body = result;
+    if (result) {
+      ctx.body = result;
+    } else {
+      ctx.body = {};
+    }
   },
   submitSuggest: async ctx => {
     let id = ctx.request.body.id || 0;

@@ -15,7 +15,7 @@ const jwt = require('../utils/jwt');
 const configData = require('./ConfigData');
 const config = require('../config.js');
 
-function serializeMenu(menus, parentId) {
+function serializeMenu (menus, parentId) {
   let list = [];
   menus.forEach(menu => {
     if (menu.parentId === parentId) {
@@ -43,7 +43,6 @@ module.exports = {
     let imgCodeToken = ctx.request.body.imgCodeToken || '';
     let now = date.getTimeStamp();
 
-    assert.notStrictEqual(openId, '', configData.ERROR_KEY_ENUM.InputParamIsNull);
     assert.notStrictEqual(loginName, '', configData.ERROR_KEY_ENUM.InputParamIsNull);
     assert.notStrictEqual(loginPwd, '', configData.ERROR_KEY_ENUM.InputParamIsNull);
     assert.notStrictEqual(imgCode, '', configData.ERROR_KEY_ENUM.InputParamIsNull);
@@ -82,6 +81,7 @@ module.exports = {
 
     // 生成验证密钥
     let encryptPwd = encrypt.getMd5(`${loginPwd}|${resultManager.salt}`);
+    console.log('encryptPwd:', encryptPwd);
     assert.ok(resultManager.loginPwd === encryptPwd, configData.ERROR_KEY_ENUM.ManagerPasswordIsFail);
 
     // 设置Token
@@ -176,7 +176,16 @@ module.exports = {
     let state = ctx.request.body.state;
     let startAddTime = ctx.request.body.startAddTime || 0;
     let endAddTime = ctx.request.body.endAddTime || 0;
-    let condition = {};
+    let verifyLevel = ctx.request.body.verifyLevel || 0;
+    let verifyType = ctx.request.body.verifyType || '';
+
+    let condition = {
+      verifyLevel: verifyLevel
+    };
+
+    if (verifyType !== '') {
+      condition.verifyType = verifyType
+    }
 
     if (loginName !== '') {
       condition.loginName = {
@@ -204,23 +213,52 @@ module.exports = {
 
     condition.isDel = 0;
 
-    let resultCount = await ctx.orm().SuperManagerInfo.findAndCountAll({
-      where: condition
-    });
-    let result = await ctx.orm().SuperManagerInfo.findAll({
-      attributes: ['id', 'loginName', 'realName', 'phone', 'state', 'depName', 'sex', 'addTime', 'lastTime'],
+    let result = await ctx.orm().SuperManagerInfo.findAndCountAll({
+      attributes: ['id', 'loginName', 'realName', 'phone', 'state', 'depName', 'sex', 'addTime', 'lastTime', 'verifyLevel', 'verifyType', 'verifyVillages'],
       offset: (current - 1) * pageSize,
       limit: pageSize,
       where: condition,
-      order: [['addTime', 'DESC']]
+      order: [['addTime', 'desc']]
     });
 
-    ctx.body = {
-      total: resultCount.count,
-      list: result,
-      current,
-      pageSize
-    };
+    if (verifyLevel === 0) {
+      ctx.body = {
+        total: result.count,
+        list: result.rows,
+        current,
+        pageSize
+      };
+    } else {
+      let communitys = await ctx.orm().info_community.findAll({});
+      let villages = await ctx.orm().info_village.findAll({});
+
+      let rows = result.rows.map(m => {
+        if (m.dataValues.verifyLevel === 0) {
+          return {
+            ...m.dataValues
+          }
+        } else {
+          let verifyVillages = JSON.parse(m.dataValues.verifyVillages).map(m1 => {
+            let c = villages.find(f => f.id === m1)
+            let cinfo = c ? communitys.find(f => f.id === c.communityId) : null
+
+            return cinfo ? [cinfo.id, m1] : m1
+          })
+
+          return {
+            ...m.dataValues,
+            verifyVillages: verifyVillages
+          }
+        }
+      })
+
+      ctx.body = {
+        total: result.count,
+        list: rows,
+        current,
+        pageSize
+      };
+    }
   },
   addManager: async ctx => {
     let loginName = ctx.request.body.loginName || '';
@@ -230,6 +268,10 @@ module.exports = {
     let state = ctx.request.body.state;
     let sex = ctx.request.body.sex;
     let depName = ctx.request.body.depName || '';
+    let verifyLevel = ctx.request.body.verifyLevel || 0;
+    let verifyType = ctx.request.body.verifyType || '';
+    let verifyVillages = ctx.request.body.verifyVillages || [];
+
     let now = date.getTimeStamp();
 
     assert.notStrictEqual(loginName, '', 'InputParamIsNull');
@@ -263,6 +305,9 @@ module.exports = {
       tokenOverTime: now,
       addTime: now,
       lastTime: now,
+      verifyLevel,
+      verifyType,
+      verifyVillages: JSON.stringify(verifyVillages),
       isDel: 0
     });
 
@@ -277,6 +322,7 @@ module.exports = {
     let state = ctx.request.body.state;
     let sex = ctx.request.body.sex;
     let depName = ctx.request.body.depName || '';
+    let verifyVillages = ctx.request.body.verifyVillages || [];
     let now = date.getTimeStamp();
 
     assert.notStrictEqual(id, 0, 'InputParamIsNull');
@@ -324,6 +370,8 @@ module.exports = {
         updateField.token = '';
       }
     }
+
+    updateField.verifyVillages = JSON.stringify(verifyVillages)
     updateField.lastTime = now;
 
     ctx.orm().SuperManagerInfo.update(updateField, {
@@ -464,7 +512,7 @@ module.exports = {
     await ctx
       .orm()
       .query(`delete from SuperManagerRoleInfo where managerId = ${id}`)
-      .spread((results, metadata) => {});
+      .spread((results, metadata) => { });
 
     // 添加管理员角色数据
     let data = roleIds.map(role => {
@@ -659,7 +707,7 @@ module.exports = {
     await ctx
       .orm()
       .query(`delete from SuperRoleMenuInfo where roleId = ${id}`)
-      .spread((results, metadata) => {});
+      .spread((results, metadata) => { });
 
     // 添加角色菜单数据
     let data = menuIds.map(menu => {

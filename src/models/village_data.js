@@ -42,15 +42,15 @@ module.exports = function(sequelize, DataTypes) {
       defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
     },
     d1: {
-      type: DataTypes.STRING(100),
+      type: DataTypes.STRING(300),
       allowNull: true
     },
     d2: {
-      type: DataTypes.STRING(200),
+      type: DataTypes.STRING(300),
       allowNull: true
     },
     d3: {
-      type: DataTypes.STRING(100),
+      type: DataTypes.STRING(300),
       allowNull: true
     }
   }, {

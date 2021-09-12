@@ -1,83 +1,76 @@
 /* jshint indent: 2 */
 
 module.exports = function(sequelize, DataTypes) {
-  return sequelize.define('SuperManagerInfo', {
+  return sequelize.define('work_orders', {
     id: {
       type: DataTypes.INTEGER(11),
       allowNull: false,
       primaryKey: true,
       autoIncrement: true
     },
-    openId: {
+    type: {
       type: DataTypes.STRING(100),
       allowNull: true
     },
-    loginName: {
+    typeId: {
+      type: DataTypes.INTEGER(11),
+      allowNull: true
+    },
+    opUserId: {
+      type: DataTypes.INTEGER(11),
+      allowNull: true
+    },
+    opUserName: {
       type: DataTypes.STRING(100),
       allowNull: true
     },
-    loginPwd: {
+    opUserWork: {
       type: DataTypes.STRING(100),
       allowNull: true
     },
-    realName: {
-      type: DataTypes.STRING(100),
+    opUserLevel: {
+      type: DataTypes.INTEGER(11),
       allowNull: true
     },
-    phone: {
-      type: DataTypes.STRING(100),
-      allowNull: true
-    },
-    salt: {
-      type: DataTypes.STRING(100),
+    opRemark: {
+      type: DataTypes.STRING(300),
       allowNull: true
     },
     state: {
       type: DataTypes.INTEGER(11),
       allowNull: true
     },
-    token: {
-      type: DataTypes.STRING(1000),
-      allowNull: true
-    },
-    tokenOverTime: {
-      type: DataTypes.BIGINT,
-      allowNull: true
-    },
-    sex: {
-      type: DataTypes.INTEGER(11),
-      allowNull: true
-    },
-    depName: {
+    stateName: {
       type: DataTypes.STRING(100),
       allowNull: true
     },
-    addTime: {
-      type: DataTypes.BIGINT,
+    stateStartTime: {
+      type: DataTypes.DATE,
       allowNull: true
     },
-    lastTime: {
-      type: DataTypes.BIGINT,
+    stateEndTime: {
+      type: DataTypes.DATE,
       allowNull: true
+    },
+    workDesc: {
+      type: DataTypes.STRING(100),
+      allowNull: true
+    },
+    createTime: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
+    },
+    updateTime: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
     },
     isDel: {
       type: DataTypes.INTEGER(11),
       allowNull: true
-    },
-    verifyLevel: {
-      type: DataTypes.INTEGER(11),
-      allowNull: true,
-      defaultValue: '0'
-    },
-    verifyType: {
-      type: DataTypes.STRING(100),
-      allowNull: true
-    },
-    verifyVillages: {
-      type: DataTypes.STRING(1000),
-      allowNull: true
     }
   }, {
-    tableName: 'SuperManagerInfo'
+    tableName: 'work_orders'
   });
 };
