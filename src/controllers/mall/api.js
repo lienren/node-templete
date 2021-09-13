@@ -53,7 +53,7 @@ const tenpayAPI = new tenpay({
 
 
 const logisticsCompaniesToCode = {
-  '极兔物流': 'jtexpress', '顺丰速运': 'shunfeng', '京东快递': 'jd', '邮政EMS': 'ems', '中通快递': 'shentong', '韵达快递': 'yunda', '圆通快递': 'yuantong', '申通快递': 'zhongtong', '德邦快递': 'debangkuaidi', '百世快递': 'huitongkuaidi', '天天快递': 'tiantian'
+  '极兔物流': 'jtexpress', '顺丰速运': 'shunfeng', '京东快递': 'jd', '邮政EMS': 'ems', '中通快递': 'shentong', '韵达快递': 'yunda', '圆通快递': 'yuantong', '申通快递': 'zhongtong', '德邦快递': 'debangkuaidi', '百世快递': 'huitongkuaidi', '天天快递': 'tiantian', '跨越速运': 'kuayue'
 }
 
 const logisticsStateToCode = {
