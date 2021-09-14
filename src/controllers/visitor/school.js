@@ -102,9 +102,104 @@ module.exports = {
       isBack: isBack,
       backInfo: backInfo,
       x1: user.x1,
+      x3: user.x3,
       x5: user.x5,
       x6: user.x6,
       x20: user.x20,
+      today: date.formatDate(new Date(), 'YYYY年MM月DD日'),
+    };
+  },
+  submitUserInfo: async (ctx) => {
+    let openId = ctx.request.body.openId || '';
+    let x3 = ctx.request.body.x3 || '';
+    let x4 = ctx.request.body.x4 || '';
+    let x5 = ctx.request.body.x5 || '';
+    let x6 = ctx.request.body.x6 || '';
+    let x7 = ctx.request.body.x7 || '';
+    let x8 = ctx.request.body.x8 || '';
+    let x9 = ctx.request.body.x9 || '';
+    let x10 = ctx.request.body.x10 || '';
+    let x11 = ctx.request.body.x11 || '';
+    let x12 = ctx.request.body.x12 || '';
+    let x13 = ctx.request.body.x13 || 0;
+    let x14 = ctx.request.body.x14 || '';
+    let x15 = ctx.request.body.x15 || '';
+    let x16 = ctx.request.body.x16 || '';
+    let x17 = ctx.request.body.x17 || '';
+    let x18 = ctx.request.body.x18 || '';
+    let x19 = ctx.request.body.x19 || '';
+    let x21 = ctx.request.body.x21 || '';
+    let skm = ctx.request.body.skm || '';
+    let hsjc = ctx.request.body.hsjc || '0';
+    let hsjctime = ctx.request.body.hsjctime || '';
+    let hsjcaddr = ctx.request.body.hsjcaddr || '';
+
+    cp.isEmpty(openId);
+    cp.isEmpty(x4);
+    cp.isEmpty(x7);
+    cp.isEmpty(x8);
+    cp.isEmpty(x9);
+    cp.isEmpty(x10);
+    cp.isEmpty(x11);
+    cp.isEmpty(skm);
+
+    let user = await ctx.orm().school_users_v2.findOne({
+      where: {
+        openId: openId,
+      },
+    });
+    assert.notStrictEqual(
+      user,
+      null,
+      '您不在返校名单中，请向辅导员确认是否暂缓/暂不返校！'
+    );
+    assert.ok(user.xState === 0 && user.xIsAdd === 0, '您的信息已完成登记！');
+
+    await ctx.orm().school_users_v2.update({
+      x4,
+      x7,
+      x8,
+      x9,
+      x10,
+      x11,
+      x12,
+      x13,
+      x14,
+      x15,
+      x16,
+      x17,
+      x18,
+      x21,
+      xState: 0,
+      xStateName: '未返校',
+      xIsAdd: 1,
+      xlsAddTime: date.formatDate(),
+      state: 2,
+      stateName: stateEnum[2],
+      skm,
+      hsjc,
+      hsjctime,
+      hsjcaddr
+    }, {
+      where: {
+        id: user.id,
+      },
+    });
+
+    let isBack =
+      parseInt(date.formatDate(new Date(), 'YYYYMMDD')) >=
+      parseInt(date.formatDate(user.x19, 'YYYYMMDD'));
+
+    let backInfo = isBack ?
+      '今天可以返校' :
+      '今天不可以返校，您的返校时间是：' +
+      date.formatDate(user.x19, 'YYYY年MM月DD日');
+
+    ctx.body = {
+      id: user.id,
+      state: user.state,
+      backInfo,
+      xIsAdd: 1,
       today: date.formatDate(new Date(), 'YYYY年MM月DD日'),
     };
   },
@@ -492,14 +587,18 @@ module.exports = {
       x16: '',
       x17: '',
       x18: '',
-      x19: null,
+      // x19: null,
       x21: '',
       x22: '',
       x31: null,
       xIsAdd: 0,
       xlsAddTime: date.formatDate(),
       state: 0,
-      stateName: stateEnum[0]
+      stateName: stateEnum[0],
+      skm: '',
+      hsjc: '',
+      hsjctime: '',
+      hsjcaddr: ''
     }, {
       where: {
         id: user.id,
@@ -569,6 +668,10 @@ module.exports = {
       x16: user.x16,
       x19: user.x19,
       x21: user.x21,
+      skm: user.skm,
+      hsjc: user.hsjc,
+      hsjctime: user.hsjctime,
+      hsjcaddr: user.hsjcaddr,
       isBack: isBack,
       backInfo: backInfo,
       xBackTime: date.formatDate(new Date(), 'YYYY-MM-DD HH:mm:ss'),
@@ -649,6 +752,7 @@ module.exports = {
     let x20 = ctx.request.body.x20 || '';
     let x22 = ctx.request.body.x22 || '';
     let area = ctx.request.body.area || '';
+    let skm = ctx.request.body.skm || '';
     let pageIndex = ctx.request.body.pageIndex || 1;
     let pageSize = ctx.request.body.pageSize || 20;
 
@@ -678,6 +782,10 @@ module.exports = {
       where.xBackTime = {
         $between: [backSTime, backETime],
       };
+    }
+
+    if (skm !== '') {
+      where.skm = skm;
     }
 
     if (x1 !== '') {
