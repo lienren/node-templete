@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-08-18 10:44:07
- * @LastEditTime: 2021-09-06 19:37:07
+ * @LastEditTime: 2021-09-15 15:00:43
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/aicy/api.js
@@ -309,6 +309,20 @@ module.exports = {
     assert.ok(user.isComplete > 0, '请完善信息后，再发布诉求，谢谢！');
     assert.ok(user.isMute === 1, '您已被禁言，请联系管理员！');
 
+    // 获取管理员
+    let admins = await ctx.orm().SuperManagerInfo.findAll({
+      where: {
+        state: 1,
+        isDel: 0,
+        verifyLevel: 2
+      }
+    })
+    let admin = admins.find(f => {
+      let verifyVillages = JSON.parse(f.dataValues.verifyVillages)
+      return verifyVillages.indexOf(user.villageId) > -1
+    })
+    assert.ok(admin !== null, '您的诉求暂时提交失败，请联系管理员！');
+
     let result = await ctx.orm().bus_appeal.create({
       title,
       type,
@@ -317,8 +331,27 @@ module.exports = {
       gps,
       gpsAddress,
       userId: id,
+      villageId: user.villageId,
       handleStatus: 1,
       handleStatusName: handleStatusNameEnum[`1`],
+      isDel: 0
+    })
+
+    // 新建工单
+    await ctx.orm().work_orders.create({
+      type: '诉求',
+      typeId: result.id,
+      opUserId: admin.id,
+      opUserName: admin.realName,
+      opUserType: admin.verifyType,
+      opUserLevel: admin.verifyLevel,
+      opUserDepName: admin.depName,
+      userId: user.id,
+      villageId: user.villageId,
+      state: 1,
+      stateName: '待办理',
+      isOver: 1,
+      parentId: 0,
       isDel: 0
     })
 
@@ -380,6 +413,20 @@ module.exports = {
     assert.ok(user.isComplete > 0, '请完善信息后，再发布诉求，谢谢！');
     assert.ok(user.isMute === 1, '您已被禁言，请联系管理员！');
 
+    // 获取管理员
+    let admins = await ctx.orm().SuperManagerInfo.findAll({
+      where: {
+        state: 1,
+        isDel: 0,
+        verifyLevel: 2
+      }
+    })
+    let admin = admins.find(f => {
+      let verifyVillages = JSON.parse(f.dataValues.verifyVillages)
+      return verifyVillages.indexOf(user.villageId) > -1
+    })
+    assert.ok(admin !== null, '您的诉求暂时提交失败，请联系管理员！');
+
     let result = await ctx.orm().bus_proposal.create({
       title,
       type,
@@ -388,8 +435,27 @@ module.exports = {
       gps,
       gpsAddress,
       userId: id,
+      villageId: user.villageId,
       handleStatus: 1,
       handleStatusName: handleStatusNameEnum2[`1`],
+      isDel: 0
+    })
+
+    // 新建工单
+    await ctx.orm().work_orders.create({
+      type: '建议',
+      typeId: result.id,
+      opUserId: admin.id,
+      opUserName: admin.realName,
+      opUserType: admin.verifyType,
+      opUserLevel: admin.verifyLevel,
+      opUserDepName: admin.depName,
+      userId: user.id,
+      villageId: user.villageId,
+      state: 1,
+      stateName: '待办理',
+      isOver: 1,
+      parentId: 0,
       isDel: 0
     })
 

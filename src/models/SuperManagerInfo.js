@@ -74,7 +74,7 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     verifyVillages: {
-      type: DataTypes.STRING(1000),
+      type: DataTypes.STRING(2000),
       allowNull: true
     }
   }, {

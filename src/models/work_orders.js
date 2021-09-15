@@ -24,7 +24,7 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING(100),
       allowNull: true
     },
-    opUserWork: {
+    opUserType: {
       type: DataTypes.STRING(100),
       allowNull: true
     },
@@ -32,8 +32,20 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.INTEGER(11),
       allowNull: true
     },
+    opUserDepName: {
+      type: DataTypes.STRING(100),
+      allowNull: true
+    },
     opRemark: {
       type: DataTypes.STRING(300),
+      allowNull: true
+    },
+    userId: {
+      type: DataTypes.INTEGER(11),
+      allowNull: true
+    },
+    villageId: {
+      type: DataTypes.INTEGER(11),
       allowNull: true
     },
     state: {
@@ -52,6 +64,14 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.DATE,
       allowNull: true
     },
+    isOver: {
+      type: DataTypes.INTEGER(11),
+      allowNull: true
+    },
+    overTime: {
+      type: DataTypes.DATE,
+      allowNull: true
+    },
     workDesc: {
       type: DataTypes.STRING(100),
       allowNull: true
@@ -65,6 +85,10 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.DATE,
       allowNull: true,
       defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
+    },
+    parentId: {
+      type: DataTypes.INTEGER(11),
+      allowNull: true
     },
     isDel: {
       type: DataTypes.INTEGER(11),

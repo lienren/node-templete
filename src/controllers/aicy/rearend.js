@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2021-09-08 23:32:57
+ * @LastEditTime: 2021-09-15 13:54:46
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/aicy/rearend.js
@@ -28,6 +28,28 @@ const reviewerStatusEnum = {
   3: '审核未通过'
 }
 
+const workOrderStateEnum = {
+  1: '待办理',
+  2: '办理中',
+  3: '已办结',
+  4: '延期办理',
+  5: '转办'
+}
+
+const appealStateEnum = {
+  1: '待办理',
+  2: '办理中',
+  3: '已办结',
+  4: '延期办理'
+}
+
+const proposalStateEnum = {
+  1: '待办理',
+  2: '办理中',
+  3: '已采纳',
+  4: '延期办理'
+}
+
 module.exports = {
   getVillageData: async ctx => {
     let result1 = await ctx.orm().info_community.findAll();
@@ -45,8 +67,6 @@ module.exports = {
         })
       }
     })
-
-    console.log('data:', JSON.stringify(data));
 
     ctx.body = {};
   },
@@ -1002,4 +1022,662 @@ module.exports = {
 
     ctx.body = result[0];
   },
+  getAppeal: async ctx => {
+    let pageIndex = ctx.request.body.pageIndex || 1;
+    let pageSize = ctx.request.body.pageSize || 50;
+    let { type, handleStatus, assess, userName, userPhone, userIdCard, villageId, startCreateTime, endCreateTime, startUpdateTime, endUpdateTime, startHandleTime, endHandleTime, startAssessTime, endAssessTime } = ctx.request.body;
+
+    let where = {
+      isDel: 0
+    };
+
+    let userWhere = ``;
+    if (userName) { userWhere += ` and userName = '${userName}' ` }
+    if (userPhone) { userWhere += ` and userPhone = '${userPhone}' ` }
+    if (userIdCard) { userWhere += ` and userIdCard = '${userIdCard}' ` }
+    if (userWhere !== '') {
+      where.$and = [sequelize.literal(`exists (select * from info_user where id = bus_appeal.userId ${userWhere})`)]
+    }
+
+    Object.assign(where, type && { type })
+    Object.assign(where, handleStatus && { handleStatus })
+    Object.assign(where, assess && { assess })
+
+    if (villageId && villageId.length > 0) {
+      where.villageId = {
+        $in: villageId
+      }
+    }
+
+    if (startCreateTime && endCreateTime) {
+      where.createTime = {
+        $between: [startCreateTime, endCreateTime]
+      }
+    }
+
+    if (startUpdateTime && endUpdateTime) {
+      where.updateTime = {
+        $between: [startUpdateTime, endUpdateTime]
+      }
+    }
+
+    if (startHandleTime && endHandleTime) {
+      where.handleTime = {
+        $between: [startHandleTime, endHandleTime]
+      }
+    }
+
+    if (startAssessTime && endAssessTime) {
+      where.assessTime = {
+        $between: [startAssessTime, endAssessTime]
+      }
+    }
+
+    let result = await ctx.orm().bus_appeal.findAndCountAll({
+      offset: (pageIndex - 1) * pageSize,
+      limit: pageSize,
+      where,
+      order: [
+        ['createTime', 'desc']
+      ]
+    });
+
+    if (result && result.rows.length > 0) {
+      let communitys = await ctx.orm().info_community.findAll({});
+      let villages = await ctx.orm().info_village.findAll({});
+      let users = await ctx.orm().info_user.findAll({
+        where: {
+          id: {
+            $in: result.rows.map(m => {
+              return m.dataValues.userId
+            })
+          }
+        }
+      })
+
+      let rows = result.rows.map(m => {
+        let c = villages.find(f => f.id === m.dataValues.villageId)
+        let cinfo = c ? communitys.find(f => f.id === c.communityId) : null
+        let u = users ? users.find(f => f.id === m.dataValues.userId) : null
+
+        return {
+          ...m.dataValues,
+          communityId: cinfo ? cinfo.id : 0,
+          communityName: cinfo ? cinfo.communityName : '',
+          villageName: c ? c.villageName : '',
+          userName: u ? u.userName : '',
+          userPhone: u ? u.userPhone : ''
+        }
+      })
+
+      ctx.body = {
+        total: result.count,
+        list: rows,
+        pageIndex,
+        pageSize
+      };
+    } else {
+      ctx.body = {
+        total: 0,
+        list: [],
+        pageIndex,
+        pageSize
+      };
+    }
+  },
+  delAppeal: async ctx => {
+    let id = ctx.request.body.id || 0;
+
+    await ctx.orm().bus_appeal.update({
+      isDel: 1
+    }, {
+      where: {
+        id
+      }
+    });
+
+    await ctx.orm().work_orders.update({
+      isDel: 1
+    }, {
+      where: {
+        type: '诉求',
+        typeId: id
+      }
+    });
+
+    ctx.body = {};
+  },
+  getProposal: async ctx => {
+    let pageIndex = ctx.request.body.pageIndex || 1;
+    let pageSize = ctx.request.body.pageSize || 50;
+    let { type, handleStatus, assess, userName, userPhone, userIdCard, villageId, startCreateTime, endCreateTime, startUpdateTime, endUpdateTime, startHandleTime, endHandleTime, startAssessTime, endAssessTime } = ctx.request.body;
+
+    let where = {
+      isDel: 0
+    };
+
+    let userWhere = ``;
+    if (userName) { userWhere += ` and userName = '${userName}' ` }
+    if (userPhone) { userWhere += ` and userPhone = '${userPhone}' ` }
+    if (userIdCard) { userWhere += ` and userIdCard = '${userIdCard}' ` }
+    if (userWhere !== '') {
+      where.$and = [sequelize.literal(`exists (select * from info_user where id = bus_proposal.userId ${userWhere})`)]
+    }
+
+    Object.assign(where, type && { type })
+    Object.assign(where, handleStatus && { handleStatus })
+    Object.assign(where, assess && { assess })
+
+    if (villageId && villageId.length > 0) {
+      where.villageId = {
+        $in: villageId
+      }
+    }
+
+    if (startCreateTime && endCreateTime) {
+      where.createTime = {
+        $between: [startCreateTime, endCreateTime]
+      }
+    }
+
+    if (startUpdateTime && endUpdateTime) {
+      where.updateTime = {
+        $between: [startUpdateTime, endUpdateTime]
+      }
+    }
+
+    if (startHandleTime && endHandleTime) {
+      where.handleTime = {
+        $between: [startHandleTime, endHandleTime]
+      }
+    }
+
+    if (startAssessTime && endAssessTime) {
+      where.assessTime = {
+        $between: [startAssessTime, endAssessTime]
+      }
+    }
+
+    let result = await ctx.orm().bus_proposal.findAndCountAll({
+      offset: (pageIndex - 1) * pageSize,
+      limit: pageSize,
+      where,
+      order: [
+        ['createTime', 'desc']
+      ]
+    });
+
+    if (result && result.rows.length > 0) {
+      let communitys = await ctx.orm().info_community.findAll({});
+      let villages = await ctx.orm().info_village.findAll({});
+      let users = await ctx.orm().info_user.findAll({
+        where: {
+          id: {
+            $in: result.rows.map(m => {
+              return m.dataValues.userId
+            })
+          }
+        }
+      })
+
+      let rows = result.rows.map(m => {
+        let c = villages.find(f => f.id === m.dataValues.villageId)
+        let cinfo = c ? communitys.find(f => f.id === c.communityId) : null
+        let u = users ? users.find(f => f.id === m.dataValues.userId) : null
+
+        return {
+          ...m.dataValues,
+          communityId: cinfo ? cinfo.id : 0,
+          communityName: cinfo ? cinfo.communityName : '',
+          villageName: c ? c.villageName : '',
+          userName: u ? u.userName : '',
+          userPhone: u ? u.userPhone : ''
+        }
+      })
+
+      ctx.body = {
+        total: result.count,
+        list: rows,
+        pageIndex,
+        pageSize
+      };
+    } else {
+      ctx.body = {
+        total: 0,
+        list: [],
+        pageIndex,
+        pageSize
+      };
+    }
+  },
+  delProposal: async ctx => {
+    let id = ctx.request.body.id || 0;
+
+    await ctx.orm().bus_proposal.update({
+      isDel: 1
+    }, {
+      where: {
+        id
+      }
+    });
+
+    await ctx.orm().work_orders.update({
+      isDel: 1
+    }, {
+      where: {
+        type: '建议',
+        typeId: id
+      }
+    });
+
+    ctx.body = {};
+  },
+  getWorkOrder: async ctx => {
+    let pageIndex = ctx.request.body.pageIndex || 1;
+    let pageSize = ctx.request.body.pageSize || 50;
+    let orderby = ctx.request.body.orderby || [['createTime', 'desc']];
+    let { type, typeId, opUserId, opUserType, opUserLevel, opUserDepName, state, userName, userPhone, userIdCard, villageId, isOver, startCreateTime, endCreateTime, startUpdateTime, endUpdateTime } = ctx.request.body;
+
+    let where = {
+      isDel: 0
+    };
+
+    let userWhere = ``;
+    if (userName) { userWhere += ` and userName = '${userName}' ` }
+    if (userPhone) { userWhere += ` and userPhone = '${userPhone}' ` }
+    if (userIdCard) { userWhere += ` and userIdCard = '${userIdCard}' ` }
+    if (userWhere !== '') {
+      where.$and = [sequelize.literal(`exists (select * from info_user where id = work_orders.userId ${userWhere})`)]
+    }
+
+    Object.assign(where, type && { type })
+    Object.assign(where, typeId && { typeId })
+    Object.assign(where, opUserId && { opUserId })
+    Object.assign(where, opUserType && { opUserType })
+    Object.assign(where, opUserLevel && { opUserLevel })
+    Object.assign(where, opUserDepName && { opUserDepName })
+    Object.assign(where, isOver && { isOver })
+    Object.assign(where, state && { state })
+
+    if (villageId && villageId.length > 0) {
+      where.villageId = {
+        $in: villageId
+      }
+    }
+
+    if (startCreateTime && endCreateTime) {
+      where.createTime = {
+        $between: [startCreateTime, endCreateTime]
+      }
+    }
+
+    if (startUpdateTime && endUpdateTime) {
+      where.updateTime = {
+        $between: [startUpdateTime, endUpdateTime]
+      }
+    }
+
+    let result = await ctx.orm().work_orders.findAndCountAll({
+      offset: (pageIndex - 1) * pageSize,
+      limit: pageSize,
+      where,
+      order: orderby
+    });
+
+    if (result && result.rows.length > 0) {
+      let communitys = await ctx.orm().info_community.findAll({});
+      let villages = await ctx.orm().info_village.findAll({});
+      let users = await ctx.orm().info_user.findAll({
+        where: {
+          id: {
+            $in: result.rows.map(m => {
+              return m.dataValues.userId
+            })
+          }
+        }
+      })
+
+      let appealIds = result.rows.filter(f => f.dataValues.type === '诉求').map(m => { return m.dataValues.typeId })
+      let appeals = null
+      if (appealIds && appealIds.length > 0) {
+        appeals = await ctx.orm().bus_appeal.findAll({
+          where: {
+            id: {
+              $in: appealIds
+            }
+          }
+        })
+      }
+
+      let proposalIds = result.rows.filter(f => f.dataValues.type === '建议').map(m => { return m.dataValues.typeId })
+      let proposals = null
+      if (proposalIds && proposalIds.length > 0) {
+        proposals = await ctx.orm().bus_proposal.findAll({
+          where: {
+            id: {
+              $in: proposalIds
+            }
+          }
+        })
+      }
+
+      let rows = result.rows.map(m => {
+        let c = villages.find(f => f.id === m.dataValues.villageId)
+        let cinfo = c ? communitys.find(f => f.id === c.communityId) : null
+        let u = users ? users.find(f => f.id === m.dataValues.userId) : null
+
+        let data = null
+        if (m.dataValues.type === '诉求') {
+          data = appeals ? appeals.find(f => f.dataValues.id === m.dataValues.typeId) : null
+        } else if (m.dataValues.type === '建议') {
+          data = proposals ? proposals.find(f => f.dataValues.id === m.dataValues.typeId) : null
+        }
+
+        return {
+          ...m.dataValues,
+          communityId: cinfo ? cinfo.id : 0,
+          communityName: cinfo ? cinfo.communityName : '',
+          villageName: c ? c.villageName : '',
+          userName: u ? u.userName : '',
+          userPhone: u ? u.userPhone : '',
+          detail: data ? data : {}
+        }
+      })
+
+      ctx.body = {
+        total: result.count,
+        list: rows,
+        pageIndex,
+        pageSize
+      };
+    } else {
+      ctx.body = {
+        total: 0,
+        list: [],
+        pageIndex,
+        pageSize
+      };
+    }
+  },
+  submitWorkOrder: async ctx => {
+    let id = ctx.request.body.id || 0;
+    let adminId = ctx.request.body.adminId || 0;
+    let opRemark = ctx.request.body.opRemark || '';
+    let state = ctx.request.body.state || 1;
+    let workDesc = ctx.request.body.workDesc || '';
+
+    let admin = await ctx.orm().SuperManagerInfo.findOne({
+      where: {
+        id: adminId,
+        state: 1,
+        isDel: 0
+      }
+    })
+    assert.ok(admin !== null, '管理员信息不存在!');
+
+    let workorder = await ctx.orm().work_orders.findOne({
+      where: {
+        id,
+        isDel: 0
+      }
+    })
+    assert.ok(workorder !== null, '工单不存在!');
+
+    await ctx.orm().work_orders.update({
+      opRemark: opRemark,
+      state: state,
+      stateName: workOrderStateEnum[state],
+      stateEndTime: date.formatDate(),
+      isOver: 2,
+      overTime: date.formatDate(),
+      workDesc: workDesc
+    }, {
+      where: {
+        id: workorder.id
+      }
+    });
+
+    // 更新诉求和建议
+    if (workorder.type === '诉求') {
+      await ctx.orm().bus_appeal.update({
+        handleStatus: state,
+        handleStatusName: appealStateEnum[state],
+        handleTime: date.formatDate(),
+        handlerId: admin.id,
+        handlerName: admin.realName,
+        handlerDeptName: admin.depName,
+        handlerRemark: opRemark
+      }, {
+        where: {
+          id: workorder.typeId
+        }
+      })
+    } else if (workorder.type === '建议') {
+      await ctx.orm().bus_proposal.update({
+        handleStatus: state,
+        handleStatusName: proposalStateEnum[state],
+        handleTime: date.formatDate(),
+        handlerId: admin.id,
+        handlerName: admin.realName,
+        handlerDeptName: admin.depName,
+        handlerRemark: opRemark
+      }, {
+        where: {
+          id: workorder.typeId
+        }
+      })
+    }
+
+    if (state === 4) {
+      // 延期办理
+      // 新增一条工单办理记录
+      await ctx.orm().work_orders.create({
+        type: workorder.type,
+        typeId: workorder.typeId,
+        opUserId: admin.id,
+        opUserName: admin.realName,
+        opUserType: admin.verifyType,
+        opUserLevel: admin.verifyLevel,
+        opUserDepName: admin.depName,
+        userId: workorder.userId,
+        villageId: workorder.villageId,
+        state: state,
+        stateName: workOrderStateEnum[state],
+        stateStartTime: date.formatDate(),
+        isOver: 1,
+        parentId: workorder.id,
+        isDel: 0
+      })
+    }
+
+    ctx.body = {};
+  },
+  transferWorkOrder: async ctx => {
+    let id = ctx.request.body.id || 0;
+    let opUserId = ctx.request.body.opUserId || 0;
+    let workDesc = ctx.request.body.workDesc || '';
+    let state = ctx.request.body.state || 5;
+    let stateNew = ctx.request.body.stateNew || 1;
+
+    let admin = await ctx.orm().SuperManagerInfo.findOne({
+      where: {
+        id: opUserId,
+        state: 1,
+        isDel: 0
+      }
+    })
+    assert.ok(admin !== null, '管理员信息不存在!');
+
+    let workorder = await ctx.orm().work_orders.findOne({
+      where: {
+        id,
+        isDel: 0
+      }
+    })
+    assert.ok(workorder !== null, '工单不存在!');
+
+    let opRemark = `由${workorder.opUserDepName}${workorder.opUserName}交办`
+
+    // 更新老工单
+    await ctx.orm().work_orders.update({
+      opRemark: opRemark,
+      state: state,
+      stateName: workOrderStateEnum[state],
+      stateEndTime: date.formatDate(),
+      isOver: 2,
+      overTime: date.formatDate(),
+      workDesc: workDesc
+    }, {
+      where: {
+        id: workorder.id
+      }
+    })
+
+    // 新增工单
+    await ctx.orm().work_orders.create({
+      type: workorder.type,
+      typeId: workorder.typeId,
+      opUserId: admin.id,
+      opUserName: admin.realName,
+      opUserType: admin.verifyType,
+      opUserLevel: admin.verifyLevel,
+      opUserDepName: admin.depName,
+      userId: workorder.userId,
+      villageId: workorder.villageId,
+      state: stateNew,
+      stateName: workOrderStateEnum[stateNew],
+      stateStartTime: date.formatDate(),
+      isOver: 1,
+      parentId: workorder.id,
+      isDel: 0
+    })
+
+    // 更新诉求和建议
+    if (workorder.type === '诉求') {
+      await ctx.orm().bus_appeal.update({
+        handleStatus: stateNew,
+        handleStatusName: appealStateEnum[stateNew],
+        handleTime: date.formatDate(),
+        handlerId: admin.id,
+        handlerName: admin.realName,
+        handlerDeptName: admin.depName,
+        handlerRemark: opRemark
+      }, {
+        where: {
+          id: workorder.typeId
+        }
+      })
+    } else if (workorder.type === '建议') {
+      await ctx.orm().bus_proposal.update({
+        handleStatus: stateNew,
+        handleStatusName: proposalStateEnum[stateNew],
+        handleTime: date.formatDate(),
+        handlerId: admin.id,
+        handlerName: admin.realName,
+        handlerDeptName: admin.depName,
+        handlerRemark: opRemark
+      }, {
+        where: {
+          id: workorder.typeId
+        }
+      })
+    }
+
+    ctx.body = {};
+  },
+  receiveWorkOrder: async ctx => {
+    let id = ctx.request.body.id || 0;
+    let opUserId = ctx.request.body.opUserId || 0;
+    let state = ctx.request.body.state || 2;
+
+    let admin = await ctx.orm().SuperManagerInfo.findOne({
+      where: {
+        id: opUserId,
+        state: 1,
+        isDel: 0
+      }
+    })
+    assert.ok(admin !== null, '管理员信息不存在!');
+
+    let workorder = await ctx.orm().work_orders.findOne({
+      where: {
+        id,
+        isDel: 0
+      }
+    })
+    assert.ok(workorder !== null, '工单不存在!');
+
+    await ctx.orm().work_orders.update({
+      state: state,
+      stateName: workOrderStateEnum[state],
+      stateStartTime: date.formatDate(),
+      opUserId: admin.id,
+      opUserName: admin.realName,
+      opUserType: admin.verifyType,
+      opUserLevel: admin.verifyLevel,
+      opUserDepName: admin.depName
+    }, {
+      where: {
+        id
+      }
+    })
+
+    let opRemark = `由${admin.depName}${admin.realName}签收`;
+
+    // 更新诉求和建议
+    if (workorder.type === '诉求') {
+      await ctx.orm().bus_appeal.update({
+        handleStatus: state,
+        handleStatusName: appealStateEnum[state],
+        handleTime: date.formatDate(),
+        handlerId: admin.id,
+        handlerName: admin.realName,
+        handlerDeptName: admin.depName,
+        handlerRemark: opRemark
+      }, {
+        where: {
+          id: workorder.typeId
+        }
+      })
+    } else if (workorder.type === '建议') {
+      await ctx.orm().bus_proposal.update({
+        handleStatus: state,
+        handleStatusName: proposalStateEnum[state],
+        handleTime: date.formatDate(),
+        handlerId: admin.id,
+        handlerName: admin.realName,
+        handlerDeptName: admin.depName,
+        handlerRemark: opRemark
+      }, {
+        where: {
+          id: workorder.typeId
+        }
+      })
+    }
+
+    ctx.body = {};
+  },
+  getWorkUsers: async ctx => {
+    let admins = await ctx.orm().SuperManagerInfo.findAll({
+      where: {
+        state: 1,
+        isDel: 0,
+        verifyLevel: {
+          $gt: 0
+        }
+      },
+      order:[['verifyLevel', 'asc']]
+    })
+
+    ctx.body = admins.map(m => {
+      return {
+        id: m.dataValues.id,
+        realName: m.dataValues.realName,
+        depName: m.dataValues.depName,
+        verifyLevel: m.dataValues.verifyLevel,
+        verifyType: m.dataValues.verifyType,
+        verifyVillages: JSON.parse(m.dataValues.verifyVillages)
+      }
+    })
+  }
 };
