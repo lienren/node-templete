@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-08-18 10:44:07
- * @LastEditTime: 2021-09-15 15:00:43
+ * @LastEditTime: 2021-09-15 15:16:03
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/aicy/api.js
@@ -599,4 +599,22 @@ module.exports = {
 
     ctx.body = {};
   },
+  getWorkOrder: async ctx => {
+    let orderby = ctx.request.body.orderby || [['createTime', 'desc']];
+    let { type, typeId } = ctx.request.body;
+
+    let where = {
+      isDel: 0
+    };
+
+    Object.assign(where, type && { type })
+    Object.assign(where, typeId && { typeId })
+
+    let result = await ctx.orm().work_orders.findAll({
+      where,
+      order: orderby
+    });
+
+    ctx.body = result;
+  }
 };

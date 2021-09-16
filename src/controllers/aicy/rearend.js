@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2021-09-15 13:54:46
+ * @LastEditTime: 2021-09-16 09:55:37
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/aicy/rearend.js
@@ -1022,6 +1022,36 @@ module.exports = {
 
     ctx.body = result[0];
   },
+  t6: async ctx => {
+    let sql = `select '新用户' type, date_format(createTime, '%Y-%m-%d') date, count(1) num from info_user where createTime between date_add(now(), INTERVAL -30 day) and now() group by date_format(createTime, '%Y-%m-%d') 
+    union all 
+    select '诉求' type, date_format(createTime, '%Y-%m-%d') date, count(1) num from bus_appeal where isDel = 0 and createTime between date_add(now(), INTERVAL -30 day) and now() group by date_format(createTime, '%Y-%m-%d') 
+    union all 
+    select '建议' type, date_format(createTime, '%Y-%m-%d') date, count(1) num from bus_proposal where isDel = 0 and createTime between date_add(now(), INTERVAL -30 day) and now() group by date_format(createTime, '%Y-%m-%d')
+    `;
+
+    let result = await ctx.orm().query(sql);
+
+    let now = new Date()
+    let agoDate = new Date(now)
+    agoDate.setDate(now.getDate() - 30)
+    let scope = date.dataScope(agoDate, now);
+
+    let data = {};
+    scope.map(m => {
+      let a = result.find(f => f.type === '新用户' && f.date === m)
+      let b = result.find(f => f.type === '诉求' && f.date === m)
+      let c = result.find(f => f.type === '建议' && f.date === m)
+
+      data[m] = {
+        a: a ? a.num : 0,
+        b: b ? b.num : 0,
+        c: c ? c.num : 0
+      }
+    });
+
+    ctx.body = data;
+  },
   getAppeal: async ctx => {
     let pageIndex = ctx.request.body.pageIndex || 1;
     let pageSize = ctx.request.body.pageSize || 50;
@@ -1666,7 +1696,7 @@ module.exports = {
           $gt: 0
         }
       },
-      order:[['verifyLevel', 'asc']]
+      order: [['verifyLevel', 'asc']]
     })
 
     ctx.body = admins.map(m => {
@@ -1679,5 +1709,75 @@ module.exports = {
         verifyVillages: JSON.parse(m.dataValues.verifyVillages)
       }
     })
+  },
+  getSuggest: async ctx => {
+    let pageIndex = ctx.request.body.pageIndex || 1;
+    let pageSize = ctx.request.body.pageSize || 50;
+    let { userName, userPhone, userIdCard, startCreateTime, endCreateTime } = ctx.request.body;
+
+    let where = {};
+
+    let userWhere = ``;
+    if (userName) { userWhere += ` and userName = '${userName}' ` }
+    if (userIdCard) { userWhere += ` and userIdCard = '${userIdCard}' ` }
+    if (userWhere !== '') {
+      where.$and = [sequelize.literal(`exists (select * from info_user where id = info_suggest.userId ${userWhere})`)]
+    }
+
+    Object.assign(where, userPhone && { phone: userPhone })
+
+    if (startCreateTime && endCreateTime) {
+      where.createTime = {
+        $between: [startCreateTime, endCreateTime]
+      }
+    }
+
+    let result = await ctx.orm().info_suggest.findAndCountAll({
+      offset: (pageIndex - 1) * pageSize,
+      limit: pageSize,
+      where,
+      order: [
+        ['createTime', 'desc']
+      ]
+    });
+
+    if (result && result.rows.length > 0) {
+      let users = await ctx.orm().info_user.findAll({
+        where: {
+          id: {
+            $in: result.rows.map(m => {
+              return m.dataValues.userId
+            })
+          }
+        }
+      })
+
+      let rows = result.rows.map(m => {
+        let u = users ? users.find(f => f.id === m.dataValues.userId) : null
+
+        return {
+          ...m.dataValues,
+          communityId: u ? u.communityId : 0,
+          communityName: u ? u.communityName : '',
+          villageName: u ? u.villageName : '',
+          userName: u ? u.userName : '',
+          userPhone: m.dataValues.phone
+        }
+      })
+
+      ctx.body = {
+        total: result.count,
+        list: rows,
+        pageIndex,
+        pageSize
+      };
+    } else {
+      ctx.body = {
+        total: 0,
+        list: [],
+        pageIndex,
+        pageSize
+      };
+    }
   }
 };
