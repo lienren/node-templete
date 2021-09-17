@@ -535,6 +535,11 @@ module.exports = {
     assert.ok(user.xState === 0, '您已报道入校，不能重填信息！');
 
     await ctx.orm().school_users_v2.update({
+      x4: '',
+      x7: '',
+      x8: '',
+      x9: '',
+      x10: '',
       x11: '',
       x12: '',
       x13: 0,
@@ -542,11 +547,19 @@ module.exports = {
       x15: '',
       x16: '',
       x17: '',
+      x18: '',
+      // x19: null,
       x21: '',
       x22: '',
       x31: null,
       xIsAdd: 0,
-      xlsAddTime: date.formatDate()
+      xlsAddTime: date.formatDate(),
+      state: 0,
+      stateName: stateEnum[0],
+      skm: '',
+      hsjc: '',
+      hsjctime: '',
+      hsjcaddr: ''
     }, {
       where: {
         id: user.id,
