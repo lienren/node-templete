@@ -13,7 +13,7 @@ module.exports = {
     port: 20003,
     staticPath: path.resolve(__dirname, '../assets/'),
     uploadFilePath: path.resolve(__dirname, '../assets/uploads/'),
-    uploadVirtualFilePath: 'http://aicy.billgenius.cn/uploads',
+    uploadVirtualFilePath: 'http://218.206.122.132:18881/uploads',
     logConfig: {
       appenders: {
         resLogger: {
@@ -60,7 +60,7 @@ module.exports = {
     authOptions: {
       expiresIn: '24h',
       issuer: 'SAT System',
-      audience: 'Li R&D TEAM 2018-2020.',
+      audience: 'Root R&D TEAM 2021-2022.',
       algorithm: 'HS512'
     }
   },
@@ -82,8 +82,10 @@ module.exports = {
       dialect: 'mysql',
       port: 3306,
       replication: {
-        read: [{ host: '47.110.136.73', username: 'root', password: 'Ler@2019' }],
-        write: { host: '47.110.136.73', username: 'root', password: 'Ler@2019' }
+        // read: [{ host: '47.110.136.73', username: 'root', password: 'Ler@2019' }],
+        // write: { host: '47.110.136.73', username: 'root', password: 'Ler@2019' }
+        read: [{ host: '192.168.135.4', username: 'zzxq', password: 'Zzxq@2021' }],
+        write: { host: '192.168.135.4', username: 'zzxq', password: 'Zzxq@2021' }
       },
       dialectOptions: {
         dateStrings: true,

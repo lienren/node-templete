@@ -38,6 +38,11 @@ module.exports = async function(ctx, next) {
     return;
   }
 
+  if (ctx.path.indexOf('aicommunity') > -1) {
+    await sendfile(ctx, path.resolve(__dirname, '../../assets/aicommunity/index.html'));
+    return;
+  }
+
   /* let sitepath = await redirect(ctx, async (ctx, requestUrl, sitepath) => {
     let stats = await sendfile(ctx, sitepath);
 

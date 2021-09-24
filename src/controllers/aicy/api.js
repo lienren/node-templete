@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-08-18 10:44:07
- * @LastEditTime: 2021-09-15 15:16:03
+ * @LastEditTime: 2021-09-23 18:03:51
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/aicy/api.js
@@ -15,6 +15,8 @@ const path = require('path');
 const sequelize = require('sequelize');
 const comm = require('../../utils/comm');
 const date = require('../../utils/date');
+const jwt = require('../../utils/jwt');
+const encrypt = require('../../utils/encrypt');
 
 const handleStatusNameEnum = {
   '1': '待办理',
@@ -91,7 +93,39 @@ module.exports = {
       });
     }
 
-    ctx.body = user;
+    // 生成Token
+    let enyCustomerId = encrypt.getEncryptVal(user.customerId)
+    let token = jwt.getToken({
+      userId: enyCustomerId
+    });
+
+    ctx.body = {
+      ...user.dataValues,
+      token
+    };
+  },
+  getUserInfoByToken: async ctx => {
+    let token = ctx.request.body.token || '';
+    assert.ok(!!token, '获取用户信息异常，请联系管理员！');
+
+    let authInfo = jwt.verifyToken(token);
+    assert.ok(authInfo !== null, '解析Token失败，请联系管理员！');
+    assert.ok(!!authInfo.userId, '获取用户信息失败，请联系管理员！');
+
+    let customerId = encrypt.getDecryptVal(authInfo.userId);
+
+    let user = await ctx.orm().info_user.findOne({
+      where: {
+        customerId: customerId
+      }
+    })
+
+    assert.ok(user !== null, '用户信息不存在！');
+
+    ctx.body = {
+      phone: user.userPhone,
+      pwd: encrypt.getMd5(user.userPhone)
+    };
   },
   setUserStreet: async ctx => {
     let id = ctx.request.body.id || 0;
