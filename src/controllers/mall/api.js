@@ -961,7 +961,9 @@ module.exports = {
 
     assert.ok(member != null, '输入帐号不存在！');
 
+    // 更新为签收
     let updateOrder = await ctx.orm().oms_order.update({
+      status: 6,
       confirm_status: 1,
       receive_time: date.formatDate(),
       modify_time: date.formatDate()
@@ -980,7 +982,7 @@ module.exports = {
         order_id: orderId,
         operate_man: `【用户】${member.nickname}`,
         create_time: date.formatDate(),
-        order_status: 2,
+        order_status: 6,
         note: '订单确认收货'
       })
     }
@@ -1009,8 +1011,7 @@ module.exports = {
       where: {
         id: orderId,
         member_id: member.id,
-        status: 2,
-        confirm_status: 1
+        status: 6
       }
     })
 
@@ -1077,8 +1078,7 @@ module.exports = {
           where: {
             id: order.id,
             member_id: member.id,
-            status: 2,
-            confirm_status: 1
+            status: 6
           }
         })
 

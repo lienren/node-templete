@@ -21,6 +21,8 @@ const statusOptions = {
   2: '已发货',
   3: '已完成',
   4: '已关闭',
+  5: '无效订单',
+  6: '已签收',
   999: '已取消'
 }
 
@@ -102,7 +104,11 @@ module.exports = {
     }
 
     if (!(status === null || status === undefined || status === '')) {
-      where.status = status
+      if (Array.isArray(status)) {
+        where.status = { $in: status }
+      } else {
+        where.status = status
+      }
     }
 
     if (!(orderType === null || orderType === undefined || orderType === '')) {
@@ -861,7 +867,7 @@ module.exports = {
         arr.push(order.receiver_phone || '');
         arr.push(`${order.receiver_province}/${order.receiver_city}/${order.receiver_region}`);
         arr.push(order.receiver_detail_address || '');
-        
+
         // 发票信息
         arr.push(order.bill_sort || '');
         arr.push(order.bill_company_name || '');

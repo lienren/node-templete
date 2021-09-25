@@ -136,6 +136,7 @@ async function autoConfirmOrder () {
   if (orders && orders.length > 0) {
     for (let i = 0, j = orders.length; i < j; i++) {
       let updateOrder = await ctx.orm().oms_order.update({
+        status: 6,
         confirm_status: 1,
         receive_time: date.formatDate(),
         modify_time: date.formatDate()
@@ -153,7 +154,7 @@ async function autoConfirmOrder () {
           order_id: orders[i].id,
           operate_man: `系统自动`,
           create_time: date.formatDate(),
-          order_status: 2,
+          order_status: 6,
           note: `系统在${now}订单确认收货`
         })
       }
@@ -161,6 +162,42 @@ async function autoConfirmOrder () {
   }
 
   console.log('autoConfirmOrder is over:%s', date.formatDate());
+}
+
+// 订单自动完成
+async function autoCompleteOrder () {
+  let now = date.formatDate();
+  let sql = `select id from oms_order where status = 6 and delete_status = 0 and DATE_ADD(receive_time,INTERVAL auto_confirm_day day) < now();`;
+
+  let orders = await ctx.orm().query(sql);
+
+  if (orders && orders.length > 0) {
+    for (let i = 0, j = orders.length; i < j; i++) {
+      let updateOrder = await ctx.orm().oms_order.update({
+        status: 3,
+        comment_time: date.formatDate(),
+        modify_time: date.formatDate()
+      }, {
+        where: {
+          id: orders[i].id,
+          status: 6,
+          delete_status: 0
+        }
+      })
+
+      if (updateOrder && updateOrder.length > 0 && updateOrder[0] > 0) {
+        ctx.orm().oms_order_operate_history.create({
+          order_id: orders[i].id,
+          operate_man: `系统自动`,
+          create_time: date.formatDate(),
+          order_status: 3,
+          note: `系统在${now}订单评价完成`
+        })
+      }
+    }
+  }
+
+  console.log('autoCompleteOrder is over:%s', date.formatDate());
 }
 
 async function main () {
@@ -185,6 +222,7 @@ async function main () {
       await orderRevertStock();
       await refreshProductStock();
       await autoConfirmOrder();
+      await autoCompleteOrder();
     }
   );
 
