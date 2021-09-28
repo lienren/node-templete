@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-08-18 10:44:07
- * @LastEditTime: 2021-09-23 18:03:51
+ * @LastEditTime: 2021-09-26 19:39:37
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/aicy/api.js
@@ -343,12 +343,12 @@ module.exports = {
     assert.ok(user.isComplete > 0, '请完善信息后，再发布诉求，谢谢！');
     assert.ok(user.isMute === 1, '您已被禁言，请联系管理员！');
 
-    // 获取管理员
+    // 获取管理员（支部）
     let admins = await ctx.orm().SuperManagerInfo.findAll({
       where: {
         state: 1,
         isDel: 0,
-        verifyLevel: 2
+        verifyLevel: 5
       }
     })
     let admin = admins.find(f => {
@@ -447,12 +447,12 @@ module.exports = {
     assert.ok(user.isComplete > 0, '请完善信息后，再发布诉求，谢谢！');
     assert.ok(user.isMute === 1, '您已被禁言，请联系管理员！');
 
-    // 获取管理员
+    // 获取管理员（支部）
     let admins = await ctx.orm().SuperManagerInfo.findAll({
       where: {
         state: 1,
         isDel: 0,
-        verifyLevel: 2
+        verifyLevel: 5
       }
     })
     let admin = admins.find(f => {
@@ -541,7 +541,7 @@ module.exports = {
     })
 
     assert.ok(user !== null, '用户不存在！');
-    assert.ok(user.isPartyMember === 2, '您不是党员，无法申请志愿者！');
+    // assert.ok(user.isPartyMember === 2, '您不是党员，无法申请志愿者！');
 
     let apply = await ctx.orm().apply_volunteer.findOne({
       where: {

@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2021-09-16 09:55:37
+ * @LastEditTime: 2021-09-26 08:52:00
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/aicy/rearend.js
@@ -864,7 +864,8 @@ module.exports = {
       (select count(1) from village_data vd where vd.dataType = '业委会' and vd.villageId = v.id) ywh,
       (select count(1) from village_data vd where vd.dataType = '三官一律' and vd.villageId = v.id) sgyl,
       (select count(1) from village_data vd where vd.dataType = '支部' and vd.villageId = v.id) zb,
-      (select count(1) from village_data vd where vd.dataType = '物业' and vd.villageId = v.id) wy 
+      (select count(1) from village_data vd where vd.dataType = '物业' and vd.villageId = v.id) wy,
+      (select 1) zbs 
     from info_village v 
     inner join info_community c on c.id = v.communityId 
     order by c.id, v.id`;
@@ -881,6 +882,7 @@ module.exports = {
         rows[cindex].ldz += result[i].ldz;
         rows[cindex].ywh += result[i].ywh;
         rows[cindex].sgyl += result[i].sgyl;
+        rows[cindex].zbs += result[i].zbs;
         rows[cindex].zb += result[i].zb;
         rows[cindex].wy += result[i].wy;
         rows[cindex].v.push({
@@ -895,6 +897,7 @@ module.exports = {
           ldz: result[i].ldz,
           ywh: result[i].ywh,
           sgyl: result[i].sgyl,
+          zbs: result[i].zbs,
           zb: result[i].zb,
           wy: result[i].wy,
           v: []
