@@ -966,8 +966,8 @@ module.exports = {
       xisAdd: 0,
       area: area,
       x28: x28,
-      state: 1,
-      stateName: '未审核'
+      state: 0,
+      stateName: stateEnum[0]
     });
 
     ctx.body = {};
