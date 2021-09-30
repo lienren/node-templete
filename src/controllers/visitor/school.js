@@ -934,5 +934,84 @@ module.exports = {
     });
 
     ctx.body = {};
+  },
+  createSchoolUserInfo: async (ctx) => {
+    let { x1, x3, x5, x19, x20, area, x28 } = ctx.request.body;
+
+    cp.isEmpty(x1);
+    cp.isEmpty(x3);
+    cp.isEmpty(x5);
+    cp.isEmpty(x19);
+    cp.isEmpty(x20);
+    cp.isEmpty(area);
+    cp.isEmpty(x28);
+
+    let user = await ctx.orm().school_users_v2.findOne({
+      where: {
+        x1: x1
+      },
+    });
+    assert.ok(user !== null, '用户学号已存在！');
+
+    await ctx.orm().school_users_v2.create({
+      x1: x1,
+      x2: x28.substring(x28.length - 6),
+      x3: x3,
+      x5: x5,
+      x19: x19,
+      x20: x20,
+      xState: 0,
+      xStateName: '未返校',
+      addTime: date.formatDate(),
+      xisAdd: 0,
+      area: area,
+      x28: x28,
+      state: 1,
+      stateName: '未审核'
+    });
+
+    ctx.body = {};
+  },
+  updateSchoolUserInfo: async (ctx) => {
+    let { id, x1, x3, x5, x19, x20, area, x28 } = ctx.request.body;
+
+    cp.isEmpty(id);
+    cp.isEmpty(x1);
+    cp.isEmpty(x3);
+    cp.isEmpty(x5);
+    cp.isEmpty(x19);
+    cp.isEmpty(x20);
+    cp.isEmpty(area);
+    cp.isEmpty(x28);
+
+    await ctx.orm().school_users_v2.update({
+      x1: x1,
+      x2: x28.substring(x28.length - 6),
+      x3: x3,
+      x5: x5,
+      x19: x19,
+      x20: x20,
+      area: area,
+      x28: x28
+    }, {
+      where: {
+        id
+      }
+    });
+
+    ctx.body = {};
+  },
+  deleteSchoolUserInfo: async (ctx) => {
+    let { id } = ctx.request.body;
+
+    cp.isEmpty(id);
+
+    await ctx.orm().school_users_v2.destroy({
+      where: {
+        id
+      }
+    });
+
+    ctx.body = {};
   }
 };
