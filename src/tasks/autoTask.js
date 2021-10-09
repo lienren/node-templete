@@ -108,20 +108,22 @@ async function couponExpired () {
 async function refreshProductStock () {
 
   // 更新销售量的sql
-  /*
-  update pms_product p, (
-  select m.product_id, sum(m.product_quantity) sale from oms_order o
-  inner join oms_order_item m on m.order_id = o.id
-  where o.`status` > 0
-  group by m.product_id) a
-  set p.sale = a.sale
-  where p.id = a.product_id; 
-  */
+  let sql0 = `update pms_product set sale = 0`;
+  
+  let sql1 = `update pms_product p, (
+    select m.product_id, sum(m.product_quantity) sale from oms_order o 
+    inner join oms_order_item m on m.order_id = o.id 
+    where o.status in (1, 2, 3, 4, 6) 
+    group by m.product_id) a
+    set p.sale = a.sale 
+    where p.id = a.product_id`;
 
-  let sql = `update pms_product p, (select product_id, sum(stock) stock from pms_sku_stock group by product_id) a 
+  let sql2 = `update pms_product p, (select product_id, sum(stock) stock from pms_sku_stock group by product_id) a 
   set p.stock = a.stock where p.id = a.product_id`;
 
-  await ctx.orm().query(sql, {}, { type: ctx.orm().sequelize.QueryTypes.UPDATE });
+  await ctx.orm().query(sql0, {}, { type: ctx.orm().sequelize.QueryTypes.UPDATE });
+  await ctx.orm().query(sql1, {}, { type: ctx.orm().sequelize.QueryTypes.UPDATE });
+  await ctx.orm().query(sql2, {}, { type: ctx.orm().sequelize.QueryTypes.UPDATE });
 
   console.log('refreshProductStock is over:%s', date.formatDate());
 }

@@ -570,8 +570,12 @@ module.exports = {
       }];
     }
 
-    if (!(status === null || status === undefined || status === '')) {
-      where.status = status
+    if (!(status === null || status === undefined || status === '' || status.length === 0)) {
+      if (Array.isArray(status)) {
+        where.status = { $in: status }
+      } else {
+        where.status = status
+      }
     }
 
     if (!(orderType === null || orderType === undefined || orderType === '')) {
@@ -799,8 +803,12 @@ module.exports = {
       }];
     }
 
-    if (!(status === null || status === undefined || status === '')) {
-      where.status = status
+    if (!(status === null || status === undefined || status === '' || status.length === 0)) {
+      if (Array.isArray(status)) {
+        where.status = { $in: status }
+      } else {
+        where.status = status
+      }
     }
 
     if (!(orderType === null || orderType === undefined || orderType === '')) {
