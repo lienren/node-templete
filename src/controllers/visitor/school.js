@@ -951,7 +951,7 @@ module.exports = {
         x1: x1
       },
     });
-    assert.ok(user !== null, '用户学号已存在！');
+    assert.ok(user === null, '用户学号已存在！');
 
     await ctx.orm().school_users_v2.create({
       x1: x1,
