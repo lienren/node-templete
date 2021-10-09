@@ -60,6 +60,7 @@ module.exports = {
     let nickName = ctx.request.body.nickName || '';
     let userName = ctx.request.body.userName || '';
     let providerId = ctx.request.body.providerId || 0;
+    let billCompanyName = ctx.request.body.billCompanyName || '';
     let pageNum = ctx.request.body.pageNum || 1;
     let pageSize = ctx.request.body.pageSize || 10;
 
@@ -125,6 +126,10 @@ module.exports = {
       }
     }
 
+    if (billCompanyName) {
+      where.bill_company_name = billCompanyName
+    }
+
     let result = await ctx.orm().oms_order.findAndCountAll({
       offset: (pageNum - 1) * pageSize,
       limit: pageSize,
@@ -134,9 +139,24 @@ module.exports = {
       ]
     });
 
+    let orderItems = null;
+
+    if (result.rows && result.rows.length > 0) {
+      orderItems = await ctx.orm().oms_order_item.findAll({
+        where: {
+          order_id: {
+            $in: result.rows.map(m => {
+              return m.dataValues.id
+            })
+          }
+        }
+      })
+    }
+
     ctx.body = {
       total: result.count,
       list: result.rows.map(m => {
+        let proList = orderItems ? orderItems.filter(f => f.dataValues.order_id === m.dataValues.id) : []
         return {
           ...m.dataValues,
           memberId: m.dataValues.member_id,
@@ -186,6 +206,7 @@ module.exports = {
           billAddress: m.dataValues.bill_address,
           billPhone: m.dataValues.bill_phone,
           billReceiverAddress: m.dataValues.bill_receiver_address,
+          proList: proList
         }
       }),
     };
@@ -503,6 +524,7 @@ module.exports = {
     let nickName = ctx.request.body.nickName || '';
     let userName = ctx.request.body.userName || '';
     let providerId = ctx.request.body.providerId || 0;
+    let billCompanyName = ctx.request.body.billCompanyName || '';
 
     if (!Array.isArray(createTime) && createTime.indexOf(',') >= 0) {
       createTime = createTime.split(',')
@@ -564,6 +586,10 @@ module.exports = {
       where.create_time = {
         $between: [`${createTime[0]} 00:00:00`, `${createTime[1]} 23:59:59`]
       }
+    }
+
+    if (billCompanyName) {
+      where.bill_company_name = billCompanyName
     }
 
     let orders = await ctx.orm().oms_order.findAll({
@@ -727,6 +753,7 @@ module.exports = {
     let nickName = ctx.request.body.nickName || '';
     let userName = ctx.request.body.userName || '';
     let providerId = ctx.request.body.providerId || 0;
+    let billCompanyName = ctx.request.body.billCompanyName || '';
 
     if (!Array.isArray(createTime) && createTime.indexOf(',') >= 0) {
       createTime = createTime.split(',')
@@ -788,6 +815,10 @@ module.exports = {
       where.create_time = {
         $between: [`${createTime[0]} 00:00:00`, `${createTime[1]} 23:59:59`]
       }
+    }
+
+    if (billCompanyName) {
+      where.bill_company_name = billCompanyName
     }
 
     let orders = await ctx.orm().oms_order.findAll({
