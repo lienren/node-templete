@@ -72,6 +72,8 @@ module.exports = {
         '您的登录信息已被其它微信号绑定，请更换微信号！'
       );
     }
+    // assert.ok(user.xIsAdd !== 0, '补充信息时间已过，请联系管理员，谢谢！')
+    assert.ok(user.xState !== 1, '谢谢您使用返校系统，明年再见！')
 
     if (!user.openId) {
       // 更新openId
@@ -1013,5 +1015,135 @@ module.exports = {
     });
 
     ctx.body = {};
+  },
+  stsList: async (ctx) => {
+    let sql = `
+    select 'a1', count(1) num from school_users_v2 
+    union all 
+    select 'a2', count(1) num from school_users_v2 where xIsAdd = 1 
+    union all 
+    select 'a3', count(1) num from school_users_v2 where xIsAdd = 1 and xState = 1 
+    union all 
+    select 'a4', count(1) num from school_users_v2 where left(x1,2) = '21'  
+    union all 
+    select 'a5', count(1) num from school_users_v2 where left(x1,2) = '21' and xIsAdd = 1 
+    union all 
+    select 'a6', count(1) num from school_users_v2 where left(x1,2) = '21' and xIsAdd = 1 and xState = 1 
+    `
+
+    let result = await ctx.orm().query(sql)
+
+    console.log('result:', result)
+
+    ctx.body = result
+  },
+  stsList1: async (ctx) => {
+    let time = ctx.request.body.time || date.formatDate(new Date(), 'YYYY-MM-DD');
+
+    let sql1 = `
+    select 'a1' a1, count(1) num from school_users_v2 
+    union all 
+    select 'a2' a1, count(1) num from school_users_v2 where left(x1,2) = '21' 
+    union all 
+    select 'a3' a1, count(1) num from school_users_v2 where left(x1,2) != '21' 
+    union all 
+    select 'a4' a1, count(1) num from school_users_v2 where left(x1,2) = '21' and xIsAdd = 1 
+    union all 
+    select 'a5' a1, count(1) num from school_users_v2 where left(x1,2) = '21' and xIsAdd = 0 
+    union all 
+    select 'a6' a1, count(1) num from school_users_v2 where left(x1,2) != '21' and xIsAdd = 1 
+    union all 
+    select 'a7' a1, count(1) num from school_users_v2 where left(x1,2) != '21' and xIsAdd = 0 
+    union all 
+    select 'a8' a1, count(1) num from school_users_v2 where left(x1,2) = '21' and xState = 1 
+    union all 
+    select 'a9' a1, count(1) num from school_users_v2 where left(x1,2) = '21' and xState = 0 
+    union all 
+    select 'a10' a1, count(1) num from school_users_v2 where left(x1,2) != '21' and xState = 1 
+    union all 
+    select 'a11' a1, count(1) num from school_users_v2 where left(x1,2) != '21' and xState = 0 
+    union all 
+    select 'a12' a1, count(1) num from school_users_v2 where left(x1,2) = '21' and x19 between '${time} 00:00:00' and '${time} 23:59:59' 
+    union all 
+    select 'a13' a1, count(1) num from school_users_v2 where left(x1,2) = '21' and xState = 1 and xBackTime between '${time} 00:00:00' and '${time} 23:59:59' 
+    union all 
+    select 'a14' a1, count(1) num from school_users_v2 where left(x1,2) != '21' and x19 between '${time} 00:00:00' and '${time} 23:59:59' 
+    union all 
+    select 'a15' a1, count(1) num from school_users_v2 where left(x1,2) != '21' and xState = 1 and xBackTime between '${time} 00:00:00' and '${time} 23:59:59' 
+    `
+
+    let sql2 = `
+    select 'a1' a1, count(1) num from school_users_v2 where area = '石湫校区' 
+    union all 
+    select 'a2' a1, count(1) num from school_users_v2 where left(x1,2) = '21' and area = '石湫校区' 
+    union all 
+    select 'a3' a1, count(1) num from school_users_v2 where left(x1,2) != '21' and area = '石湫校区' 
+    union all 
+    select 'a4' a1, count(1) num from school_users_v2 where left(x1,2) = '21' and xIsAdd = 1 and area = '石湫校区' 
+    union all 
+    select 'a5' a1, count(1) num from school_users_v2 where left(x1,2) = '21' and xIsAdd = 0 and area = '石湫校区' 
+    union all 
+    select 'a6' a1, count(1) num from school_users_v2 where left(x1,2) != '21' and xIsAdd = 1 and area = '石湫校区' 
+    union all 
+    select 'a7' a1, count(1) num from school_users_v2 where left(x1,2) != '21' and xIsAdd = 0 and area = '石湫校区' 
+    union all 
+    select 'a8' a1, count(1) num from school_users_v2 where left(x1,2) = '21' and xState = 1 and area = '石湫校区' 
+    union all 
+    select 'a9' a1, count(1) num from school_users_v2 where left(x1,2) = '21' and xState = 0 and area = '石湫校区' 
+    union all 
+    select 'a10' a1, count(1) num from school_users_v2 where left(x1,2) != '21' and xState = 1 and area = '石湫校区' 
+    union all 
+    select 'a11' a1, count(1) num from school_users_v2 where left(x1,2) != '21' and xState = 0 and area = '石湫校区' 
+    union all 
+    select 'a12' a1, count(1) num from school_users_v2 where left(x1,2) = '21' and x19 between '${time} 00:00:00' and '${time} 23:59:59' and area = '石湫校区' 
+    union all 
+    select 'a13' a1, count(1) num from school_users_v2 where left(x1,2) = '21' and xState = 1 and xBackTime between '${time} 00:00:00' and '${time} 23:59:59' and area = '石湫校区' 
+    union all 
+    select 'a14' a1, count(1) num from school_users_v2 where left(x1,2) != '21' and x19 between '${time} 00:00:00' and '${time} 23:59:59' and area = '石湫校区' 
+    union all 
+    select 'a15' a1, count(1) num from school_users_v2 where left(x1,2) != '21' and xState = 1 and xBackTime between '${time} 00:00:00' and '${time} 23:59:59' and area = '石湫校区' 
+    `
+
+    let sql3 = `
+    select 'a1' a1, count(1) num from school_users_v2 where area = '草场门校区' 
+    union all 
+    select 'a2' a1, count(1) num from school_users_v2 where left(x1,2) = '21' and area = '草场门校区' 
+    union all 
+    select 'a3' a1, count(1) num from school_users_v2 where left(x1,2) != '21' and area = '草场门校区' 
+    union all 
+    select 'a4' a1, count(1) num from school_users_v2 where left(x1,2) = '21' and xIsAdd = 1 and area = '草场门校区' 
+    union all 
+    select 'a5' a1, count(1) num from school_users_v2 where left(x1,2) = '21' and xIsAdd = 0 and area = '草场门校区' 
+    union all 
+    select 'a6' a1, count(1) num from school_users_v2 where left(x1,2) != '21' and xIsAdd = 1 and area = '草场门校区' 
+    union all 
+    select 'a7' a1, count(1) num from school_users_v2 where left(x1,2) != '21' and xIsAdd = 0 and area = '草场门校区' 
+    union all 
+    select 'a8' a1, count(1) num from school_users_v2 where left(x1,2) = '21' and xState = 1 and area = '草场门校区' 
+    union all 
+    select 'a9' a1, count(1) num from school_users_v2 where left(x1,2) = '21' and xState = 0 and area = '草场门校区' 
+    union all 
+    select 'a10' a1, count(1) num from school_users_v2 where left(x1,2) != '21' and xState = 1 and area = '草场门校区' 
+    union all 
+    select 'a11' a1, count(1) num from school_users_v2 where left(x1,2) != '21' and xState = 0 and area = '草场门校区' 
+    union all 
+    select 'a12' a1, count(1) num from school_users_v2 where left(x1,2) = '21' and x19 between '${time} 00:00:00' and '${time} 23:59:59' and area = '草场门校区' 
+    union all 
+    select 'a13' a1, count(1) num from school_users_v2 where left(x1,2) = '21' and xState = 1 and xBackTime between '${time} 00:00:00' and '${time} 23:59:59' and area = '草场门校区' 
+    union all 
+    select 'a14' a1, count(1) num from school_users_v2 where left(x1,2) != '21' and x19 between '${time} 00:00:00' and '${time} 23:59:59' and area = '草场门校区' 
+    union all 
+    select 'a15' a1, count(1) num from school_users_v2 where left(x1,2) != '21' and xState = 1 and xBackTime between '${time} 00:00:00' and '${time} 23:59:59' and area = '草场门校区' 
+    `
+
+    let result1 = await ctx.orm().query(sql1)
+    let result2 = await ctx.orm().query(sql2)
+    let result3 = await ctx.orm().query(sql3)
+
+    ctx.body = {
+      data1: result1,
+      data2: result2,
+      data3: result3
+    }
   }
 };
