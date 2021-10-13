@@ -342,15 +342,15 @@ module.exports = {
 
     let sql = `select 'orders', count(1) num from oms_order where create_time between '${startTime}' and '${endTime}' 
     union all 
-    select 'ordermembers', count(1) from (select member_id from oms_order where status in (1,2,3) and create_time between '${startTime}' and '${endTime}' group by member_id) a
+    select 'ordermembers', count(1) from (select member_id from oms_order where status in (1,2,3,6) and create_time between '${startTime}' and '${endTime}' group by member_id) a
     union all 
     select 'orderamouts', sum(total_amount) num from oms_order where create_time between '${startTime}' and '${endTime}' 
     union all 
-    select 'orderpays', count(1) num from oms_order where status in (1,2,3) and create_time between '${startTime}' and '${endTime}' 
+    select 'orderpays', count(1) num from oms_order where status in (1,2,3,6) and create_time between '${startTime}' and '${endTime}' 
     union all 
-    select 'orderpayamouts', sum(pay_amount) num from oms_order where status in (1,2,3) and create_time between '${startTime}' and '${endTime}' 
+    select 'orderpayamouts', sum(pay_amount) num from oms_order where status in (1,2,3,6) and create_time between '${startTime}' and '${endTime}' 
     union all 
-    select 'orderdiscountamouts', sum(total_amount) - sum(pay_amount) num from oms_order where status in (1,2,3) and create_time between '${startTime}' and '${endTime}' 
+    select 'orderdiscountamouts', sum(total_amount) - sum(pay_amount) num from oms_order where status in (1,2,3,6) and create_time between '${startTime}' and '${endTime}' 
     union all 
     select 'members', count(1) num from ums_member where create_time between '${startTime}' and '${endTime}' 
     union all 
@@ -482,7 +482,7 @@ module.exports = {
       select 'buy', product_name eventValue, count(member_id) uv, sum(num) pv from (
       select m.product_name, o.member_id, sum(product_quantity) num from oms_order_item m 
       inner join oms_order o on o.id = m.order_id 
-      where o.status in (1,2,3) and o.create_time between '${startTime}' and '${endTime}' 
+      where o.status in (1,2,3,6) and o.create_time between '${startTime}' and '${endTime}' 
       group by m.product_name, o.member_id 
       ) a 
       group by product_name 
