@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2021-09-26 08:52:00
+ * @LastEditTime: 2021-10-13 22:31:47
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/aicy/rearend.js
@@ -1128,10 +1128,15 @@ module.exports = {
         }
       })
 
+      let works = await ctx.orm().query(`select max(id) id, typeId from work_orders where type = '诉求' and typeId in (select id from bus_appeal where handleStatus != 3 and id in (` + result.rows.map(m => {
+        return m.dataValues.id
+      }).join(',') + `)) group by typeId;`);
+
       let rows = result.rows.map(m => {
         let c = villages.find(f => f.id === m.dataValues.villageId)
         let cinfo = c ? communitys.find(f => f.id === c.communityId) : null
         let u = users ? users.find(f => f.id === m.dataValues.userId) : null
+        let w = works ? works.find(f => f.typeId === m.dataValues.id) : null
 
         return {
           ...m.dataValues,
@@ -1139,7 +1144,8 @@ module.exports = {
           communityName: cinfo ? cinfo.communityName : '',
           villageName: c ? c.villageName : '',
           userName: u ? u.userName : '',
-          userPhone: u ? u.userPhone : ''
+          userPhone: u ? u.userPhone : '',
+          workId: w ? w.id : 0
         }
       })
 
@@ -1253,10 +1259,15 @@ module.exports = {
         }
       })
 
+      let works = await ctx.orm().query(`select max(id) id, typeId from work_orders where type = '建议' and typeId in (select id from bus_proposal where handleStatus != 3 and id in (` + result.rows.map(m => {
+        return m.dataValues.id
+      }).join(',') + `)) group by typeId;`);
+
       let rows = result.rows.map(m => {
         let c = villages.find(f => f.id === m.dataValues.villageId)
         let cinfo = c ? communitys.find(f => f.id === c.communityId) : null
         let u = users ? users.find(f => f.id === m.dataValues.userId) : null
+        let w = works ? works.find(f => f.typeId === m.dataValues.id) : null
 
         return {
           ...m.dataValues,
@@ -1264,7 +1275,8 @@ module.exports = {
           communityName: cinfo ? cinfo.communityName : '',
           villageName: c ? c.villageName : '',
           userName: u ? u.userName : '',
-          userPhone: u ? u.userPhone : ''
+          userPhone: u ? u.userPhone : '',
+          workId: w ? w.id : 0
         }
       })
 
