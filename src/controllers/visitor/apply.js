@@ -113,10 +113,10 @@ module.exports = {
       let verifyAdminIdName2 = '';
 
       if (campus === '石湫校区') {
-        verifyAdminId2 = ',' + admin2s.filter(f => f.realName !== '马隽').map(m => {
+        verifyAdminId2 = ',' + admin2s.filter(f => f.realName !== '史卫东').map(m => {
           return m.dataValues.id
         }).join(',') + ',';
-        verifyAdminIdName2 = ',' + admin2s.filter(f => f.realName !== '马隽').map(m => {
+        verifyAdminIdName2 = ',' + admin2s.filter(f => f.realName !== '史卫东').map(m => {
           return m.dataValues.realName
         }).join(',') + ',';
       } else if (campus === '草场门校区') {
@@ -396,7 +396,7 @@ module.exports = {
                     "value": date.formatDate(new Date(), 'YYYY年MM月DD日 HH:mm')
                   }
                 })
-              } else if (result.visitorCampus === '草场门校区' && admin2s[i].realName === '马隽') {
+              } else if (result.visitorCampus === '草场门校区' && admin2s[i].realName === '史卫东') {
                 wx.sendMessage(admin2s[i].openId, 'B2MGYS99bH2CoXtXgre0Y3GWMINfCAY94qjcILAbqac', null, {
                   "thing1": {
                     "value": `${result.visitorUserName}申请访校`
