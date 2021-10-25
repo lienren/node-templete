@@ -37,7 +37,7 @@ appId:2021002161667283
 
 const tenpayAPI = new tenpay({
   appid: 'wx17112a11c395f6e3',
-  mchid: '1610949193',
+  mchid: '1614558822',
   partnerKey: '06E9561F6D35212879AE5A272FE7D6BA',
   notify_url: 'https://mall.lixianggo.com/mall/notify/weipay'
 }, true);

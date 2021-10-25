@@ -530,6 +530,10 @@ module.exports = {
       createTime = createTime.split(',')
     }
 
+    if (!Array.isArray(status) && status.indexOf(',') >= 0) {
+      status = status.split(',')
+    }
+
     let where = {
       delete_status: 0
     }
@@ -761,6 +765,10 @@ module.exports = {
 
     if (!Array.isArray(createTime) && createTime.indexOf(',') >= 0) {
       createTime = createTime.split(',')
+    }
+
+    if (!Array.isArray(status) && status.indexOf(',') >= 0) {
+      status = status.split(',')
     }
 
     let where = {
