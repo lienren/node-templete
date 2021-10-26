@@ -86,6 +86,7 @@ module.exports = {
         write: { host: '47.110.136.73', username: 'root', password: 'Ler@2019' }
         // read: [{ host: '192.168.135.4', username: 'zzxq', password: 'Zzxq@2021' }],
         // write: { host: '192.168.135.4', username: 'zzxq', password: 'Zzxq@2021' }
+        // read: [{ host: '192.168.135.4', username: 'root', password: 'Ler@2021' }]
       },
       dialectOptions: {
         dateStrings: true,

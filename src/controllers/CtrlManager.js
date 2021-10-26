@@ -123,7 +123,8 @@ module.exports = {
       token: token,
       roles: resultManagerRoles,
       depName: resultManager.depName,
-      verifyLevel: resultManager.verifyLevel
+      verifyLevel: resultManager.verifyLevel,
+      verifyVillages: JSON.parse(resultManager.verifyVillages)
     };
   },
   setPassword: async ctx => {
