@@ -41,7 +41,7 @@ app.use(async (ctx, next) => {
   if (path.indexOf('/base/getimagecodebybase64') >= 0 ||
     path.indexOf('/mall/notify/weipay') >= 0 ||
     path.indexOf('/mall/notify/alipay') >= 0 ||
-    path.indexOf('/mall/order/exportorders') >= 0||
+    path.indexOf('/mall/order/exportorders') >= 0 ||
     path.indexOf('/mall/order/exprotproviderorders') >= 0) {
     ctx.disableBodyParserReturn = true;
   }
