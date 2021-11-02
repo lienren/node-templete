@@ -1,10 +1,10 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2021-10-13 22:31:47
+ * @LastEditTime: 2021-11-01 06:59:40
  * @LastEditors: Lienren
  * @Description: 
- * @FilePath: /node-templete/src/controllers/aicy/rearend.js
+ * @FilePath: /node-templete/src/controllers/human/rearend.js
  * PRESENTED BY ROOT Tech R&D TEAM 2021-2026.
  */
 'use strict';
@@ -16,112 +16,532 @@ const sequelize = require('sequelize');
 const comm = require('../../utils/comm');
 const date = require('../../utils/date');
 
-const verifyStausEnum = {
-  1: '未审核',
-  2: '审核通过',
-  3: '审核未通过'
-}
-
-const reviewerStatusEnum = {
-  1: '未审核',
-  2: '审核通过',
-  3: '审核未通过'
-}
-
-const workOrderStateEnum = {
-  1: '待办理',
-  2: '办理中',
-  3: '已办结',
-  4: '延期办理',
-  5: '转办'
-}
-
-const appealStateEnum = {
-  1: '待办理',
-  2: '办理中',
-  3: '已办结',
-  4: '延期办理'
-}
-
-const proposalStateEnum = {
-  1: '待办理',
-  2: '办理中',
-  3: '已采纳',
-  4: '延期办理'
+const eduLevelEnum = {
+  "博士": 9,
+  "硕士": 8,
+  "本科": 7,
+  "大专": 6,
+  "中专": 5,
+  "职业高中": 4,
+  "技工": 3,
+  "高中": 2,
+  "初中": 1
 }
 
 module.exports = {
-  getVillageData: async ctx => {
-    let result1 = await ctx.orm().info_community.findAll();
-    let result2 = await ctx.orm().info_village.findAll();
-
-    let data = result1.map(m1 => {
-      return {
-        value: m1.dataValues.id,
-        label: m1.dataValues.communityName,
-        children: result2.filter(f => f.communityId === m1.dataValues.id).map(m2 => {
-          return {
-            value: m2.dataValues.id,
-            label: m2.dataValues.villageName
-          }
-        })
-      }
-    })
-
-    ctx.body = {};
-  },
   getUsers: async ctx => {
     let pageIndex = ctx.request.body.pageIndex || 1;
     let pageSize = ctx.request.body.pageSize || 50;
-    let { customerId, userName, nickName, userPhone, userIdCard, userSex, isMute, isPartyMember, villageId, startCreateTime, endCreateTime, startUpdateTime, endUpdateTime } = ctx.request.body;
+    let { street, community, streets, communitys, name, sex, birthday, nation, political, edu1, edu2, school, major,
+      hold, holdTime, workTime, post, postLevel, phone, idcard, specialty, remark, isretire,
+      isresign, toretire, createTime, updateTime } = ctx.request.body;
 
     let where = {};
 
-    isMute = parseInt(isMute)
-    isPartyMember = parseInt(isPartyMember)
+    Object.assign(where, street && { street })
+    Object.assign(where, community && { community })
+    Object.assign(where, name && { name })
+    Object.assign(where, sex && { sex })
+    Object.assign(where, nation && { nation })
+    Object.assign(where, political && { political })
+    Object.assign(where, edu1 && { edu1 })
+    Object.assign(where, edu2 && { edu2 })
+    Object.assign(where, post && { post })
+    Object.assign(where, postLevel && { postLevel })
+    Object.assign(where, phone && { phone })
+    Object.assign(where, idcard && { idcard })
+    Object.assign(where, isretire && { isretire })
+    Object.assign(where, isresign && { isresign })
 
-    Object.assign(where, customerId && { customerId })
-    Object.assign(where, userName && { userName })
-    Object.assign(where, nickName && { nickName })
-    Object.assign(where, userPhone && { userPhone })
-    Object.assign(where, userIdCard && { userIdCard })
-    Object.assign(where, userSex && { userSex })
-    Object.assign(where, isMute && { isMute })
-    Object.assign(where, isPartyMember && { isPartyMember })
-
-    if (villageId && villageId.length > 0) {
-      where.villageId = {
-        $in: villageId
+    if (streets && streets.length > 0) {
+      where.street = {
+        $in: streets
       }
     }
 
-    if (startCreateTime && endCreateTime) {
-      where.createTime = {
-        $between: [startCreateTime, endCreateTime]
+    if (communitys && communitys.length > 0) {
+      where.community = {
+        $in: communitys
       }
     }
 
-    if (startUpdateTime && endUpdateTime) {
-      where.updateTime = {
-        $between: [startUpdateTime, endUpdateTime]
+    if (birthday && birthday.length > 0) {
+      where.birthday = { $between: birthday }
+    }
+
+    if (holdTime && holdTime.length > 0) {
+      where.holdTime = { $between: holdTime }
+    }
+
+    if (workTime && workTime.length > 0) {
+      where.workTime = { $between: workTime }
+    }
+
+    if (toretire && toretire.length > 0) {
+      where.toretire = { $between: toretire }
+    }
+
+    if (createTime && createTime.length > 0) {
+      where.createTime = { $between: createTime }
+    }
+
+    if (updateTime && updateTime.length > 0) {
+      where.updateTime = { $between: updateTime }
+    }
+
+    if (hold) {
+      where.hold = {
+        $like: `%"${hold}"%`
       }
     }
 
-    let result = await ctx.orm().info_user.findAndCountAll({
+    if (school) {
+      where.school = {
+        $like: `%${school}%`
+      }
+    }
+
+    if (major) {
+      where.major = {
+        $like: `%${major}%`
+      }
+    }
+
+    if (specialty) {
+      where.specialty = {
+        $like: `%${specialty}%`
+      }
+    }
+
+    if (remark) {
+      where.remark = {
+        $like: `%${remark}%`
+      };
+    }
+
+    let result = await ctx.orm().info_users.findAndCountAll({
       offset: (pageIndex - 1) * pageSize,
       limit: pageSize,
       where,
       order: [
-        ['createTime', 'desc']
+        ['id', 'desc']
       ]
     });
 
+    let certs = []
+    let uplevel = []
+    let jobs = []
+    if (result && result.count > 0 && result.rows && result.rows.length > 0) {
+      certs = await ctx.orm().info_user_cert.findAll({
+        where: {
+          userId: {
+            $in: result.rows.map(m => {
+              return m.dataValues.id
+            })
+          }
+        },
+        order: [['id', 'desc']]
+      })
+
+      uplevel = await ctx.orm().info_user_uplevel.findAll({
+        where: {
+          userId: {
+            $in: result.rows.map(m => {
+              return m.dataValues.id
+            })
+          }
+        },
+        order: [['id', 'desc']]
+      })
+
+      jobs = await ctx.orm().info_user_job.findAll({
+        where: {
+          userId: {
+            $in: result.rows.map(m => {
+              return m.dataValues.id
+            })
+          }
+        },
+        order: [['id', 'desc']]
+      })
+    }
+
     ctx.body = {
       total: result.count,
-      list: result.rows,
+      list: result.rows.map(m => {
+        let userId = m.dataValues.id
+        let userCerts = certs.length > 0 ? certs.filter(f => f.dataValues.userId === userId) : []
+        let userUplevel = uplevel.length > 0 ? uplevel.filter(f => f.dataValues.userId === userId) : []
+        let userJobs = jobs.length > 0 ? jobs.filter(f => f.dataValues.userId === userId) : []
+
+        return {
+          ...m.dataValues,
+          certs: userCerts,
+          uplevel: userUplevel,
+          jobs: userJobs
+        }
+      }),
       pageIndex,
       pageSize
-    };
+    }
+  },
+  submitUsers: async ctx => {
+    let { id, street, community, name, sex, birthday, nation, political, edu1, edu2, school, major,
+      hold, holdTime, workTime, post, postLevel, phone, idcard, specialty, remark, isretire,
+      isresign, toretire } = ctx.request.body;
+
+    if (!edu2) {
+      edu2 = edu1
+    }
+
+    if (id && id > 0) {
+      await ctx.orm().info_users.update({
+        street, community, name, sex, birthday, nation, political, edu1, edu2, school, major,
+        hold: JSON.stringify(hold), holdTime, workTime, post, postLevel, phone, idcard, specialty, remark, isretire,
+        isresign, toretire
+      }, {
+        where: {
+          id
+        }
+      })
+    } else {
+      await ctx.orm().info_users.create({
+        street, community, name, sex, birthday, nation, political, edu1, edu2, school, major,
+        hold: JSON.stringify(hold), holdTime, workTime, post, postLevel, phone, idcard, specialty, remark, isretire,
+        isresign, toretire, isDel: 0
+      })
+    }
+
+    ctx.body = {}
+  },
+  submitPostLevel: async ctx => {
+    let { id, postLevelId, postLevelDesc, certNum, certTime, remark } = ctx.request.body;
+
+    postLevelId = parseInt(postLevelId)
+
+    assert.ok(id > 0, '调级参数异常')
+
+    let user = await ctx.orm().info_users.findOne({
+      where: { id, isDel: 0 }
+    })
+
+    assert.ok(user !== null, '社工不存在，请联系管理员')
+
+    let userCert = await ctx.orm().info_user_cert.findAll({
+      where: {
+        userId: user.id
+      }
+    })
+
+    let userUpLevel = await ctx.orm().info_user_uplevel.findAll({
+      where: {
+        userId: user.id
+      }
+    })
+
+    let maxPostLevel = 18
+    let userPostLeveUp = 0
+    let userPostLevel = user.postLevel
+
+    switch (user.post) {
+      case '社区正职':
+        maxPostLevel = 18;
+        break;
+      case '社区副职':
+        maxPostLevel = 15;
+        break;
+      case '普通社工':
+      case '其他':
+        maxPostLevel = 12;
+        break;
+    }
+
+    let tmpEduLevel = ''
+    let eduLevel = ''
+    let filter = []
+
+    switch (postLevelId) {
+      case 1:
+        userPostLeveUp = 1
+        break;
+      case 2:
+        userPostLeveUp = 1
+        break;
+      case 3:
+        tmpEduLevel = eduLevelEnum['本科']
+        eduLevel = eduLevelEnum[user.edu2]
+
+        if (tmpEduLevel > eduLevel) {
+
+          filter = userCert.filter(f => {
+            return f.dataValues.certName === '全国助理社会工作师' ||
+              f.dataValues.certName === '全国社会工作师' ||
+              f.dataValues.certName === '全国高级社会工作师';
+          })
+
+          if (filter.length === 0) {
+            userPostLeveUp = 1
+          }
+
+          await ctx.orm().info_users.update({
+            edu2: '本科'
+          }, {
+            where: {
+              id: user.id
+            }
+          })
+        }
+        break;
+      case 4:
+        tmpEduLevel = eduLevelEnum['硕士']
+        eduLevel = eduLevelEnum[user.edu2]
+
+        if (tmpEduLevel > eduLevel) {
+
+          if (user.edu2 === '本科') {
+            userPostLeveUp = 1
+          } else {
+            userPostLeveUp = 2
+          }
+
+          if (userCert.filter(f => { return f.dataValues.certName === '全国助理社会工作师'; }).length > 0) {
+            userPostLeveUp = userPostLeveUp > 1 ? 1 : userPostLeveUp
+          }
+          if (userCert.filter(f => { return f.dataValues.certName === '全国社会工作师'; }).length > 0) {
+            userPostLeveUp = userPostLeveUp > 0 ? 0 : userPostLeveUp
+          }
+          if (userCert.filter(f => { return f.dataValues.certName === '全国高级社会工作师'; }).length > 0) {
+            userPostLeveUp = userPostLeveUp > 0 ? 0 : userPostLeveUp
+          }
+
+          await ctx.orm().info_users.update({
+            edu2: '硕士'
+          }, {
+            where: {
+              id: user.id
+            }
+          })
+        }
+        break;
+      case 5:
+        tmpEduLevel = eduLevelEnum['博士']
+        eduLevel = eduLevelEnum[user.edu2]
+
+        if (tmpEduLevel > eduLevel) {
+
+          if (user.edu2 === '本科') {
+            userPostLeveUp = 2
+          } else if (user.edu2 === '硕士') {
+            userPostLeveUp = 1
+          } else {
+            userPostLeveUp = 3
+          }
+
+          if (userCert.filter(f => { return f.dataValues.certName === '全国助理社会工作师'; }).length > 0) {
+            userPostLeveUp = userPostLeveUp > 2 ? 2 : userPostLeveUp;
+          }
+          if (userCert.filter(f => { return f.dataValues.certName === '全国社会工作师'; }).length > 0) {
+            userPostLeveUp = userPostLeveUp > 1 ? 1 : userPostLeveUp;
+          }
+          if (userCert.filter(f => { return f.dataValues.certName === '全国高级社会工作师'; }).length > 0) {
+            userPostLeveUp = userPostLeveUp > 0 ? 0 : userPostLeveUp;
+          }
+
+          await ctx.orm().info_users.update({
+            edu2: '博士'
+          }, {
+            where: {
+              id: user.id
+            }
+          })
+        }
+        break;
+      case 6:
+        filter = userCert.filter(f => {
+          return f.dataValues.certName === '全国助理社会工作师' ||
+            f.dataValues.certName === '全国社会工作师' ||
+            f.dataValues.certName === '全国高级社会工作师';
+        })
+
+        if (filter.length === 0) {
+
+          if (user.edu2 === '本科' ||
+            user.edu2 === '硕士' ||
+            user.edu2 === '博士') {
+            userPostLeveUp = 0
+          }
+
+          await ctx.orm().info_user_cert.create({
+            userId: user.id,
+            certName: '全国助理社会工作师',
+            certNum: certNum,
+            certDesc: `在${certTime}获得了全国助理社会工作师`,
+            certTime: certTime,
+            remark: remark
+          })
+        }
+        break;
+      case 7:
+        filter = userCert.filter(f => {
+          return f.dataValues.certName === '全国社会工作师' ||
+            f.dataValues.certName === '全国高级社会工作师';
+        })
+
+        if (filter.length === 0) {
+          userPostLeveUp = 2
+
+          if (userCert.filter(f => { return f.dataValues.certName === '全国助理社会工作师'; }).length > 0) {
+            userPostLeveUp = userPostLeveUp > 1 ? 1 : userPostLeveUp;
+          }
+          if (user.edu2 === '本科') {
+            userPostLeveUp = userPostLeveUp > 1 ? 1 : userPostLeveUp;
+          }
+          if (user.edu2 === '硕士') {
+            userPostLeveUp = userPostLeveUp > 0 ? 0 : userPostLeveUp;
+          }
+          if (user.edu2 === '博士') {
+            userPostLeveUp = userPostLeveUp > 0 ? 0 : userPostLeveUp;
+          }
+
+          await ctx.orm().info_user_cert.create({
+            userId: user.id,
+            certName: '全国社会工作师',
+            certNum: certNum,
+            certDesc: `在${certTime}获得了全国社会工作师`,
+            certTime: certTime,
+            remark: remark
+          })
+        }
+        break;
+      case 8:
+        filter = userCert.filter(f => {
+          return f.dataValues.certName === '全国高级社会工作师';
+        })
+
+        if (filter.length === 0) {
+          userPostLeveUp = 3
+
+          if (userCert.filter(f => { return f.dataValues.certName === '全国助理社会工作师'; }).length > 0) {
+            userPostLeveUp = userPostLeveUp > 2 ? 2 : userPostLeveUp;
+          }
+          if (userCert.filter(f => { return f.dataValues.certName === '全国社会工作师'; }).length > 0) {
+            userPostLeveUp = userPostLeveUp > 1 ? 1 : userPostLeveUp;
+          }
+          if (user.edu2 === '本科') {
+            userPostLeveUp = userPostLeveUp > 2 ? 2 : userPostLeveUp;
+          }
+          if (user.edu2 === '硕士') {
+            userPostLeveUp = userPostLeveUp > 1 ? 1 : userPostLeveUp;
+          }
+          if (user.edu2 === '博士') {
+            userPostLeveUp = userPostLeveUp > 0 ? 0 : userPostLeveUp;
+          }
+
+          await ctx.orm().info_user_cert.create({
+            userId: user.id,
+            certName: '全国高级社会工作师',
+            certNum: certNum,
+            certDesc: `在${certTime}获得了全国高级社会工作师`,
+            certTime: certTime,
+            remark: remark
+          })
+        }
+        break;
+      case 9:
+        if (userUpLevel.filter(f => f.dataValues.postLevelDesc === '受到市级及以上党委、政府表彰（+1级）').length === 0) {
+          userPostLeveUp = 1
+        }
+        break;
+      case 10:
+        if (userUpLevel.filter(f => f.dataValues.postLevelDesc === '获得市级及以上劳模称号（+1级）').length === 0) {
+          userPostLeveUp = 1
+        }
+        break;
+    }
+
+    // 最大级别限制
+    userPostLevel = userPostLevel + userPostLeveUp > maxPostLevel ? maxPostLevel : userPostLevel + userPostLeveUp
+
+    // 记录调级
+    await ctx.orm().info_user_uplevel.create({
+      userId: user.id,
+      oldPostLevel: user.postLevel,
+      newPostLevel: userPostLevel,
+      postLevelDesc: postLevelDesc,
+      remark: remark
+    })
+
+    /* await ctx.orm().info_users.update({
+      postLevel: userPostLevel
+    }, {
+      where: {
+        id: user.id
+      }
+    }) */
+
+    ctx.body = {}
+  },
+  submitResign: async ctx => {
+    let { id, resignTime, resignRemark } = ctx.request.body;
+
+    await ctx.orm().info_users.update({
+      isresign: 2,
+      resignTime: resignTime,
+      resignRemark: resignRemark
+    }, {
+      where: {
+        id,
+        isDel: 0
+      }
+    })
+
+    ctx.body = {}
+  },
+  submitJob: async ctx => {
+    let { id, nStreet, nCommunity, hanlder, hanldeTime, remark } = ctx.request.body;
+
+    let user = await ctx.orm().info_users.findOne({
+      where: { id, isDel: 0 }
+    })
+
+    assert.ok(user !== null, '社工不存在，请联系管理员')
+
+    await ctx.orm().info_user_job.create({
+      userId: user.id,
+      oStreet: user.street,
+      oCommunity: user.community,
+      nStreet,
+      nCommunity,
+      hanlder,
+      hanldeTime,
+      remark
+    })
+
+    await ctx.orm().info_users.update({
+      street: nStreet,
+      community: nCommunity
+    }, {
+      where: {
+        id: user.id
+      }
+    })
+
+    ctx.body = {}
+  },
+  s1: async ctx => {
+    let sql = `select 't1', count(1) num from info_users 
+    union all 
+    select 't2', count(1) num from info_users where isresign = 1
+    union all 
+    select 't3', count(1) num from info_users where isresign = 2
+    union all 
+    select 't4', count(1) num from info_users where isretire = 2
+    union all 
+    select post, count(1) num from info_users group by post `;
+
+    let result = await ctx.orm().query(sql);
+
+    ctx.body = result;
   },
   setUserMute: async ctx => {
     let id = ctx.request.body.id || 0;

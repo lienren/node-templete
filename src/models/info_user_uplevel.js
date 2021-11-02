@@ -1,7 +1,7 @@
 /* jshint indent: 2 */
 
 module.exports = function(sequelize, DataTypes) {
-  return sequelize.define('info_suggest', {
+  return sequelize.define('info_user_uplevel', {
     id: {
       type: DataTypes.INTEGER(11),
       allowNull: false,
@@ -12,12 +12,20 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.INTEGER(11),
       allowNull: true
     },
-    content: {
-      type: DataTypes.STRING(300),
+    oldPostLevel: {
+      type: DataTypes.INTEGER(11),
       allowNull: true
     },
-    phone: {
-      type: DataTypes.STRING(20),
+    newPostLevel: {
+      type: DataTypes.INTEGER(11),
+      allowNull: true
+    },
+    postLevelDesc: {
+      type: DataTypes.STRING(100),
+      allowNull: true
+    },
+    remark: {
+      type: DataTypes.STRING(500),
       allowNull: true
     },
     createTime: {
@@ -26,6 +34,6 @@ module.exports = function(sequelize, DataTypes) {
       defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
     }
   }, {
-    tableName: 'info_suggest'
+    tableName: 'info_user_uplevel'
   });
 };

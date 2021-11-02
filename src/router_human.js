@@ -7,10 +7,10 @@
 'use strict';
 
 const Router = require('koa-router');
-const ctrl = require('./controllers/aicy/index.js');
+const ctrl = require('./controllers/human/index.js');
 
 const router = new Router({
-  prefix: '/aicy'
+  prefix: '/human'
 });
 
 for (let className in ctrl) {

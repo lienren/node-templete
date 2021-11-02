@@ -1,27 +1,35 @@
 /* jshint indent: 2 */
 
 module.exports = function(sequelize, DataTypes) {
-  return sequelize.define('cms_placard_village', {
+  return sequelize.define('info_user_cert', {
     id: {
       type: DataTypes.INTEGER(11),
       allowNull: false,
       primaryKey: true,
       autoIncrement: true
     },
-    pid: {
+    userId: {
       type: DataTypes.INTEGER(11),
       allowNull: true
     },
-    streetId: {
-      type: DataTypes.INTEGER(11),
+    certName: {
+      type: DataTypes.STRING(100),
       allowNull: true
     },
-    communityId: {
-      type: DataTypes.INTEGER(11),
+    certNum: {
+      type: DataTypes.STRING(50),
       allowNull: true
     },
-    villageId: {
-      type: DataTypes.INTEGER(11),
+    certDesc: {
+      type: DataTypes.STRING(100),
+      allowNull: true
+    },
+    certTime: {
+      type: DataTypes.DATEONLY,
+      allowNull: true
+    },
+    remark: {
+      type: DataTypes.STRING(500),
       allowNull: true
     },
     createTime: {
@@ -30,6 +38,6 @@ module.exports = function(sequelize, DataTypes) {
       defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
     }
   }, {
-    tableName: 'cms_placard_village'
+    tableName: 'info_user_cert'
   });
 };

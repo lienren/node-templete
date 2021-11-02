@@ -51,8 +51,8 @@ app.use(requestFilter);
 
 // 路由
 const router = require('./router.js');
-const router_cumt = require('./router_aicy.js');
-app.use(router).use(router_cumt);
+const router_human = require('./router_human.js');
+app.use(router).use(router_human);
 
 // 绑定访问端口
 http.createServer(app.callback()).listen(config.sys.port);

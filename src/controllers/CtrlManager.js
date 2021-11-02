@@ -222,44 +222,12 @@ module.exports = {
       order: [['addTime', 'desc']]
     });
 
-    if (verifyLevel === 0) {
-      ctx.body = {
-        total: result.count,
-        list: result.rows,
-        current,
-        pageSize
-      };
-    } else {
-      let communitys = await ctx.orm().info_community.findAll({});
-      let villages = await ctx.orm().info_village.findAll({});
-
-      let rows = result.rows.map(m => {
-        if (m.dataValues.verifyLevel === 0) {
-          return {
-            ...m.dataValues
-          }
-        } else {
-          let verifyVillages = JSON.parse(m.dataValues.verifyVillages).map(m1 => {
-            let c = villages.find(f => f.id === m1)
-            let cinfo = c ? communitys.find(f => f.id === c.communityId) : null
-
-            return cinfo ? [cinfo.id, m1] : m1
-          })
-
-          return {
-            ...m.dataValues,
-            verifyVillages: verifyVillages
-          }
-        }
-      })
-
-      ctx.body = {
-        total: result.count,
-        list: rows,
-        current,
-        pageSize
-      };
-    }
+    ctx.body = {
+      total: result.count,
+      list: result.rows,
+      current,
+      pageSize
+    };
   },
   addManager: async ctx => {
     let loginName = ctx.request.body.loginName || '';
