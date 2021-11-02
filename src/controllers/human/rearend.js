@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2021-11-02 11:54:42
+ * @LastEditTime: 2021-11-02 12:41:02
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/human/rearend.js
@@ -545,8 +545,6 @@ module.exports = {
     ctx.body = result;
   },
   exportUsers: async ctx => {
-    let pageIndex = ctx.request.body.pageIndex || 1;
-    let pageSize = ctx.request.body.pageSize || 50;
     let { street, community, streets, communitys, name, sex, birthday, nation, political, edu1, edu2, school, major,
       hold, holdTime, workTime, post, postLevel, phone, idcard, specialty, remark, isretire,
       isresign, toretire, createTime, updateTime } = ctx.request.body;
@@ -568,39 +566,47 @@ module.exports = {
     Object.assign(where, isretire && { isretire })
     Object.assign(where, isresign && { isresign })
 
-    if (streets && streets.length > 0) {
+    if (streets && streets.length > 0 && streets.indexOf(',') >= 0) {
+      streets = streets.split(',')
       where.street = {
         $in: streets
       }
     }
 
-    if (communitys && communitys.length > 0) {
+    if (communitys && communitys.length > 0 && communitys.indexOf(',') >= 0) {
+      communitys = communitys.split(',')
       where.community = {
         $in: communitys
       }
     }
 
-    if (birthday && birthday.length > 0) {
+    if (birthday && birthday.length > 0 && birthday.indexOf(',') >= 0) {
+      birthday = birthday.split(',')
       where.birthday = { $between: birthday }
     }
 
-    if (holdTime && holdTime.length > 0) {
+    if (holdTime && holdTime.length > 0 && holdTime.indexOf(',') >= 0) {
+      holdTime = holdTime.split(',')
       where.holdTime = { $between: holdTime }
     }
 
-    if (workTime && workTime.length > 0) {
+    if (workTime && workTime.length > 0 && workTime.indexOf(',') >= 0) {
+      workTime = workTime.split(',')
       where.workTime = { $between: workTime }
     }
 
-    if (toretire && toretire.length > 0) {
+    if (toretire && toretire.length > 0 && toretire.indexOf(',') >= 0) {
+      toretire = toretire.split(',')
       where.toretire = { $between: toretire }
     }
 
-    if (createTime && createTime.length > 0) {
+    if (createTime && createTime.length > 0 && createTime.indexOf(',') >= 0) {
+      createTime = createTime.split(',')
       where.createTime = { $between: createTime }
     }
 
-    if (updateTime && updateTime.length > 0) {
+    if (updateTime && updateTime.length > 0 && updateTime.indexOf(',') >= 0) {
+      updateTime = updateTime.split(',')
       where.updateTime = { $between: updateTime }
     }
 

@@ -24,9 +24,41 @@ app.use(koastatic(config.sys.staticPath));
 // 配置跨域访问
 app.use(cors());
 
+// 使用koa-bodyparser中间件
+app.use(async (ctx, next) => {
+  ctx.disableBodyParserReturn = false;
+  ctx.disableBodyParserMerge = false;
+
+  let path = ctx.path.toLowerCase();
+
+  if (path.indexOf('/base/getimagecodebybase64') >= 0 ||
+    path.indexOf('/mall/notify/weipay') >= 0 ||
+    path.indexOf('/mall/notify/alipay') >= 0 ||
+    path.indexOf('/mall/order/exportorders') >= 0 ||
+    path.indexOf('/mall/order/exprotproviderorders') >= 0) {
+    ctx.disableBodyParserReturn = true;
+  }
+
+  if (path.indexOf('/mall/notify/weipay') >= 0 ||
+    path.indexOf('/mall/notify/alipay') >= 0) {
+    ctx.disableBodyParserMerge = true;
+  }
+  await next();
+});
+
 // 清除content-encoding请求头编码
 app.use(async (ctx, next) => {
   delete ctx.request.headers['content-encoding'];
+
+  ctx.disableBodyParserReturn = false;
+  ctx.disableBodyParserMerge = false;
+
+  let path = ctx.path.toLowerCase();
+
+  if ( path.indexOf('/human/rearend/exportusers') >= 0) {
+    ctx.disableBodyParserReturn = true;
+  }
+
   await next();
 });
 
