@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2021-11-02 12:41:02
+ * @LastEditTime: 2021-11-03 16:25:18
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/human/rearend.js
@@ -190,6 +190,8 @@ module.exports = {
     let { id, street, community, name, sex, birthday, nation, political, edu1, edu2, school, major,
       hold, holdTime, workTime, post, postLevel, phone, idcard, specialty, remark, isretire,
       isresign, toretire } = ctx.request.body;
+
+    toretire = !toretire ? null : toretire
 
     if (!edu2) {
       edu2 = edu1
