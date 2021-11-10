@@ -1,43 +1,31 @@
 /* jshint indent: 2 */
 
 module.exports = function(sequelize, DataTypes) {
-  return sequelize.define('info_user_job', {
+  return sequelize.define('info_posts', {
     id: {
       type: DataTypes.INTEGER(11),
       allowNull: false,
       primaryKey: true,
       autoIncrement: true
     },
-    userId: {
-      type: DataTypes.INTEGER(11),
-      allowNull: true
-    },
-    oStreet: {
-      type: DataTypes.STRING(50),
-      allowNull: true
-    },
-    oCommunity: {
+    postName: {
       type: DataTypes.STRING(100),
       allowNull: true
     },
-    nStreet: {
-      type: DataTypes.STRING(50),
-      allowNull: true
-    },
-    nCommunity: {
+    tradeType: {
       type: DataTypes.STRING(100),
       allowNull: true
     },
-    hanlder: {
+    cycleType: {
       type: DataTypes.STRING(100),
       allowNull: true
     },
-    hanldeTime: {
-      type: DataTypes.DATEONLY,
+    periodType: {
+      type: DataTypes.STRING(100),
       allowNull: true
     },
     remark: {
-      type: DataTypes.STRING(500),
+      type: DataTypes.STRING(100),
       allowNull: true
     },
     createTime: {
@@ -46,6 +34,6 @@ module.exports = function(sequelize, DataTypes) {
       defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
     }
   }, {
-    tableName: 'info_user_job'
+    tableName: 'info_posts'
   });
 };

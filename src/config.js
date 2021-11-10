@@ -10,10 +10,10 @@ const path = require('path');
 
 module.exports = {
   sys: {
-    port: 20004,
+    port: 20005,
     staticPath: path.resolve(__dirname, '../assets/'),
     uploadFilePath: path.resolve(__dirname, '../assets/uploads/'),
-    uploadVirtualFilePath: 'http://218.206.122.132:18881/uploads',
+    uploadVirtualFilePath: 'http://localhost:20005/uploads',
     logConfig: {
       appenders: {
         resLogger: {
@@ -74,11 +74,11 @@ module.exports = {
       sitepath: path.resolve(__dirname, '../assets/adminweb/index.html')
     }
   ],
-  // sequelize-auto -o "./src/models" -d human -h 47.111.64.7 -u root -p 3306 -x Ler@2019 -e mysql
+  // sequelize-auto -o "./src/models" -d gather -h 47.111.64.7 -u root -p 3306 -x Ler@2019 -e mysql
   databases: [
     {
       modelPath: path.resolve(__dirname, './models'),
-      db: 'human',
+      db: 'gather',
       dialect: 'mysql',
       port: 3306,
       replication: {

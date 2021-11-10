@@ -1,10 +1,10 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2021-11-03 16:25:18
+ * @LastEditTime: 2021-11-10 16:02:47
  * @LastEditors: Lienren
  * @Description: 
- * @FilePath: /node-templete/src/controllers/human/rearend.js
+ * @FilePath: /node-templete/src/controllers/samp/rearend.js
  * PRESENTED BY ROOT Tech R&D TEAM 2021-2026.
  */
 'use strict';
@@ -16,43 +16,54 @@ const sequelize = require('sequelize');
 const comm = require('../../utils/comm');
 const date = require('../../utils/date');
 const excel = require('../../utils/excel');
+const AipOcrClient = require("baidu-aip-sdk").ocr;
 
-const eduLevelEnum = {
-  "博士": 9,
-  "硕士": 8,
-  "本科": 7,
-  "大专": 6,
-  "中专": 5,
-  "职业高中": 4,
-  "技工": 3,
-  "高中": 2,
-  "初中": 1
-}
+const APP_ID = "25119032";
+const API_KEY = "3Hlx41svN2dnAKsjQzMtHnh0";
+const SECRET_KEY = "UdOj4Y4DFm4S58G23wzhDGXjgUm7bYpG";
+
+const client = new AipOcrClient(APP_ID, API_KEY, SECRET_KEY);
+
+/*
+每2天一检，固定周期
+每周一检，固定周期
+每月一检，固定周期
+每周2次（间隔2天以上），固定周期
+当天，无固定周期
+48小时内1次，无固定周期
+1、14，无固定周期
+2、7，无固定周期
+1、4、7、10、14，无固定周期
+2、7、14，无固定周期
+1、4、7、14，无固定周期
+1、4、7，无固定周期
+*/
+
+/*
+AppID：25119032
+API Key：3Hlx41svN2dnAKsjQzMtHnh0
+Secret Key：UdOj4Y4DFm4S58G23wzhDGXjgUm7bYpG
+*/
 
 module.exports = {
   getUsers: async ctx => {
     let pageIndex = ctx.request.body.pageIndex || 1;
     let pageSize = ctx.request.body.pageSize || 50;
-    let { street, community, streets, communitys, name, sex, birthday, nation, political, edu1, edu2, school, major,
-      hold, holdTime, workTime, post, postLevel, phone, idcard, specialty, remark, isretire,
-      isresign, toretire, createTime, updateTime } = ctx.request.body;
+    let { depStreet, name, phone, idcard, tradeType, postName, periodType, street, community, streets, communitys, address, userType,
+      sampStartTime, createTime, updateTime } = ctx.request.body;
 
     let where = {};
 
-    Object.assign(where, street && { street })
-    Object.assign(where, community && { community })
+    Object.assign(where, depStreet && { depStreet })
     Object.assign(where, name && { name })
-    Object.assign(where, sex && { sex })
-    Object.assign(where, nation && { nation })
-    Object.assign(where, political && { political })
-    Object.assign(where, edu1 && { edu1 })
-    Object.assign(where, edu2 && { edu2 })
-    Object.assign(where, post && { post })
-    Object.assign(where, postLevel && { postLevel })
     Object.assign(where, phone && { phone })
     Object.assign(where, idcard && { idcard })
-    Object.assign(where, isretire && { isretire })
-    Object.assign(where, isresign && { isresign })
+    Object.assign(where, tradeType && { tradeType })
+    Object.assign(where, postName && { postName })
+    Object.assign(where, periodType && { periodType })
+    Object.assign(where, userType && { userType })
+    Object.assign(where, street && { street })
+    Object.assign(where, community && { community })
 
     if (streets && streets.length > 0) {
       where.street = {
@@ -66,20 +77,8 @@ module.exports = {
       }
     }
 
-    if (birthday && birthday.length > 0) {
-      where.birthday = { $between: birthday }
-    }
-
-    if (holdTime && holdTime.length > 0) {
-      where.holdTime = { $between: holdTime }
-    }
-
-    if (workTime && workTime.length > 0) {
-      where.workTime = { $between: workTime }
-    }
-
-    if (toretire && toretire.length > 0) {
-      where.toretire = { $between: toretire }
+    if (sampStartTime && sampStartTime.length > 0) {
+      where.sampStartTime = { $between: sampStartTime }
     }
 
     if (createTime && createTime.length > 0) {
@@ -90,34 +89,10 @@ module.exports = {
       where.updateTime = { $between: updateTime }
     }
 
-    if (hold) {
-      where.hold = {
-        $like: `%"${hold}"%`
+    if (address) {
+      where.address = {
+        $like: `%"${address}"%`
       }
-    }
-
-    if (school) {
-      where.school = {
-        $like: `%${school}%`
-      }
-    }
-
-    if (major) {
-      where.major = {
-        $like: `%${major}%`
-      }
-    }
-
-    if (specialty) {
-      where.specialty = {
-        $like: `%${specialty}%`
-      }
-    }
-
-    if (remark) {
-      where.remark = {
-        $like: `%${remark}%`
-      };
     }
 
     let result = await ctx.orm().info_users.findAndCountAll({
@@ -129,79 +104,31 @@ module.exports = {
       ]
     });
 
-    let certs = []
-    let uplevel = []
-    let jobs = []
-    if (result && result.count > 0 && result.rows && result.rows.length > 0) {
-      certs = await ctx.orm().info_user_cert.findAll({
-        where: {
-          userId: {
-            $in: result.rows.map(m => {
-              return m.dataValues.id
-            })
-          }
-        },
-        order: [['id', 'desc']]
-      })
-
-      uplevel = await ctx.orm().info_user_uplevel.findAll({
-        where: {
-          userId: {
-            $in: result.rows.map(m => {
-              return m.dataValues.id
-            })
-          }
-        },
-        order: [['id', 'desc']]
-      })
-
-      jobs = await ctx.orm().info_user_job.findAll({
-        where: {
-          userId: {
-            $in: result.rows.map(m => {
-              return m.dataValues.id
-            })
-          }
-        },
-        order: [['id', 'desc']]
-      })
-    }
-
     ctx.body = {
       total: result.count,
-      list: result.rows.map(m => {
-        let userId = m.dataValues.id
-        let userCerts = certs.length > 0 ? certs.filter(f => f.dataValues.userId === userId) : []
-        let userUplevel = uplevel.length > 0 ? uplevel.filter(f => f.dataValues.userId === userId) : []
-        let userJobs = jobs.length > 0 ? jobs.filter(f => f.dataValues.userId === userId) : []
-
-        return {
-          ...m.dataValues,
-          certs: userCerts,
-          uplevel: userUplevel,
-          jobs: userJobs
-        }
-      }),
+      list: result.rows,
       pageIndex,
       pageSize
     }
   },
+  getUserSamps: async ctx => {
+    let { id } = ctx.request.body;
+
+    let result = await ctx.orm().info_user_samps.findAll({
+      where: {
+        userId: id
+      },
+      order: [['createTime', 'desc']]
+    })
+
+    ctx.body = result
+  },
   submitUsers: async ctx => {
-    let { id, street, community, name, sex, birthday, nation, political, edu1, edu2, school, major,
-      hold, holdTime, workTime, post, postLevel, phone, idcard, specialty, remark, isretire,
-      isresign, toretire } = ctx.request.body;
-
-    toretire = !toretire ? null : toretire
-
-    if (!edu2) {
-      edu2 = edu1
-    }
+    let { id, depId, depName1, depName2, depStreet, name, phone, idcard, tradeType, postName, periodType, street, community, address, userType, sampStartTime } = ctx.request.body;
 
     if (id && id > 0) {
       await ctx.orm().info_users.update({
-        street, community, name, sex, birthday, nation, political, edu1, edu2, school, major,
-        hold: JSON.stringify(hold), holdTime, workTime, post, postLevel, phone, idcard, specialty, remark, isretire,
-        isresign, toretire
+        depId, depName1, depName2, depStreet, name, phone, idcard, tradeType, postName, periodType, street, community, address, userType, sampStartTime
       }, {
         where: {
           id
@@ -209,9 +136,7 @@ module.exports = {
       })
     } else {
       await ctx.orm().info_users.create({
-        street, community, name, sex, birthday, nation, political, edu1, edu2, school, major,
-        hold: JSON.stringify(hold), holdTime, workTime, post, postLevel, phone, idcard, specialty, remark, isretire,
-        isresign, toretire, isDel: 0
+        depId, depName1, depName2, depStreet, name, phone, idcard, tradeType, postName, periodType, street, community, address, userType, sampStartTime
       })
     }
 
@@ -547,329 +472,182 @@ module.exports = {
     ctx.body = result;
   },
   exportUsers: async ctx => {
-    let { street, community, streets, communitys, name, sex, birthday, nation, political, edu1, edu2, school, major,
-      hold, holdTime, workTime, post, postLevel, phone, idcard, specialty, remark, isretire,
-      isresign, toretire, createTime, updateTime } = ctx.request.body;
+    let { depStreet, name, phone, idcard, tradeType, postName, periodType, street, community, streets, communitys, address, userType,
+      sampStartTime, createTime, updateTime } = ctx.request.body;
 
     let where = {};
 
-    Object.assign(where, street && { street })
-    Object.assign(where, community && { community })
+    Object.assign(where, depStreet && { depStreet })
     Object.assign(where, name && { name })
-    Object.assign(where, sex && { sex })
-    Object.assign(where, nation && { nation })
-    Object.assign(where, political && { political })
-    Object.assign(where, edu1 && { edu1 })
-    Object.assign(where, edu2 && { edu2 })
-    Object.assign(where, post && { post })
-    Object.assign(where, postLevel && { postLevel })
     Object.assign(where, phone && { phone })
     Object.assign(where, idcard && { idcard })
-    Object.assign(where, isretire && { isretire })
-    Object.assign(where, isresign && { isresign })
+    Object.assign(where, tradeType && { tradeType })
+    Object.assign(where, postName && { postName })
+    Object.assign(where, periodType && { periodType })
+    Object.assign(where, userType && { userType })
+    Object.assign(where, street && { street })
+    Object.assign(where, community && { community })
 
-    if (streets && streets.length > 0 && streets.indexOf(',') >= 0) {
-      streets = streets.split(',')
+    if (streets && streets.length > 0) {
       where.street = {
         $in: streets
       }
     }
 
-    if (communitys && communitys.length > 0 && communitys.indexOf(',') >= 0) {
-      communitys = communitys.split(',')
+    if (communitys && communitys.length > 0) {
       where.community = {
         $in: communitys
       }
     }
 
-    if (birthday && birthday.length > 0 && birthday.indexOf(',') >= 0) {
-      birthday = birthday.split(',')
-      where.birthday = { $between: birthday }
+    if (sampStartTime && sampStartTime.length > 0) {
+      where.sampStartTime = { $between: sampStartTime }
     }
 
-    if (holdTime && holdTime.length > 0 && holdTime.indexOf(',') >= 0) {
-      holdTime = holdTime.split(',')
-      where.holdTime = { $between: holdTime }
-    }
-
-    if (workTime && workTime.length > 0 && workTime.indexOf(',') >= 0) {
-      workTime = workTime.split(',')
-      where.workTime = { $between: workTime }
-    }
-
-    if (toretire && toretire.length > 0 && toretire.indexOf(',') >= 0) {
-      toretire = toretire.split(',')
-      where.toretire = { $between: toretire }
-    }
-
-    if (createTime && createTime.length > 0 && createTime.indexOf(',') >= 0) {
-      createTime = createTime.split(',')
+    if (createTime && createTime.length > 0) {
       where.createTime = { $between: createTime }
     }
 
-    if (updateTime && updateTime.length > 0 && updateTime.indexOf(',') >= 0) {
-      updateTime = updateTime.split(',')
+    if (updateTime && updateTime.length > 0) {
       where.updateTime = { $between: updateTime }
     }
 
-    if (hold) {
-      where.hold = {
-        $like: `%"${hold}"%`
+    if (address) {
+      where.address = {
+        $like: `%"${address}"%`
       }
-    }
-
-    if (school) {
-      where.school = {
-        $like: `%${school}%`
-      }
-    }
-
-    if (major) {
-      where.major = {
-        $like: `%${major}%`
-      }
-    }
-
-    if (specialty) {
-      where.specialty = {
-        $like: `%${specialty}%`
-      }
-    }
-
-    if (remark) {
-      where.remark = {
-        $like: `%${remark}%`
-      };
     }
 
     let users = await ctx.orm().info_users.findAll({
       where
     });
 
-    let certs = []
-    let uplevel = []
-    let jobs = []
+    let samps = []
     if (users && users.length > 0) {
-      certs = await ctx.orm().info_user_cert.findAll({
+      samps = await ctx.orm().info_user_samps.findAll({
         where: {
           userId: {
             $in: users.map(m => {
               return m.dataValues.id
             })
           }
-        },
-        order: [['userId']]
-      })
-
-      uplevel = await ctx.orm().info_user_uplevel.findAll({
-        where: {
-          userId: {
-            $in: users.map(m => {
-              return m.dataValues.id
-            })
-          }
-        },
-        order: [['userId']]
-      })
-
-      jobs = await ctx.orm().info_user_job.findAll({
-        where: {
-          userId: {
-            $in: users.map(m => {
-              return m.dataValues.id
-            })
-          }
-        },
-        order: [['userId']]
-      })
+        }
+      });
     }
 
     let xlsxObj = [];
     xlsxObj.push({
-      name: '社工列表',
+      name: '采样人员列表',
       data: []
     })
+
     xlsxObj.push({
-      name: '社工证书',
-      data: []
-    })
-    xlsxObj.push({
-      name: '社工调级记录',
-      data: []
-    })
-    xlsxObj.push({
-      name: '社工调动记录',
+      name: '采样信息列表',
       data: []
     })
 
     xlsxObj[0].data.push([
       '编号',
-      '街道',
-      '社区',
+      '部门',
+      '单位',
+      '单位所在街道',
       '姓名',
-      '性别',
       '手机号',
       '身份证号',
-      '出生年月',
-      '民族',
-      '政治面貌',
-      '第一学历',
-      '毕业院校',
-      '所学专业',
-      '最高学历',
-      '任职情况',
-      '任职年月',
-      '工作年月',
-      '岗位',
-      '岗级',
-      '特长',
-      '备注',
-      '是否退休',
-      '是否辞职',
-      '辞职日期',
-      '辞职描述',
-      '即将退休日期',
+      '行业类别',
+      '职业名称',
+      '采样周期',
+      '街道',
+      '社区',
+      '住址',
+      '用户类型',
+      '采集开始时间',
+      '最新采样点名称',
+      '最新采样人姓名',
+      '最新采样时间',
       '创建时间',
       '最后修改时间'
     ])
 
     xlsxObj[1].data.push([
       '编号',
+      '部门',
+      '单位',
+      '单位所在街道',
       '姓名',
       '手机号',
       '身份证号',
-      '证书名称',
-      '证书编号',
-      '证书描述',
-      '获取证书时间',
-      '备注',
-      '创建时间'
+      '职业名称',
+      '采样周期',
+      '街道',
+      '社区',
+      '住址',
+      '应采样开始时间',
+      '应采样结束时间',
+      '采样状态',
+      '实际采样时间',
+      '采样点',
+      '采样人',
+      '创建时间',
+      '最后修改时间'
     ])
 
-    xlsxObj[2].data.push([
-      '编号',
-      '姓名',
-      '手机号',
-      '身份证号',
-      '调整前级别',
-      '调整后级别',
-      '级别调整原因',
-      '备注',
-      '创建时间'
-    ])
-
-    xlsxObj[3].data.push([
-      '编号',
-      '姓名',
-      '手机号',
-      '身份证号',
-      '调动前街道',
-      '调动前社区',
-      '调动后街道',
-      '调动后社区',
-      '调动人',
-      '调动时间',
-      '备注',
-      '创建时间'
-    ])
 
     for (let i = 0, j = users.length; i < j; i++) {
       let user = users[i];
 
       let arr = new Array();
       arr.push(user.id || '');
-      arr.push(user.street || '');
-      arr.push(user.community || '');
+      arr.push(user.depName1 || '');
+      arr.push(user.depName2 || '');
+      arr.push(user.depStreet || '');
       arr.push(user.name);
-      arr.push(user.sex);
       arr.push(user.phone);
       arr.push(user.idcard);
-      arr.push(user.birthday);
-      arr.push(user.nation);
-      arr.push(user.political);
-      arr.push(user.edu1);
-      arr.push(user.school);
-      arr.push(user.major);
-      arr.push(user.edu2);
-      arr.push(JSON.parse(user.hold).map(m => {
-        return m;
-      }).join(','));
-      arr.push(user.holdTime);
-      arr.push(user.workTime);
-      arr.push(user.post);
-      arr.push(user.postLevel);
-      arr.push(user.specialty);
-      arr.push(user.remark);
-      arr.push(user.isretire === 2 ? "已退休" : "未退休");
-      arr.push(user.isresign === 2 ? "已辞职" : "未辞职");
-      arr.push(user.resignTime);
-      arr.push(user.resignRemark);
-      arr.push(user.toretire);
+      arr.push(user.tradeType);
+      arr.push(user.postName);
+      arr.push(user.periodType);
+      arr.push(user.street);
+      arr.push(user.community);
+      arr.push(user.address);
+      arr.push(user.userType);
+      arr.push(user.sampStartTime);
+      arr.push(user.sampName);
+      arr.push(user.sampUserName);
+      arr.push(user.sampHandleTime);
       arr.push(user.createTime);
       arr.push(user.updateTime);
 
       xlsxObj[0].data.push(arr)
     }
 
-    for (let i = 0, j = certs.length; i < j; i++) {
-      let cert = certs[i];
-
-      let user = users.find(f => f.dataValues.id === cert.userId);
+    for (let i = 0, j = samps.length; i < j; i++) {
+      let samp = samps[i];
+      let user = users.find(f => f.id === samp.dataValues.userId)
 
       let arr = new Array();
-      arr.push(cert.id || '');
+      arr.push(samp.id || '');
+      arr.push(user.depName1 || '');
+      arr.push(user.depName2 || '');
+      arr.push(user.depStreet || '');
       arr.push(user.name);
       arr.push(user.phone);
       arr.push(user.idcard);
-      arr.push(cert.certName);
-      arr.push(cert.certNum);
-      arr.push(cert.certDesc);
-      arr.push(cert.certTime);
-      arr.push(cert.remark);
-      arr.push(cert.createTime);
+      arr.push(samp.postName);
+      arr.push(samp.periodType);
+      arr.push(user.street);
+      arr.push(user.community);
+      arr.push(user.address);
+      arr.push(samp.startTime);
+      arr.push(samp.endTime);
+      arr.push(samp.handleType);
+      arr.push(samp.handleTime);
+      arr.push(samp.sampName);
+      arr.push(samp.sampUserName);
+      arr.push(samp.createTime);
+      arr.push(samp.updateTime);
 
       xlsxObj[1].data.push(arr)
-    }
-
-    for (let i = 0, j = uplevel.length; i < j; i++) {
-      let up = uplevel[i];
-
-      let user = users.find(f => f.dataValues.id === up.userId);
-
-      let arr = new Array();
-      arr.push(up.id || '');
-      arr.push(user.name);
-      arr.push(user.phone);
-      arr.push(user.idcard);
-      arr.push(up.oldPostLevel);
-      arr.push(up.newPostLevel);
-      arr.push(up.postLevelDesc);
-      arr.push(up.remark);
-      arr.push(up.createTime);
-
-      xlsxObj[2].data.push(arr)
-    }
-
-    for (let i = 0, j = jobs.length; i < j; i++) {
-      let job = jobs[i];
-
-      let user = users.find(f => f.dataValues.id === job.userId);
-
-      let arr = new Array();
-      arr.push(job.id || '');
-      arr.push(user.name);
-      arr.push(user.phone);
-      arr.push(user.idcard);
-      arr.push(job.oStreet);
-      arr.push(job.oCommunity);
-      arr.push(job.nStreet);
-      arr.push(job.nCommunity);
-      arr.push(job.hanlder);
-      arr.push(job.hanldeTime);
-      arr.push(job.remark);
-      arr.push(job.createTime);
-
-      xlsxObj[3].data.push(arr)
     }
 
     let excelFile = excel.exportMoreSheetExcel(xlsxObj);

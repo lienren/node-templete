@@ -38,8 +38,8 @@ module.exports = async function (ctx, next) {
     return;
   }
 
-  if (ctx.path.indexOf('aicommunity') > -1) {
-    await sendfile(ctx, path.resolve(__dirname, '../../assets/aicommunity/index.html'));
+  if (ctx.path.indexOf('samp_mobile') > -1) {
+    await sendfile(ctx, path.resolve(__dirname, '../../assets/samp_mobile/index.html'));
     return;
   }
 

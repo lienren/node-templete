@@ -14,7 +14,7 @@ const path = require('path');
 const fs = require('fs');
 const config = require('../config.js');
 const date = require('../utils/date');
-const wx = require('../controllers/visitor/wx');
+const http = require('../utils/http');
 
 // 自动检查二维码
 let automaticCheckQCodeJob = null;
@@ -24,71 +24,55 @@ let next = function () {
 };
 
 async function getSuccessed () {
-  console.log('check QCode is start:%s', date.formatDate());
+  console.log('samp send data:%s', date.formatDate());
 
-  let result = await ctx.orm().applyInfo.findAll({
-    limit: 20,
+  let result = await ctx.orm().info_user_samps.findAll({
+    limit: 10,
     where: {
-      status: 4,
-      checkQCode: 0
-    },
-    order: [['id', 'desc']]
+      handleType: {
+        $in: ['已采样', '个人上传采样']
+      },
+      isSend: 0
+    }
   });
 
   if (result && result.length > 0) {
-    // 有未检查的数据
-    // 查找文件是否存在或文件过小
-    // 如果有，则调用微信重新生成，并依赖下次巡检
-    // 如果没有，则更新checkQCode状态为1
+    // 有未同步
+    // 并记录信息，将isSend更新为1
 
     for (let i = 0, j = result.length; i < j; i++) {
-      let applyInfo = result[i];
-      let filePath = path.resolve(__dirname, '../../assets/uploads/wxacode/', `${applyInfo.code}.jpeg`);
+      let user = await ctx.orm().info_users.findOne({
+        where: {
+          id: result[i].userId
+        }
+      })
 
-      if (fs.existsSync(filePath) && fs.statSync(filePath).size < 1000) {
-        // 提交下载申请
-        if (applyInfo.visitorDepartment === '校级访客通道') {
-          wx.getwxacode(applyInfo.code, `pages/visitor/applyCheck?code=${applyInfo.code}`, {
-            "r": 103,
-            "g": 194,
-            "b": 58
-          })
-        } else {
-          wx.getwxacode(applyInfo.code, `pages/visitor/applyCheck?code=${applyInfo.code}`, {
-            "r": 0,
-            "g": 0,
-            "b": 0
-          })
-        }
-      } else if (!fs.existsSync(filePath)) {
-        // 提交下载申请
-        if (applyInfo.visitorDepartment === '校级访客通道') {
-          wx.getwxacode(applyInfo.code, `pages/visitor/applyCheck?code=${applyInfo.code}`, {
-            "r": 103,
-            "g": 194,
-            "b": 58
-          })
-        } else {
-          wx.getwxacode(applyInfo.code, `pages/visitor/applyCheck?code=${applyInfo.code}`, {
-            "r": 0,
-            "g": 0,
-            "b": 0
-          })
-        }
-      } else {
-        // 更新状态
-        ctx.orm().applyInfo.update({
-          checkQCode: 1
-        }, {
-          where: {
-            id: applyInfo.id
+      if (user) {
+        let rep = await http.post({
+          url: 'https://super.51pinzhi.cn/njhealth/jbxq/adminapi/common/hsCheck',
+          data: {
+            idCard: user.idcard,
+            checkResult: '检测中',
+            checkTime: result[i].handleTime
           }
-        });
+        })
+
+        if (rep) {
+          await ctx.orm().info_user_samps.update({
+            isSend: 1,
+            sendTime: date.formatDate(),
+            sendRep: JSON.stringify(rep.data)
+          }, {
+            where: {
+              id: result[i].id
+            }
+          })
+        }
       }
     }
   }
 
-  console.log('check QCode is over:%s', date.formatDate());
+  console.log('samp send data:%s', date.formatDate());
 }
 
 async function main () {

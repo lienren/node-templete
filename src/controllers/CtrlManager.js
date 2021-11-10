@@ -168,6 +168,22 @@ module.exports = {
     ctx.body = {};
   },
   /***************************** 管理员管理 *************************************/
+  getManagerByOpenId: async ctx => {
+    let openId = ctx.request.body.openId || '';
+
+    let result = await ctx.orm().SuperManagerInfo.findOne({
+      attributes: ['id', 'openId', 'loginName', 'realName', 'phone', 'state', 'depName', 'verifyLevel', 'verifyType', 'verifyVillages'],
+      where: {
+        openId: openId,
+        verifyLevel: 1,
+        isDel: 0
+      }
+    });
+
+    ctx.body = {
+      userInfo: result
+    };
+  },
   getManagers: async ctx => {
     let current = ctx.request.body.current || 1;
     let pageSize = ctx.request.body.pageSize || 20;
@@ -262,6 +278,92 @@ module.exports = {
     let salt = comm.randCode(ManagerPwdSaleCount);
 
     let result = await ctx.orm().SuperManagerInfo.create({
+      loginName: loginName,
+      loginPwd: encrypt.getMd5(`${loginPwd}|${salt}`),
+      realName: realName,
+      phone: phone,
+      salt: salt,
+      state: state,
+      sex: sex,
+      depName: depName,
+      token: '',
+      tokenOverTime: now,
+      addTime: now,
+      lastTime: now,
+      verifyLevel,
+      verifyType,
+      verifyVillages: JSON.stringify(verifyVillages),
+      isDel: 0
+    });
+
+    ctx.body = result;
+  },
+  addManagerBySamp: async ctx => {
+    let openId = ctx.request.body.openId || '';
+    let loginName = ctx.request.body.loginName || '';
+    let loginPwd = ctx.request.body.loginPwd || '';
+    let realName = ctx.request.body.realName || '';
+    let phone = ctx.request.body.phone || '';
+    let state = ctx.request.body.state;
+    let sex = ctx.request.body.sex;
+    let depName = ctx.request.body.depName || '';
+    let verifyLevel = ctx.request.body.verifyLevel || 0;
+    let verifyType = ctx.request.body.verifyType || '';
+    let verifyVillages = ctx.request.body.verifyVillages || [];
+    let imgCode = ctx.request.body.imgCode || '';
+    let imgCodeToken = ctx.request.body.imgToken || '';
+
+    let now = date.getTimeStamp();
+
+    assert.notStrictEqual(openId, '', 'InputParamIsNull');
+    assert.notStrictEqual(loginName, '', 'InputParamIsNull');
+    assert.notStrictEqual(loginPwd, '', 'InputParamIsNull');
+    assert.notStrictEqual(realName, '', 'InputParamIsNull');
+    assert.notStrictEqual(phone, '', 'InputParamIsNull');
+    assert.notStrictEqual(imgCode, '', 'InputParamIsNull');
+    assert.notStrictEqual(imgCodeToken, '', 'InputParamIsNull');
+
+    // 验证图形验证码
+    let resultImgCodeToken = await ctx.orm().BaseImgCode.findOne({
+      where: {
+        token: imgCodeToken,
+        imgCode: imgCode.toLocaleUpperCase(),
+        isUse: 0,
+        overTime: { $gt: now }
+      }
+    });
+    assert.notStrictEqual(resultImgCodeToken, null, '验证码输入错误');
+
+    // 设置图形验证码已使用
+    ctx.orm().BaseImgCode.update(
+      { isUse: 1 },
+      {
+        where: {
+          token: imgCodeToken,
+          imgCode: imgCode
+        }
+      }
+    );
+
+    let sameManagerResult = await ctx.orm().SuperManagerInfo.findOne({
+      where: {
+        loginName: loginName,
+        realName: realName,
+        isDel: 0
+      }
+    });
+
+    if (sameManagerResult) {
+      ctx.body = sameManagerResult;
+      return
+    }
+
+    // 重新生成密钥索引
+    let ManagerPwdSaleCount = await configData.getConfig(ctx, configData.CONFIG_KEY_ENUM.ManagerPwdSaleCount);
+    let salt = comm.randCode(ManagerPwdSaleCount);
+
+    let result = await ctx.orm().SuperManagerInfo.create({
+      openId: openId,
       loginName: loginName,
       loginPwd: encrypt.getMd5(`${loginPwd}|${salt}`),
       realName: realName,

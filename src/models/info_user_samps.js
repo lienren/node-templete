@@ -1,47 +1,31 @@
 /* jshint indent: 2 */
 
 module.exports = function(sequelize, DataTypes) {
-  return sequelize.define('info_users', {
+  return sequelize.define('info_user_samps', {
     id: {
       type: DataTypes.INTEGER(11),
       allowNull: false,
       primaryKey: true,
       autoIncrement: true
     },
-    openId: {
-      type: DataTypes.STRING(100),
-      allowNull: true
-    },
-    depId: {
+    userId: {
       type: DataTypes.INTEGER(11),
       allowNull: true
     },
-    depName1: {
-      type: DataTypes.STRING(100),
+    startTime: {
+      type: DataTypes.DATEONLY,
       allowNull: true
     },
-    depName2: {
-      type: DataTypes.STRING(100),
+    endTime: {
+      type: DataTypes.DATEONLY,
       allowNull: true
     },
-    depStreet: {
-      type: DataTypes.STRING(100),
+    dayCount: {
+      type: DataTypes.INTEGER(11),
       allowNull: true
     },
-    name: {
-      type: DataTypes.STRING(50),
-      allowNull: true
-    },
-    phone: {
-      type: DataTypes.STRING(20),
-      allowNull: true
-    },
-    idcard: {
-      type: DataTypes.STRING(50),
-      allowNull: true
-    },
-    tradeType: {
-      type: DataTypes.STRING(100),
+    realCount: {
+      type: DataTypes.INTEGER(11),
       allowNull: true
     },
     postName: {
@@ -52,36 +36,49 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING(100),
       allowNull: true
     },
-    street: {
-      type: DataTypes.STRING(100),
+    handleType: {
+      type: DataTypes.STRING(50),
       allowNull: true
     },
-    community: {
-      type: DataTypes.STRING(100),
+    handleTime: {
+      type: DataTypes.DATE,
       allowNull: true
     },
-    address: {
-      type: DataTypes.STRING(1000),
-      allowNull: true
-    },
-    userType: {
-      type: DataTypes.STRING(100),
-      allowNull: true
-    },
-    sampStartTime: {
-      type: DataTypes.DATEONLY,
+    handleCount: {
+      type: DataTypes.INTEGER(11),
       allowNull: true
     },
     sampName: {
-      type: DataTypes.STRING(100),
+      type: DataTypes.STRING(50),
       allowNull: true
     },
     sampUserName: {
       type: DataTypes.STRING(100),
       allowNull: true
     },
-    sampHandleTime: {
+    imgUrl: {
+      type: DataTypes.STRING(1000),
+      allowNull: true
+    },
+    imgTime: {
       type: DataTypes.DATE,
+      allowNull: true
+    },
+    remark: {
+      type: DataTypes.STRING(500),
+      allowNull: true
+    },
+    isSend: {
+      type: DataTypes.INTEGER(11),
+      allowNull: true,
+      defaultValue: '0'
+    },
+    sendTime: {
+      type: DataTypes.DATE,
+      allowNull: true
+    },
+    sendRep: {
+      type: DataTypes.STRING(1000),
       allowNull: true
     },
     createTime: {
@@ -95,6 +92,6 @@ module.exports = function(sequelize, DataTypes) {
       defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
     }
   }, {
-    tableName: 'info_users'
+    tableName: 'info_user_samps'
   });
 };

@@ -1,43 +1,39 @@
 /* jshint indent: 2 */
 
 module.exports = function(sequelize, DataTypes) {
-  return sequelize.define('info_user_cert', {
+  return sequelize.define('info_deps', {
     id: {
       type: DataTypes.INTEGER(11),
       allowNull: false,
       primaryKey: true,
       autoIncrement: true
     },
-    userId: {
+    depName: {
+      type: DataTypes.STRING(100),
+      allowNull: true
+    },
+    depLevel: {
       type: DataTypes.INTEGER(11),
       allowNull: true
     },
-    certName: {
+    depStreet: {
       type: DataTypes.STRING(100),
       allowNull: true
     },
-    certNum: {
-      type: DataTypes.STRING(50),
-      allowNull: true
-    },
-    certDesc: {
-      type: DataTypes.STRING(100),
-      allowNull: true
-    },
-    certTime: {
-      type: DataTypes.DATEONLY,
-      allowNull: true
-    },
-    remark: {
-      type: DataTypes.STRING(500),
+    parentId: {
+      type: DataTypes.INTEGER(11),
       allowNull: true
     },
     createTime: {
       type: DataTypes.DATE,
+      allowNull: true
+    },
+    isDel: {
+      type: DataTypes.INTEGER(255),
       allowNull: true,
-      defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
+      defaultValue: '0'
     }
   }, {
-    tableName: 'info_user_cert'
+    tableName: 'info_deps'
   });
 };

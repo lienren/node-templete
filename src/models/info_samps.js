@@ -1,31 +1,23 @@
 /* jshint indent: 2 */
 
 module.exports = function(sequelize, DataTypes) {
-  return sequelize.define('info_user_uplevel', {
+  return sequelize.define('info_samps', {
     id: {
       type: DataTypes.INTEGER(11),
       allowNull: false,
       primaryKey: true,
       autoIncrement: true
     },
-    userId: {
-      type: DataTypes.INTEGER(11),
-      allowNull: true
-    },
-    oldPostLevel: {
-      type: DataTypes.INTEGER(11),
-      allowNull: true
-    },
-    newPostLevel: {
-      type: DataTypes.INTEGER(11),
-      allowNull: true
-    },
-    postLevelDesc: {
+    sampName: {
       type: DataTypes.STRING(100),
       allowNull: true
     },
-    remark: {
-      type: DataTypes.STRING(500),
+    sampAddr: {
+      type: DataTypes.STRING(200),
+      allowNull: true
+    },
+    sampTel: {
+      type: DataTypes.STRING(100),
       allowNull: true
     },
     createTime: {
@@ -34,6 +26,6 @@ module.exports = function(sequelize, DataTypes) {
       defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
     }
   }, {
-    tableName: 'info_user_uplevel'
+    tableName: 'info_samps'
   });
 };

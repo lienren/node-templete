@@ -20,6 +20,8 @@ router
   .post('/super/login', ctrl.CtrlManager.login)
   .post('/super/setpassword', ctrl.CtrlManager.setPassword)
   /***************************** 管理员管理 *************************************/
+  .post('/super/getmanagerbyopenid', ctrl.CtrlManager.getManagerByOpenId)
+  .post('/super/addmanagerbysamp', ctrl.CtrlManager.addManagerBySamp)
   .post('/super/getmanagers', ctrl.CtrlManager.getManagers)
   .post('/super/addmanager', ctrl.CtrlManager.addManager)
   .post('/super/editmanager', ctrl.CtrlManager.editManager)
