@@ -12,12 +12,16 @@ const schedule = require('node-schedule');
 const sequelize = require('sequelize').Sequelize;
 const path = require('path');
 const fs = require('fs');
+const moment = require('moment');
 const config = require('../config.js');
 const date = require('../utils/date');
 const http = require('../utils/http');
 
 // 自动检查二维码
 let automaticCheckQCodeJob = null;
+let dayJob = null;
+let weekJob = null;
+let monthJob = null;
 let ctx = {};
 let next = function () {
   return true;
@@ -75,6 +79,219 @@ async function getSuccessed () {
   console.log('samp send data:%s', date.formatDate());
 }
 
+/*
+  每2天一检，固定周期
+  每周一检，固定周期
+  每月一检，固定周期
+  每周2次（间隔2天以上），固定周期
+  */
+
+async function daySamp () {
+  console.log('users samp day data:%s', date.formatDate());
+
+  let users = await ctx.orm().info_users.findAll({
+    where: {
+      sampStartTime: {
+        $lte: date.formatDate()
+      },
+      periodType: '每2天一检',
+      depId: {
+        $gt: 2
+      }
+    }
+  });
+
+  let now = date.formatDate(new Date(), 'YYYY-MM-DD')
+
+  // 今天
+  let d1 = now;
+  //明天
+  let d2 = moment(new Date()).add(1, 'days').format('YYYY-MM-DD');
+
+  for (let i = 0, j = users.length; i < j; i++) {
+    let user = users[i];
+
+    let samp = await ctx.orm().info_user_samps.findOne({
+      where: {
+        userId: user.dataValues.id,
+        startTime: {
+          $lte: now
+        },
+        endTime: {
+          $gte: now
+        }
+      }
+    })
+
+    if (!samp) {
+      await ctx.orm().info_user_samps.create({
+        userId: user.id,
+        startTime: d1,
+        endTime: d2,
+        dayCount: 1,
+        realCount: 1,
+        postName: user.dataValues.postName,
+        periodType: user.dataValues.periodType,
+        handleType: '未采样'
+      })
+    }
+  }
+
+  console.log('users samp day data:%s', date.formatDate());
+}
+
+async function weekSamp () {
+  console.log('users samp week data:%s', date.formatDate());
+
+  let users = await ctx.orm().info_users.findAll({
+    where: {
+      sampStartTime: {
+        $lte: date.formatDate()
+      },
+      periodType: {
+        $in: ['每周一检', '每周2次']
+      },
+      depId: {
+        $gt: 2
+      }
+    }
+  });
+
+  let now = date.formatDate(new Date(), 'YYYY-MM-DD')
+
+  // 第一天
+  let d1 = now;
+  // 最后一天
+  let d2 = moment(new Date()).endOf('isoWeek').format('YYYY-MM-DD')
+
+  for (let i = 0, j = users.length; i < j; i++) {
+    let user = users[i];
+
+    let samp = await ctx.orm().info_user_samps.findAll({
+      where: {
+        userId: user.dataValues.id,
+        startTime: {
+          $lte: now
+        },
+        endTime: {
+          $gte: now
+        }
+      }
+    })
+
+    if (user.periodType === '每周一检') {
+      if (samp && samp.length === 0) {
+        await ctx.orm().info_user_samps.create({
+          userId: user.id,
+          startTime: d1,
+          endTime: d2,
+          dayCount: 7,
+          realCount: 1,
+          postName: user.dataValues.postName,
+          periodType: user.dataValues.periodType,
+          handleType: '未采样'
+        })
+      }
+    } else if (user.periodType === '每周2次') {
+      if (samp && samp.length === 0) {
+        await ctx.orm().info_user_samps.create({
+          userId: user.id,
+          startTime: d1,
+          endTime: d2,
+          dayCount: 7,
+          realCount: 2,
+          postName: user.dataValues.postName,
+          periodType: user.dataValues.periodType,
+          handleType: '未采样'
+        })
+
+        await ctx.orm().info_user_samps.create({
+          userId: user.id,
+          startTime: d1,
+          endTime: d2,
+          dayCount: 7,
+          realCount: 2,
+          postName: user.dataValues.postName,
+          periodType: user.dataValues.periodType,
+          handleType: '未采样'
+        })
+      } else if (samp && samp.length === 1) {
+        await ctx.orm().info_user_samps.create({
+          userId: user.id,
+          startTime: d1,
+          endTime: d2,
+          dayCount: 7,
+          realCount: 2,
+          postName: user.dataValues.postName,
+          periodType: user.dataValues.periodType,
+          handleType: '未采样'
+        })
+      }
+    }
+  }
+
+  console.log('users samp week data:%s', date.formatDate());
+}
+
+async function monthSamp () {
+  console.log('users samp month data:%s', date.formatDate());
+
+  let users = await ctx.orm().info_users.findAll({
+    where: {
+      sampStartTime: {
+        $lte: date.formatDate()
+      },
+      periodType: '每月一检',
+      depId: {
+        $gt: 2
+      }
+    }
+  });
+
+  let now = date.formatDate(new Date(), 'YYYY-MM-DD')
+
+  // 第一天
+  let d1 = now;
+  // 最后一天
+  let d2 = moment(new Date()).endOf('month').format('YYYY-MM-DD')
+
+  // 计算相差天数
+  let start_date = moment(d1, 'YYYY-MM-DD')
+  let end_date = moment(d2, 'YYYY-MM-DD')
+  let dayCount = end_date.diff(start_date, 'days')
+
+  for (let i = 0, j = users.length; i < j; i++) {
+    let user = users[i];
+
+    let samp = await ctx.orm().info_user_samps.findOne({
+      where: {
+        userId: user.dataValues.id,
+        startTime: {
+          $lte: now
+        },
+        endTime: {
+          $gte: now
+        }
+      }
+    })
+
+    if (!samp) {
+      await ctx.orm().info_user_samps.create({
+        userId: user.id,
+        startTime: d1,
+        endTime: d2,
+        dayCount: dayCount,
+        realCount: 1,
+        postName: user.dataValues.postName,
+        periodType: user.dataValues.periodType,
+        handleType: '未采样'
+      })
+    }
+  }
+
+  console.log('users samp month data:%s', date.formatDate());
+}
+
 async function main () {
   // 使用koa-orm中间件，sequelize，mysql
   if (config.databases) {
@@ -96,11 +313,29 @@ async function main () {
     automaticRule,
     getSuccessed
   );
+
+  dayJob = schedule.scheduleJob('0 0 0 * * *', daySamp)
+
+  weekJob = schedule.scheduleJob('0 0 0 * * 1', weekSamp)
+
+  monthJob = schedule.scheduleJob('0 0 0 1 * *', monthSamp)
 }
 
 process.on('SIGINT', function () {
   if (automaticCheckQCodeJob) {
     automaticCheckQCodeJob.cancel();
+  }
+
+  if (dayJob) {
+    dayJob.cancel()
+  }
+
+  if (weekJob) {
+    weekJob.cancel()
+  }
+
+  if (monthJob) {
+    monthJob.cancel()
   }
 
   process.exit(0);

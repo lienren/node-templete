@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-08-18 10:44:07
- * @LastEditTime: 2021-11-10 16:00:37
+ * @LastEditTime: 2021-11-14 11:37:24
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/samp/api.js
@@ -179,8 +179,8 @@ module.exports = {
     } else {
       await ctx.orm().info_user_samps.create({
         userId: user.id,
-        startTime: user.sampStartTime,
-        endTime: user.sampStartTime,
+        startTime: today,
+        endTime: today,
         dayCount: 1,
         realCount: 1,
         postName: user.postName,
@@ -352,7 +352,7 @@ module.exports = {
         name,
         phone,
         idcard,
-        tradeType: '其它',
+        tradeType: '其他',
         postName: '愿检尽检人群',
         periodType: '当天',
         street,

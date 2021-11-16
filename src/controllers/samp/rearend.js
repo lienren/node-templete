@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2021-11-10 16:02:47
+ * @LastEditTime: 2021-11-14 13:34:21
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/samp/rearend.js
@@ -50,7 +50,7 @@ module.exports = {
     let pageIndex = ctx.request.body.pageIndex || 1;
     let pageSize = ctx.request.body.pageSize || 50;
     let { depStreet, name, phone, idcard, tradeType, postName, periodType, street, community, streets, communitys, address, userType,
-      sampStartTime, createTime, updateTime } = ctx.request.body;
+      sampStartTime, sampName, sampUserName, sampHandleTime, createTime, updateTime } = ctx.request.body;
 
     let where = {};
 
@@ -64,6 +64,8 @@ module.exports = {
     Object.assign(where, userType && { userType })
     Object.assign(where, street && { street })
     Object.assign(where, community && { community })
+    Object.assign(where, sampName && { sampName })
+    Object.assign(where, sampUserName && { sampUserName })
 
     if (streets && streets.length > 0) {
       where.street = {
@@ -79,6 +81,10 @@ module.exports = {
 
     if (sampStartTime && sampStartTime.length > 0) {
       where.sampStartTime = { $between: sampStartTime }
+    }
+
+    if (sampHandleTime && sampHandleTime.length > 0) {
+      where.sampHandleTime = { $between: sampHandleTime }
     }
 
     if (createTime && createTime.length > 0) {
@@ -457,23 +463,53 @@ module.exports = {
     ctx.body = {}
   },
   s1: async ctx => {
-    let sql = `select 't1', count(1) num from info_users 
-    union all 
-    select 't2', count(1) num from info_users where isresign = 1
-    union all 
-    select 't3', count(1) num from info_users where isresign = 2
-    union all 
-    select 't4', count(1) num from info_users where isretire = 2
-    union all 
-    select post, count(1) num from info_users group by post `;
+    let sql1 = `select b.depName1, b.depName2, count(b.id) num, sum(b.oknum) oknum, sum(b.shouldSampNum) shouldSampNum, sum(b.sampNum) sampNum, sum(b.noSampNum) noSampNum from (
+      select a.id, a.depName1, a.depName2, if(sum(a.shouldSampNum)=sum(a.sampNum), 1, 0) oknum, sum(a.shouldSampNum) shouldSampNum, sum(a.sampNum) sampNum, sum(a.noSampNum) noSampNum from (
+      select u.id, u.depName1, u.depName2, 1 shouldSampNum, 
+      case handleType 
+      when '已采样' then 1 
+      when '个人上传采样' then 1 
+      else 0 end sampNum,
+      case handleType 
+      when '未采样' then 1 
+      else 0 end noSampNum 
+      from info_users u 
+      inner join info_user_samps s on s.userId = u.id 
+      where u.depId > 2) a 
+      group by a.id, a.depName1, a.depName2) b 
+      group by b.depName1, b.depName2`;
 
-    let result = await ctx.orm().query(sql);
+    let sql2 = `select a.depName1, a.depName2, count(a.id) num, sum(a.noSampNum) noSampNum from (
+      select u.id, u.depName1, u.depName2, count(1) noSampNum 
+      from info_users u 
+      inner join info_user_samps s on s.userId = u.id 
+      where u.depId > 2 and s.handleType = '未采样' 
+      group by u.id, u.depName1, u.depName2) a
+      group by a.depName1, a.depName2`;
 
-    ctx.body = result;
+    let result1 = await ctx.orm().query(sql1);
+    let result2 = await ctx.orm().query(sql2);
+
+    let data = result1.map(m => {
+      let f = result2.find(f => f.depName1 === m.depName1 && f.depName2 === m.depName2)
+      return {
+        ...m,
+        t1: f && f.num === 1 ? f.num : 0,
+        t2: f && f.num === 2 ? f.num : 0,
+        t3: f && f.num === 3 ? f.num : 0,
+        t4: f && f.num === 4 ? f.num : 0,
+        t5: f && f.num === 5 ? f.num : 0,
+        t6: f && f.num >= 6 ? f.num : 0,
+        crate: Math.floor(parseInt(m.oknum) / m.num * 10000) / 100,
+        trate: Math.floor(parseInt(m.noSampNum) / m.shouldSampNum * 10000) / 100
+      }
+    })
+
+    ctx.body = data;
   },
   exportUsers: async ctx => {
     let { depStreet, name, phone, idcard, tradeType, postName, periodType, street, community, streets, communitys, address, userType,
-      sampStartTime, createTime, updateTime } = ctx.request.body;
+      sampStartTime, sampName, sampUserName, sampHandleTime, createTime, updateTime } = ctx.request.body;
 
     let where = {};
 
@@ -487,6 +523,24 @@ module.exports = {
     Object.assign(where, userType && { userType })
     Object.assign(where, street && { street })
     Object.assign(where, community && { community })
+    Object.assign(where, sampName && { sampName })
+    Object.assign(where, sampUserName && { sampUserName })
+
+    if (sampStartTime.indexOf(',')) {
+      sampStartTime = sampStartTime.splite(',')
+    }
+
+    if (sampHandleTime.indexOf(',')) {
+      sampHandleTime = sampHandleTime.splite(',')
+    }
+
+    if (createTime.indexOf(',')) {
+      createTime = createTime.splite(',')
+    }
+
+    if (updateTime.indexOf(',')) {
+      updateTime = updateTime.splite(',')
+    }
 
     if (streets && streets.length > 0) {
       where.street = {
@@ -502,6 +556,10 @@ module.exports = {
 
     if (sampStartTime && sampStartTime.length > 0) {
       where.sampStartTime = { $between: sampStartTime }
+    }
+
+    if (sampHandleTime && sampHandleTime.length > 0) {
+      where.sampHandleTime = { $between: sampHandleTime }
     }
 
     if (createTime && createTime.length > 0) {
