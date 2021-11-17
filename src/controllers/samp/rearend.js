@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2021-11-14 13:34:21
+ * @LastEditTime: 2021-11-16 17:03:29
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/samp/rearend.js
@@ -49,7 +49,7 @@ module.exports = {
   getUsers: async ctx => {
     let pageIndex = ctx.request.body.pageIndex || 1;
     let pageSize = ctx.request.body.pageSize || 50;
-    let { depStreet, name, phone, idcard, tradeType, postName, periodType, street, community, streets, communitys, address, userType,
+    let { tradeTypes, postNames, depName1s, depName2s, depStreet, name, phone, idcard, tradeType, postName, periodType, street, community, streets, communitys, address, userType,
       sampStartTime, sampName, sampUserName, sampHandleTime, createTime, updateTime } = ctx.request.body;
 
     let where = {};
@@ -66,6 +66,30 @@ module.exports = {
     Object.assign(where, community && { community })
     Object.assign(where, sampName && { sampName })
     Object.assign(where, sampUserName && { sampUserName })
+
+    if (tradeTypes && tradeTypes.length > 0) {
+      where.tradeType = {
+        $in: tradeTypes
+      }
+    }
+
+    if (postNames && postNames.length > 0) {
+      where.postName = {
+        $in: postNames
+      }
+    }
+
+    if (depName1s && depName1s.length > 0) {
+      where.depName1 = {
+        $in: depName1s
+      }
+    }
+
+    if (depName2s && depName2s.length > 0) {
+      where.depName2 = {
+        $in: depName2s
+      }
+    }
 
     if (streets && streets.length > 0) {
       where.street = {
@@ -463,6 +487,115 @@ module.exports = {
     ctx.body = {}
   },
   s1: async ctx => {
+    let { tradeTypes, postNames, depName1s, depName2s, depStreet, name, phone, idcard, tradeType, postName, periodType, street, community, streets, communitys, address, userType,
+      sampStartTime, sampName, sampUserName, sampHandleTime, createTime, updateTime } = ctx.request.body;
+
+    let where = '';
+
+    if (tradeTypes && tradeTypes.length > 0) {
+      where += ' and u.tradeType in (' + tradeTypes.map(m => {
+        return `'${m}'`
+      }).join(',') + ')';
+    }
+
+    if (postNames && postNames.length > 0) {
+      where += ' and u.postName in (' + postNames.map(m => {
+        return `'${m}'`
+      }).join(',') + ')';
+    }
+
+    if (depName1s && depName1s.length > 0) {
+      where += ' and u.depName1 in (' + depName1s.map(m => {
+        return `'${m}'`
+      }).join(',') + ')';
+    }
+
+    if (depName2s && depName2s.length > 0) {
+      where += ' and u.depName2 in (' + depName2s.map(m => {
+        return `'${m}'`
+      }).join(',') + ')';
+    }
+
+    if (depStreet) {
+      where += ` and u.depStreet = '${depStreet}'`;
+    }
+
+    if (name) {
+      where += ` and u.name = '${name}'`;
+    }
+
+    if (phone) {
+      where += ` and u.phone = '${phone}'`;
+    }
+
+    if (idcard) {
+      where += ` and u.idcard = '${idcard}'`;
+    }
+
+    if (tradeType) {
+      where += ` and u.tradeType = '${tradeType}'`;
+    }
+
+    if (postName) {
+      where += ` and u.postName = '${postName}'`;
+    }
+
+    if (periodType) {
+      where += ` and u.periodType = '${periodType}'`;
+    }
+
+    if (street) {
+      where += ` and u.street = '${street}'`;
+    }
+
+    if (community) {
+      where += ` and u.community = '${community}'`;
+    }
+
+    if (streets && streets.length > 0) {
+      where += ' and u.street in (' + streets.map(m => {
+        return `'${m}'`
+      }).join(',') + ')';
+    }
+
+    if (communitys && communitys.length > 0) {
+      where += ' and u.community in (' + communitys.map(m => {
+        return `'${m}'`
+      }).join(',') + ')';
+    }
+
+    if (address) {
+      where += ` and u.address like '%${address}%'`;
+    }
+
+    if (userType) {
+      where += ` and u.userType = '${userType}'`;
+    }
+
+    if (sampStartTime && sampStartTime.length > 0) {
+      where += ` and u.sampStartTime between '${sampStartTime[0]}' and '${sampStartTime[1]}'`;
+    }
+
+    if (sampName) {
+      where += ` and u.sampName = '${sampName}'`;
+    }
+
+    if (sampUserName) {
+      where += ` and u.sampUserName = '${sampUserName}'`;
+    }
+
+    if (sampHandleTime && sampHandleTime.length > 0) {
+      where += ` and u.sampHandleTime between '${sampHandleTime[0]}' and '${sampHandleTime[1]}'`;
+    }
+
+    if (createTime && createTime.length > 0) {
+      where += ` and u.createTime between '${createTime[0]}' and '${createTime[1]}'`;
+    }
+
+    if (updateTime && updateTime.length > 0) {
+      where += ` and u.updateTime between '${updateTime[0]}' and '${updateTime[1]}'`;
+    }
+
     let sql1 = `select b.depName1, b.depName2, count(b.id) num, sum(b.oknum) oknum, sum(b.shouldSampNum) shouldSampNum, sum(b.sampNum) sampNum, sum(b.noSampNum) noSampNum from (
       select a.id, a.depName1, a.depName2, if(sum(a.shouldSampNum)=sum(a.sampNum), 1, 0) oknum, sum(a.shouldSampNum) shouldSampNum, sum(a.sampNum) sampNum, sum(a.noSampNum) noSampNum from (
       select u.id, u.depName1, u.depName2, 1 shouldSampNum, 
@@ -475,7 +608,7 @@ module.exports = {
       else 0 end noSampNum 
       from info_users u 
       inner join info_user_samps s on s.userId = u.id 
-      where u.depId > 2) a 
+      where u.depId > 2 ${where}) a 
       group by a.id, a.depName1, a.depName2) b 
       group by b.depName1, b.depName2`;
 
@@ -483,7 +616,7 @@ module.exports = {
       select u.id, u.depName1, u.depName2, count(1) noSampNum 
       from info_users u 
       inner join info_user_samps s on s.userId = u.id 
-      where u.depId > 2 and s.handleType = '未采样' 
+      where u.depId > 2 and s.handleType = '未采样' ${where} 
       group by u.id, u.depName1, u.depName2) a
       group by a.depName1, a.depName2`;
 
@@ -508,7 +641,7 @@ module.exports = {
     ctx.body = data;
   },
   exportUsers: async ctx => {
-    let { depStreet, name, phone, idcard, tradeType, postName, periodType, street, community, streets, communitys, address, userType,
+    let { tradeTypes, postNames, depName1s, depName2s, depStreet, name, phone, idcard, tradeType, postName, periodType, street, community, streets, communitys, address, userType,
       sampStartTime, sampName, sampUserName, sampHandleTime, createTime, updateTime } = ctx.request.body;
 
     let where = {};
@@ -540,6 +673,46 @@ module.exports = {
 
     if (updateTime.indexOf(',')) {
       updateTime = updateTime.splite(',')
+    }
+
+    if (tradeTypes.indexOf(',')) {
+      tradeTypes = tradeTypes.splite(',')
+    }
+
+    if (postNames.indexOf(',')) {
+      postNames = postNames.splite(',')
+    }
+
+    if (depName1s.indexOf(',')) {
+      depName1s = depName1s.splite(',')
+    }
+
+    if (depName2s.indexOf(',')) {
+      depName2s = depName2s.splite(',')
+    }
+
+    if (tradeTypes && tradeTypes.length > 0) {
+      where.tradeType = {
+        $in: tradeTypes
+      }
+    }
+
+    if (postNames && postNames.length > 0) {
+      where.postName = {
+        $in: postNames
+      }
+    }
+
+    if (depName1s && depName1s.length > 0) {
+      where.depName1 = {
+        $in: depName1s
+      }
+    }
+
+    if (depName2s && depName2s.length > 0) {
+      where.depName2 = {
+        $in: depName2s
+      }
     }
 
     if (streets && streets.length > 0) {
