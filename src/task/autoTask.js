@@ -22,6 +22,7 @@ let automaticCheckQCodeJob = null;
 let dayJob = null;
 let weekJob = null;
 let monthJob = null;
+let importJob = null;
 let ctx = {};
 let next = function () {
   return true;
@@ -80,11 +81,11 @@ async function getSuccessed () {
 }
 
 /*
-  每2天一检，固定周期
-  每周一检，固定周期
-  每月一检，固定周期
-  每周2次（间隔2天以上），固定周期
-  */
+每2天一检，固定周期
+每周一检，固定周期
+每月一检，固定周期
+每周2次（间隔2天以上），固定周期
+*/
 
 async function daySamp () {
   console.log('users samp day data:%s', date.formatDate());
@@ -292,6 +293,142 @@ async function monthSamp () {
   console.log('users samp month data:%s', date.formatDate());
 }
 
+async function importUsers () {
+  console.log('samp import Users data:%s', date.formatDate());
+
+  let result = await ctx.orm().tmp_info_users.findAll({
+    limit: 50,
+    where: {
+      status: 0
+    }
+  });
+
+  if (result && result.length > 0) {
+    // 有未同步
+    // 并记录信息，将isSend更新为1
+
+    for (let i = 0, j = result.length; i < j; i++) {
+      let data = result[i]
+
+      // 添加部门信息
+      let dep = await ctx.orm().info_deps.findOne({
+        where: {
+          id: data.depName1,
+          depLevel: 1,
+          isDel: 0
+        }
+      })
+
+      if (!dep) {
+        dep = await ctx.orm().info_deps.create({
+          depName: data.depName1,
+          depLevel: 1,
+          depStreet: '',
+          parentId: 0
+        })
+      }
+
+      let dep2 = await ctx.orm().info_deps.findOne({
+        where: {
+          id: data.depName2,
+          parentId: dep.id,
+          depLevel: 2,
+          isDel: 0
+        }
+      })
+
+      if (!dep2) {
+        dep2 = await ctx.orm().info_deps.create({
+          depName: data.depName2,
+          depLevel: 2,
+          depStreet: data.depStreet,
+          parentId: dep.id
+        })
+      }
+
+      let post = await ctx.orm().info_posts.findOne({
+        where: {
+          postName: data.postName,
+          tradeType: data.tradeType
+        }
+      })
+
+      if (!post) {
+        await ctx.orm().tmp_info_users.update({
+          status: 2,
+          remark: '职业信息在字典表中不存在！'
+        }, {
+          where: {
+            id: data.id
+          }
+        })
+        continue;
+      }
+
+      let user = await ctx.orm().info_users.findOne({
+        where: {
+          idcard: data.idcard
+        }
+      })
+
+      if (user) {
+        await ctx.orm().info_users.update({
+          depId: dep2.id,
+          depName1: dep.depName,
+          depName2: dep2.depName,
+          depStreet: dep2.depStreet,
+          name: data.name,
+          phone: data.phone,
+          idcard: data.idcard,
+          tradeType: post.tradeType,
+          postName: post.postName,
+          periodType: post.periodType,
+          userType: '在线'
+        }, {
+          where: {
+            id: user.id
+          }
+        })
+
+        await ctx.orm().tmp_info_users.update({
+          status: 1,
+          remark: '老用户，处理成功！'
+        }, {
+          where: {
+            id: data.id
+          }
+        })
+      } else {
+        await ctx.orm().info_users.create({
+          depId: dep2.id,
+          depName1: dep.depName,
+          depName2: dep2.depName,
+          depStreet: dep2.depStreet,
+          name: data.name,
+          phone: data.phone,
+          idcard: data.idcard,
+          tradeType: post.tradeType,
+          postName: post.postName,
+          periodType: post.periodType,
+          userType: '在线',
+          sampStartTime: date.formatDate(new Date(), 'YYYY-MM-DD')
+        })
+
+        await ctx.orm().tmp_info_users.update({
+          status: 1,
+          remark: '新用户，处理成功！'
+        }, {
+          where: {
+            id: data.id
+          }
+        })
+      }
+    }
+  }
+
+  console.log('samp import Users data:%s', date.formatDate());
+}
+
 async function main () {
   // 使用koa-orm中间件，sequelize，mysql
   if (config.databases) {
@@ -299,7 +436,7 @@ async function main () {
     orm.middleware(ctx, next);
   }
 
-  // 更新团购状态，每10秒执行一次
+  // 更新团购状态，每30秒执行一次
   let automaticRule = new schedule.RecurrenceRule();
   automaticRule.second = [];
   for (let i = 0, j = 60; i < j; i++) {
@@ -311,7 +448,10 @@ async function main () {
   // automaticUpdateGroupStatusJob = schedule.scheduleJob(automaticRule, updateGroupStatus);
   automaticCheckQCodeJob = schedule.scheduleJob(
     automaticRule,
-    getSuccessed
+    function () {
+      getSuccessed()
+      importUsers()
+    }
   );
 
   dayJob = schedule.scheduleJob('0 0 0 * * *', daySamp)

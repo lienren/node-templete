@@ -20,6 +20,9 @@ for (let className in ctrl) {
     if (funName === 'uploadFile') {
       // 上传文件
       router.post(`/${className}/${funName}`, uploadFile.getMulter('files').any(), ctrl[className][funName])
+    } else if (funName === 'importUsers') {
+      // 上传文件
+      router.post(`/${className}/${funName}`, uploadFile.getMulter('files').any(), ctrl[className][funName])
     } else {
       router.all(`/${className}/${funName}`, ctrl[className][funName]);
     }

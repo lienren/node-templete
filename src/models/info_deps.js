@@ -26,7 +26,8 @@ module.exports = function(sequelize, DataTypes) {
     },
     createTime: {
       type: DataTypes.DATE,
-      allowNull: true
+      allowNull: true,
+      defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
     },
     isDel: {
       type: DataTypes.INTEGER(255),

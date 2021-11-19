@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2021-11-16 17:03:29
+ * @LastEditTime: 2021-11-19 07:19:46
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/samp/rearend.js
@@ -172,320 +172,6 @@ module.exports = {
 
     ctx.body = {}
   },
-  submitPostLevel: async ctx => {
-    let { id, postLevelId, postLevelDesc, certNum, certTime, remark } = ctx.request.body;
-
-    postLevelId = parseInt(postLevelId)
-
-    assert.ok(id > 0, '调级参数异常')
-
-    let user = await ctx.orm().info_users.findOne({
-      where: { id, isDel: 0 }
-    })
-
-    assert.ok(user !== null, '社工不存在，请联系管理员')
-
-    let userCert = await ctx.orm().info_user_cert.findAll({
-      where: {
-        userId: user.id
-      }
-    })
-
-    let userUpLevel = await ctx.orm().info_user_uplevel.findAll({
-      where: {
-        userId: user.id
-      }
-    })
-
-    let maxPostLevel = 18
-    let userPostLeveUp = 0
-    let userPostLevel = user.postLevel
-
-    switch (user.post) {
-      case '社区正职':
-        maxPostLevel = 18;
-        break;
-      case '社区副职':
-        maxPostLevel = 15;
-        break;
-      case '普通社工':
-      case '其他':
-        maxPostLevel = 12;
-        break;
-    }
-
-    let tmpEduLevel = ''
-    let eduLevel = ''
-    let filter = []
-
-    switch (postLevelId) {
-      case 1:
-        userPostLeveUp = 1
-        break;
-      case 2:
-        userPostLeveUp = 1
-        break;
-      case 3:
-        tmpEduLevel = eduLevelEnum['本科']
-        eduLevel = eduLevelEnum[user.edu2]
-
-        if (tmpEduLevel > eduLevel) {
-
-          filter = userCert.filter(f => {
-            return f.dataValues.certName === '全国助理社会工作师' ||
-              f.dataValues.certName === '全国社会工作师' ||
-              f.dataValues.certName === '全国高级社会工作师';
-          })
-
-          if (filter.length === 0) {
-            userPostLeveUp = 1
-          }
-
-          await ctx.orm().info_users.update({
-            edu2: '本科'
-          }, {
-            where: {
-              id: user.id
-            }
-          })
-        }
-        break;
-      case 4:
-        tmpEduLevel = eduLevelEnum['硕士']
-        eduLevel = eduLevelEnum[user.edu2]
-
-        if (tmpEduLevel > eduLevel) {
-
-          if (user.edu2 === '本科') {
-            userPostLeveUp = 1
-          } else {
-            userPostLeveUp = 2
-          }
-
-          if (userCert.filter(f => { return f.dataValues.certName === '全国助理社会工作师'; }).length > 0) {
-            userPostLeveUp = userPostLeveUp > 1 ? 1 : userPostLeveUp
-          }
-          if (userCert.filter(f => { return f.dataValues.certName === '全国社会工作师'; }).length > 0) {
-            userPostLeveUp = userPostLeveUp > 0 ? 0 : userPostLeveUp
-          }
-          if (userCert.filter(f => { return f.dataValues.certName === '全国高级社会工作师'; }).length > 0) {
-            userPostLeveUp = userPostLeveUp > 0 ? 0 : userPostLeveUp
-          }
-
-          await ctx.orm().info_users.update({
-            edu2: '硕士'
-          }, {
-            where: {
-              id: user.id
-            }
-          })
-        }
-        break;
-      case 5:
-        tmpEduLevel = eduLevelEnum['博士']
-        eduLevel = eduLevelEnum[user.edu2]
-
-        if (tmpEduLevel > eduLevel) {
-
-          if (user.edu2 === '本科') {
-            userPostLeveUp = 2
-          } else if (user.edu2 === '硕士') {
-            userPostLeveUp = 1
-          } else {
-            userPostLeveUp = 3
-          }
-
-          if (userCert.filter(f => { return f.dataValues.certName === '全国助理社会工作师'; }).length > 0) {
-            userPostLeveUp = userPostLeveUp > 2 ? 2 : userPostLeveUp;
-          }
-          if (userCert.filter(f => { return f.dataValues.certName === '全国社会工作师'; }).length > 0) {
-            userPostLeveUp = userPostLeveUp > 1 ? 1 : userPostLeveUp;
-          }
-          if (userCert.filter(f => { return f.dataValues.certName === '全国高级社会工作师'; }).length > 0) {
-            userPostLeveUp = userPostLeveUp > 0 ? 0 : userPostLeveUp;
-          }
-
-          await ctx.orm().info_users.update({
-            edu2: '博士'
-          }, {
-            where: {
-              id: user.id
-            }
-          })
-        }
-        break;
-      case 6:
-        filter = userCert.filter(f => {
-          return f.dataValues.certName === '全国助理社会工作师' ||
-            f.dataValues.certName === '全国社会工作师' ||
-            f.dataValues.certName === '全国高级社会工作师';
-        })
-
-        if (filter.length === 0) {
-
-          if (user.edu2 === '本科' ||
-            user.edu2 === '硕士' ||
-            user.edu2 === '博士') {
-            userPostLeveUp = 0
-          }
-
-          await ctx.orm().info_user_cert.create({
-            userId: user.id,
-            certName: '全国助理社会工作师',
-            certNum: certNum,
-            certDesc: `在${certTime}获得了全国助理社会工作师`,
-            certTime: certTime,
-            remark: remark
-          })
-        }
-        break;
-      case 7:
-        filter = userCert.filter(f => {
-          return f.dataValues.certName === '全国社会工作师' ||
-            f.dataValues.certName === '全国高级社会工作师';
-        })
-
-        if (filter.length === 0) {
-          userPostLeveUp = 2
-
-          if (userCert.filter(f => { return f.dataValues.certName === '全国助理社会工作师'; }).length > 0) {
-            userPostLeveUp = userPostLeveUp > 1 ? 1 : userPostLeveUp;
-          }
-          if (user.edu2 === '本科') {
-            userPostLeveUp = userPostLeveUp > 1 ? 1 : userPostLeveUp;
-          }
-          if (user.edu2 === '硕士') {
-            userPostLeveUp = userPostLeveUp > 0 ? 0 : userPostLeveUp;
-          }
-          if (user.edu2 === '博士') {
-            userPostLeveUp = userPostLeveUp > 0 ? 0 : userPostLeveUp;
-          }
-
-          await ctx.orm().info_user_cert.create({
-            userId: user.id,
-            certName: '全国社会工作师',
-            certNum: certNum,
-            certDesc: `在${certTime}获得了全国社会工作师`,
-            certTime: certTime,
-            remark: remark
-          })
-        }
-        break;
-      case 8:
-        filter = userCert.filter(f => {
-          return f.dataValues.certName === '全国高级社会工作师';
-        })
-
-        if (filter.length === 0) {
-          userPostLeveUp = 3
-
-          if (userCert.filter(f => { return f.dataValues.certName === '全国助理社会工作师'; }).length > 0) {
-            userPostLeveUp = userPostLeveUp > 2 ? 2 : userPostLeveUp;
-          }
-          if (userCert.filter(f => { return f.dataValues.certName === '全国社会工作师'; }).length > 0) {
-            userPostLeveUp = userPostLeveUp > 1 ? 1 : userPostLeveUp;
-          }
-          if (user.edu2 === '本科') {
-            userPostLeveUp = userPostLeveUp > 2 ? 2 : userPostLeveUp;
-          }
-          if (user.edu2 === '硕士') {
-            userPostLeveUp = userPostLeveUp > 1 ? 1 : userPostLeveUp;
-          }
-          if (user.edu2 === '博士') {
-            userPostLeveUp = userPostLeveUp > 0 ? 0 : userPostLeveUp;
-          }
-
-          await ctx.orm().info_user_cert.create({
-            userId: user.id,
-            certName: '全国高级社会工作师',
-            certNum: certNum,
-            certDesc: `在${certTime}获得了全国高级社会工作师`,
-            certTime: certTime,
-            remark: remark
-          })
-        }
-        break;
-      case 9:
-        if (userUpLevel.filter(f => f.dataValues.postLevelDesc === '受到市级及以上党委、政府表彰（+1级）').length === 0) {
-          userPostLeveUp = 1
-        }
-        break;
-      case 10:
-        if (userUpLevel.filter(f => f.dataValues.postLevelDesc === '获得市级及以上劳模称号（+1级）').length === 0) {
-          userPostLeveUp = 1
-        }
-        break;
-    }
-
-    // 最大级别限制
-    userPostLevel = userPostLevel + userPostLeveUp > maxPostLevel ? maxPostLevel : userPostLevel + userPostLeveUp
-
-    // 记录调级
-    await ctx.orm().info_user_uplevel.create({
-      userId: user.id,
-      oldPostLevel: user.postLevel,
-      newPostLevel: userPostLevel,
-      postLevelDesc: postLevelDesc,
-      remark: remark
-    })
-
-    /* await ctx.orm().info_users.update({
-      postLevel: userPostLevel
-    }, {
-      where: {
-        id: user.id
-      }
-    }) */
-
-    ctx.body = {}
-  },
-  submitResign: async ctx => {
-    let { id, resignTime, resignRemark } = ctx.request.body;
-
-    await ctx.orm().info_users.update({
-      isresign: 2,
-      resignTime: resignTime,
-      resignRemark: resignRemark
-    }, {
-      where: {
-        id,
-        isDel: 0
-      }
-    })
-
-    ctx.body = {}
-  },
-  submitJob: async ctx => {
-    let { id, nStreet, nCommunity, hanlder, hanldeTime, remark } = ctx.request.body;
-
-    let user = await ctx.orm().info_users.findOne({
-      where: { id, isDel: 0 }
-    })
-
-    assert.ok(user !== null, '社工不存在，请联系管理员')
-
-    await ctx.orm().info_user_job.create({
-      userId: user.id,
-      oStreet: user.street,
-      oCommunity: user.community,
-      nStreet,
-      nCommunity,
-      hanlder,
-      hanldeTime,
-      remark
-    })
-
-    await ctx.orm().info_users.update({
-      street: nStreet,
-      community: nCommunity
-    }, {
-      where: {
-        id: user.id
-      }
-    })
-
-    ctx.body = {}
-  },
   s1: async ctx => {
     let { tradeTypes, postNames, depName1s, depName2s, depStreet, name, phone, idcard, tradeType, postName, periodType, street, community, streets, communitys, address, userType,
       sampStartTime, sampName, sampUserName, sampHandleTime, createTime, updateTime } = ctx.request.body;
@@ -639,6 +325,42 @@ module.exports = {
     })
 
     ctx.body = data;
+  },
+  importUsers: async ctx => {
+    if (ctx.req.files && ctx.req.files.length > 0) {
+      let filePath = path.resolve(path.join(__dirname, `../../../assets/uploads/${ctx.req.files[0].filename}`));
+
+      let xlsx = excel.readExcel(filePath);
+
+      let data = xlsx.map(m => {
+        return {
+          depName1: m[0],
+          depName2: m[1],
+          depStreet: m[2],
+          name: m[3],
+          tradeType: m[4],
+          postName: m[5],
+          idcard: m[6],
+          phone: m[7],
+          status: 0
+        }
+      });
+
+      // 删除首行
+      data.shift();
+
+      await ctx.orm().tmp_info_users.bulkCreate(data);
+
+      // 删除文件
+      fs.unlink(filePath, function (error) {
+        console.log('delete import excel file error:', error)
+        return false
+      })
+
+      ctx.body = {};
+    } else {
+      ctx.body = {};
+    }
   },
   exportUsers: async ctx => {
     let { tradeTypes, postNames, depName1s, depName2s, depStreet, name, phone, idcard, tradeType, postName, periodType, street, community, streets, communitys, address, userType,
