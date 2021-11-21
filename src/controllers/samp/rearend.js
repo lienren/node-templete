@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2021-11-19 07:19:46
+ * @LastEditTime: 2021-11-20 18:26:18
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/samp/rearend.js
@@ -325,6 +325,42 @@ module.exports = {
     })
 
     ctx.body = data;
+  },
+  s2: async ctx => {
+    let sql1 = `select DATE_FORMAT(handleTime,'%Y-%m-%d') 日期, count(1) 采样人数 from info_user_samps 
+    where handleType != '未采样' and DATEDIFF(now(),handleTime) <= 30 
+    group by DATE_FORMAT(handleTime,'%Y-%m-%d')`
+
+    let sql2 = `select 't1' title, count(1) num from info_users 
+    union all 
+    select 't2' title, count(1) num from info_users where depId > 2 
+    union all 
+    select 't3' title, count(1) num from info_users where depId <= 2 
+    union all 
+    select 't4' title, count(1) num from info_user_samps where handleType != '未采样' 
+    union all 
+    select 't5' title, count(1) num from info_users where createTime >= DATE_FORMAT(now(),'%Y-%m-%d') 
+    union all 
+    select 't6' title, count(1) num from info_user_samps where handleTime >= DATE_FORMAT(now(),'%Y-%m-%d') and handleType != '未采样' 
+    union all 
+    select 't7' title, count(1) num from info_samps 
+    union all 
+    select 't8' title, count(1) num from SuperManagerInfo where verifyLevel = 1 and isDel = 0 `
+
+    let sql3 = `select * from (
+      select sampName 采样点, count(1) 采样人数 from info_user_samps where handleType != '未采样' and DATEDIFF(now(),handleTime) <= 30  group by sampName
+      ) a order by a.采样人数 desc `
+
+
+    let result1 = await ctx.orm().query(sql1);
+    let result2 = await ctx.orm().query(sql2);
+    let result3 = await ctx.orm().query(sql3);
+
+    ctx.body = {
+      line: result1,
+      stat2: result2,
+      line1: result3
+    };
   },
   importUsers: async ctx => {
     if (ctx.req.files && ctx.req.files.length > 0) {

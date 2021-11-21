@@ -313,7 +313,7 @@ async function importUsers () {
       // 添加部门信息
       let dep = await ctx.orm().info_deps.findOne({
         where: {
-          id: data.depName1,
+          depName: data.depName1,
           depLevel: 1,
           isDel: 0
         }
@@ -330,7 +330,7 @@ async function importUsers () {
 
       let dep2 = await ctx.orm().info_deps.findOne({
         where: {
-          id: data.depName2,
+          depName: data.depName2,
           parentId: dep.id,
           depLevel: 2,
           isDel: 0
