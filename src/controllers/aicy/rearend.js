@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2021-10-13 22:31:47
+ * @LastEditTime: 2021-11-21 22:37:02
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/aicy/rearend.js
@@ -73,7 +73,7 @@ module.exports = {
   getUsers: async ctx => {
     let pageIndex = ctx.request.body.pageIndex || 1;
     let pageSize = ctx.request.body.pageSize || 50;
-    let { customerId, userName, nickName, userPhone, userIdCard, userSex, isMute, isPartyMember, villageId, startCreateTime, endCreateTime, startUpdateTime, endUpdateTime } = ctx.request.body;
+    let { customerId, userName, nickName, userPhone, userIdCard, userSex, isMute, isPartyMember, onJob, villageId, startCreateTime, endCreateTime, startUpdateTime, endUpdateTime } = ctx.request.body;
 
     let where = {};
 
@@ -88,6 +88,7 @@ module.exports = {
     Object.assign(where, userSex && { userSex })
     Object.assign(where, isMute && { isMute })
     Object.assign(where, isPartyMember && { isPartyMember })
+    Object.assign(where, onJob && { onJob })
 
     if (villageId && villageId.length > 0) {
       where.villageId = {
@@ -111,9 +112,8 @@ module.exports = {
       offset: (pageIndex - 1) * pageSize,
       limit: pageSize,
       where,
-      order: [
-        ['createTime', 'desc']
-      ]
+      order: sequelize.literal(`field(isPartyMember,2,1),field(onJob,'在职','不在职',''),createTime desc`)
+      // order: [['createTime', 'desc']]
     });
 
     ctx.body = {
@@ -1561,7 +1561,7 @@ module.exports = {
     })
     assert.ok(workorder !== null, '工单不存在!');
 
-    let opRemark = `由${workorder.opUserDepName}${workorder.opUserName}交办`
+    let opRemark = `由${workorder.opUserDepName}${workorder.opUserName === workorder.opUserDepName ? '' : workorder.opUserName}交办`
 
     // 更新老工单
     await ctx.orm().work_orders.update({

@@ -112,6 +112,18 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.INTEGER(11),
       allowNull: true,
       defaultValue: '0'
+    },
+    onJob: {
+      type: DataTypes.STRING(20),
+      allowNull: true
+    },
+    workName: {
+      type: DataTypes.STRING(100),
+      allowNull: true
+    },
+    postName: {
+      type: DataTypes.STRING(100),
+      allowNull: true
     }
   }, {
     tableName: 'info_user'

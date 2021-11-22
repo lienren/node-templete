@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-08-18 10:44:07
- * @LastEditTime: 2021-09-26 19:39:37
+ * @LastEditTime: 2021-11-21 20:47:57
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/aicy/api.js
@@ -170,10 +170,13 @@ module.exports = {
     let userSpeciality = ctx.request.body.userSpeciality || '';
     let isPartyMember = ctx.request.body.isPartyMember || 1;
     let partyMemberName = ctx.request.body.partyMemberName || '我不是党员';
+    let onJob = ctx.request.body.onJob || '';
+    let workName = ctx.request.body.workName || '';
+    let postName = ctx.request.body.postName || '';
 
     assert.ok(id > 0, '提交信息异常！');
 
-    await ctx.orm().info_user.update({
+    let updateColumns = {
       userSex: userSex,
       userPhone: userPhone,
       userAddress: userAddress,
@@ -181,7 +184,21 @@ module.exports = {
       isPartyMember: isPartyMember,
       partyMemberName: partyMemberName,
       isComplete: 1
-    }, {
+    }
+
+    if (onJob) {
+      updateColumns.onJob = onJob
+    }
+
+    if (workName) {
+      updateColumns.workName = workName
+    }
+
+    if (postName) {
+      updateColumns.postName = postName
+    }
+
+    await ctx.orm().info_user.update(updateColumns, {
       where: {
         id: id
       }
