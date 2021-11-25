@@ -35,7 +35,9 @@ app.use(async (ctx, next) => {
     path.indexOf('/mall/notify/weipay') >= 0 ||
     path.indexOf('/mall/notify/alipay') >= 0 ||
     path.indexOf('/mall/order/exportorders') >= 0 ||
-    path.indexOf('/mall/order/exprotproviderorders') >= 0) {
+    path.indexOf('/mall/order/exprotproviderorders') >= 0 ||
+    path.indexOf('/samp/rearend/exportusersampss1') >= 0 ||
+    path.indexOf('/samp/rearend/exportusers') >= 0) {
     ctx.disableBodyParserReturn = true;
   }
 
@@ -49,16 +51,6 @@ app.use(async (ctx, next) => {
 // 清除content-encoding请求头编码
 app.use(async (ctx, next) => {
   delete ctx.request.headers['content-encoding'];
-
-  ctx.disableBodyParserReturn = false;
-  ctx.disableBodyParserMerge = false;
-
-  let path = ctx.path.toLowerCase();
-
-  if ( path.indexOf('/samp/rearend/exportusers') >= 0) {
-    ctx.disableBodyParserReturn = true;
-  }
-
   await next();
 });
 

@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2021-11-20 18:26:18
+ * @LastEditTime: 2021-11-25 12:18:50
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/samp/rearend.js
@@ -152,6 +152,335 @@ module.exports = {
     })
 
     ctx.body = result
+  },
+  getUserSampsS1: async ctx => {
+    let pageIndex = ctx.request.body.pageIndex || 1;
+    let pageSize = ctx.request.body.pageSize || 50;
+    let { tradeTypes, postNames, depName1s, depName2s, depStreet, name, phone, idcard, tradeType, postName, periodType, street, community, streets, communitys, address, userType,
+      sampStartTime, sampName, sampUserName, sampHandleTime, startEndTime, createTime, updateTime } = ctx.request.body;
+
+    let where = '';
+
+    if (tradeTypes && tradeTypes.length > 0) {
+      where += ' and u.tradeType in (' + tradeTypes.map(m => {
+        return `'${m}'`
+      }).join(',') + ')';
+    }
+
+    if (postNames && postNames.length > 0) {
+      where += ' and u.postName in (' + postNames.map(m => {
+        return `'${m}'`
+      }).join(',') + ')';
+    }
+
+    if (depName1s && depName1s.length > 0) {
+      where += ' and u.depName1 in (' + depName1s.map(m => {
+        return `'${m}'`
+      }).join(',') + ')';
+    }
+
+    if (depName2s && depName2s.length > 0) {
+      where += ' and u.depName2 in (' + depName2s.map(m => {
+        return `'${m}'`
+      }).join(',') + ')';
+    }
+
+    if (depStreet) {
+      where += ` and u.depStreet = '${depStreet}'`;
+    }
+
+    if (name) {
+      where += ` and u.name = '${name}'`;
+    }
+
+    if (phone) {
+      where += ` and u.phone = '${phone}'`;
+    }
+
+    if (idcard) {
+      where += ` and u.idcard = '${idcard}'`;
+    }
+
+    if (tradeType) {
+      where += ` and u.tradeType = '${tradeType}'`;
+    }
+
+    if (postName) {
+      where += ` and u.postName = '${postName}'`;
+    }
+
+    if (periodType) {
+      where += ` and u.periodType = '${periodType}'`;
+    }
+
+    if (street) {
+      where += ` and u.street = '${street}'`;
+    }
+
+    if (community) {
+      where += ` and u.community = '${community}'`;
+    }
+
+    if (streets && streets.length > 0) {
+      where += ' and u.street in (' + streets.map(m => {
+        return `'${m}'`
+      }).join(',') + ')';
+    }
+
+    if (communitys && communitys.length > 0) {
+      where += ' and u.community in (' + communitys.map(m => {
+        return `'${m}'`
+      }).join(',') + ')';
+    }
+
+    if (address) {
+      where += ` and u.address like '%${address}%'`;
+    }
+
+    if (userType) {
+      where += ` and u.userType = '${userType}'`;
+    }
+
+    if (sampStartTime && sampStartTime.length > 0) {
+      where += ` and u.sampStartTime between '${sampStartTime[0]}' and '${sampStartTime[1]}'`;
+    }
+
+    if (sampName) {
+      where += ` and u.sampName = '${sampName}'`;
+    }
+
+    if (sampUserName) {
+      where += ` and u.sampUserName = '${sampUserName}'`;
+    }
+
+    if (sampHandleTime && sampHandleTime.length > 0) {
+      where += ` and u.sampHandleTime between '${sampHandleTime[0]}' and '${sampHandleTime[1]}'`;
+    }
+
+    if (startEndTime && startEndTime.length > 0) {
+      where += ` and s.startTime between '${startEndTime[0]}' and '${startEndTime[1]}'`;
+    }
+
+    if (createTime && createTime.length > 0) {
+      where += ` and u.createTime between '${createTime[0]}' and '${createTime[1]}'`;
+    }
+
+    if (updateTime && updateTime.length > 0) {
+      where += ` and u.updateTime between '${updateTime[0]}' and '${updateTime[1]}'`;
+    }
+
+    let sql = `select count(1) num from (
+      select a.userId from (
+      select s.userId from info_user_samps s
+      inner join info_users u on u.id = s.userId
+      where u.depId > 2 ${where} 
+      ) a
+      group by a.userId ) b `
+
+    let sql1 = `select u1.depName1, u1.depName2, u1.name, u1.idcard, u1.phone, u1.tradeType, u1.postName, u1.periodType, b.*, concat(format(b.sampNum/b.shouldSampNum*100,2), '%') srate, concat(format(b.noSampNum/b.shouldSampNum*100,2),'%') nrate from (
+      select a.userId, sum(a.shouldSampNum) shouldSampNum, sum(a.sampNum) sampNum, sum(a.noSampNum) noSampNum from (
+      select s.userId, u.depId, 1 shouldSampNum, 
+      case handleType 
+        when '已采样' then 1 
+        when '个人上传采样' then 1 
+        else 0 end sampNum,
+      case handleType 
+        when '未采样' then 1 
+        else 0 end noSampNum from info_user_samps s
+      inner join info_users u on u.id = s.userId
+      where u.depId > 2 ${where}
+      ) a
+      group by a.userId order by a.depId limit ${(pageIndex - 1) * pageSize},${pageSize}) b
+      inner join info_users u1 on u1.id = b.userId `;
+
+    let result = await ctx.orm().query(sql);
+    let result1 = await ctx.orm().query(sql1);
+
+    ctx.body = {
+      total: result && result.length > 0 ? result[0].num : 0,
+      list: result1,
+      pageIndex,
+      pageSize
+    }
+  },
+  exportUserSampsS1: async ctx => {
+    let { tradeTypes, postNames, depName1s, depName2s, depStreet, name, phone, idcard, tradeType, postName, periodType, street, community, streets, communitys, address, userType,
+      sampStartTime, sampName, sampUserName, sampHandleTime, startEndTime, createTime, updateTime } = ctx.request.body;
+
+    let where = '';
+
+    if (tradeTypes && tradeTypes.length > 0) {
+      where += ' and u.tradeType in (' + tradeTypes.map(m => {
+        return `'${m}'`
+      }).join(',') + ')';
+    }
+
+    if (postNames && postNames.length > 0) {
+      where += ' and u.postName in (' + postNames.map(m => {
+        return `'${m}'`
+      }).join(',') + ')';
+    }
+
+    if (depName1s && depName1s.length > 0) {
+      where += ' and u.depName1 in (' + depName1s.map(m => {
+        return `'${m}'`
+      }).join(',') + ')';
+    }
+
+    if (depName2s && depName2s.length > 0) {
+      where += ' and u.depName2 in (' + depName2s.map(m => {
+        return `'${m}'`
+      }).join(',') + ')';
+    }
+
+    if (depStreet) {
+      where += ` and u.depStreet = '${depStreet}'`;
+    }
+
+    if (name) {
+      where += ` and u.name = '${name}'`;
+    }
+
+    if (phone) {
+      where += ` and u.phone = '${phone}'`;
+    }
+
+    if (idcard) {
+      where += ` and u.idcard = '${idcard}'`;
+    }
+
+    if (tradeType) {
+      where += ` and u.tradeType = '${tradeType}'`;
+    }
+
+    if (postName) {
+      where += ` and u.postName = '${postName}'`;
+    }
+
+    if (periodType) {
+      where += ` and u.periodType = '${periodType}'`;
+    }
+
+    if (street) {
+      where += ` and u.street = '${street}'`;
+    }
+
+    if (community) {
+      where += ` and u.community = '${community}'`;
+    }
+
+    if (streets && streets.length > 0) {
+      where += ' and u.street in (' + streets.map(m => {
+        return `'${m}'`
+      }).join(',') + ')';
+    }
+
+    if (communitys && communitys.length > 0) {
+      where += ' and u.community in (' + communitys.map(m => {
+        return `'${m}'`
+      }).join(',') + ')';
+    }
+
+    if (address) {
+      where += ` and u.address like '%${address}%'`;
+    }
+
+    if (userType) {
+      where += ` and u.userType = '${userType}'`;
+    }
+
+    if (sampStartTime && sampStartTime.length > 0) {
+      where += ` and u.sampStartTime between '${sampStartTime[0]}' and '${sampStartTime[1]}'`;
+    }
+
+    if (sampName) {
+      where += ` and u.sampName = '${sampName}'`;
+    }
+
+    if (sampUserName) {
+      where += ` and u.sampUserName = '${sampUserName}'`;
+    }
+
+    if (sampHandleTime && sampHandleTime.length > 0) {
+      where += ` and u.sampHandleTime between '${sampHandleTime[0]}' and '${sampHandleTime[1]}'`;
+    }
+
+    if (startEndTime && startEndTime.length > 0) {
+      where += ` and s.startTime between '${startEndTime[0]}' and '${startEndTime[1]}'`;
+    }
+
+    if (createTime && createTime.length > 0) {
+      where += ` and u.createTime between '${createTime[0]}' and '${createTime[1]}'`;
+    }
+
+    if (updateTime && updateTime.length > 0) {
+      where += ` and u.updateTime between '${updateTime[0]}' and '${updateTime[1]}'`;
+    }
+
+    let sql1 = `select u1.depName1, u1.depName2, u1.name, u1.idcard, u1.phone, u1.tradeType, u1.postName, u1.periodType, b.*, concat(format(b.sampNum/b.shouldSampNum*100,2), '%') srate, concat(format(b.noSampNum/b.shouldSampNum*100,2),'%') nrate from (
+      select a.userId, sum(a.shouldSampNum) shouldSampNum, sum(a.sampNum) sampNum, sum(a.noSampNum) noSampNum from (
+      select s.userId, u.depId, 1 shouldSampNum, 
+      case handleType 
+        when '已采样' then 1 
+        when '个人上传采样' then 1 
+        else 0 end sampNum,
+      case handleType 
+        when '未采样' then 1 
+        else 0 end noSampNum from info_user_samps s
+      inner join info_users u on u.id = s.userId
+      where u.depId > 2 ${where} 
+      ) a
+      group by a.userId order by a.depId ) b
+      inner join info_users u1 on u1.id = b.userId `;
+
+    let result1 = await ctx.orm().query(sql1);
+
+    let xlsxObj = [];
+    xlsxObj.push({
+      name: '重点人群采样情况',
+      data: []
+    })
+
+    xlsxObj[0].data.push([
+      '部门',
+      '单位',
+      '姓名',
+      '手机号',
+      '身份证号',
+      '行业类别',
+      '职业名称',
+      '采样周期',
+      '应采次数',
+      '采样次数',
+      '脱落次数',
+      '采样完成率',
+      '脱落率'
+    ])
+
+    for (let i = 0, j = result1.length; i < j; i++) {
+      let user = result1[i];
+
+      let arr = new Array();
+      arr.push(user.depName1 || '');
+      arr.push(user.depName2 || '');
+      arr.push(user.name);
+      arr.push(user.phone);
+      arr.push(user.idcard);
+      arr.push(user.tradeType);
+      arr.push(user.postName);
+      arr.push(user.periodType);
+      arr.push(user.shouldSampNum);
+      arr.push(user.sampNum);
+      arr.push(user.noSampNum);
+      arr.push(user.srate);
+      arr.push(user.nrate);
+
+      xlsxObj[0].data.push(arr)
+    }
+
+    let excelFile = await excel.exportBigMoreSheetExcel(xlsxObj)
+
+    ctx.body = excelFile;
   },
   submitUsers: async ctx => {
     let { id, depId, depName1, depName2, depStreet, name, phone, idcard, tradeType, postName, periodType, street, community, address, userType, sampStartTime } = ctx.request.body;
@@ -313,42 +642,84 @@ module.exports = {
       let f = result2.find(f => f.depName1 === m.depName1 && f.depName2 === m.depName2)
       return {
         ...m,
+        shouldSampNum: parseInt(m.shouldSampNum),
         t1: f && f.num === 1 ? f.num : 0,
         t2: f && f.num === 2 ? f.num : 0,
         t3: f && f.num === 3 ? f.num : 0,
         t4: f && f.num === 4 ? f.num : 0,
         t5: f && f.num === 5 ? f.num : 0,
         t6: f && f.num >= 6 ? f.num : 0,
+        noSampNum: parseInt(m.noSampNum),
         crate: Math.floor(parseInt(m.oknum) / m.num * 10000) / 100,
-        trate: Math.floor(parseInt(m.noSampNum) / m.shouldSampNum * 10000) / 100
+        trate: Math.floor(parseInt(m.noSampNum) / parseInt(m.shouldSampNum) * 10000) / 100
       }
     })
+
+    let sum = data.reduce((total, curr) => {
+      total.num += parseInt(curr.num)
+      total.shouldSampNum += parseInt(curr.shouldSampNum)
+      total.oknum += parseInt(curr.oknum)
+      total.t1 += parseInt(curr.t1)
+      total.t2 += parseInt(curr.t2)
+      total.t3 += parseInt(curr.t3)
+      total.t4 += parseInt(curr.t4)
+      total.t5 += parseInt(curr.t5)
+      total.t6 += parseInt(curr.t6)
+      total.noSampNum += parseInt(curr.noSampNum)
+      total.crate = Math.floor(parseInt(total.oknum) / total.num * 10000) / 100,
+        total.trate = Math.floor(parseInt(total.noSampNum) / total.shouldSampNum * 10000) / 100
+
+      return total
+    }, {
+      depName1: '合计',
+      num: 0,
+      shouldSampNum: 0,
+      oknum: 0,
+      t1: 0,
+      t2: 0,
+      t3: 0,
+      t4: 0,
+      t5: 0,
+      t6: 0,
+      crate: 0,
+      noSampNum: 0,
+      trate: 0
+    })
+
+    data.push(sum)
 
     ctx.body = data;
   },
   s2: async ctx => {
+    let sampName = ctx.request.body.sampName || '';
+    let where = ''
+
+    if (sampName) {
+      where += ` and sampName = '${sampName}'`
+    }
+
     let sql1 = `select DATE_FORMAT(handleTime,'%Y-%m-%d') 日期, count(1) 采样人数 from info_user_samps 
-    where handleType != '未采样' and DATEDIFF(now(),handleTime) <= 30 
+    where handleType != '未采样' and DATEDIFF(now(),handleTime) <= 30 ${where}
     group by DATE_FORMAT(handleTime,'%Y-%m-%d')`
 
-    let sql2 = `select 't1' title, count(1) num from info_users 
+    let sql2 = `select 't1' title, count(1) num from info_users where 1=1 ${where} 
     union all 
-    select 't2' title, count(1) num from info_users where depId > 2 
+    select 't2' title, count(1) num from info_users where depId > 2 ${where} 
     union all 
-    select 't3' title, count(1) num from info_users where depId <= 2 
+    select 't3' title, count(1) num from info_users where depId <= 2 ${where} 
     union all 
-    select 't4' title, count(1) num from info_user_samps where handleType != '未采样' 
+    select 't4' title, count(1) num from info_user_samps where handleType != '未采样'  ${where} 
     union all 
-    select 't5' title, count(1) num from info_users where createTime >= DATE_FORMAT(now(),'%Y-%m-%d') 
+    select 't5' title, count(1) num from info_users where createTime >= DATE_FORMAT(now(),'%Y-%m-%d')  ${where} 
     union all 
-    select 't6' title, count(1) num from info_user_samps where handleTime >= DATE_FORMAT(now(),'%Y-%m-%d') and handleType != '未采样' 
+    select 't6' title, count(1) num from info_user_samps where handleTime >= DATE_FORMAT(now(),'%Y-%m-%d') and handleType != '未采样'  ${where} 
     union all 
-    select 't7' title, count(1) num from info_samps 
+    select 't7' title, count(1) num from info_samps where 1=1 ${where} 
     union all 
-    select 't8' title, count(1) num from SuperManagerInfo where verifyLevel = 1 and isDel = 0 `
+    select 't8' title, count(1) num from SuperManagerInfo where verifyLevel = 1 and isDel = 0 ${sampName ? ` and depName = '${sampName}'` : ''}`
 
     let sql3 = `select * from (
-      select sampName 采样点, count(1) 采样人数 from info_user_samps where handleType != '未采样' and DATEDIFF(now(),handleTime) <= 30  group by sampName
+      select sampName 采样点, count(1) 采样人数 from info_user_samps where handleType != '未采样' and DATEDIFF(now(),handleTime) <= 30 ${where} group by sampName
       ) a order by a.采样人数 desc `
 
 
@@ -417,38 +788,6 @@ module.exports = {
     Object.assign(where, sampName && { sampName })
     Object.assign(where, sampUserName && { sampUserName })
 
-    if (sampStartTime.indexOf(',')) {
-      sampStartTime = sampStartTime.splite(',')
-    }
-
-    if (sampHandleTime.indexOf(',')) {
-      sampHandleTime = sampHandleTime.splite(',')
-    }
-
-    if (createTime.indexOf(',')) {
-      createTime = createTime.splite(',')
-    }
-
-    if (updateTime.indexOf(',')) {
-      updateTime = updateTime.splite(',')
-    }
-
-    if (tradeTypes.indexOf(',')) {
-      tradeTypes = tradeTypes.splite(',')
-    }
-
-    if (postNames.indexOf(',')) {
-      postNames = postNames.splite(',')
-    }
-
-    if (depName1s.indexOf(',')) {
-      depName1s = depName1s.splite(',')
-    }
-
-    if (depName2s.indexOf(',')) {
-      depName2s = depName2s.splite(',')
-    }
-
     if (tradeTypes && tradeTypes.length > 0) {
       where.tradeType = {
         $in: tradeTypes
@@ -507,13 +846,127 @@ module.exports = {
       }
     }
 
+    console.log('t1:', date.formatDate())
     let users = await ctx.orm().info_users.findAll({
       where
     });
 
+    console.log('t2:', date.formatDate())
+
     let samps = []
     if (users && users.length > 0) {
-      samps = await ctx.orm().info_user_samps.findAll({
+      let where1 = '';
+
+      if (tradeTypes && tradeTypes.length > 0) {
+        where1 += ' and u.tradeType in (' + tradeTypes.map(m => {
+          return `'${m}'`
+        }).join(',') + ')';
+      }
+
+      if (postNames && postNames.length > 0) {
+        where1 += ' and u.postName in (' + postNames.map(m => {
+          return `'${m}'`
+        }).join(',') + ')';
+      }
+
+      if (depName1s && depName1s.length > 0) {
+        where1 += ' and u.depName1 in (' + depName1s.map(m => {
+          return `'${m}'`
+        }).join(',') + ')';
+      }
+
+      if (depName2s && depName2s.length > 0) {
+        where1 += ' and u.depName2 in (' + depName2s.map(m => {
+          return `'${m}'`
+        }).join(',') + ')';
+      }
+
+      if (depStreet) {
+        where1 += ` and u.depStreet = '${depStreet}'`;
+      }
+
+      if (name) {
+        where1 += ` and u.name = '${name}'`;
+      }
+
+      if (phone) {
+        where1 += ` and u.phone = '${phone}'`;
+      }
+
+      if (idcard) {
+        where1 += ` and u.idcard = '${idcard}'`;
+      }
+
+      if (tradeType) {
+        where1 += ` and u.tradeType = '${tradeType}'`;
+      }
+
+      if (postName) {
+        where1 += ` and u.postName = '${postName}'`;
+      }
+
+      if (periodType) {
+        where1 += ` and u.periodType = '${periodType}'`;
+      }
+
+      if (street) {
+        where1 += ` and u.street = '${street}'`;
+      }
+
+      if (community) {
+        where1 += ` and u.community = '${community}'`;
+      }
+
+      if (streets && streets.length > 0) {
+        where1 += ' and u.street in (' + streets.map(m => {
+          return `'${m}'`
+        }).join(',') + ')';
+      }
+
+      if (communitys && communitys.length > 0) {
+        where1 += ' and u.community in (' + communitys.map(m => {
+          return `'${m}'`
+        }).join(',') + ')';
+      }
+
+      if (address) {
+        where1 += ` and u.address like '%${address}%'`;
+      }
+
+      if (userType) {
+        where1 += ` and u.userType = '${userType}'`;
+      }
+
+      if (sampStartTime && sampStartTime.length > 0) {
+        where1 += ` and u.sampStartTime between '${sampStartTime[0]}' and '${sampStartTime[1]}'`;
+      }
+
+      if (sampName) {
+        where1 += ` and u.sampName = '${sampName}'`;
+      }
+
+      if (sampUserName) {
+        where1 += ` and u.sampUserName = '${sampUserName}'`;
+      }
+
+      if (sampHandleTime && sampHandleTime.length > 0) {
+        where1 += ` and u.sampHandleTime between '${sampHandleTime[0]}' and '${sampHandleTime[1]}'`;
+      }
+
+      if (createTime && createTime.length > 0) {
+        where1 += ` and u.createTime between '${createTime[0]}' and '${createTime[1]}'`;
+      }
+
+      if (updateTime && updateTime.length > 0) {
+        where1 += ` and u.updateTime between '${updateTime[0]}' and '${updateTime[1]}'`;
+      }
+
+      let sql1 = `select s.*, u.depName1, u.depName2, u.depStreet, u.name, u.phone, u.idcard, u.street, u.community, u.address from info_user_samps s 
+      inner join info_users u on u.id = s.userId 
+      where 1=1 ${where1}`;
+      samps = await ctx.orm().query(sql1);
+
+      /* samps = await ctx.orm().info_user_samps.findAll({
         where: {
           userId: {
             $in: users.map(m => {
@@ -521,8 +974,10 @@ module.exports = {
             })
           }
         }
-      });
+      }); */
     }
+
+    console.log('t3:', date.formatDate())
 
     let xlsxObj = [];
     xlsxObj.push({
@@ -610,23 +1065,25 @@ module.exports = {
       xlsxObj[0].data.push(arr)
     }
 
+    console.log('t4:', date.formatDate())
+
     for (let i = 0, j = samps.length; i < j; i++) {
       let samp = samps[i];
-      let user = users.find(f => f.id === samp.dataValues.userId)
+      // let user = users.find(f => f.id === samp.dataValues.userId)
 
       let arr = new Array();
       arr.push(samp.id || '');
-      arr.push(user.depName1 || '');
-      arr.push(user.depName2 || '');
-      arr.push(user.depStreet || '');
-      arr.push(user.name);
-      arr.push(user.phone);
-      arr.push(user.idcard);
+      arr.push(samp.depName1 || '');
+      arr.push(samp.depName2 || '');
+      arr.push(samp.depStreet || '');
+      arr.push(samp.name);
+      arr.push(samp.phone);
+      arr.push(samp.idcard);
       arr.push(samp.postName);
       arr.push(samp.periodType);
-      arr.push(user.street);
-      arr.push(user.community);
-      arr.push(user.address);
+      arr.push(samp.street);
+      arr.push(samp.community);
+      arr.push(samp.address);
       arr.push(samp.startTime);
       arr.push(samp.endTime);
       arr.push(samp.handleType);
@@ -639,11 +1096,15 @@ module.exports = {
       xlsxObj[1].data.push(arr)
     }
 
-    let excelFile = excel.exportMoreSheetExcel(xlsxObj);
+    console.log('t5:', date.formatDate())
 
-    ctx.set('Content-Type', 'application/vnd.openxmlformats');
-    ctx.set('Access-Control-Expose-Headers', 'Content-Disposition')
-    ctx.set('Content-Disposition', 'attachment; filename=' + 'orders_export.xlsx');
+    let excelFile = await excel.exportBigMoreSheetExcel(xlsxObj)
+
+    console.log('t6:', date.formatDate())
+
+    // ctx.set('Content-Type', 'application/vnd.openxmlformats');
+    // ctx.set('Access-Control-Expose-Headers', 'Content-Disposition')
+    // ctx.set('Content-Disposition', 'attachment; filename=' + 'orders_export.xlsx');
     ctx.body = excelFile;
   }
 };
