@@ -75,8 +75,8 @@ app.use(requestFilter);
 
 // 路由
 const router = require('./router.js');
-const router_samp = require('./router_samp.js');
-app.use(router).use(router_samp);
+const router_bike = require('./router_bike.js');
+app.use(router).use(router_bike);
 
 // 绑定访问端口
 http.createServer(app.callback()).listen(config.sys.port);

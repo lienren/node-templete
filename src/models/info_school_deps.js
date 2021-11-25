@@ -1,30 +1,18 @@
 /* jshint indent: 2 */
 
 module.exports = function(sequelize, DataTypes) {
-  return sequelize.define('info_posts', {
+  return sequelize.define('info_school_deps', {
     id: {
       type: DataTypes.INTEGER(11),
       allowNull: false,
       primaryKey: true,
       autoIncrement: true
     },
-    postName: {
+    school: {
       type: DataTypes.STRING(100),
       allowNull: true
     },
-    tradeType: {
-      type: DataTypes.STRING(100),
-      allowNull: true
-    },
-    cycleType: {
-      type: DataTypes.STRING(100),
-      allowNull: true
-    },
-    periodType: {
-      type: DataTypes.STRING(100),
-      allowNull: true
-    },
-    remark: {
+    depName: {
       type: DataTypes.STRING(100),
       allowNull: true
     },
@@ -34,6 +22,6 @@ module.exports = function(sequelize, DataTypes) {
       defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
     }
   }, {
-    tableName: 'info_posts'
+    tableName: 'info_school_deps'
   });
 };

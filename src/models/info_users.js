@@ -12,19 +12,7 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING(100),
       allowNull: true
     },
-    depId: {
-      type: DataTypes.INTEGER(11),
-      allowNull: true
-    },
-    depName1: {
-      type: DataTypes.STRING(100),
-      allowNull: true
-    },
-    depName2: {
-      type: DataTypes.STRING(100),
-      allowNull: true
-    },
-    depStreet: {
+    school: {
       type: DataTypes.STRING(100),
       allowNull: true
     },
@@ -40,49 +28,26 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING(50),
       allowNull: true
     },
-    tradeType: {
+    postType: {
       type: DataTypes.STRING(100),
       allowNull: true
     },
-    postName: {
+    depName: {
       type: DataTypes.STRING(100),
       allowNull: true
     },
-    periodType: {
+    specType: {
       type: DataTypes.STRING(100),
       allowNull: true
     },
-    street: {
+    studNum: {
       type: DataTypes.STRING(100),
       allowNull: true
     },
-    community: {
-      type: DataTypes.STRING(100),
-      allowNull: true
-    },
-    address: {
-      type: DataTypes.STRING(1000),
-      allowNull: true
-    },
-    userType: {
-      type: DataTypes.STRING(100),
-      allowNull: true
-    },
-    sampStartTime: {
-      type: DataTypes.DATEONLY,
-      allowNull: true
-    },
-    sampName: {
-      type: DataTypes.STRING(100),
-      allowNull: true
-    },
-    sampUserName: {
-      type: DataTypes.STRING(100),
-      allowNull: true
-    },
-    sampHandleTime: {
-      type: DataTypes.DATE,
-      allowNull: true
+    modelNum: {
+      type: DataTypes.INTEGER(11),
+      allowNull: true,
+      defaultValue: '0'
     },
     createTime: {
       type: DataTypes.DATE,

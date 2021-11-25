@@ -1,7 +1,7 @@
 {
   "apps": [
     {
-      "name": "samp",
+      "name": "bike",
       "script": "./src/app.js",
       "watch": false,
       "ignore_watch": ["node_modules", "build", "logs"],
@@ -12,7 +12,7 @@
         "NODE_ENV": "production"
       },
       "exec_mode": "cluster",
-      "instances": "1",
+      "instances": "max",
       "autorestart": true
     }
   ]

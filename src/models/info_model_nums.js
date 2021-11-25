@@ -1,23 +1,28 @@
 /* jshint indent: 2 */
 
 module.exports = function(sequelize, DataTypes) {
-  return sequelize.define('info_samps', {
+  return sequelize.define('info_model_nums', {
     id: {
       type: DataTypes.INTEGER(11),
       allowNull: false,
       primaryKey: true,
       autoIncrement: true
     },
-    sampName: {
+    modelNum: {
       type: DataTypes.STRING(100),
       allowNull: true
     },
-    sampAddr: {
-      type: DataTypes.STRING(200),
+    modelCode: {
+      type: DataTypes.STRING(255),
       allowNull: true
     },
-    sampTel: {
-      type: DataTypes.STRING(100),
+    isOver: {
+      type: DataTypes.INTEGER(11),
+      allowNull: true,
+      defaultValue: '0'
+    },
+    overTime: {
+      type: DataTypes.DATE,
       allowNull: true
     },
     createTime: {
@@ -26,6 +31,6 @@ module.exports = function(sequelize, DataTypes) {
       defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
     }
   }, {
-    tableName: 'info_samps'
+    tableName: 'info_model_nums'
   });
 };
