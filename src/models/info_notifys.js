@@ -1,7 +1,7 @@
 /* jshint indent: 2 */
 
 module.exports = function(sequelize, DataTypes) {
-  return sequelize.define('info_models', {
+  return sequelize.define('info_notifys', {
     id: {
       type: DataTypes.INTEGER(11),
       allowNull: false,
@@ -12,53 +12,44 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.INTEGER(11),
       allowNull: true
     },
-    modelType: {
-      type: DataTypes.STRING(100),
+    modelId: {
+      type: DataTypes.INTEGER(11),
       allowNull: true
     },
-    modelNum: {
-      type: DataTypes.STRING(100),
+    manageId: {
+      type: DataTypes.INTEGER(11),
       allowNull: true
     },
-    modelCode: {
-      type: DataTypes.STRING(100),
-      allowNull: true
-    },
-    modelImg: {
-      type: DataTypes.TEXT,
-      allowNull: true
-    },
-    modelStatus: {
+    notifyType: {
       type: DataTypes.STRING(20),
       allowNull: true
     },
-    bangTime: {
+    notifyContent: {
+      type: DataTypes.STRING(500),
+      allowNull: true
+    },
+    sendPhone: {
+      type: DataTypes.STRING(20),
+      allowNull: true
+    },
+    isSend: {
+      type: DataTypes.INTEGER(11),
+      allowNull: true
+    },
+    sendTime: {
       type: DataTypes.DATE,
       allowNull: true
     },
-    scrapRemark: {
-      type: DataTypes.STRING(255),
-      allowNull: true
-    },
-    scrapStartTime: {
-      type: DataTypes.DATE,
+    sendResult: {
+      type: DataTypes.STRING(1000),
       allowNull: true
     },
     createTime: {
       type: DataTypes.DATE,
       allowNull: true,
       defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
-    },
-    updateTime: {
-      type: DataTypes.DATE,
-      allowNull: true,
-      defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
-    },
-    scrapEndTime: {
-      type: DataTypes.DATE,
-      allowNull: true
     }
   }, {
-    tableName: 'info_models'
+    tableName: 'info_notifys'
   });
 };

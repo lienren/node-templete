@@ -127,6 +127,73 @@ module.exports = {
       verifyVillages: JSON.parse(resultManager.verifyVillages)
     };
   },
+  loginByNoCode: async ctx => {
+    let openId = ctx.request.body.openId || '';
+    let loginName = ctx.request.body.loginName || '';
+    let loginPwd = ctx.request.body.loginPwd || '';
+    let now = date.getTimeStamp();
+
+    assert.notStrictEqual(openId, '', '入参不能为空');
+    assert.notStrictEqual(loginName, '', '入参不能为空');
+    assert.notStrictEqual(loginPwd, '', '入参不能为空');
+
+    let resultManager = await ctx.orm().SuperManagerInfo.findOne({
+      where: {
+        loginname: loginName,
+        state: 1,
+        isDel: 0
+      }
+    });
+    assert.notStrictEqual(resultManager, null, '管理员不存在');
+
+    // 生成验证密钥
+    let encryptPwd = encrypt.getMd5(`${loginPwd}|${resultManager.salt}`);
+    console.log('encryptPwd:', encryptPwd);
+    assert.ok(resultManager.loginPwd === encryptPwd, '输入密码错误');
+
+    // 设置Token
+    let ManagerTokenOverTime = await configData.getConfig(ctx, configData.CONFIG_KEY_ENUM.ManagerTokenOverTime);
+
+    // 生成Token
+    let token = jwt.getToken({
+      managerId: resultManager.id,
+      managerLoginName: resultManager.loginName,
+      managerRealName: resultManager.realName,
+      managerPhone: resultManager.phone
+    });
+    let tokenOverTime = now + ManagerTokenOverTime * 60 * 1000;
+
+    ctx.orm().SuperManagerInfo.update(
+      {
+        openId: openId,
+        token: token,
+        tokenOverTime: tokenOverTime,
+        lastTime: now
+      },
+      {
+        where: { id: resultManager.id }
+      }
+    );
+
+    // 获取管理员所有角色
+    let resultManagerRoles = await ctx.orm().SuperManagerRoleInfo.findAll({
+      where: {
+        managerId: resultManager.id
+      }
+    });
+
+    ctx.body = {
+      id: resultManager.id,
+      loginName: resultManager.loginName,
+      realName: resultManager.realName,
+      phone: resultManager.phone,
+      token: token,
+      roles: resultManagerRoles,
+      depName: resultManager.depName,
+      verifyLevel: resultManager.verifyLevel,
+      verifyVillages: JSON.parse(resultManager.verifyVillages)
+    };
+  },
   setPassword: async ctx => {
     let oldPassword = ctx.request.body.oldPassword || '';
     let newPassword = ctx.request.body.newPassword || '';

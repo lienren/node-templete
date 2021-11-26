@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-08-18 10:44:07
- * @LastEditTime: 2021-11-26 07:57:25
+ * @LastEditTime: 2021-11-26 12:53:37
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/bike/api.js
@@ -149,6 +149,68 @@ module.exports = {
       school
     }
   },
+  getUserModelById: async ctx => {
+    let { modelId } = ctx.request.body;
+    assert.ok(!!modelId, '获取车辆信息失败')
+
+    let model = await ctx.orm().info_models.findOne({
+      where: {
+        id: modelId
+      }
+    })
+    assert.ok(!!model, '车辆信息不存在！')
+
+    let user = await ctx.orm().info_users.findOne({
+      where: {
+        id: model.userId
+      }
+    })
+    assert.ok(!!user, '用户信息不存在！')
+
+    let school = await ctx.orm().info_schools.findOne({
+      where: {
+        schoolName: user.school
+      }
+    })
+
+    ctx.body = {
+      user,
+      model,
+      school
+    }
+  },
+  getUserModelByNumOrCode: async ctx => {
+    let { modelNum, modelCode } = ctx.request.body;
+
+    let model = null
+    if (modelNum) {
+      model = await ctx.orm().info_models.findOne({
+        where: {
+          modelNum
+        }
+      })
+    } else if (modelCode) {
+      model = await ctx.orm().info_models.findOne({
+        where: {
+          modelCode
+        }
+      })
+    }
+
+    let user = null
+    if (model) {
+      user = await ctx.orm().info_users.findOne({
+        where: {
+          id: model.userId
+        }
+      })
+    }
+
+    ctx.body = {
+      model,
+      user
+    }
+  },
   getSchoolDeps: async ctx => {
     let school = ctx.request.body.school || ''
 
@@ -258,6 +320,7 @@ module.exports = {
     await ctx.orm().info_models.update({
       modelStatus: '已绑定',
       modelNum: num.modelNum,
+      modelCode: num.modelCode,
       bangTime: date.formatDate()
     }, {
       where: {
@@ -265,6 +328,165 @@ module.exports = {
         modelStatus: '待绑定'
       }
     })
+
+    ctx.body = {}
+  },
+  submitNotify: async ctx => {
+    let { userId, modelId, manageId, notifyType, d1, d2 } = ctx.request.body;
+
+    let user = await ctx.orm().info_users.findOne({
+      where: {
+        id: userId
+      }
+    })
+    assert.ok(!!user, '用户信息不存在！')
+
+    let model = await ctx.orm().info_models.findOne({
+      where: {
+        userId: user.id,
+        id: modelId
+      }
+    })
+    assert.ok(!!model, '车辆信息不存在！')
+
+    let manage = await ctx.orm().SuperManagerInfo.findOne({
+      where: {
+        id: manageId,
+        state: 1,
+        isDel: 0
+      }
+    });
+    assert.ok(!!manage, '管理员信息不存在！')
+
+    let notifyContent = ''
+
+    switch (notifyType) {
+      case '挪车通知':
+        notifyContent = `您的车辆目前停放在了${d1}禁停区域，请尽快转移到停放区域内！`
+        break;
+      case '违停通知':
+        notifyContent = `因您的车目前停放在${d1}禁停区域，现已被转移到${d2}处，请尽快前往领取！`
+        break;
+      case '待报废通知':
+        notifyContent = `因您的车目前为待报废状态，现已移至${d1}区域，30天后将进行报废处理，如需取回，请尽快领走！`
+        break;
+    }
+
+    await ctx.orm().info_notifys.create({
+      userId: user.id,
+      modelId: model.id,
+      manageId: manage.id,
+      notifyType,
+      notifyContent,
+      sendPhone: user.phone,
+      isSend: 0
+    })
+
+    if (notifyType === '待报废通知') {
+      let now30 = new Date()
+      now30 = now30.setDate(now30.getDate() + 30)
+      now30 = new Date(now30)
+
+      await ctx.orm().info_models.update({
+        modelStatus: '待报废',
+        scrapRemark: notifyContent,
+        scrapStartTime: date.formatDate(),
+        scrapEndTime: date.formatDate(now30)
+      }, {
+        where: {
+          id: model.id,
+          modelStatus: '已绑定'
+        }
+      })
+    }
+
+    ctx.body = {}
+  },
+  submitBatchNotify: async ctx => {
+    let { modelIds, manageId, notifyType, d1, d2 } = ctx.request.body;
+
+    let manage = await ctx.orm().SuperManagerInfo.findOne({
+      where: {
+        id: manageId,
+        state: 1,
+        isDel: 0
+      }
+    });
+    assert.ok(!!manage, '管理员信息不存在！')
+
+    let models = await ctx.orm().info_models.findAll({
+      where: {
+        id: {
+          $in: modelIds
+        }
+      }
+    })
+
+    if (models && models.length > 0) {
+      let users = await ctx.orm().info_users.findAll({
+        where: {
+          id: {
+            $in: models.map(m => {
+              return m.dataValues.userId
+            })
+          }
+        }
+      })
+
+      let notifyContent = ''
+      switch (notifyType) {
+        case '挪车通知':
+          notifyContent = `您的车辆目前停放在了${d1}禁停区域，请尽快转移到停放区域内！`
+          break;
+        case '违停通知':
+          notifyContent = `因您的车目前停放在${d1}禁停区域，现已被转移到${d2}处，请尽快前往领取！`
+          break;
+        case '待报废通知':
+          notifyContent = `因您的车目前为待报废状态，现已移至${d1}区域，30天后将进行报废处理，如需取回，请尽快领走！`
+          break;
+      }
+
+      let data = models.map(m => {
+        let user = users.find(f => f.dataValues.id === m.dataValues.userId)
+
+        return {
+          userId: m.dataValues.userId,
+          modelId: m.dataValues.id,
+          manageId: manage.id,
+          notifyType,
+          notifyContent,
+          sendPhone: user.dataValues.phone,
+          isSend: 0
+        };
+      });
+
+      // 批量添加通知
+      await ctx.orm().info_notifys.bulkCreate(data);
+
+      if (notifyType === '待报废通知') {
+        let now30 = new Date()
+        now30 = now30.setDate(now30.getDate() + 30)
+        now30 = new Date(now30)
+
+        await ctx.orm().info_models.update({
+          modelStatus: '待报废',
+          scrapRemark: notifyContent,
+          scrapStartTime: date.formatDate(),
+          scrapEndTime: date.formatDate(now30)
+        }, {
+          where: {
+            id: {
+              $in: models.map(m => {
+                return m.dataValues.id
+              })
+            },
+            modelStatus: '已绑定'
+          }
+        })
+      }
+    } else {
+      assert.ok(false, '车辆信息不存在！')
+    }
 
     ctx.body = {}
   }
