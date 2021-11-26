@@ -9,424 +9,76 @@
 console.time('AutoTaskExec');
 
 const schedule = require('node-schedule');
-const sequelize = require('sequelize').Sequelize;
-const path = require('path');
-const fs = require('fs');
-const moment = require('moment');
 const config = require('../config.js');
 const date = require('../utils/date');
 const http = require('../utils/http');
 
-// 自动检查二维码
-let automaticCheckQCodeJob = null;
-let dayJob = null;
-let weekJob = null;
-let monthJob = null;
-let importJob = null;
+let automaticSendSMSJob = null;
+let automaticAutoScrapJob = null;
 let ctx = {};
 let next = function () {
   return true;
 };
 
-async function getSuccessed () {
-  console.log('samp send data:%s', date.formatDate());
-
-  let result = await ctx.orm().info_user_samps.findAll({
-    limit: 10,
+async function sendSMS () {
+  let result = await ctx.orm().info_notifys.findAll({
+    limit: 20,
     where: {
-      handleType: {
-        $in: ['已采样', '个人上传采样']
-      },
       isSend: 0
     }
   });
 
   if (result && result.length > 0) {
-    // 有未同步
-    // 并记录信息，将isSend更新为1
+    console.log('bike Send SMS data:%s', date.formatDate());
 
     for (let i = 0, j = result.length; i < j; i++) {
-      let user = await ctx.orm().info_users.findOne({
-        where: {
-          id: result[i].userId
+
+      const params = new URLSearchParams()
+      params.append('apikey', 'ee4e3df36ffa8273fce271c85ed8f86d')
+      params.append('mobile', result[i].dataValues.sendPhone)
+      params.append('text', result[i].dataValues.notifyContent)
+
+      let rep = await http.post({
+        url: 'https://sms.yunpian.com/v2/sms/single_send.json',
+        data: params,
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
         }
       })
 
-      if (user) {
-        let rep = await http.post({
-          url: 'https://super.51pinzhi.cn/njhealth/jbxq/adminapi/common/hsCheck',
-          data: {
-            idCard: user.idcard,
-            checkResult: '检测中',
-            checkTime: result[i].handleTime
+      if (rep) {
+        await ctx.orm().info_notifys.update({
+          isSend: 1,
+          sendTime: date.formatDate(),
+          sendResult: JSON.stringify(rep.data)
+        }, {
+          where: {
+            id: result[i].dataValues.id
           }
-        })
-
-        if (rep) {
-          await ctx.orm().info_user_samps.update({
-            isSend: 1,
-            sendTime: date.formatDate(),
-            sendRep: JSON.stringify(rep.data)
-          }, {
-            where: {
-              id: result[i].id
-            }
-          })
-        }
+        });
       }
     }
-  }
 
-  console.log('samp send data:%s', date.formatDate());
+    console.log('bike Send SMS:%s', date.formatDate());
+  }
 }
 
-/*
-每2天一检，固定周期
-每周一检，固定周期
-每月一检，固定周期
-每周2次（间隔2天以上），固定周期
-*/
+async function autoScrap () {
+  console.log('bike Auto Scrap data:%s', date.formatDate());
 
-async function daySamp () {
-  console.log('users samp day data:%s', date.formatDate());
-
-  let users = await ctx.orm().info_users.findAll({
+  // update info_models set modelStatus = '已报废' where modelStatus = '待报废' and scrapEndTime <= now();
+  await ctx.orm().info_models.update({
+    modelStatus: '已报废'
+  }, {
     where: {
-      sampStartTime: {
+      modelStatus: '待报废',
+      scrapEndTime: {
         $lte: date.formatDate()
-      },
-      periodType: '每2天一检',
-      depId: {
-        $gt: 2
       }
     }
-  });
+  })
 
-  let now = date.formatDate(new Date(), 'YYYY-MM-DD')
-
-  // 今天
-  let d1 = now;
-  //明天
-  let d2 = moment(new Date()).add(1, 'days').format('YYYY-MM-DD');
-
-  for (let i = 0, j = users.length; i < j; i++) {
-    let user = users[i];
-
-    let samp = await ctx.orm().info_user_samps.findOne({
-      where: {
-        userId: user.dataValues.id,
-        startTime: {
-          $lte: now
-        },
-        endTime: {
-          $gte: now
-        }
-      }
-    })
-
-    if (!samp) {
-      await ctx.orm().info_user_samps.create({
-        userId: user.id,
-        startTime: d1,
-        endTime: d2,
-        dayCount: 1,
-        realCount: 1,
-        postName: user.dataValues.postName,
-        periodType: user.dataValues.periodType,
-        handleType: '未采样'
-      })
-    }
-  }
-
-  console.log('users samp day data:%s', date.formatDate());
-}
-
-async function weekSamp () {
-  console.log('users samp week data:%s', date.formatDate());
-
-  let users = await ctx.orm().info_users.findAll({
-    where: {
-      sampStartTime: {
-        $lte: date.formatDate()
-      },
-      periodType: {
-        $in: ['每周一检', '每周2次']
-      },
-      depId: {
-        $gt: 2
-      }
-    }
-  });
-
-  let now = date.formatDate(new Date(), 'YYYY-MM-DD')
-
-  // 第一天
-  let d1 = now;
-  // 最后一天
-  let d2 = moment(new Date()).endOf('isoWeek').format('YYYY-MM-DD')
-
-  for (let i = 0, j = users.length; i < j; i++) {
-    let user = users[i];
-
-    let samp = await ctx.orm().info_user_samps.findAll({
-      where: {
-        userId: user.dataValues.id,
-        startTime: {
-          $lte: now
-        },
-        endTime: {
-          $gte: now
-        }
-      }
-    })
-
-    if (user.periodType === '每周一检') {
-      if (samp && samp.length === 0) {
-        await ctx.orm().info_user_samps.create({
-          userId: user.id,
-          startTime: d1,
-          endTime: d2,
-          dayCount: 7,
-          realCount: 1,
-          postName: user.dataValues.postName,
-          periodType: user.dataValues.periodType,
-          handleType: '未采样'
-        })
-      }
-    } else if (user.periodType === '每周2次') {
-      if (samp && samp.length === 0) {
-        await ctx.orm().info_user_samps.create({
-          userId: user.id,
-          startTime: d1,
-          endTime: d2,
-          dayCount: 7,
-          realCount: 2,
-          postName: user.dataValues.postName,
-          periodType: user.dataValues.periodType,
-          handleType: '未采样'
-        })
-
-        await ctx.orm().info_user_samps.create({
-          userId: user.id,
-          startTime: d1,
-          endTime: d2,
-          dayCount: 7,
-          realCount: 2,
-          postName: user.dataValues.postName,
-          periodType: user.dataValues.periodType,
-          handleType: '未采样'
-        })
-      } else if (samp && samp.length === 1) {
-        await ctx.orm().info_user_samps.create({
-          userId: user.id,
-          startTime: d1,
-          endTime: d2,
-          dayCount: 7,
-          realCount: 2,
-          postName: user.dataValues.postName,
-          periodType: user.dataValues.periodType,
-          handleType: '未采样'
-        })
-      }
-    }
-  }
-
-  console.log('users samp week data:%s', date.formatDate());
-}
-
-async function monthSamp () {
-  console.log('users samp month data:%s', date.formatDate());
-
-  let users = await ctx.orm().info_users.findAll({
-    where: {
-      sampStartTime: {
-        $lte: date.formatDate()
-      },
-      periodType: '每月一检',
-      depId: {
-        $gt: 2
-      }
-    }
-  });
-
-  let now = date.formatDate(new Date(), 'YYYY-MM-DD')
-
-  // 第一天
-  let d1 = now;
-  // 最后一天
-  let d2 = moment(new Date()).endOf('month').format('YYYY-MM-DD')
-
-  // 计算相差天数
-  let start_date = moment(d1, 'YYYY-MM-DD')
-  let end_date = moment(d2, 'YYYY-MM-DD')
-  let dayCount = end_date.diff(start_date, 'days')
-
-  for (let i = 0, j = users.length; i < j; i++) {
-    let user = users[i];
-
-    let samp = await ctx.orm().info_user_samps.findOne({
-      where: {
-        userId: user.dataValues.id,
-        startTime: {
-          $lte: now
-        },
-        endTime: {
-          $gte: now
-        }
-      }
-    })
-
-    if (!samp) {
-      await ctx.orm().info_user_samps.create({
-        userId: user.id,
-        startTime: d1,
-        endTime: d2,
-        dayCount: dayCount,
-        realCount: 1,
-        postName: user.dataValues.postName,
-        periodType: user.dataValues.periodType,
-        handleType: '未采样'
-      })
-    }
-  }
-
-  console.log('users samp month data:%s', date.formatDate());
-}
-
-async function importUsers () {
-  console.log('samp import Users data:%s', date.formatDate());
-
-  let result = await ctx.orm().tmp_info_users.findAll({
-    limit: 50,
-    where: {
-      status: 0
-    }
-  });
-
-  if (result && result.length > 0) {
-    // 有未同步
-    // 并记录信息，将isSend更新为1
-
-    for (let i = 0, j = result.length; i < j; i++) {
-      let data = result[i]
-
-      // 添加部门信息
-      let dep = await ctx.orm().info_deps.findOne({
-        where: {
-          depName: data.depName1,
-          depLevel: 1,
-          isDel: 0
-        }
-      })
-
-      if (!dep) {
-        dep = await ctx.orm().info_deps.create({
-          depName: data.depName1,
-          depLevel: 1,
-          depStreet: '',
-          parentId: 0
-        })
-      }
-
-      let dep2 = await ctx.orm().info_deps.findOne({
-        where: {
-          depName: data.depName2,
-          parentId: dep.id,
-          depLevel: 2,
-          isDel: 0
-        }
-      })
-
-      if (!dep2) {
-        dep2 = await ctx.orm().info_deps.create({
-          depName: data.depName2,
-          depLevel: 2,
-          depStreet: data.depStreet,
-          parentId: dep.id
-        })
-      }
-
-      let post = await ctx.orm().info_posts.findOne({
-        where: {
-          postName: data.postName,
-          tradeType: data.tradeType
-        }
-      })
-
-      if (!post) {
-        await ctx.orm().tmp_info_users.update({
-          status: 2,
-          remark: '职业信息在字典表中不存在！'
-        }, {
-          where: {
-            id: data.id
-          }
-        })
-        continue;
-      }
-
-      let user = await ctx.orm().info_users.findOne({
-        where: {
-          idcard: data.idcard
-        }
-      })
-
-      if (user) {
-        await ctx.orm().info_users.update({
-          depId: dep2.id,
-          depName1: dep.depName,
-          depName2: dep2.depName,
-          depStreet: dep2.depStreet,
-          name: data.name,
-          phone: data.phone,
-          idcard: data.idcard,
-          tradeType: post.tradeType,
-          postName: post.postName,
-          periodType: post.periodType,
-          userType: '在线'
-        }, {
-          where: {
-            id: user.id
-          }
-        })
-
-        await ctx.orm().tmp_info_users.update({
-          status: 1,
-          remark: '老用户，处理成功！'
-        }, {
-          where: {
-            id: data.id
-          }
-        })
-      } else {
-        await ctx.orm().info_users.create({
-          depId: dep2.id,
-          depName1: dep.depName,
-          depName2: dep2.depName,
-          depStreet: dep2.depStreet,
-          name: data.name,
-          phone: data.phone,
-          idcard: data.idcard,
-          tradeType: post.tradeType,
-          postName: post.postName,
-          periodType: post.periodType,
-          userType: '在线',
-          sampStartTime: date.formatDate(new Date(), 'YYYY-MM-DD')
-        })
-
-        await ctx.orm().tmp_info_users.update({
-          status: 1,
-          remark: '新用户，处理成功！'
-        }, {
-          where: {
-            id: data.id
-          }
-        })
-      }
-    }
-  }
-
-  console.log('samp import Users data:%s', date.formatDate());
+  console.log('bike Auto Scrap:%s', date.formatDate());
 }
 
 async function main () {
@@ -436,46 +88,25 @@ async function main () {
     orm.middleware(ctx, next);
   }
 
-  // 更新团购状态，每30秒执行一次
   let automaticRule = new schedule.RecurrenceRule();
   automaticRule.second = [];
   for (let i = 0, j = 60; i < j; i++) {
-    if (i % 30 === 0) {
+    if (i % 10 === 0) {
       automaticRule.second.push(i);
     }
   }
 
-  // automaticUpdateGroupStatusJob = schedule.scheduleJob(automaticRule, updateGroupStatus);
-  automaticCheckQCodeJob = schedule.scheduleJob(
-    automaticRule,
-    function () {
-      getSuccessed()
-      importUsers()
-    }
-  );
-
-  dayJob = schedule.scheduleJob('0 0 0 * * *', daySamp)
-
-  weekJob = schedule.scheduleJob('0 0 0 * * 1', weekSamp)
-
-  monthJob = schedule.scheduleJob('0 0 0 1 * *', monthSamp)
+  automaticSendSMSJob = schedule.scheduleJob(automaticRule, sendSMS);
+  automaticAutoScrapJob = schedule.scheduleJob('0 0 0 * * *', autoScrap);
 }
 
 process.on('SIGINT', function () {
-  if (automaticCheckQCodeJob) {
-    automaticCheckQCodeJob.cancel();
+  if (automaticSendSMSJob) {
+    automaticSendSMSJob.cancel();
   }
 
-  if (dayJob) {
-    dayJob.cancel()
-  }
-
-  if (weekJob) {
-    weekJob.cancel()
-  }
-
-  if (monthJob) {
-    monthJob.cancel()
+  if (automaticAutoScrapJob) {
+    automaticAutoScrapJob.cancel();
   }
 
   process.exit(0);
