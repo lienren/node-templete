@@ -90,6 +90,11 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.INTEGER(11),
       allowNull: true
     },
+    workImgUrl: {
+      type: DataTypes.STRING(3000),
+      allowNull: true,
+      defaultValue: '[]'
+    },
     isDel: {
       type: DataTypes.INTEGER(11),
       allowNull: true

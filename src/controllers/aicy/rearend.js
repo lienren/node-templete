@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2021-11-21 22:37:02
+ * @LastEditTime: 2021-11-27 12:56:33
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/aicy/rearend.js
@@ -1140,6 +1140,7 @@ module.exports = {
 
         return {
           ...m.dataValues,
+          workImgUrl: JSON.parse(m.dataValues.workImgUrl),
           communityId: cinfo ? cinfo.id : 0,
           communityName: cinfo ? cinfo.communityName : '',
           villageName: c ? c.villageName : '',
@@ -1271,6 +1272,7 @@ module.exports = {
 
         return {
           ...m.dataValues,
+          workImgUrl: JSON.parse(m.dataValues.workImgUrl),
           communityId: cinfo ? cinfo.id : 0,
           communityName: cinfo ? cinfo.communityName : '',
           villageName: c ? c.villageName : '',
@@ -1420,6 +1422,7 @@ module.exports = {
 
         return {
           ...m.dataValues,
+          workImgUrl: JSON.parse(m.dataValues.workImgUrl),
           communityId: cinfo ? cinfo.id : 0,
           communityName: cinfo ? cinfo.communityName : '',
           villageName: c ? c.villageName : '',
@@ -1450,6 +1453,7 @@ module.exports = {
     let opRemark = ctx.request.body.opRemark || '';
     let state = ctx.request.body.state || 1;
     let workDesc = ctx.request.body.workDesc || '';
+    let workImgUrl = ctx.request.body.workImgUrl || '[]';
 
     let admin = await ctx.orm().SuperManagerInfo.findOne({
       where: {
@@ -1475,7 +1479,8 @@ module.exports = {
       stateEndTime: date.formatDate(),
       isOver: 2,
       overTime: date.formatDate(),
-      workDesc: workDesc
+      workDesc: workDesc,
+      workImgUrl: JSON.stringify(workImgUrl)
     }, {
       where: {
         id: workorder.id
@@ -1491,7 +1496,8 @@ module.exports = {
         handlerId: admin.id,
         handlerName: admin.realName,
         handlerDeptName: admin.depName,
-        handlerRemark: opRemark
+        handlerRemark: opRemark,
+        workImgUrl: JSON.stringify(workImgUrl)
       }, {
         where: {
           id: workorder.typeId
@@ -1505,7 +1511,8 @@ module.exports = {
         handlerId: admin.id,
         handlerName: admin.realName,
         handlerDeptName: admin.depName,
-        handlerRemark: opRemark
+        handlerRemark: opRemark,
+        workImgUrl: JSON.stringify(workImgUrl)
       }, {
         where: {
           id: workorder.typeId

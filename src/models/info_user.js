@@ -115,7 +115,8 @@ module.exports = function(sequelize, DataTypes) {
     },
     onJob: {
       type: DataTypes.STRING(20),
-      allowNull: true
+      allowNull: true,
+      defaultValue: ''
     },
     workName: {
       type: DataTypes.STRING(100),

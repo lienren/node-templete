@@ -76,6 +76,11 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING(1000),
       allowNull: true
     },
+    workImgUrl: {
+      type: DataTypes.STRING(3000),
+      allowNull: true,
+      defaultValue: '[]'
+    },
     createTime: {
       type: DataTypes.DATE,
       allowNull: true,
