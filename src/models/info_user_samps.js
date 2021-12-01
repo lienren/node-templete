@@ -36,6 +36,10 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING(100),
       allowNull: true
     },
+    sampWay: {
+      type: DataTypes.STRING(100),
+      allowNull: true
+    },
     handleType: {
       type: DataTypes.STRING(50),
       allowNull: true

@@ -383,6 +383,7 @@ async function importUsers () {
           tradeType: post.tradeType,
           postName: post.postName,
           periodType: post.periodType,
+          sampWay: post.sampWay,
           userType: '在线'
         }, {
           where: {

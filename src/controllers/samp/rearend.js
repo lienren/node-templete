@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2021-11-25 12:18:50
+ * @LastEditTime: 2021-12-01 11:07:23
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/samp/rearend.js
@@ -483,11 +483,19 @@ module.exports = {
     ctx.body = excelFile;
   },
   submitUsers: async ctx => {
-    let { id, depId, depName1, depName2, depStreet, name, phone, idcard, tradeType, postName, periodType, street, community, address, userType, sampStartTime } = ctx.request.body;
+    let { id, depId, depName1, depName2, depStreet, name, phone, idcard, tradeType, postName, periodType, sampWay, street, community, address, userType, sampStartTime } = ctx.request.body;
+
+    let post = await ctx.orm().info_posts.findOne({
+      where: {
+        postName: postName,
+        tradeType: tradeType
+      }
+    })
 
     if (id && id > 0) {
       await ctx.orm().info_users.update({
-        depId, depName1, depName2, depStreet, name, phone, idcard, tradeType, postName, periodType, street, community, address, userType, sampStartTime
+        depId, depName1, depName2, depStreet, name, phone, idcard, tradeType, postName, periodType, 
+        sampWay: post.sampWay, street, community, address, userType, sampStartTime
       }, {
         where: {
           id
@@ -495,7 +503,8 @@ module.exports = {
       })
     } else {
       await ctx.orm().info_users.create({
-        depId, depName1, depName2, depStreet, name, phone, idcard, tradeType, postName, periodType, street, community, address, userType, sampStartTime
+        depId, depName1, depName2, depStreet, name, phone, idcard, tradeType, postName, periodType, 
+        sampWay: post.sampWay, street, community, address, userType, sampStartTime
       })
     }
 
@@ -503,7 +512,7 @@ module.exports = {
   },
   s1: async ctx => {
     let { tradeTypes, postNames, depName1s, depName2s, depStreet, name, phone, idcard, tradeType, postName, periodType, street, community, streets, communitys, address, userType,
-      sampStartTime, sampName, sampUserName, sampHandleTime, createTime, updateTime } = ctx.request.body;
+      sampStartTime, sampName, sampUserName, sampHandleTime, startEndTime, createTime, updateTime } = ctx.request.body;
 
     let where = '';
 
@@ -609,6 +618,10 @@ module.exports = {
 
     if (updateTime && updateTime.length > 0) {
       where += ` and u.updateTime between '${updateTime[0]}' and '${updateTime[1]}'`;
+    }
+
+    if (startEndTime && startEndTime.length > 0) {
+      where += ` and s.startTime between '${startEndTime[0]}' and '${startEndTime[1]}'`;
     }
 
     let sql1 = `select b.depName1, b.depName2, count(b.id) num, sum(b.oknum) oknum, sum(b.shouldSampNum) shouldSampNum, sum(b.sampNum) sampNum, sum(b.noSampNum) noSampNum from (
