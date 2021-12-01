@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-08-18 10:44:07
- * @LastEditTime: 2021-12-01 10:36:27
+ * @LastEditTime: 2021-12-01 11:22:06
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/samp/api.js
@@ -83,7 +83,8 @@ module.exports = {
             phone: '',
             tradeType: '',
             postName: '',
-            periodType: ''
+            periodType: '',
+            sampWay: ''
           }
         }
       } else {
