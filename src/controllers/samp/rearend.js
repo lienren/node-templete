@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2021-12-02 09:22:28
+ * @LastEditTime: 2021-12-02 17:14:59
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/samp/rearend.js
@@ -705,34 +705,50 @@ module.exports = {
   },
   s2: async ctx => {
     let sampName = ctx.request.body.sampName || '';
-    let where = ''
+    let depName1 = ctx.request.body.depName1 || '';
+    let depName2 = ctx.request.body.depName2 || '';
+    let where1 = ''
+    let where2 = ''
+    let where3 = ''
 
     if (sampName) {
-      where += ` and sampName = '${sampName}'`
+      where1 += ` and sampName = '${sampName}'`
+      where2 += ` and sampName = '${sampName}'`
+      where3 += ` and sampName = '${sampName}'`
+    }
+
+    if (depName1) {
+      where1 += ` and depName1 = '${depName1}'`
+      where2 += ` and exists(select * from info_users where depName1 = '${depName1}' and id = info_user_samps.userId)`
+    }
+
+    if (depName2) {
+      where1 += ` and depName2 = '${depName2}'`
+      where2 += ` and exists(select * from info_users where depName2 = '${depName2}' and id = info_user_samps.userId)`
     }
 
     let sql1 = `select DATE_FORMAT(handleTime,'%Y-%m-%d') 日期, count(1) 采样人数 from info_user_samps 
-    where handleType != '未采样' and DATEDIFF(now(),handleTime) <= 30 ${where}
+    where handleType != '未采样' and DATEDIFF(now(),handleTime) <= 30 ${where2}
     group by DATE_FORMAT(handleTime,'%Y-%m-%d')`
 
-    let sql2 = `select 't1' title, count(1) num from info_users where 1=1 ${where} 
+    let sql2 = `select 't1' title, count(1) num from info_users where 1=1 ${where1} 
     union all 
-    select 't2' title, count(1) num from info_users where depId > 2 ${where} 
+    select 't2' title, count(1) num from info_users where depId > 2 ${where1} 
     union all 
-    select 't3' title, count(1) num from info_users where depId <= 2 ${where} 
+    select 't3' title, count(1) num from info_users where depId <= 2 ${where1} 
     union all 
-    select 't4' title, count(1) num from info_user_samps where handleType != '未采样'  ${where} 
+    select 't4' title, count(1) num from info_user_samps where handleType != '未采样'  ${where2} 
     union all 
-    select 't5' title, count(1) num from info_users where createTime >= DATE_FORMAT(now(),'%Y-%m-%d')  ${where} 
+    select 't5' title, count(1) num from info_users where createTime >= DATE_FORMAT(now(),'%Y-%m-%d')  ${where1} 
     union all 
-    select 't6' title, count(1) num from info_user_samps where handleTime >= DATE_FORMAT(now(),'%Y-%m-%d') and handleType != '未采样'  ${where} 
+    select 't6' title, count(1) num from info_user_samps where handleTime >= DATE_FORMAT(now(),'%Y-%m-%d') and handleType != '未采样'  ${where2} 
     union all 
-    select 't7' title, count(1) num from info_samps where 1=1 ${where} 
+    select 't7' title, count(1) num from info_samps where 1=1 ${where3} 
     union all 
     select 't8' title, count(1) num from SuperManagerInfo where verifyLevel = 1 and isDel = 0 ${sampName ? ` and depName = '${sampName}'` : ''}`
 
     let sql3 = `select * from (
-      select sampName 采样点, count(1) 采样人数 from info_user_samps where handleType != '未采样' and DATEDIFF(now(),handleTime) <= 30 ${where} group by sampName
+      select sampName 采样点, count(1) 采样人数 from info_user_samps where handleType != '未采样' and DATEDIFF(now(),handleTime) <= 30 ${where2} group by sampName
       ) a order by a.采样人数 desc `
 
 
