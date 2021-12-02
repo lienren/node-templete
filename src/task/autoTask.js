@@ -133,7 +133,8 @@ async function daySamp () {
         realCount: 1,
         postName: user.dataValues.postName,
         periodType: user.dataValues.periodType,
-        handleType: '未采样'
+        handleType: '未采样',
+        isPlan: '计划内'
       })
     }
   }
@@ -190,7 +191,8 @@ async function weekSamp () {
           realCount: 1,
           postName: user.dataValues.postName,
           periodType: user.dataValues.periodType,
-          handleType: '未采样'
+          handleType: '未采样',
+          isPlan: '计划内'
         })
       }
     } else if (user.periodType === '每周2次') {
@@ -203,7 +205,8 @@ async function weekSamp () {
           realCount: 2,
           postName: user.dataValues.postName,
           periodType: user.dataValues.periodType,
-          handleType: '未采样'
+          handleType: '未采样',
+          isPlan: '计划内'
         })
 
         await ctx.orm().info_user_samps.create({
@@ -214,7 +217,8 @@ async function weekSamp () {
           realCount: 2,
           postName: user.dataValues.postName,
           periodType: user.dataValues.periodType,
-          handleType: '未采样'
+          handleType: '未采样',
+          isPlan: '计划内'
         })
       } else if (samp && samp.length === 1) {
         await ctx.orm().info_user_samps.create({
@@ -225,7 +229,8 @@ async function weekSamp () {
           realCount: 2,
           postName: user.dataValues.postName,
           periodType: user.dataValues.periodType,
-          handleType: '未采样'
+          handleType: '未采样',
+          isPlan: '计划内'
         })
       }
     }
@@ -285,7 +290,8 @@ async function monthSamp () {
         realCount: 1,
         postName: user.dataValues.postName,
         periodType: user.dataValues.periodType,
-        handleType: '未采样'
+        handleType: '未采样',
+        isPlan: '计划内'
       })
     }
   }

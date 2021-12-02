@@ -94,6 +94,11 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.DATE,
       allowNull: true,
       defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
+    },
+    isPlan: {
+      type: DataTypes.STRING(20),
+      allowNull: true,
+      defaultValue: '计划外'
     }
   }, {
     tableName: 'info_user_samps'

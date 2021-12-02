@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2021-12-02 17:14:59
+ * @LastEditTime: 2021-12-02 23:19:29
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/samp/rearend.js
@@ -640,13 +640,25 @@ module.exports = {
       group by a.id, a.depName1, a.depName2) b 
       group by b.depName1, b.depName2`;
 
-    let sql2 = `select a.depName1, a.depName2, count(a.id) num, sum(a.noSampNum) noSampNum from (
-      select u.id, u.depName1, u.depName2, count(1) noSampNum 
-      from info_users u 
-      inner join info_user_samps s on s.userId = u.id 
-      where u.depId > 2 and s.handleType = '未采样' ${where} 
-      group by u.id, u.depName1, u.depName2) a
-      group by a.depName1, a.depName2`;
+    let sql2 = `select a.depName1, a.depName2, sum(a.num1) num1, sum(a.num2) num2, sum(a.num3) num3, sum(a.num4) num4, sum(a.num5) num5, sum(a.num6) num6, sum(a.noSampNum) noSampNum from (
+      select x.id, x.depName1, x.depName2, x.noSampNum,
+        case when x.noSampNum = 1 then 1 else 0 end as num1,
+        case when x.noSampNum = 2 then 1 else 0 end as num2,
+        case when x.noSampNum = 3 then 1 else 0 end as num3,
+        case when x.noSampNum = 4 then 1 else 0 end as num4,
+        case when x.noSampNum = 5 then 1 else 0 end as num5,
+        case when x.noSampNum > 5 then 1 else 0 end as num6 
+      from (
+        select u.id, u.depName1, u.depName2, count(1) noSampNum 
+        from info_users u 
+        inner join info_user_samps s on s.userId = u.id 
+        where 
+          u.depId > 2 and 
+          s.handleType = '未采样' ${where} 
+        group by u.id, u.depName1, u.depName2
+      ) x
+    ) a
+    group by a.depName1, a.depName2`;
 
     let result1 = await ctx.orm().query(sql1);
     let result2 = await ctx.orm().query(sql2);
@@ -656,12 +668,12 @@ module.exports = {
       return {
         ...m,
         shouldSampNum: parseInt(m.shouldSampNum),
-        t1: f && f.num === 1 ? f.num : 0,
-        t2: f && f.num === 2 ? f.num : 0,
-        t3: f && f.num === 3 ? f.num : 0,
-        t4: f && f.num === 4 ? f.num : 0,
-        t5: f && f.num === 5 ? f.num : 0,
-        t6: f && f.num >= 6 ? f.num : 0,
+        t1: f ? f.num1 : 0,
+        t2: f ? f.num2 : 0,
+        t3: f ? f.num3 : 0,
+        t4: f ? f.num4 : 0,
+        t5: f ? f.num5 : 0,
+        t6: f ? f.num6 : 0,
         noSampNum: parseInt(m.noSampNum),
         crate: Math.floor(parseInt(m.oknum) / m.num * 10000) / 100,
         trate: Math.floor(parseInt(m.noSampNum) / parseInt(m.shouldSampNum) * 10000) / 100
