@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-08-18 10:44:07
- * @LastEditTime: 2021-12-01 11:22:06
+ * @LastEditTime: 2021-12-02 23:35:34
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/samp/api.js
@@ -246,7 +246,7 @@ module.exports = {
     let today = date.formatDate(new Date(), 'YYYY-MM-DD');
     let nowSampTime = '';
     let nextSampTime = '';
-    if (user) {
+    if (user && user.depId > 2) {
       let one = await ctx.orm().info_user_samps.findOne({
         where: {
           userId: user.id,
