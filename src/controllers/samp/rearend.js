@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2021-12-01 11:07:23
+ * @LastEditTime: 2021-12-02 09:22:28
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/samp/rearend.js
@@ -494,7 +494,7 @@ module.exports = {
 
     if (id && id > 0) {
       await ctx.orm().info_users.update({
-        depId, depName1, depName2, depStreet, name, phone, idcard, tradeType, postName, periodType, 
+        depId, depName1, depName2, depStreet, name, phone, idcard, tradeType, postName, periodType,
         sampWay: post.sampWay, street, community, address, userType, sampStartTime
       }, {
         where: {
@@ -503,7 +503,7 @@ module.exports = {
       })
     } else {
       await ctx.orm().info_users.create({
-        depId, depName1, depName2, depStreet, name, phone, idcard, tradeType, postName, periodType, 
+        depId, depName1, depName2, depStreet, name, phone, idcard, tradeType, postName, periodType,
         sampWay: post.sampWay, street, community, address, userType, sampStartTime
       })
     }
@@ -752,16 +752,16 @@ module.exports = {
 
       let xlsx = excel.readExcel(filePath);
 
-      let data = xlsx.map(m => {
+      let data = xlsx.filter(f => f.length === 9).map(m => {
         return {
-          depName1: m[0],
-          depName2: m[1],
-          depStreet: m[2],
-          name: m[3],
-          tradeType: m[4],
-          postName: m[5],
-          idcard: m[6],
-          phone: m[7],
+          depName1: m[1].trim(),
+          depName2: m[2].trim(),
+          depStreet: m[3].trim(),
+          name: m[4].trim(),
+          tradeType: m[5].trim(),
+          postName: m[6].trim(),
+          idcard: m[7].toString().trim(),
+          phone: m[8].toString().trim(),
           status: 0
         }
       });
@@ -769,7 +769,7 @@ module.exports = {
       // 删除首行
       data.shift();
 
-      await ctx.orm().tmp_info_users.bulkCreate(data);
+      ctx.orm().tmp_info_users.bulkCreate(data);
 
       // 删除文件
       fs.unlink(filePath, function (error) {
