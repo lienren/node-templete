@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2021-12-02 23:19:29
+ * @LastEditTime: 2021-12-03 18:50:15
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/samp/rearend.js
@@ -802,6 +802,42 @@ module.exports = {
       // 删除文件
       fs.unlink(filePath, function (error) {
         console.log('delete import excel file error:', error)
+        return false
+      })
+
+      ctx.body = {};
+    } else {
+      ctx.body = {};
+    }
+  },
+  importSamp: async ctx => {
+    let sampName = ctx.headers['sampname'] || ''
+    sampName = decodeURIComponent(sampName)
+
+    if (ctx.req.files && ctx.req.files.length > 0) {
+      let filePath = path.resolve(path.join(__dirname, `../../../assets/uploads/${ctx.req.files[0].filename}`))
+
+      let xlsx = excel.readExcel(filePath)
+
+      let data = xlsx.filter(f => f.length === 5).map(m => {
+        return {
+          name: m[1].trim(),
+          idcard: m[2].toString().trim(),
+          phone: m[3].toString().trim(),
+          sampName: sampName,
+          sampTime: m[4].trim(),
+          status: 0
+        }
+      })
+
+      // 删除首行
+      data.shift()
+
+      ctx.orm().tmp_info_samps.bulkCreate(data)
+
+      // 删除文件
+      fs.unlink(filePath, function (error) {
+        console.log('delete import samp excel file error:', error)
         return false
       })
 

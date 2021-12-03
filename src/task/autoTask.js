@@ -436,6 +436,127 @@ async function importUsers () {
   console.log('samp import Users data:%s', date.formatDate());
 }
 
+async function importSamps () {
+  console.log('samp import Samps data:%s', date.formatDate());
+
+  let result = await ctx.orm().tmp_info_samps.findAll({
+    limit: 50,
+    where: {
+      status: 0
+    }
+  });
+
+  if (result && result.length > 0) {
+    // 有未同步
+    // 并记录信息，将isSend更新为1
+
+    for (let i = 0, j = result.length; i < j; i++) {
+      let data = result[i]
+
+      let now = date.formatDate(data.sampTime);
+      let today = date.formatDate(data.sampTime, 'YYYY-MM-DD');
+
+      let user = await ctx.orm().info_users.findOne({
+        where: {
+          idcard: data.idcard
+        }
+      })
+
+      if (!user) {
+        user = await ctx.orm().info_users.create({
+          depId: 2,
+          depName1: '愿检尽检',
+          depName2: '愿检尽检',
+          depStreet: '',
+          name: data.name,
+          phone: data.phone,
+          idcard: data.idcard,
+          tradeType: '其他',
+          postName: '愿检尽检人群',
+          periodType: '当天',
+          sampWay: '',
+          userType: '在线',
+          sampStartTime: today,
+          sampName: data.sampName,
+          sampUserName: '暂无',
+          sampHandleTime: now
+        })
+      } else {
+        await ctx.orm().info_users.update({
+          userType: '在线',
+          sampName: data.sampName,
+          sampUserName: '暂无',
+          sampHandleTime: now
+        }, {
+          where: {
+            id: user.id
+          }
+        })
+      }
+
+      let samp = await ctx.orm().info_user_samps.findOne({
+        where: {
+          userId: user.id,
+          handleType: '未采样',
+          startTime: {
+            $lte: today
+          },
+          endTime: {
+            $gte: today
+          }
+        }
+      })
+
+      if (samp) {
+        await ctx.orm().info_user_samps.update({
+          handleType: '已采样',
+          handleTime: now,
+          handleCount: 1,
+          sampName: data.sampName,
+          sampUserName: '暂无',
+          imgUrl: '',
+          imgTime: now,
+          remark: '批量采样导入'
+        }, {
+          where: {
+            id: samp.id
+          }
+        })
+      } else {
+        await ctx.orm().info_user_samps.create({
+          userId: user.id,
+          startTime: today,
+          endTime: today,
+          dayCount: 1,
+          realCount: 1,
+          postName: user.postName,
+          periodType: user.periodType,
+          sampWay: user.sampWay,
+          handleType: '已采样',
+          handleTime: now,
+          handleCount: 1,
+          sampName: data.sampName,
+          sampUserName: '暂无',
+          imgUrl: '',
+          imgTime: now,
+          remark: '批量采样导入'
+        })
+      }
+
+      await ctx.orm().tmp_info_samps.update({
+        status: 1,
+        remark: '处理成功！'
+      }, {
+        where: {
+          id: data.id
+        }
+      })
+    }
+  }
+
+  console.log('samp import Samps data:%s', date.formatDate());
+}
+
 async function main () {
   // 使用koa-orm中间件，sequelize，mysql
   if (config.databases) {
@@ -458,6 +579,7 @@ async function main () {
     function () {
       getSuccessed()
       importUsers()
+      importSamps()
     }
   );
 
