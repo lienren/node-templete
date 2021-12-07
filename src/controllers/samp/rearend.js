@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2021-12-07 17:05:55
+ * @LastEditTime: 2021-12-07 18:02:00
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/samp/rearend.js
@@ -935,12 +935,9 @@ module.exports = {
       }
     }
 
-    console.log('t1:', date.formatDate())
     let users = await ctx.orm().info_users.findAll({
       where
     });
-
-    console.log('t2:', date.formatDate())
 
     let samps = []
     if (users && users.length > 0) {
@@ -1054,19 +1051,7 @@ module.exports = {
       inner join info_users u on u.id = s.userId 
       where 1=1 ${where1}`;
       samps = await ctx.orm().query(sql1);
-
-      /* samps = await ctx.orm().info_user_samps.findAll({
-        where: {
-          userId: {
-            $in: users.map(m => {
-              return m.dataValues.id
-            })
-          }
-        }
-      }); */
     }
-
-    console.log('t3:', date.formatDate())
 
     let xlsxObj = [];
     xlsxObj.push({
@@ -1154,8 +1139,6 @@ module.exports = {
       xlsxObj[0].data.push(arr)
     }
 
-    console.log('t4:', date.formatDate())
-
     for (let i = 0, j = samps.length; i < j; i++) {
       let samp = samps[i];
       // let user = users.find(f => f.id === samp.dataValues.userId)
@@ -1185,11 +1168,7 @@ module.exports = {
       xlsxObj[1].data.push(arr)
     }
 
-    console.log('t5:', date.formatDate())
-
     let excelFile = await excel.exportBigMoreSheetExcel(xlsxObj)
-
-    console.log('t6:', date.formatDate())
 
     // ctx.set('Content-Type', 'application/vnd.openxmlformats');
     // ctx.set('Access-Control-Expose-Headers', 'Content-Disposition')
@@ -1227,5 +1206,154 @@ module.exports = {
       pageIndex,
       pageSize
     }
+  },
+  tmpImportUser: async ctx => {
+    let pageIndex = ctx.request.body.pageIndex || 1;
+    let pageSize = ctx.request.body.pageSize || 50;
+    let { tradeTypes, postNames, depName1s, depName2s, depStreet, name, phone, idcard, tradeType, postName, status } = ctx.request.body;
+
+    let where = {};
+
+    Object.assign(where, depStreet && { depStreet })
+    Object.assign(where, name && { name })
+    Object.assign(where, phone && { phone })
+    Object.assign(where, idcard && { idcard })
+    Object.assign(where, tradeType && { tradeType })
+    Object.assign(where, postName && { postName })
+
+    if (tradeTypes && tradeTypes.length > 0) {
+      where.tradeType = {
+        $in: tradeTypes
+      }
+    }
+
+    if (postNames && postNames.length > 0) {
+      where.postName = {
+        $in: postNames
+      }
+    }
+
+    if (depName1s && depName1s.length > 0) {
+      where.depName1 = {
+        $in: depName1s
+      }
+    }
+
+    if (depName2s && depName2s.length > 0) {
+      where.depName2 = {
+        $in: depName2s
+      }
+    }
+
+    if (status > -1) {
+      where.status = status
+    }
+
+    let result = await ctx.orm().tmp_info_users.findAndCountAll({
+      offset: (pageIndex - 1) * pageSize,
+      limit: pageSize,
+      where,
+      order: [
+        ['id', 'desc']
+      ]
+    });
+
+    ctx.body = {
+      total: result.count,
+      list: result.rows,
+      pageIndex,
+      pageSize
+    }
+  },
+  exportTmpImportUser: async ctx => {
+    let { tradeTypes, postNames, depName1s, depName2s, depStreet, name, phone, idcard, tradeType, postName, status } = ctx.request.body;
+
+    let where = {};
+
+    Object.assign(where, depStreet && { depStreet })
+    Object.assign(where, name && { name })
+    Object.assign(where, phone && { phone })
+    Object.assign(where, idcard && { idcard })
+    Object.assign(where, tradeType && { tradeType })
+    Object.assign(where, postName && { postName })
+
+    if (tradeTypes && tradeTypes.length > 0) {
+      where.tradeType = {
+        $in: tradeTypes
+      }
+    }
+
+    if (postNames && postNames.length > 0) {
+      where.postName = {
+        $in: postNames
+      }
+    }
+
+    if (depName1s && depName1s.length > 0) {
+      where.depName1 = {
+        $in: depName1s
+      }
+    }
+
+    if (depName2s && depName2s.length > 0) {
+      where.depName2 = {
+        $in: depName2s
+      }
+    }
+
+    if (status > -1) {
+      where.status = status
+    }
+
+    let result = await ctx.orm().tmp_info_users.findAll({
+      where,
+      order: [
+        ['id', 'desc']
+      ]
+    });
+
+    let xlsxObj = [];
+    xlsxObj.push({
+      name: '重点人员导入列表',
+      data: []
+    })
+
+    xlsxObj[0].data.push([
+      '编号',
+      '部门',
+      '单位',
+      '单位所在街道',
+      '姓名',
+      '手机号',
+      '身份证号',
+      '行业类别',
+      '职业名称',
+      '状态',
+      '导入情况',
+      '导入时间'
+    ])
+
+    for (let i = 0, j = result.length; i < j; i++) {
+      let user = result[i];
+
+      let arr = new Array();
+      arr.push(user.id);
+      arr.push(user.depName1 || '');
+      arr.push(user.depName2 || '');
+      arr.push(user.depStreet || '');
+      arr.push(user.name || '');
+      arr.push(user.phone || '');
+      arr.push(user.idcard || '');
+      arr.push(user.tradeType || '');
+      arr.push(user.postName || '');
+      arr.push(user.status === 0 ? '待导入' : user.status === 1 ? '导入成功' : '导入失败');
+      arr.push(user.remark);
+      arr.push(user.createTime);
+
+      xlsxObj[0].data.push(arr)
+    }
+
+    let excelFile = await excel.exportBigMoreSheetExcel(xlsxObj)
+    ctx.body = excelFile;
   }
 };

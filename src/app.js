@@ -37,7 +37,8 @@ app.use(async (ctx, next) => {
     path.indexOf('/mall/order/exportorders') >= 0 ||
     path.indexOf('/mall/order/exprotproviderorders') >= 0 ||
     path.indexOf('/samp/rearend/exportusersampss1') >= 0 ||
-    path.indexOf('/samp/rearend/exportusers') >= 0) {
+    path.indexOf('/samp/rearend/exportusers') >= 0 ||
+    path.indexOf('/samp/rearend/exporttmpimportuser') >= 0) {
     ctx.disableBodyParserReturn = true;
   }
 
