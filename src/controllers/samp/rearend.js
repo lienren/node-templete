@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2021-12-03 18:50:15
+ * @LastEditTime: 2021-12-07 17:05:55
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/samp/rearend.js
@@ -12,6 +12,7 @@
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
+const moment = require('moment');
 const sequelize = require('sequelize');
 const comm = require('../../utils/comm');
 const date = require('../../utils/date');
@@ -44,6 +45,17 @@ AppID：25119032
 API Key：3Hlx41svN2dnAKsjQzMtHnh0
 Secret Key：UdOj4Y4DFm4S58G23wzhDGXjgUm7bYpG
 */
+
+function formatDate (num) {
+  if (typeof num === 'number') {
+    let time = new Date((num - 25567 - 2) * 86400 * 1000 - 8 * 3600 * 1000);
+
+    return date.formatDate(time)
+  } else {
+    return num.trim()
+  }
+}
+
 
 module.exports = {
   getUsers: async ctx => {
@@ -819,13 +831,13 @@ module.exports = {
 
       let xlsx = excel.readExcel(filePath)
 
-      let data = xlsx.filter(f => f.length === 5).map(m => {
+      let data = xlsx.filter(f => f.length >= 5).map(m => {
         return {
           name: m[1].trim(),
           idcard: m[2].toString().trim(),
           phone: m[3].toString().trim(),
           sampName: sampName,
-          sampTime: m[4].trim(),
+          sampTime: formatDate(m[4]),
           status: 0
         }
       })
@@ -1183,5 +1195,37 @@ module.exports = {
     // ctx.set('Access-Control-Expose-Headers', 'Content-Disposition')
     // ctx.set('Content-Disposition', 'attachment; filename=' + 'orders_export.xlsx');
     ctx.body = excelFile;
+  },
+  tmpImportSamp: async ctx => {
+    let pageIndex = ctx.request.body.pageIndex || 1;
+    let pageSize = ctx.request.body.pageSize || 50;
+    let { sampName, name, phone, idcard, status } = ctx.request.body;
+
+    let where = {};
+
+    Object.assign(where, sampName && { sampName })
+    Object.assign(where, name && { name })
+    Object.assign(where, phone && { phone })
+    Object.assign(where, idcard && { idcard })
+
+    if (status > -1) {
+      where.status = status
+    }
+
+    let result = await ctx.orm().tmp_info_samps.findAndCountAll({
+      offset: (pageIndex - 1) * pageSize,
+      limit: pageSize,
+      where,
+      order: [
+        ['id', 'desc']
+      ]
+    });
+
+    ctx.body = {
+      total: result.count,
+      list: result.rows,
+      pageIndex,
+      pageSize
+    }
   }
 };

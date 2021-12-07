@@ -326,12 +326,15 @@ async function importUsers () {
       })
 
       if (!dep) {
-        dep = await ctx.orm().info_deps.create({
-          depName: data.depName1,
-          depLevel: 1,
-          depStreet: '',
-          parentId: 0
+        await ctx.orm().tmp_info_users.update({
+          status: 2,
+          remark: '部门不存在！'
+        }, {
+          where: {
+            id: data.id
+          }
         })
+        continue;
       }
 
       let dep2 = await ctx.orm().info_deps.findOne({
