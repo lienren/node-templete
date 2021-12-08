@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2021-12-07 18:02:00
+ * @LastEditTime: 2021-12-08 15:15:39
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/samp/rearend.js
@@ -18,6 +18,7 @@ const comm = require('../../utils/comm');
 const date = require('../../utils/date');
 const excel = require('../../utils/excel');
 const AipOcrClient = require("baidu-aip-sdk").ocr;
+const { debugPort } = require('process');
 
 const APP_ID = "25119032";
 const API_KEY = "3Hlx41svN2dnAKsjQzMtHnh0";
@@ -1355,5 +1356,59 @@ module.exports = {
 
     let excelFile = await excel.exportBigMoreSheetExcel(xlsxObj)
     ctx.body = excelFile;
-  }
+  },
+  submitDep: async ctx => {
+    let { id, depName, depStreet, parentDepName } = ctx.request.body;
+
+    assert.ok(!!depName, 'InputParamIsNull');
+    assert.ok(!!depStreet, 'InputParamIsNull');
+    assert.ok(!!parentDepName, 'InputParamIsNull');
+
+    let parentDep = await ctx.orm().info_deps.findOne({
+      where: {
+        depName: parentDepName,
+        depLevel: 1,
+        parentId: 0
+      }
+    })
+    assert.ok(!!parentDep, '部门不存在');
+
+    if (id) {
+      let dep = await ctx.orm().info_deps.findOne({
+        where: {
+          id
+        }
+      })
+      assert.ok(!!dep, '单位不存在');
+
+      await ctx.orm().info_deps.update({
+        depName,
+        depStreet
+      }, {
+        where: {
+          id: dep.id
+        }
+      })
+
+      if (dep.depName !== depName) {
+        await ctx.orm().info_users.update({
+          depName2: depName
+        }, {
+          where: {
+            depName2: dep.depName
+          }
+        })
+      }
+    } else {
+      await ctx.orm().info_deps.create({
+        depName,
+        depLevel: 2,
+        depStreet,
+        parentId: parentDep.id,
+        isDel: 0
+      })
+    }
+
+    ctx.body = {}
+  },
 };
