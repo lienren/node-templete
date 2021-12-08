@@ -195,10 +195,22 @@ module.exports = {
     let endAddTime = ctx.request.body.endAddTime || 0;
     let verifyLevel = ctx.request.body.verifyLevel || 0;
     let verifyType = ctx.request.body.verifyType || '';
+    let depName = ctx.request.body.depName || '';
+    let depNames = ctx.request.body.depNames || [];
 
     let condition = {
       verifyLevel: verifyLevel
     };
+
+    if (depName !== '') {
+      condition.depName = depName
+    }
+
+    if (depNames.length > 0) {
+      condition.depName = {
+        $in: depNames
+      }
+    }
 
     if (verifyType !== '') {
       condition.verifyType = verifyType
