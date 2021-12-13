@@ -421,6 +421,7 @@ async function importUsers () {
           postName: post.postName,
           periodType: post.periodType,
           userType: '在线',
+          sampWay: post.sampWay,
           sampStartTime: date.formatDate(new Date(), 'YYYY-MM-DD')
         })
 
