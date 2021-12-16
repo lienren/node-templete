@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-08-18 10:44:07
- * @LastEditTime: 2021-12-02 23:35:34
+ * @LastEditTime: 2021-12-15 10:52:45
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/samp/api.js
@@ -127,7 +127,7 @@ module.exports = {
         tradeType,
         postName,
         periodType,
-        sampWay: '',
+        sampWay: '1:1单管',
         street,
         community,
         address,
@@ -359,7 +359,7 @@ module.exports = {
         tradeType: '其他',
         postName: '愿检尽检人群',
         periodType: '当天',
-        sampWay: '',
+        sampWay: '1:1单管',
         street,
         community,
         address,

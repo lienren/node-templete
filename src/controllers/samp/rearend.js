@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2021-12-13 22:23:16
+ * @LastEditTime: 2021-12-16 16:02:12
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/samp/rearend.js
@@ -599,7 +599,7 @@ module.exports = {
       s.startTime <= now() and 
       now() <= s.endTime ${where};`
 
-    let sql1 = `select u.id, u.depName1, u.depName2, u.name, u.idcard, u.phone, u.tradeType, u.postName, u.periodType, s.startTime, s.endTime from info_user_samps s 
+    let sql1 = `select u.id, u.depName1, u.depName2, u.name, u.idcard, u.phone, u.tradeType, u.postName, u.periodType, current_date() startTime, s.endTime from info_user_samps s 
     inner join info_users u on u.id = s.userId 
     where 
       u.depId > 2 and 
@@ -618,7 +618,7 @@ module.exports = {
       pageSize
     }
   },
-  exportUserSampsS2: async ctx => { 
+  exportUserSampsS2: async ctx => {
     let { tradeTypes, postNames, depName1s, depName2s, depStreet, name, phone, idcard, tradeType, postName, periodType, street, community, streets, communitys, address, userType,
       sampName, sampUserName } = ctx.request.body;
 
@@ -712,7 +712,7 @@ module.exports = {
       where += ` and u.sampUserName = '${sampUserName}'`;
     }
 
-    let sql = `select u.id, u.depName1, u.depName2, u.name, u.idcard, u.phone, u.tradeType, u.postName, u.periodType, s.startTime, s.endTime from info_user_samps s 
+    let sql = `select u.id, u.depName1, u.depName2, u.name, u.idcard, u.phone, u.tradeType, u.postName, u.periodType, current_date() startTime, s.endTime from info_user_samps s 
     inner join info_users u on u.id = s.userId 
     where 
       u.depId > 2 and 
@@ -753,7 +753,7 @@ module.exports = {
       arr.push(user.tradeType);
       arr.push(user.postName);
       arr.push(user.periodType);
-      arr.push(`${user.startTime}至${user.endTime}`);
+      arr.push(user.startTime === user.endTime ? user.endTime : `${user.startTime}至${user.endTime}`);
 
       xlsxObj[0].data.push(arr)
     }
@@ -782,11 +782,50 @@ module.exports = {
         }
       })
     } else {
-      await ctx.orm().info_users.create({
-        depId, depName1, depName2, depStreet, name, phone, idcard, tradeType, postName, periodType,
-        sampWay: post.sampWay, street, community, address, userType, sampStartTime
+      let user = await ctx.orm().info_users.findOne({
+        where: {
+          idcard: idcard
+        }
       })
+
+      if (user) {
+        await ctx.orm().info_users.update({
+          depId, depName1, depName2, depStreet, name, phone, idcard, tradeType, postName, periodType,
+          sampWay: post.sampWay, street, community, address, userType, sampStartTime
+        }, {
+          where: {
+            id: user.id
+          }
+        })
+      } else {
+        await ctx.orm().info_users.create({
+          depId, depName1, depName2, depStreet, name, phone, idcard, tradeType, postName, periodType,
+          sampWay: post.sampWay, street, community, address, userType, sampStartTime
+        })
+      }
+
     }
+
+    ctx.body = {}
+  },
+  submitUserRemove: async ctx => {
+    let { id } = ctx.request.body;
+
+    await ctx.orm().info_users.update({
+      depId: 2,
+      depName1: '愿检尽检',
+      depName2: '愿检尽检',
+      depStreet: '',
+      tradeType: '其他',
+      postName: '愿检尽检人群',
+      periodType: '当天',
+      sampWay: '1:1单管',
+      userType: '迁移'
+    }, {
+      where: {
+        id
+      }
+    })
 
     ctx.body = {}
   },
@@ -1103,7 +1142,7 @@ module.exports = {
         return {
           name: m[1].trim(),
           idcard: m[2].toString().trim(),
-          phone: m[3].toString().trim(),
+          phone: m[3] ? m[3].toString().trim() : '',
           sampName: sampName,
           sampTime: formatDate(m[4]),
           status: 0

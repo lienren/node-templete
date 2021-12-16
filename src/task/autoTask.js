@@ -478,7 +478,7 @@ async function importSamps () {
           tradeType: '其他',
           postName: '愿检尽检人群',
           periodType: '当天',
-          sampWay: '',
+          sampWay: '1:1单管',
           userType: '在线',
           sampStartTime: today,
           sampName: data.sampName,
