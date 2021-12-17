@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2021-12-16 16:02:12
+ * @LastEditTime: 2021-12-17 15:46:54
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/samp/rearend.js
@@ -940,11 +940,11 @@ module.exports = {
     }
 
     if (startEndTime && startEndTime.length > 0) {
-      where += ` and s.startTime between '${startEndTime[0]}' and '${startEndTime[1]}'`;
+      where += ` and s.startTime >= '${startEndTime[0]}' and s.endTime <= '${startEndTime[1]}'`;
     }
 
-    let sql1 = `select b.depName1, b.depName2, count(b.id) num, sum(b.oknum) oknum, sum(b.shouldSampNum) shouldSampNum, sum(b.sampNum) sampNum, sum(b.noSampNum) noSampNum from (
-      select a.id, a.depName1, a.depName2, if(sum(a.shouldSampNum)=sum(a.sampNum), 1, 0) oknum, sum(a.shouldSampNum) shouldSampNum, sum(a.sampNum) sampNum, sum(a.noSampNum) noSampNum from (
+    let sql1 = `select b.depName1, b.depName2, count(b.id) num, sum(b.oknum) oknum, sum(b.shouldSampNum) shouldSampNum, sum(b.sampNum) sampNum, sum(b.noSampNum) noSampNum, sum(b.inPlanNum) inPlanNum, sum(b.outPlanNum) outPlanNum from (
+      select a.id, a.depName1, a.depName2, if(sum(a.shouldSampNum)=sum(a.sampNum), 1, 0) oknum, sum(a.shouldSampNum) shouldSampNum, sum(a.sampNum) sampNum, sum(a.noSampNum) noSampNum, sum(a.inPlanNum) inPlanNum, sum(a.outPlanNum) outPlanNum from (
       select u.id, u.depName1, u.depName2, 1 shouldSampNum, 
       case handleType 
       when '已采样' then 1 
@@ -952,7 +952,9 @@ module.exports = {
       else 0 end sampNum,
       case handleType 
       when '未采样' then 1 
-      else 0 end noSampNum 
+      else 0 end noSampNum, 
+      case when handleType = '已采样' and isPlan = '计划内' then 1 else 0 end inPlanNum, 
+      case when handleType = '已采样' and isPlan = '计划外' then 1 else 0 end outPlanNum 
       from info_users u 
       inner join info_user_samps s on s.userId = u.id 
       where u.depId > 2 ${where}) a 
@@ -995,7 +997,8 @@ module.exports = {
         t6: f ? f.num6 : 0,
         noSampNum: parseInt(m.noSampNum),
         crate: Math.floor(parseInt(m.oknum) / m.num * 10000) / 100,
-        trate: Math.floor(parseInt(m.noSampNum) / parseInt(m.shouldSampNum) * 10000) / 100
+        trate: Math.floor(parseInt(m.noSampNum) / parseInt(m.shouldSampNum) * 10000) / 100,
+        prate: Math.floor(parseInt(m.num) / m.num * 10000) / 100
       }
     })
 
@@ -1140,7 +1143,7 @@ module.exports = {
 
       let data = xlsx.filter(f => f.length >= 5).map(m => {
         return {
-          name: m[1].trim(),
+          name: m[1].toString().trim(),
           idcard: m[2].toString().trim(),
           phone: m[3] ? m[3].toString().trim() : '',
           sampName: sampName,
