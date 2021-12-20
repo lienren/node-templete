@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2021-12-17 15:46:54
+ * @LastEditTime: 2021-12-18 18:27:39
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/samp/rearend.js
@@ -946,13 +946,8 @@ module.exports = {
     let sql1 = `select b.depName1, b.depName2, count(b.id) num, sum(b.oknum) oknum, sum(b.shouldSampNum) shouldSampNum, sum(b.sampNum) sampNum, sum(b.noSampNum) noSampNum, sum(b.inPlanNum) inPlanNum, sum(b.outPlanNum) outPlanNum from (
       select a.id, a.depName1, a.depName2, if(sum(a.shouldSampNum)=sum(a.sampNum), 1, 0) oknum, sum(a.shouldSampNum) shouldSampNum, sum(a.sampNum) sampNum, sum(a.noSampNum) noSampNum, sum(a.inPlanNum) inPlanNum, sum(a.outPlanNum) outPlanNum from (
       select u.id, u.depName1, u.depName2, 1 shouldSampNum, 
-      case handleType 
-      when '已采样' then 1 
-      when '个人上传采样' then 1 
-      else 0 end sampNum,
-      case handleType 
-      when '未采样' then 1 
-      else 0 end noSampNum, 
+      case handleType when '已采样' then 1 when '个人上传采样' then 1 else 0 end sampNum,
+      case handleType when '未采样' then 1 else 0 end noSampNum, 
       case when handleType = '已采样' and isPlan = '计划内' then 1 else 0 end inPlanNum, 
       case when handleType = '已采样' and isPlan = '计划外' then 1 else 0 end outPlanNum 
       from info_users u 
@@ -981,11 +976,24 @@ module.exports = {
     ) a
     group by a.depName1, a.depName2`;
 
+    let sql3 = `select a.depName1, a.depName2, count(a.id) isPlanNum, sum(a.isPlanSampNum) isPlanSampNum from (
+      select u.id, u.depName1, u.depName2, count(1) isPlanSampNum 
+      from info_users u 
+      inner join info_user_samps s on s.userId = u.id 
+      where 
+        u.depId > 2 and 
+        s.handleType = '已采样' and s.isPlan = '计划内' ${where} 
+      group by u.id, u.depName1, u.depName2
+    ) a
+    group by a.depName1, a.depName2`;
+
     let result1 = await ctx.orm().query(sql1);
     let result2 = await ctx.orm().query(sql2);
+    let result3 = await ctx.orm().query(sql3);
 
     let data = result1.map(m => {
       let f = result2.find(f => f.depName1 === m.depName1 && f.depName2 === m.depName2)
+      let f1 = result3.find(f => f.depName1 === m.depName1 && f.depName2 === m.depName2)
       return {
         ...m,
         shouldSampNum: parseInt(m.shouldSampNum),
@@ -996,9 +1004,11 @@ module.exports = {
         t5: f ? f.num5 : 0,
         t6: f ? f.num6 : 0,
         noSampNum: parseInt(m.noSampNum),
+        isPlanNum: f1 ? parseInt(f1.isPlanNum) : 0,
+        isPlanSampNum: f1 ? parseInt(f1.isPlanSampNum) : 0,
         crate: Math.floor(parseInt(m.oknum) / m.num * 10000) / 100,
         trate: Math.floor(parseInt(m.noSampNum) / parseInt(m.shouldSampNum) * 10000) / 100,
-        prate: Math.floor(parseInt(m.num) / m.num * 10000) / 100
+        prate: Math.floor(parseInt(f1 ? f1.isPlanNum : 0) / m.num * 10000) / 100
       }
     })
 
@@ -1013,8 +1023,11 @@ module.exports = {
       total.t5 += parseInt(curr.t5)
       total.t6 += parseInt(curr.t6)
       total.noSampNum += parseInt(curr.noSampNum)
+      total.isPlanNum += parseInt(curr.isPlanNum)
+      total.isPlanSampNum += parseInt(curr.isPlanSampNum)
       total.crate = Math.floor(parseInt(total.oknum) / total.num * 10000) / 100,
-        total.trate = Math.floor(parseInt(total.noSampNum) / total.shouldSampNum * 10000) / 100
+      total.trate = Math.floor(parseInt(total.noSampNum) / total.shouldSampNum * 10000) / 100,
+      total.prate = Math.floor(parseInt(total.isPlanNum) / total.num * 10000) / 100
 
       return total
     }, {
@@ -1028,9 +1041,12 @@ module.exports = {
       t4: 0,
       t5: 0,
       t6: 0,
-      crate: 0,
+      isPlanNum: 0,
+      isPlanSampNum: 0,
       noSampNum: 0,
-      trate: 0
+      crate: 0,
+      trate: 0,
+      prate: 0
     })
 
     data.push(sum)
