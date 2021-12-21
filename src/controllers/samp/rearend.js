@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2021-12-21 15:46:12
+ * @LastEditTime: 2021-12-21 21:45:22
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/samp/rearend.js
@@ -773,13 +773,13 @@ module.exports = {
     })
 
     if (id && id > 0) {
-      let user = await ctx.orm().info_users.findOne({
+      let user1 = await ctx.orm().info_users.findOne({
         where: {
           idcard: idcard
         }
       })
 
-      if (user.id === id) {
+      if (user1.id === id) {
         await ctx.orm().info_users.update({
           depId, depName1, depName2, depStreet, name, phone, idcard, tradeType, postName, periodType,
           sampWay: post.sampWay, street, community, address, userType, sampStartTime
@@ -789,7 +789,7 @@ module.exports = {
           }
         })
       } else {
-        // 老记录更新
+        // 新记录更新
         await ctx.orm().info_users.update({
           depId, depName1, depName2, depStreet, name, phone, idcard, tradeType, postName, periodType,
           sampWay: post.sampWay, street, community, address, userType, sampStartTime
@@ -804,14 +804,14 @@ module.exports = {
           userId: id
         }, {
           where: {
-            userId: user.id
+            userId: user1.id
           }
         })
 
         // 删除老的用户
         await ctx.orm().info_users.destroy({
           where: {
-            id: user.id
+            id: user1.id
           }
         })
       }
