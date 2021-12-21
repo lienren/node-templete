@@ -20,6 +20,10 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING(100),
       allowNull: true
     },
+    sampType: {
+      type: DataTypes.STRING(100),
+      allowNull: true
+    },
     createTime: {
       type: DataTypes.DATE,
       allowNull: true,
