@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2021-12-21 11:06:51
+ * @LastEditTime: 2021-12-21 15:46:12
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/samp/rearend.js
@@ -773,14 +773,48 @@ module.exports = {
     })
 
     if (id && id > 0) {
-      await ctx.orm().info_users.update({
-        depId, depName1, depName2, depStreet, name, phone, idcard, tradeType, postName, periodType,
-        sampWay: post.sampWay, street, community, address, userType, sampStartTime
-      }, {
+      let user = await ctx.orm().info_users.findOne({
         where: {
-          id
+          idcard: idcard
         }
       })
+
+      if (user.id === id) {
+        await ctx.orm().info_users.update({
+          depId, depName1, depName2, depStreet, name, phone, idcard, tradeType, postName, periodType,
+          sampWay: post.sampWay, street, community, address, userType, sampStartTime
+        }, {
+          where: {
+            id
+          }
+        })
+      } else {
+        // 老记录更新
+        await ctx.orm().info_users.update({
+          depId, depName1, depName2, depStreet, name, phone, idcard, tradeType, postName, periodType,
+          sampWay: post.sampWay, street, community, address, userType, sampStartTime
+        }, {
+          where: {
+            id
+          }
+        })
+
+        // 更新老的采样数据
+        await ctx.orm().info_user_samps.update({
+          userId: id
+        }, {
+          where: {
+            userId: user.id
+          }
+        })
+
+        // 删除老的用户
+        await ctx.orm().info_users.destroy({
+          where: {
+            id: user.id
+          }
+        })
+      }
     } else {
       let user = await ctx.orm().info_users.findOne({
         where: {
@@ -803,7 +837,6 @@ module.exports = {
           sampWay: post.sampWay, street, community, address, userType, sampStartTime
         })
       }
-
     }
 
     ctx.body = {}
@@ -1043,8 +1076,8 @@ module.exports = {
       total.isShouldPlanNum += parseInt(curr.isShouldPlanNum)
       total.isShouldPlanSampNum += parseInt(curr.isShouldPlanSampNum)
       total.crate = Math.floor(parseInt(total.oknum) / total.num * 10000) / 100,
-      total.trate = Math.floor(parseInt(total.noSampNum) / total.shouldSampNum * 10000) / 100,
-      total.prate = Math.floor(parseInt(total.isPlanNum) / total.isShouldPlanNum * 10000) / 100
+        total.trate = Math.floor(parseInt(total.noSampNum) / total.shouldSampNum * 10000) / 100,
+        total.prate = Math.floor(parseInt(total.isPlanNum) / total.isShouldPlanNum * 10000) / 100
 
       return total
     }, {
@@ -1278,7 +1311,7 @@ module.exports = {
         })
       }
     });
-    
+
     ctx.body = data;
   },
   importUsers: async ctx => {
