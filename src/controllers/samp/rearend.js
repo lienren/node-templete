@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2021-12-21 21:45:22
+ * @LastEditTime: 2021-12-22 10:36:47
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/samp/rearend.js
@@ -62,7 +62,7 @@ module.exports = {
   getUsers: async ctx => {
     let pageIndex = ctx.request.body.pageIndex || 1;
     let pageSize = ctx.request.body.pageSize || 50;
-    let { tradeTypes, postNames, depName1s, depName2s, depStreet, name, phone, idcard, tradeType, postName, periodType, street, community, streets, communitys, address, userType,
+    let { tradeTypes, postNames, depName1s, depName2s, depName2, depStreet, name, phone, idcard, tradeType, postName, periodType, street, community, streets, communitys, address, userType,
       sampStartTime, sampName, sampUserName, sampHandleTime, createTime, updateTime } = ctx.request.body;
 
     let where = {};
@@ -73,6 +73,7 @@ module.exports = {
     Object.assign(where, idcard && { idcard })
     Object.assign(where, tradeType && { tradeType })
     Object.assign(where, postName && { postName })
+    Object.assign(where, depName2 && { depName2 })
     Object.assign(where, periodType && { periodType })
     Object.assign(where, userType && { userType })
     Object.assign(where, street && { street })
@@ -169,7 +170,7 @@ module.exports = {
   getUserSampsS1: async ctx => {
     let pageIndex = ctx.request.body.pageIndex || 1;
     let pageSize = ctx.request.body.pageSize || 50;
-    let { tradeTypes, postNames, depName1s, depName2s, depStreet, name, phone, idcard, tradeType, postName, periodType, street, community, streets, communitys, address, userType,
+    let { tradeTypes, postNames, depName1s, depName2s, depName2, depStreet, name, phone, idcard, tradeType, postName, periodType, street, community, streets, communitys, address, userType,
       sampStartTime, sampName, sampUserName, sampHandleTime, startEndTime, createTime, updateTime } = ctx.request.body;
 
     let where = '';
@@ -196,6 +197,10 @@ module.exports = {
       where += ' and u.depName2 in (' + depName2s.map(m => {
         return `'${m}'`
       }).join(',') + ')';
+    }
+
+    if (depName2) {
+      where += ` and u.depName2 = '${depName2}' `;
     }
 
     if (depStreet) {
@@ -498,7 +503,7 @@ module.exports = {
   getUserSampsS2: async ctx => {
     let pageIndex = ctx.request.body.pageIndex || 1;
     let pageSize = ctx.request.body.pageSize || 50;
-    let { tradeTypes, postNames, depName1s, depName2s, depStreet, name, phone, idcard, tradeType, postName, periodType, street, community, streets, communitys, address, userType,
+    let { tradeTypes, postNames, depName1s, depName2s, depName2, depStreet, name, phone, idcard, tradeType, postName, periodType, street, community, streets, communitys, address, userType,
       sampName, sampUserName } = ctx.request.body;
 
     let where = '';
@@ -525,6 +530,10 @@ module.exports = {
       where += ' and u.depName2 in (' + depName2s.map(m => {
         return `'${m}'`
       }).join(',') + ')';
+    }
+
+    if (depName2) {
+      where += ` and u.depName2 = '${depName2}' `;
     }
 
     if (depStreet) {
@@ -863,7 +872,7 @@ module.exports = {
     ctx.body = {}
   },
   s1: async ctx => {
-    let { tradeTypes, postNames, depName1s, depName2s, depStreet, name, phone, idcard, tradeType, postName, periodType, street, community, streets, communitys, address, userType,
+    let { tradeTypes, postNames, depName1s, depName2s, depName2, depStreet, name, phone, idcard, tradeType, postName, periodType, street, community, streets, communitys, address, userType,
       sampStartTime, sampName, sampUserName, sampHandleTime, startEndTime, createTime, updateTime } = ctx.request.body;
 
     let where = '';
@@ -890,6 +899,10 @@ module.exports = {
       where += ' and u.depName2 in (' + depName2s.map(m => {
         return `'${m}'`
       }).join(',') + ')';
+    }
+
+    if (depName2){
+      where += ` and u.depName2 = '${depName2}' `;
     }
 
     if (depStreet) {
@@ -1165,7 +1178,7 @@ module.exports = {
     };
   },
   s3: async ctx => {
-    let { tradeTypes, postNames, depName1s, depName2s, depStreet, name, phone, idcard, tradeType, postName, periodType, street, community, streets, communitys, address, userType,
+    let { tradeTypes, postNames, depName1s, depName2s, depName2, depStreet, name, phone, idcard, tradeType, postName, periodType, street, community, streets, communitys, address, userType,
       sampStartTime, sampType, sampName, sampUserName, sampHandleTime, startEndTime, createTime, updateTime } = ctx.request.body;
 
     let where = '';
@@ -1196,6 +1209,10 @@ module.exports = {
       where += ' and u.depName2 in (' + depName2s.map(m => {
         return `'${m}'`
       }).join(',') + ')';
+    }
+
+    if (depName2) {
+      where += ` and u.depName2 = '${depName2}' `;
     }
 
     if (depStreet) {
