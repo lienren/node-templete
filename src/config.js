@@ -74,11 +74,11 @@ module.exports = {
       sitepath: path.resolve(__dirname, '../assets/adminweb/index.html')
     }
   ],
-  // sequelize-auto -o "./src/models" -d aicy -h 47.110.136.73 -u root -p 3306 -x Ler@2019 -e mysql
+  // sequelize-auto -o "./src/models" -d aicy_yh -h 47.110.136.73 -u root -p 3306 -x Ler@2019 -e mysql
   databases: [
     {
       modelPath: path.resolve(__dirname, './models'),
-      db: 'aicy',
+      db: 'aicy_yh',
       dialect: 'mysql',
       port: 3306,
       replication: {
