@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-08-18 10:44:07
- * @LastEditTime: 2021-11-21 20:47:57
+ * @LastEditTime: 2021-12-24 11:59:41
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/aicy/api.js
@@ -15,8 +15,24 @@ const path = require('path');
 const sequelize = require('sequelize');
 const comm = require('../../utils/comm');
 const date = require('../../utils/date');
+const http = require('../../utils/http');
 const jwt = require('../../utils/jwt');
 const encrypt = require('../../utils/encrypt');
+const WechatAPI = require('co-wechat-api');
+
+let WechatAppId = 'wx643b4f0bc0aef7d8';
+let WechatAppSecret = '7f4d02118bada426e2432f99611114ef';
+
+var wcApi = new WechatAPI(WechatAppId, WechatAppSecret, function () {
+  if (fs.existsSync('access_token.txt')) {
+    let txt = fs.readFileSync('access_token.txt', 'utf8');
+    return JSON.parse(txt);
+  } else {
+    return {}
+  }
+}, function (token) {
+  fs.writeFileSync('access_token.txt', JSON.stringify(token));
+});
 
 const handleStatusNameEnum = {
   '1': '待办理',
@@ -39,6 +55,44 @@ const verifyStausNameEnum = {
 }
 
 module.exports = {
+  getWeiXinConfig: async ctx => {
+    let debug = ctx.request.body.debug || false;
+    let jsApiList = ctx.request.body.jsApiList || [];
+    let url = ctx.request.body.url || 'https://aicy.billgenius.cn';
+
+    let param = {
+      debug: debug,
+      jsApiList: jsApiList,
+      url: url
+    };
+    let result = await wcApi.getJsConfig(param);
+
+    ctx.body = result;
+  },
+  getWeiXinOpenId: async ctx => {
+    let code = ctx.request.body.code || '';
+    let uri = ctx.request.body.uri || '';
+
+    let result = await http.get({
+      url: `https://api.weixin.qq.com/sns/oauth2/access_token?appid=${WechatAppId}&secret=${WechatAppSecret}&code=${code}&grant_type=authorization_code`,
+      data: {}
+    })
+
+    if (result && result.data && result.data.openid) {
+      ctx.response.redirect(`${uri}?openid=${result.data.openid}`)
+    }
+
+    ctx.body = {}
+  },
+  getWeiXinUserInfo: async ctx => {
+    let openId = ctx.request.body.openId || ''
+
+    let weiXinUser = await wcApi.getUser(openId)
+
+    ctx.body = {
+      weiXinUser
+    }
+  },
   getUserInfo: async ctx => {
     let userId = ctx.request.body.userId || '';
     let nickName = ctx.request.body.nickName || '';

@@ -25,6 +25,7 @@
     "await-busboy": "^1.0.3",
     "axios": "^0.18.0",
     "base64-img": "^1.0.4",
+    "co-wechat-api": "^3.11.0",
     "crypto-js": "^3.1.9-1",
     "ftp": "^0.3.10",
     "gd-bmp": "^1.2.4",
