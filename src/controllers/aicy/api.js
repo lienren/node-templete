@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-08-18 10:44:07
- * @LastEditTime: 2021-12-24 11:59:41
+ * @LastEditTime: 2021-12-28 12:42:25
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/aicy/api.js
@@ -218,6 +218,7 @@ module.exports = {
   },
   setUserInfo: async ctx => {
     let id = ctx.request.body.id || 0;
+    let userName = ctx.request.body.userName || '';
     let userPhone = ctx.request.body.userPhone || '';
     let userSex = ctx.request.body.userSex || '男';
     let userAddress = ctx.request.body.userAddress || '';
@@ -231,6 +232,7 @@ module.exports = {
     assert.ok(id > 0, '提交信息异常！');
 
     let updateColumns = {
+      userName: userName,
       userSex: userSex,
       userPhone: userPhone,
       userAddress: userAddress,
