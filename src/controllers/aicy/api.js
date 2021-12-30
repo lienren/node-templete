@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-08-18 10:44:07
- * @LastEditTime: 2021-12-28 12:42:25
+ * @LastEditTime: 2021-12-30 16:27:16
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/aicy/api.js
@@ -33,6 +33,19 @@ var wcApi = new WechatAPI(WechatAppId, WechatAppSecret, function () {
 }, function (token) {
   fs.writeFileSync('access_token.txt', JSON.stringify(token));
 });
+
+function readAccessToken () {
+  if (fs.existsSync('web_access_token.txt')) {
+    let token = fs.readFileSync('web_access_token.txt', 'utf8');
+    return token;
+  } else {
+    return '';
+  }
+}
+
+function writeAccessToken (token) {
+  fs.writeFileSync('web_access_token.txt', token);
+}
 
 const handleStatusNameEnum = {
   '1': '待办理',
@@ -78,7 +91,10 @@ module.exports = {
       data: {}
     })
 
-    if (result && result.data && result.data.openid) {
+    console.log('result.data:', result.data)
+
+    if (result && result.data && result.data.openid && result.data.access_token) {
+      writeAccessToken(result.data.access_token)
       ctx.response.redirect(`${uri}?openid=${result.data.openid}`)
     }
 
@@ -87,10 +103,24 @@ module.exports = {
   getWeiXinUserInfo: async ctx => {
     let openId = ctx.request.body.openId || ''
 
-    let weiXinUser = await wcApi.getUser(openId)
+    // let weiXinUser = await wcApi.getUser(openId)
+
+    // access_token = 52_p7I10kv0WUrDu3b585HNimt9C4eZWcKzfSgeWF6KO1uCzpkgE78Tomo6RsRsV2zBoQwfUc3dpiB4cdFeDNP8WzjmNTFTZiO_JWLlM_2bG6E
+    // 52_XOxYGcGWtm2UTZZaBylxXGlIzRW-b2A5_hK3s9cGuHNNVT2sJs-Nr2i26fzznheOcx1vubxWUe0R_dyHdCJc-BtNvpt34ZrUgu7LhFIxQqI
+
+    // refresh_token = 52_eFtPHpAkd9JoHe6hQ1dooDlzFqYnniD3dvVUoYebuYtl_sKjFIv4qjz2mfz1A5K4zwnFXZGjOVTEP4P7j5xYD4fl_QplBq22KWCCGOmNYvw
+    // 52_TTDhqiKMZNHYtt4HGMhVLLVcJHgyx4E3jWyBQUeqIEvCltJzNf220mCW7wTzmJftfyu04uaTmI5PkHJGBaPjMpf1f0b-5zAskIrzmza2nIA
+
+    // let access_token = '52_p7I10kv0WUrDu3b585HNimt9C4eZWcKzfSgeWF6KO1uCzpkgE78Tomo6RsRsV2zBoQwfUc3dpiB4cdFeDNP8WzjmNTFTZiO_JWLlM_2bG6E'
+    let access_token = readAccessToken()
+
+    let result = await http.get({
+      url: `https://api.weixin.qq.com/sns/userinfo?access_token=${access_token}&openid=${openId}&lang=zh_CN`,
+      data: {}
+    })
 
     ctx.body = {
-      weiXinUser
+      weiXinUser: result.data
     }
   },
   getUserInfo: async ctx => {
