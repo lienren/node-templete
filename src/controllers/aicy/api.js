@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-08-18 10:44:07
- * @LastEditTime: 2021-12-30 16:27:16
+ * @LastEditTime: 2021-12-30 18:09:17
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/aicy/api.js
@@ -258,6 +258,7 @@ module.exports = {
     let onJob = ctx.request.body.onJob || '';
     let workName = ctx.request.body.workName || '';
     let postName = ctx.request.body.postName || '';
+    let partyType = ctx.request.body.partyType || '';
 
     assert.ok(id > 0, '提交信息异常！');
 
@@ -282,6 +283,10 @@ module.exports = {
 
     if (postName) {
       updateColumns.postName = postName
+    }
+
+    if (partyType) {
+      updateColumns.partyType = partyType
     }
 
     await ctx.orm().info_user.update(updateColumns, {

@@ -125,6 +125,10 @@ module.exports = function(sequelize, DataTypes) {
     postName: {
       type: DataTypes.STRING(100),
       allowNull: true
+    },
+    partyType: {
+      type: DataTypes.STRING(50),
+      allowNull: true
     }
   }, {
     tableName: 'info_user'
