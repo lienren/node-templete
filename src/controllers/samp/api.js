@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-08-18 10:44:07
- * @LastEditTime: 2021-12-15 10:52:45
+ * @LastEditTime: 2022-01-02 23:29:00
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/samp/api.js
@@ -338,7 +338,8 @@ module.exports = {
         street,
         community,
         address,
-        userType: '在线'
+        userType: '在线',
+        isUp: 0
       }, {
         where: {
           id: user.id

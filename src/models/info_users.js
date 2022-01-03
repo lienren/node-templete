@@ -97,6 +97,19 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.DATE,
       allowNull: true,
       defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
+    },
+    isUp: {
+      type: DataTypes.INTEGER(11),
+      allowNull: true,
+      defaultValue: '0'
+    },
+    upTime: {
+      type: DataTypes.DATE,
+      allowNull: true
+    },
+    upRep: {
+      type: DataTypes.TEXT,
+      allowNull: true
     }
   }, {
     tableName: 'info_users'

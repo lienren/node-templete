@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2021-12-22 10:36:47
+ * @LastEditTime: 2022-01-02 23:30:39
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/samp/rearend.js
@@ -791,7 +791,7 @@ module.exports = {
       if (user1.id === id) {
         await ctx.orm().info_users.update({
           depId, depName1, depName2, depStreet, name, phone, idcard, tradeType, postName, periodType,
-          sampWay: post.sampWay, street, community, address, userType, sampStartTime
+          sampWay: post.sampWay, street, community, address, userType, sampStartTime, isUp: 0
         }, {
           where: {
             id
@@ -801,7 +801,7 @@ module.exports = {
         // 新记录更新
         await ctx.orm().info_users.update({
           depId, depName1, depName2, depStreet, name, phone, idcard, tradeType, postName, periodType,
-          sampWay: post.sampWay, street, community, address, userType, sampStartTime
+          sampWay: post.sampWay, street, community, address, userType, sampStartTime, isUp: 0
         }, {
           where: {
             id
@@ -834,7 +834,7 @@ module.exports = {
       if (user) {
         await ctx.orm().info_users.update({
           depId, depName1, depName2, depStreet, name, phone, idcard, tradeType, postName, periodType,
-          sampWay: post.sampWay, street, community, address, userType, sampStartTime
+          sampWay: post.sampWay, street, community, address, userType, sampStartTime, isUp: 0
         }, {
           where: {
             id: user.id
@@ -862,7 +862,8 @@ module.exports = {
       postName: '愿检尽检人群',
       periodType: '当天',
       sampWay: '1:1单管',
-      userType: '迁移'
+      userType: '迁移',
+      isUp: 0
     }, {
       where: {
         id
@@ -1936,7 +1937,8 @@ module.exports = {
 
       if (dep.depName !== depName) {
         await ctx.orm().info_users.update({
-          depName2: depName
+          depName2: depName,
+          isUp: 0
         }, {
           where: {
             depName2: dep.depName
