@@ -280,7 +280,7 @@ async function getUpUsers () {
       },
       order: [['updateTime', 'desc']]
     })
-  
+
     if (users && users.length > 0) {
       if (!upUserToken) {
         // 没有Token，获取Token
@@ -289,22 +289,22 @@ async function getUpUsers () {
           url: 'http://yjjj.yqfkpt.njga.gov.cn:9088/common/yjjj/token?lyxt=320112000000',
           data: {}
         })
-  
+
         if (tokenRep && tokenRep.data && tokenRep.data.data) {
           upUserToken = tokenRep.data.data
           console.log('上传人员信息Token:', upUserToken)
         }
       }
-  
+
       let sendData = {
         token: upUserToken,
         lyxt: '320112000000',
         data: []
       }
-  
+
       for (let i = 0, j = users.length; i < j; i++) {
         console.log('用户编号:', users[i].id)
-  
+
         sendData.data.push({
           xm: users[i].name,
           xb: getIdCardSex(users[i].idcard),
@@ -322,14 +322,14 @@ async function getUpUsers () {
           gj: users[i].idcard.length === 18 ? '中国' : '未知'
         })
       }
-  
+
       let upRep = await http.post({
         url: 'http://yjjj.yqfkpt.njga.gov.cn:9088/common/yjjj/ryAdd',
         data: sendData
       })
-  
+
       console.log('上传返回信息:', JSON.stringify(upRep.data))
-  
+
       if (upRep && upRep.data && upRep.data.code === 0) {
         // 刷新所有isUp状态
         await ctx.orm().info_users.update({
@@ -361,6 +361,8 @@ async function getUpUsers () {
           }
         })
       }
+    } else {
+      break;
     }
   }
 }
@@ -1343,14 +1345,17 @@ async function main () {
     console.log('每10分钟重置一次上传人员信息的Token')
   })
 
-  dayJob = schedule.scheduleJob('0 0 0 * * *', daySamp)
+  dayJob = schedule.scheduleJob('0 0 0 * * *', function () {
+    daySamp()
+    getUpUsers()
+  })
 
   weekJob = schedule.scheduleJob('0 0 0 * * 1', weekSamp)
 
   monthJob = schedule.scheduleJob('0 0 0 1 * *', monthSamp)
 
   // handleTmp();
-  getUpUsers();
+  // getUpUsers()
 }
 
 process.on('SIGINT', function () {
@@ -1369,7 +1374,7 @@ process.on('SIGINT', function () {
   if (monthJob) {
     monthJob.cancel()
   }
-
+  
   process.exit(0);
 });
 

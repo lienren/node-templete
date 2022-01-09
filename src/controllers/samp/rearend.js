@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2022-01-02 23:30:39
+ * @LastEditTime: 2022-01-04 23:32:40
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/samp/rearend.js
@@ -902,7 +902,7 @@ module.exports = {
       }).join(',') + ')';
     }
 
-    if (depName2){
+    if (depName2) {
       where += ` and u.depName2 = '${depName2}' `;
     }
 
@@ -1024,13 +1024,21 @@ module.exports = {
     group by a.depName1, a.depName2`;
 
     let sql3 = `select a.depName1, a.depName2, count(a.id) isPlanNum, sum(a.isPlanSampNum) isPlanSampNum from (
-      select u.id, u.depName1, u.depName2, count(1) isPlanSampNum 
-      from info_users u 
-      inner join info_user_samps s on s.userId = u.id 
-      where 
-        u.depId > 2 and 
-        s.handleType = '已采样' and s.isPlan = '计划内' ${where} 
-      group by u.id, u.depName1, u.depName2
+      select y.id, y.depName1, y.depName2, sum(y.num1) isPlanSampNum from (
+        select x.id, x.depName1, x.depName2, sum(x.num1) num1, sum(x.num2) num2 from (
+          select
+            u.id, u.depName1, u.depName2, 
+            case when s.handleType = '已采样' then 1 else 0 end as num1,
+            case when s.handleType = '未采样' then 1 else 0 end as num2
+          from info_users u 
+          inner join info_user_samps s on s.userId = u.id 
+          where 
+            u.depId > 2 and s.isPlan = '计划内'  ${where}
+        ) x 
+        group by x.id, x.depName1, x.depName2
+      ) y
+      where y.num2 = 0
+      group by y.id, y.depName1, y.depName2
     ) a
     group by a.depName1, a.depName2`;
 
@@ -1069,7 +1077,7 @@ module.exports = {
         isShouldPlanNum: f2 ? parseInt(f2.isPlanNum) : 0,
         isShouldPlanSampNum: f2 ? parseInt(f2.isPlanSampNum) : 0,
         crate: Math.floor(parseInt(m.oknum) / m.num * 10000) / 100,
-        trate: Math.floor(parseInt(m.noSampNum) / parseInt(m.shouldSampNum) * 10000) / 100,
+        trate: Math.floor(parseInt(m.noSampNum) / (f2 ? parseInt(f2.isPlanSampNum) : 0) * 10000) / 100,
         prate: Math.floor(parseInt(f1 ? f1.isPlanNum : 0) / (f2 ? parseInt(f2.isPlanNum) : 0) * 10000) / 100
       }
     })
@@ -1084,13 +1092,16 @@ module.exports = {
       total.t4 += parseInt(curr.t4)
       total.t5 += parseInt(curr.t5)
       total.t6 += parseInt(curr.t6)
+      total.inPlanNum += parseInt(curr.inPlanNum)
+      total.outPlanNum += parseInt(curr.outPlanNum)
+      total.sampNum += parseInt(curr.sampNum)
       total.noSampNum += parseInt(curr.noSampNum)
       total.isPlanNum += parseInt(curr.isPlanNum)
       total.isPlanSampNum += parseInt(curr.isPlanSampNum)
       total.isShouldPlanNum += parseInt(curr.isShouldPlanNum)
       total.isShouldPlanSampNum += parseInt(curr.isShouldPlanSampNum)
       total.crate = Math.floor(parseInt(total.oknum) / total.num * 10000) / 100,
-        total.trate = Math.floor(parseInt(total.noSampNum) / total.shouldSampNum * 10000) / 100,
+        total.trate = Math.floor(parseInt(total.noSampNum) / total.isShouldPlanSampNum * 10000) / 100,
         total.prate = Math.floor(parseInt(total.isPlanNum) / total.isShouldPlanNum * 10000) / 100
 
       return total
@@ -1105,6 +1116,9 @@ module.exports = {
       t4: 0,
       t5: 0,
       t6: 0,
+      inPlanNum: 0,
+      outPlanNum: 0,
+      sampNum: 0,
       isPlanNum: 0,
       isPlanSampNum: 0,
       isShouldPlanNum: 0,
