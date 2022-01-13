@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2021-12-26 02:00:22
+ * @LastEditTime: 2022-01-12 19:57:41
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/human/rearend.js
@@ -125,7 +125,7 @@ module.exports = {
       limit: pageSize,
       where,
       order: [
-        ['id', 'desc']
+        ['id']
       ]
     });
 
@@ -141,7 +141,7 @@ module.exports = {
             })
           }
         },
-        order: [['id', 'desc']]
+        order: [['id']]
       })
 
       uplevel = await ctx.orm().info_user_uplevel.findAll({
@@ -152,7 +152,7 @@ module.exports = {
             })
           }
         },
-        order: [['id', 'desc']]
+        order: [['id']]
       })
 
       jobs = await ctx.orm().info_user_job.findAll({
@@ -163,7 +163,7 @@ module.exports = {
             })
           }
         },
-        order: [['id', 'desc']]
+        order: [['id']]
       })
     }
 
@@ -683,6 +683,66 @@ module.exports = {
         }
       }
     }
+
+    let total = data.reduce(function (total, curr) {
+      Object.keys(curr).map(m => {
+        if (m !== 'street') {
+          total[m] += parseInt(curr[m])
+        }
+      })
+
+      return total
+    }, {
+      street: '合计',
+      age30: 0,
+      age45: 0,
+      age3035: 0,
+      age3545: 0,
+      cs1: 0,
+      cs2: 0,
+      cs3: 0,
+      cs4: 0,
+      doctor: 0,
+      eduother: 0,
+      j1: 0,
+      j2: 0,
+      j3: 0,
+      j4: 0,
+      j5: 0,
+      j6: 0,
+      j7: 0,
+      juniorcollege: 0,
+      man: 0,
+      masses: 0,
+      member: 0,
+      num: 0,
+      partymember: 0,
+      post0: 0,
+      post1: 0,
+      post2: 0,
+      post3: 0,
+      post4: 0,
+      post5: 0,
+      post6: 0,
+      post7: 0,
+      post8: 0,
+      post9: 0,
+      post10: 0,
+      post11: 0,
+      post12: 0,
+      post13: 0,
+      post14: 0,
+      post15: 0,
+      post16: 0,
+      post17: 0,
+      post18: 0,
+      postgraduate: 0,
+      probationarymember: 0,
+      undergraduate: 0,
+      woman: 0
+    })
+
+    data.push(total)
 
     ctx.body = data;
   },
