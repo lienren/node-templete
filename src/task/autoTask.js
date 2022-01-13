@@ -385,7 +385,8 @@ async function daySamp () {
       periodType: '每2天一检',
       depId: {
         $gt: 2
-      }
+      },
+      userType: '在线'
     }
   });
 
@@ -442,7 +443,8 @@ async function weekSamp () {
       },
       depId: {
         $gt: 2
-      }
+      },
+      userType: '在线'
     }
   });
 
@@ -537,7 +539,8 @@ async function monthSamp () {
       periodType: '每月一检',
       depId: {
         $gt: 2
-      }
+      },
+      userType: '在线'
     }
   });
 
