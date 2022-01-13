@@ -110,6 +110,14 @@ module.exports = function(sequelize, DataTypes) {
     upRep: {
       type: DataTypes.TEXT,
       allowNull: true
+    },
+    restStartTime: {
+      type: DataTypes.DATEONLY,
+      allowNull: true
+    },
+    restEndTime: {
+      type: DataTypes.DATEONLY,
+      allowNull: true
     }
   }, {
     tableName: 'info_users'

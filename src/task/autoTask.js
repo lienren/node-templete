@@ -367,6 +367,14 @@ async function getUpUsers () {
   }
 }
 
+async function getRestUsers () {
+  let sql1 = `update info_users set userType = '正在休假' where userType = '已设置休假' and restStartTime <= now()`
+  let sql2 = `update info_users set userType = '在线' where userType = '正在休假' and restEndTime < DATE_FORMAT(now(),'%Y-%m-%d')`
+
+  await ctx.orm().query(sql1, {}, { type: ctx.orm().sequelize.QueryTypes.UPDATE });
+  await ctx.orm().query(sql2, {}, { type: ctx.orm().sequelize.QueryTypes.UPDATE });
+}
+
 /*
 每2天一检，固定周期
 每周一检，固定周期
@@ -386,7 +394,9 @@ async function daySamp () {
       depId: {
         $gt: 2
       },
-      userType: '在线'
+      userType: {
+        $in: ['在线', '已设置休假']
+      }
     }
   });
 
@@ -444,7 +454,9 @@ async function weekSamp () {
       depId: {
         $gt: 2
       },
-      userType: '在线'
+      userType: {
+        $in: ['在线', '已设置休假']
+      }
     }
   });
 
@@ -540,7 +552,9 @@ async function monthSamp () {
       depId: {
         $gt: 2
       },
-      userType: '在线'
+      userType: {
+        $in: ['在线', '已设置休假']
+      }
     }
   });
 
@@ -1348,14 +1362,18 @@ async function main () {
     console.log('每10分钟重置一次上传人员信息的Token')
   })
 
-  dayJob = schedule.scheduleJob('0 0 0 * * *', function () {
+  schedule.scheduleJob('0 0 0 * * *', function () {
+    getRestUsers()
+  })
+
+  dayJob = schedule.scheduleJob('0 10 0 * * *', function () {
     daySamp()
     getUpUsers()
   })
 
-  weekJob = schedule.scheduleJob('0 0 0 * * 1', weekSamp)
+  weekJob = schedule.scheduleJob('0 10 0 * * 1', weekSamp)
 
-  monthJob = schedule.scheduleJob('0 0 0 1 * *', monthSamp)
+  monthJob = schedule.scheduleJob('0 10 0 1 * *', monthSamp)
 
   // handleTmp();
   // getUpUsers()
@@ -1377,7 +1395,7 @@ process.on('SIGINT', function () {
   if (monthJob) {
     monthJob.cancel()
   }
-  
+
   process.exit(0);
 });
 

@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2022-01-04 23:32:40
+ * @LastEditTime: 2022-01-13 16:11:27
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/samp/rearend.js
@@ -1971,4 +1971,67 @@ module.exports = {
 
     ctx.body = {}
   },
+  updateUserRest: async ctx => {
+    let { id, restTime } = ctx.request.body;
+
+    let user = await ctx.orm().info_users.findOne({
+      where: {
+        id,
+        userType: {
+          $in: ['在线', '已设置休假']
+        },
+        depId: {
+          $gt: 2
+        }
+      }
+    })
+
+    assert.ok(!!user, '用户不存在');
+
+    let userType = '在线'
+    var oDate1 = new Date(restTime[0]);
+    var oDate2 = new Date(date.formatDate(new Date(), 'YYYY-MM-DD'));
+    if (oDate1.getTime() <= oDate2.getTime()) {
+      userType = '正在休假'
+    } else {
+      userType = '已设置休假'
+    }
+
+    await ctx.orm().info_users.update({
+      userType: userType,
+      restStartTime: restTime[0],
+      restEndTime: restTime[1]
+    }, {
+      where: {
+        id: user.id
+      }
+    })
+  },
+  cancelUserRest: async ctx => {
+    let { id } = ctx.request.body;
+
+    let user = await ctx.orm().info_users.findOne({
+      where: {
+        id,
+        userType: {
+          $in: ['正在休假', '已设置休假']
+        },
+        depId: {
+          $gt: 2
+        }
+      }
+    })
+
+    assert.ok(!!user, '用户不存在');
+
+    await ctx.orm().info_users.update({
+      userType: '在线',
+      restStartTime: null,
+      restEndTime: null
+    }, {
+      where: {
+        id: user.id
+      }
+    })
+  }
 };
