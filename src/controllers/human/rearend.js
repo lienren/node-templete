@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2022-01-12 19:57:41
+ * @LastEditTime: 2022-01-14 12:59:51
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/human/rearend.js
@@ -169,7 +169,7 @@ module.exports = {
 
     ctx.body = {
       total: result.count,
-      list: result.rows.map(m => {
+      list: result.rows.map((m, i) => {
         let userId = m.dataValues.id
         let userCerts = certs.length > 0 ? certs.filter(f => f.dataValues.userId === userId) : []
         let userUplevel = uplevel.length > 0 ? uplevel.filter(f => f.dataValues.userId === userId) : []
@@ -177,6 +177,7 @@ module.exports = {
 
         return {
           ...m.dataValues,
+          index: (pageIndex - 1) * pageSize + (i + 1),
           certs: userCerts,
           uplevel: userUplevel,
           jobs: userJobs
@@ -189,7 +190,7 @@ module.exports = {
   submitUsers: async ctx => {
     let { id, street, community, name, sex, birthday, nation, political, edu1, edu2, school, major,
       hold, holdTime, workTime, post, postLevel, phone, idcard, specialty, remark, isretire,
-      isresign, toretire } = ctx.request.body;
+      isresign, toretire, inPartyTime } = ctx.request.body;
 
     toretire = !toretire ? null : toretire
 
@@ -201,7 +202,7 @@ module.exports = {
       await ctx.orm().info_users.update({
         street, community, name, sex, birthday, nation, political, edu1, edu2, school, major,
         hold: JSON.stringify(hold), holdTime, workTime, post, postLevel, phone, idcard, specialty, remark, isretire,
-        isresign, toretire
+        isresign, toretire, inPartyTime
       }, {
         where: {
           id
@@ -211,7 +212,7 @@ module.exports = {
       await ctx.orm().info_users.create({
         street, community, name, sex, birthday, nation, political, edu1, edu2, school, major,
         hold: JSON.stringify(hold), holdTime, workTime, post, postLevel, phone, idcard, specialty, remark, isretire,
-        isresign, toretire, isDel: 0
+        isresign, toretire, inPartyTime, isDel: 0
       })
     }
 
@@ -532,15 +533,22 @@ module.exports = {
     ctx.body = {}
   },
   s1: async ctx => {
-    let sql = `select 't1', count(1) num from info_users 
+    let { street } = ctx.request.body;
+
+    let where = '1=1';
+    if (street) {
+      where += ` and street = '${street}'`
+    }
+
+    let sql = `select 't1', count(1) num from info_users where ${where} 
     union all 
-    select 't2', count(1) num from info_users where isresign = 1
+    select 't2', count(1) num from info_users where isresign = 1 and ${where} 
     union all 
-    select 't3', count(1) num from info_users where isresign = 2
+    select 't3', count(1) num from info_users where isresign = 2 and ${where} 
     union all 
-    select 't4', count(1) num from info_users where isretire = 2
+    select 't4', count(1) num from info_users where isretire = 2 and ${where} 
     union all 
-    select post, count(1) num from info_users group by post `;
+    select post, count(1) num from info_users where ${where} group by post `;
 
     let result = await ctx.orm().query(sql);
 
@@ -694,6 +702,208 @@ module.exports = {
       return total
     }, {
       street: '合计',
+      age30: 0,
+      age45: 0,
+      age3035: 0,
+      age3545: 0,
+      cs1: 0,
+      cs2: 0,
+      cs3: 0,
+      cs4: 0,
+      doctor: 0,
+      eduother: 0,
+      j1: 0,
+      j2: 0,
+      j3: 0,
+      j4: 0,
+      j5: 0,
+      j6: 0,
+      j7: 0,
+      juniorcollege: 0,
+      man: 0,
+      masses: 0,
+      member: 0,
+      num: 0,
+      partymember: 0,
+      post0: 0,
+      post1: 0,
+      post2: 0,
+      post3: 0,
+      post4: 0,
+      post5: 0,
+      post6: 0,
+      post7: 0,
+      post8: 0,
+      post9: 0,
+      post10: 0,
+      post11: 0,
+      post12: 0,
+      post13: 0,
+      post14: 0,
+      post15: 0,
+      post16: 0,
+      post17: 0,
+      post18: 0,
+      postgraduate: 0,
+      probationarymember: 0,
+      undergraduate: 0,
+      woman: 0
+    })
+
+    data.push(total)
+
+    ctx.body = data;
+  },
+  s3: async ctx => {
+    let { street } = ctx.request.body;
+
+    let sql1 = `select a.community, count(a.id) num, sum(a.man) man, sum(a.woman) woman, sum(a.age30) age30, sum(a.age3035) age3035, sum(a.age3545) age3545, sum(a.age45) age45,
+    sum(a.partymember) partymember, sum(a.member) member, sum(a.masses) masses, sum(a.probationarymember) probationarymember, 
+    sum(a.doctor) doctor, sum(a.postgraduate) postgraduate, sum(a.undergraduate) undergraduate, sum(a.juniorcollege) juniorcollege, sum(a.eduother) eduother, 
+    sum(a.post0) post0,
+    sum(a.post1) post1,
+    sum(a.post2) post2,
+    sum(a.post3) post3,
+    sum(a.post4) post4,
+    sum(a.post5) post5,
+    sum(a.post6) post6,
+    sum(a.post7) post7,
+    sum(a.post8) post8,
+    sum(a.post9) post9,
+    sum(a.post10) post10,
+    sum(a.post11) post11,
+    sum(a.post12) post12,
+    sum(a.post13) post13,
+    sum(a.post14) post14,
+    sum(a.post15) post15,
+    sum(a.post16) post16,
+    sum(a.post17) post17,
+    sum(a.post18) post18 
+    from (
+    select id, community, 
+    case sex when '男' then 1 else 0 end man, 
+    case sex when '女' then 1 else 0 end woman, 
+    case when YEAR(now()) - YEAR(substring(idcard, 7, 8)) <= 30 then 1 else 0 end age30,
+    case when YEAR(now()) - YEAR(substring(idcard, 7, 8)) between 31 and 35 then 1 else 0 end age3035,
+    case when YEAR(now()) - YEAR(substring(idcard, 7, 8)) between 36 and 45 then 1 else 0 end age3545,
+    case when YEAR(now()) - YEAR(substring(idcard, 7, 8)) > 45 then 1 else 0 end age45,
+    case political when '党员' then 1 else 0 end partymember,
+    case political when '团员' then 1 else 0 end member,
+    case political when '群众' then 1 else 0 end masses,
+    case political when '预备党员' then 1 else 0 end probationarymember,
+    case edu1 when '博士' then 1 else 0 end doctor,
+    case edu1 when '硕士' then 1 else 0 end postgraduate,
+    case edu1 when '本科' then 1 else 0 end undergraduate,
+    case edu1 when '大专' then 1 else 0 end juniorcollege,
+    case edu1 when '博士' then 0 when '硕士' then 0 when '本科' then 0 when '大专' then 0 else 1 end eduother,
+    case postLevel when 0 then 1 else 0 end post0,
+    case postLevel when 1 then 1 else 0 end post1,
+    case postLevel when 2 then 1 else 0 end post2,
+    case postLevel when 3 then 1 else 0 end post3,
+    case postLevel when 4 then 1 else 0 end post4,
+    case postLevel when 5 then 1 else 0 end post5,
+    case postLevel when 6 then 1 else 0 end post6,
+    case postLevel when 7 then 1 else 0 end post7,
+    case postLevel when 8 then 1 else 0 end post8,
+    case postLevel when 9 then 1 else 0 end post9,
+    case postLevel when 10 then 1 else 0 end post10,
+    case postLevel when 11 then 1 else 0 end post11,
+    case postLevel when 12 then 1 else 0 end post12,
+    case postLevel when 13 then 1 else 0 end post13,
+    case postLevel when 14 then 1 else 0 end post14,
+    case postLevel when 15 then 1 else 0 end post15,
+    case postLevel when 16 then 1 else 0 end post16,
+    case postLevel when 17 then 1 else 0 end post17,
+    case postLevel when 18 then 1 else 0 end post18 from info_users where isresign = 1 and street = '${street}') a 
+    group by a.community;`
+    let sql2 = `select community, hold, count(1) num from info_users where street = '${street}' group by community, hold;`;
+    let sql3 = `select u.community, c.certName, count(1) num from info_users u inner join info_user_cert c on c.userId = u.id where u.street = '${street}' group by u.community, c.certName;`;
+
+    let result1 = await ctx.orm().query(sql1);
+    let result2 = await ctx.orm().query(sql2);
+    let result3 = await ctx.orm().query(sql3);
+
+    let data = result1.map(m => {
+      return {
+        ...m,
+        cs1: 0,
+        cs2: 0,
+        cs3: 0,
+        cs4: m.num,
+        j1: 0,
+        j2: 0,
+        j3: 0,
+        j4: 0,
+        j5: 0,
+        j6: 0,
+        j7: 0
+      }
+    });
+
+    for (let i = 0, j = result2.length; i < j; i++) {
+      let f = data.find(f => f.community === result2[i].community);
+
+      if (f) {
+        let hold = JSON.parse(result2[i].hold);
+        hold.map(m => {
+          switch (m) {
+            case '一肩挑':
+              f.j1 += result2[i].num;
+              break;
+            case '书记':
+              f.j2 += result2[i].num;
+              break;
+            case '主任':
+              f.j3 += result2[i].num;
+              break;
+            case '副书记':
+              f.j4 += result2[i].num;
+              break;
+            case '副主任':
+              f.j5 += result2[i].num;
+              break;
+            case '社工':
+              f.j6 += result2[i].num;
+              break;
+            case '其他':
+              f.j7 += result2[i].num;
+              break;
+          }
+        })
+      }
+    }
+
+    for (let i = 0, j = result3.length; i < j; i++) {
+      let f = data.find(f => f.community === result3[i].community);
+
+      if (f) {
+        switch (result3[i].certName) {
+          case '全国高级社会工作师':
+            f.cs1 += result3[i].num;
+            f.cs4 -= result3[i].num;
+            break;
+          case '全国社会工作师':
+            f.cs2 += result3[i].num;
+            f.cs4 -= result3[i].num;
+            break;
+          case '全国助理社会工作师':
+            f.cs3 += result3[i].num;
+            f.cs4 -= result3[i].num;
+            break;
+        }
+      }
+    }
+
+    let total = data.reduce(function (total, curr) {
+      Object.keys(curr).map(m => {
+        if (m !== 'community') {
+          total[m] += parseInt(curr[m])
+        }
+      })
+
+      return total
+    }, {
+      community: '合计',
       age30: 0,
       age45: 0,
       age3035: 0,
