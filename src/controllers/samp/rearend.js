@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2022-01-13 16:11:27
+ * @LastEditTime: 2022-01-19 16:53:05
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/samp/rearend.js
@@ -605,16 +605,16 @@ module.exports = {
     where 
       u.depId > 2 and 
       s.handleType = '未采样' and 
-      s.startTime <= now() and 
-      now() <= s.endTime ${where};`
+      s.startTime <= DATE_FORMAT(now(),'%Y-%m-%d') and 
+      DATE_FORMAT(now(),'%Y-%m-%d') <= s.endTime ${where};`
 
     let sql1 = `select u.id, u.depName1, u.depName2, u.name, u.idcard, u.phone, u.tradeType, u.postName, u.periodType, current_date() startTime, s.endTime from info_user_samps s 
     inner join info_users u on u.id = s.userId 
     where 
       u.depId > 2 and 
       s.handleType = '未采样' and 
-      s.startTime <= now() and 
-      now() <= s.endTime ${where} 
+      s.startTime <= DATE_FORMAT(now(),'%Y-%m-%d') and 
+      DATE_FORMAT(now(),'%Y-%m-%d') <= s.endTime ${where} 
     order by u.depName1, u.depName2 limit ${(pageIndex - 1) * pageSize},${pageSize}`;
 
     let result = await ctx.orm().query(sql);
@@ -726,8 +726,8 @@ module.exports = {
     where 
       u.depId > 2 and 
       s.handleType = '未采样' and 
-      s.startTime <= now() and 
-      now() <= s.endTime ${where} 
+      s.startTime <= DATE_FORMAT(now(),'%Y-%m-%d') and 
+      DATE_FORMAT(now(),'%Y-%m-%d') <= s.endTime ${where} 
     order by u.depName1, u.depName2`;
 
     let result = await ctx.orm().query(sql);
@@ -1320,7 +1320,7 @@ module.exports = {
       case when u.depId = 2 then '愿检尽检' else '重点人群' end userType from info_user_samps s 
       inner join info_users u on u.id = s.userId 
       inner join info_samps ss on ss.sampName = s.sampName 
-      where 1=1 ${where}) a 
+      where 1=1 and s.handleType in ('已采样', '个人上传采样') ${where}) a 
       group by a.sampName, a.userType`;
 
     let result1 = await ctx.orm().query(sql1);
