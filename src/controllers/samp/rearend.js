@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2022-01-19 16:53:05
+ * @LastEditTime: 2022-01-27 13:15:10
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/samp/rearend.js
@@ -604,6 +604,7 @@ module.exports = {
     inner join info_users u on u.id = s.userId
     where 
       u.depId > 2 and 
+      u.userType in ('在线', '已设置休假') and 
       s.handleType = '未采样' and 
       s.startTime <= DATE_FORMAT(now(),'%Y-%m-%d') and 
       DATE_FORMAT(now(),'%Y-%m-%d') <= s.endTime ${where};`
@@ -612,6 +613,7 @@ module.exports = {
     inner join info_users u on u.id = s.userId 
     where 
       u.depId > 2 and 
+      u.userType in ('在线', '已设置休假') and 
       s.handleType = '未采样' and 
       s.startTime <= DATE_FORMAT(now(),'%Y-%m-%d') and 
       DATE_FORMAT(now(),'%Y-%m-%d') <= s.endTime ${where} 
@@ -725,6 +727,7 @@ module.exports = {
     inner join info_users u on u.id = s.userId 
     where 
       u.depId > 2 and 
+      u.userType in ('在线', '已设置休假') and 
       s.handleType = '未采样' and 
       s.startTime <= DATE_FORMAT(now(),'%Y-%m-%d') and 
       DATE_FORMAT(now(),'%Y-%m-%d') <= s.endTime ${where} 
