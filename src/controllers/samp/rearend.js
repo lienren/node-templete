@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2022-01-27 13:15:10
+ * @LastEditTime: 2022-02-07 10:10:09
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/samp/rearend.js
@@ -53,7 +53,7 @@ function formatDate (num) {
 
     return date.formatDate(time)
   } else {
-    return num.trim()
+    return num.trim().split('.')[0]
   }
 }
 
