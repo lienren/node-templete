@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2022-01-14 12:59:51
+ * @LastEditTime: 2022-02-10 16:35:54
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/human/rearend.js
@@ -35,7 +35,7 @@ module.exports = {
     let pageSize = ctx.request.body.pageSize || 50;
     let { street, community, streets, communitys, name, sex, birthday, nation, political, edu1, edu2, school, major,
       hold, holdTime, workTime, post, postLevel, phone, idcard, specialty, remark, isretire,
-      isresign, toretire, createTime, updateTime } = ctx.request.body;
+      isresign, toretire, createTime, updateTime, honorType } = ctx.request.body;
 
     let where = {};
 
@@ -53,6 +53,7 @@ module.exports = {
     Object.assign(where, idcard && { idcard })
     Object.assign(where, isretire && { isretire })
     Object.assign(where, isresign && { isresign })
+    Object.assign(where, honorType && { honorType })
 
     if (streets && streets.length > 0) {
       where.street = {
@@ -132,6 +133,7 @@ module.exports = {
     let certs = []
     let uplevel = []
     let jobs = []
+    let levels = []
     if (result && result.count > 0 && result.rows && result.rows.length > 0) {
       certs = await ctx.orm().info_user_cert.findAll({
         where: {
@@ -165,6 +167,17 @@ module.exports = {
         },
         order: [['id']]
       })
+
+      levels = await ctx.orm().info_user_level.findAll({
+        where: {
+          userId: {
+            $in: result.rows.map(m => {
+              return m.dataValues.id
+            })
+          }
+        },
+        order: [['year']]
+      })
     }
 
     ctx.body = {
@@ -174,13 +187,15 @@ module.exports = {
         let userCerts = certs.length > 0 ? certs.filter(f => f.dataValues.userId === userId) : []
         let userUplevel = uplevel.length > 0 ? uplevel.filter(f => f.dataValues.userId === userId) : []
         let userJobs = jobs.length > 0 ? jobs.filter(f => f.dataValues.userId === userId) : []
+        let userLevels = levels.length > 0 ? levels.filter(f => f.dataValues.userId === userId) : []
 
         return {
           ...m.dataValues,
           index: (pageIndex - 1) * pageSize + (i + 1),
           certs: userCerts,
           uplevel: userUplevel,
-          jobs: userJobs
+          jobs: userJobs,
+          levels: userLevels
         }
       }),
       pageIndex,
@@ -190,7 +205,7 @@ module.exports = {
   submitUsers: async ctx => {
     let { id, street, community, name, sex, birthday, nation, political, edu1, edu2, school, major,
       hold, holdTime, workTime, post, postLevel, phone, idcard, specialty, remark, isretire,
-      isresign, toretire, inPartyTime } = ctx.request.body;
+      isresign, toretire, inPartyTime, honorType, honorContent } = ctx.request.body;
 
     toretire = !toretire ? null : toretire
 
@@ -202,7 +217,10 @@ module.exports = {
       await ctx.orm().info_users.update({
         street, community, name, sex, birthday, nation, political, edu1, edu2, school, major,
         hold: JSON.stringify(hold), holdTime, workTime, post, postLevel, phone, idcard, specialty, remark, isretire,
-        isresign, toretire, inPartyTime
+        isresign, toretire,
+        inPartyTime: inPartyTime ? inPartyTime : null,
+        honorType,
+        honorContent
       }, {
         where: {
           id
@@ -212,7 +230,11 @@ module.exports = {
       await ctx.orm().info_users.create({
         street, community, name, sex, birthday, nation, political, edu1, edu2, school, major,
         hold: JSON.stringify(hold), holdTime, workTime, post, postLevel, phone, idcard, specialty, remark, isretire,
-        isresign, toretire, inPartyTime, isDel: 0
+        isresign, toretire,
+        inPartyTime: inPartyTime ? inPartyTime : null,
+        honorType,
+        honorContent,
+        isDel: 0
       })
     }
 
@@ -959,7 +981,7 @@ module.exports = {
   exportUsers: async ctx => {
     let { street, community, streets, communitys, name, sex, birthday, nation, political, edu1, edu2, school, major,
       hold, holdTime, workTime, post, postLevel, phone, idcard, specialty, remark, isretire,
-      isresign, toretire, createTime, updateTime } = ctx.request.body;
+      isresign, toretire, createTime, updateTime, honorType } = ctx.request.body;
 
     let where = {};
 
@@ -977,6 +999,7 @@ module.exports = {
     Object.assign(where, idcard && { idcard })
     Object.assign(where, isretire && { isretire })
     Object.assign(where, isresign && { isresign })
+    Object.assign(where, honorType && { honorType })
 
     if (streets && streets.length > 0 && streets.indexOf(',') >= 0) {
       streets = streets.split(',')
@@ -1059,6 +1082,7 @@ module.exports = {
     let certs = []
     let uplevel = []
     let jobs = []
+    let levels = []
     if (users && users.length > 0) {
       certs = await ctx.orm().info_user_cert.findAll({
         where: {
@@ -1092,6 +1116,17 @@ module.exports = {
         },
         order: [['userId']]
       })
+
+      levels = await ctx.orm().info_user_level.findAll({
+        where: {
+          userId: {
+            $in: users.map(m => {
+              return m.dataValues.id
+            })
+          }
+        },
+        order: [['userId'], ['year']]
+      })
     }
 
     let xlsxObj = [];
@@ -1109,6 +1144,10 @@ module.exports = {
     })
     xlsxObj.push({
       name: '社工调动记录',
+      data: []
+    })
+    xlsxObj.push({
+      name: '社工考核记录',
       data: []
     })
 
@@ -1133,6 +1172,8 @@ module.exports = {
       '岗位',
       '岗级',
       '特长',
+      '荣誉类型',
+      '荣誉内容',
       '备注',
       '是否退休',
       '是否辞职',
@@ -1183,6 +1224,19 @@ module.exports = {
       '创建时间'
     ])
 
+    xlsxObj[4].data.push([
+      '编号',
+      '姓名',
+      '手机号',
+      '身份证号',
+      '年份',
+      '考核等级',
+      '考核人',
+      '考核时间',
+      '备注',
+      '创建时间'
+    ])
+
     for (let i = 0, j = users.length; i < j; i++) {
       let user = users[i];
 
@@ -1209,6 +1263,8 @@ module.exports = {
       arr.push(user.post);
       arr.push(user.postLevel);
       arr.push(user.specialty);
+      arr.push(user.honorType);
+      arr.push(user.honorContent);
       arr.push(user.remark);
       arr.push(user.isretire === 2 ? "已退休" : "未退休");
       arr.push(user.isresign === 2 ? "已辞职" : "未辞职");
@@ -1282,11 +1338,71 @@ module.exports = {
       xlsxObj[3].data.push(arr)
     }
 
+    for (let i = 0, j = levels.length; i < j; i++) {
+      let level = levels[i];
+
+      let user = users.find(f => f.dataValues.id === level.userId);
+
+      let arr = new Array();
+      arr.push(level.id || '');
+      arr.push(user.name);
+      arr.push(user.phone);
+      arr.push(user.idcard);
+      arr.push(level.year);
+      arr.push(level.levelType);
+      arr.push(level.checkUser);
+      arr.push(level.checkTime);
+      arr.push(level.remark);
+      arr.push(level.createTime);
+
+      xlsxObj[4].data.push(arr)
+    }
+
     let excelFile = excel.exportMoreSheetExcel(xlsxObj);
 
     ctx.set('Content-Type', 'application/vnd.openxmlformats');
     ctx.set('Access-Control-Expose-Headers', 'Content-Disposition')
     ctx.set('Content-Disposition', 'attachment; filename=' + 'orders_export.xlsx');
     ctx.body = excelFile;
+  },
+  submitLevel: async ctx => {
+    let { id, year, levelType, remark, checkUser } = ctx.request.body;
+
+    let user = await ctx.orm().info_users.findOne({
+      where: { id, isDel: 0 }
+    })
+
+    assert.ok(user !== null, '社工不存在，请联系管理员')
+
+    let userLevel = await ctx.orm().info_user_level.findOne({
+      where: {
+        userId: user.id,
+        year: year
+      }
+    })
+
+    if (userLevel) {
+      await ctx.orm().info_user_level.update({
+        levelType: levelType,
+        remark: remark,
+        checkUser: checkUser,
+        checkTime: date.formatDate()
+      }, {
+        where: {
+          id: userLevel.id
+        }
+      })
+    } else {
+      await ctx.orm().info_user_level.create({
+        userId: user.id,
+        year: year,
+        levelType: levelType,
+        remark: remark,
+        checkUser: checkUser,
+        checkTime: date.formatDate()
+      })
+    }
+
+    ctx.body = {}
   }
 };

@@ -126,6 +126,14 @@ module.exports = function(sequelize, DataTypes) {
     inPartyTime: {
       type: DataTypes.DATEONLY,
       allowNull: true
+    },
+    honorType: {
+      type: DataTypes.STRING(20),
+      allowNull: true
+    },
+    honorContent: {
+      type: DataTypes.STRING(100),
+      allowNull: true
     }
   }, {
     tableName: 'info_users'
