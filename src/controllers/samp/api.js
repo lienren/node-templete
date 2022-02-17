@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-08-18 10:44:07
- * @LastEditTime: 2022-01-02 23:29:00
+ * @LastEditTime: 2022-02-16 09:59:36
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/samp/api.js
@@ -247,7 +247,7 @@ module.exports = {
     let nowSampTime = '';
     let nextSampTime = '';
     if (user && user.depId > 2) {
-      let one = await ctx.orm().info_user_samps.findOne({
+      /* let one = await ctx.orm().info_user_samps.findOne({
         where: {
           userId: user.id,
           startTime: {
@@ -275,7 +275,7 @@ module.exports = {
 
       if (two) {
         nextSampTime = `${date.formatDate(one.startTime, 'MM月DD日')}-${date.formatDate(one.endTime, 'MM月DD日')}`
-      }
+      } */
     }
 
     ctx.body = {

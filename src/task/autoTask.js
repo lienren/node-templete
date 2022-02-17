@@ -1350,7 +1350,7 @@ async function main () {
   automaticCheckQCodeJob = schedule.scheduleJob(
     automaticRule,
     function () {
-      getSuccessed()
+      // getSuccessed()
       importUsers()
       importSamps()
     }

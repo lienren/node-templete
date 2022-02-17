@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2022-02-07 10:10:09
+ * @LastEditTime: 2022-02-15 10:28:23
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/samp/rearend.js
@@ -1348,6 +1348,9 @@ module.exports = {
     });
 
     ctx.body = data;
+  },
+  s4: async ctx => {
+    
   },
   importUsers: async ctx => {
     if (ctx.req.files && ctx.req.files.length > 0) {
