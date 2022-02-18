@@ -58,6 +58,7 @@ module.exports = {
     let user = await ctx.orm().school_users_v2.findOne({
       where: {
         x1: x1,
+        isclose: 0
       },
     });
     assert.notStrictEqual(

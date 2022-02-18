@@ -200,6 +200,11 @@ module.exports = function(sequelize, DataTypes) {
     hsjcaddr: {
       type: DataTypes.STRING(255),
       allowNull: true
+    },
+    isclose: {
+      type: DataTypes.INTEGER(11),
+      allowNull: true,
+      defaultValue: '0'
     }
   }, {
     tableName: 'school_users_v2'
