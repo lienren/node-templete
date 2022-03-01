@@ -24,9 +24,9 @@ let next = function () {
 // 自动取消订单，还原订单库存
 async function orderRevertStock () {
   let now = date.formatDate();
-  let sql = `select m.product_sku_id, m.product_quantity, o.id orderid, o.coupon_id, o.create_time from oms_order_item m 
+  let sql = `select m.product_id, m.product_sku_id, m.product_quantity, o.id orderid, o.coupon_id, o.create_time from oms_order_item m 
   inner join oms_order o on o.id = m.order_id 
-  where o.status = 0 and now() > DATE_ADD(o.create_time, INTERVAL 24 HOUR);`;
+  where o.status = 0 and now() > DATE_ADD(o.create_time, INTERVAL 1 HOUR);`;
 
   let orderPros = await ctx.orm().query(sql);
 
@@ -66,7 +66,18 @@ async function orderRevertStock () {
       })
 
       // 还原优惠券
-
+      if (orderPros[i].coupon_id > 0) {
+        await ctx.orm().sms_coupon_history.update({
+          use_status: 0,
+          order_id: 0,
+          order_sn: ''
+        }, {
+          where: {
+            order_id: orderPros[i].orderid,
+            use_status: 1
+          }
+        });
+      }
 
       // 记录订单取消
       await ctx.orm().oms_order_operate_history.create({
@@ -109,7 +120,7 @@ async function refreshProductStock () {
 
   // 更新销售量的sql
   let sql0 = `update pms_product set sale = 0`;
-  
+
   let sql1 = `update pms_product p, (
     select m.product_id, sum(m.product_quantity) sale from oms_order o 
     inner join oms_order_item m on m.order_id = o.id 

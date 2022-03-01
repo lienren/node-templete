@@ -37,7 +37,7 @@ appId:2021002161667283
 
 const tenpayAPI = new tenpay({
   appid: 'wx17112a11c395f6e3',
-  mchid: '1614558822',
+  mchid: '1610949193',
   partnerKey: '06E9561F6D35212879AE5A272FE7D6BA',
   notify_url: 'https://mall.lixianggo.com/mall/notify/weipay'
 }, true);
@@ -1294,7 +1294,13 @@ module.exports = {
       let memberCouponAmount = NP.strip(memberCoupon.amount);
       let productCouponAmount = 0;
 
-      if (memberCoupon.use_type === 1) {
+      if (memberCoupon.use_type === 0) {
+        // 全品类
+        if (memberCouponAmount > 0) {
+          productCouponAmount = orderPrice > memberCouponAmount ? memberCouponAmount : orderPrice;
+        }
+      }
+      else if (memberCoupon.use_type === 1) {
         // 指定分类
       }
       else if (memberCoupon.use_type === 2) {
@@ -1588,7 +1594,7 @@ module.exports = {
           id: memberCoupon.id,
           couponId: memberCoupon.coupon_id,
           available: available,
-          condition: `指定商品\n最多优惠${couponAmout}元`,
+          condition: memberCoupon.use_type === 0 ? `全场通用` : `指定商品\n最多优惠${couponAmout}元`,
           description: memberCoupon.note,
           reason: reason,
           value: parseInt(couponAmout * 100),

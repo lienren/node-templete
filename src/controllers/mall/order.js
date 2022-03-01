@@ -338,6 +338,20 @@ module.exports = {
       }
     });
 
+    // 还原优惠券
+    await ctx.orm().sms_coupon_history.update({
+      use_status: 0,
+      order_id: 0,
+      order_sn: ''
+    }, {
+      where: {
+        order_id: {
+          $in: ids
+        },
+        use_status: 1
+      }
+    });
+
     let data = ids.map(orderId => {
       return {
         order_id: orderId,
