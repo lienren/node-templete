@@ -116,7 +116,8 @@ let depToUpDep = {
   '顶山街道': 'MZ0',
   '长芦街道': 'MZ0',
   '沿江街道': 'MZ0',
-  '生态环境和水务局': 'HJ0'
+  '生态环境和水务局': 'HJ0',
+  '公安分局': 'GA0'
 }
 
 let streetToUpStreet = {
@@ -303,54 +304,69 @@ async function getUpUsers () {
       }
 
       for (let i = 0, j = users.length; i < j; i++) {
-        console.log('用户编号:', users[i].id)
-
-        sendData.data.push({
-          xm: users[i].name,
-          xb: getIdCardSex(users[i].idcard),
-          zjlx: users[i].idcard.length === 18 ? 111 : 214,
-          zjhm: users[i].idcard,
-          sjhm: users[i].phone,
-          sfzg: 1,
-          zdrqlb: postToUpPost[users[i].postName],  // 重点人群类别
-          zrbm: depToUpDep[users[i].depName1],// 责任部门
-          sszrqbh: '320112000000',
-          sszrjdbh: streetToUpStreet[users[i].street],
-          sszrsqbh: communityToUpCommunity[users[i].community],
-          dwmc: users[i].depName2,
-          dwjdbh: streetToUpStreet[users[i].depStreet],
-          gj: users[i].idcard.length === 18 ? '中国' : '未知'
-        })
+        if (postToUpPost[users[i].postName] && depToUpDep[users[i].depName1]) {
+          sendData.data.push({
+            xm: users[i].name,
+            xb: getIdCardSex(users[i].idcard),
+            zjlx: users[i].idcard.length === 18 ? 111 : 214,
+            zjhm: users[i].idcard,
+            sjhm: users[i].phone,
+            sfzg: 1,
+            zdrqlb: postToUpPost[users[i].postName],  // 重点人群类别
+            zrbm: depToUpDep[users[i].depName1],// 责任部门
+            sszrqbh: '320112000000',
+            sszrjdbh: streetToUpStreet[users[i].street],
+            sszrsqbh: communityToUpCommunity[users[i].community],
+            dwmc: users[i].depName2,
+            dwjdbh: streetToUpStreet[users[i].depStreet],
+            gj: users[i].idcard.length === 18 ? '中国' : '未知'
+          })
+        }
       }
 
-      let upRep = await http.post({
-        url: 'http://yjjj.yqfkpt.njga.gov.cn:9088/common/yjjj/ryAdd',
-        data: sendData
-      })
+      if (sendData.length > 0) {
+        let upRep = await http.post({
+          url: 'http://yjjj.yqfkpt.njga.gov.cn:9088/common/yjjj/ryAdd',
+          data: sendData
+        })
 
-      console.log('上传返回信息:', JSON.stringify(upRep.data))
-
-      if (upRep && upRep.data && upRep.data.code === 0) {
+        if (upRep && upRep.data && upRep.data.code === 0) {
+          // 刷新所有isUp状态
+          await ctx.orm().info_users.update({
+            isUp: 1,
+            upTime: date.formatDate(),
+            upRep: '更新成功'
+          }, {
+            where: {
+              id: {
+                $in: users.map(m => {
+                  return m.dataValues.id
+                })
+              }
+            }
+          })
+        } else {
+          // 刷新所有isUp状态
+          await ctx.orm().info_users.update({
+            isUp: 2,
+            upTime: date.formatDate(),
+            upRep: JSON.stringify(upRep.data)
+          }, {
+            where: {
+              id: {
+                $in: users.map(m => {
+                  return m.dataValues.id
+                })
+              }
+            }
+          })
+        }
+      } else {
         // 刷新所有isUp状态
         await ctx.orm().info_users.update({
           isUp: 1,
           upTime: date.formatDate(),
           upRep: '更新成功'
-        }, {
-          where: {
-            id: {
-              $in: users.map(m => {
-                return m.dataValues.id
-              })
-            }
-          }
-        })
-      } else {
-        // 刷新所有isUp状态
-        await ctx.orm().info_users.update({
-          isUp: 2,
-          upTime: date.formatDate(),
-          upRep: JSON.stringify(upRep.data)
         }, {
           where: {
             id: {
