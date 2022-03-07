@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2022-02-15 10:28:23
+ * @LastEditTime: 2022-03-02 08:36:01
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/samp/rearend.js
@@ -1350,7 +1350,48 @@ module.exports = {
     ctx.body = data;
   },
   s4: async ctx => {
-    
+    let today = date.formatDate(new Date(), 'YYYY-MM-DD');
+    let sql1 = `select postName, count(1) num from info_users where depId > 2 and postName != '愿检尽检人群' group by postName`;
+    let sql2 = `select u.postName, count(1) num from (
+      select userId from info_user_samps 
+      where 
+        startTime <= '${today}' and 
+        endTime >= '${today}' and 
+        handleType = '未采样' and 
+        userId in (select id from info_users where depId > 2)
+      ) a
+      inner join info_users u on u.id = a.userId
+      group by u.postName`;
+    let sql3 = `select postName, count(1) num from info_user_samps where handleType in ('已采样', '个人上传采样') group by postName`;
+    let sql4 = `select u.postName, count(1) num from (
+      select userId from info_user_samps 
+      where 
+        DATE_FORMAT(handleTime,'%Y-%m-%d') = '${today}' and  
+        handleType in ('已采样', '个人上传采样') and 
+        userId in (select id from info_users where depId > 2)
+      ) a
+      inner join info_users u on u.id = a.userId
+      group by u.postName`;
+
+    let result1 = await ctx.orm().query(sql1);
+    let result2 = await ctx.orm().query(sql2);
+    let result3 = await ctx.orm().query(sql3);
+    let result4 = await ctx.orm().query(sql4);
+
+    let data = result1.map(m => {
+      let f2 = result2.find(f => f.postName === m.postName);
+      let f3 = result3.find(f => f.postName === m.postName);
+      let f4 = result4.find(f => f.postName === m.postName);
+      return {
+        postName: m.postName,
+        n1: m.num,
+        n2: f2 ? f2.num : 0,
+        n3: f3 ? f3.num : 0,
+        n4: f4 ? f4.num : 0
+      }
+    })
+
+    ctx.body = data;
   },
   importUsers: async ctx => {
     if (ctx.req.files && ctx.req.files.length > 0) {
