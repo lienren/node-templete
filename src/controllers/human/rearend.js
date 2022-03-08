@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2022-02-10 16:35:54
+ * @LastEditTime: 2022-03-08 21:13:24
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/human/rearend.js
@@ -214,6 +214,14 @@ module.exports = {
     }
 
     if (id && id > 0) {
+      let findUser = await ctx.orm().info_users.findOne({
+        where: {
+          idcard: idcard,
+          isDel: 0
+        }
+      })
+      assert.ok(findUser === null, '此身份证已存在，请更换！')
+
       await ctx.orm().info_users.update({
         street, community, name, sex, birthday, nation, political, edu1, edu2, school, major,
         hold: JSON.stringify(hold), holdTime, workTime, post, postLevel, phone, idcard, specialty, remark, isretire,
