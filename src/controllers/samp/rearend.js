@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2022-03-02 08:36:01
+ * @LastEditTime: 2022-03-08 11:00:28
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/samp/rearend.js
@@ -1347,16 +1347,33 @@ module.exports = {
       }
     });
 
+    let sum = data.reduce((total, curr) => {
+      total.d1 += parseInt(curr.d1)
+      total.d2 += parseInt(curr.d2)
+      return total
+    }, {
+      name: '合计',
+      d1: 0,
+      d2: 0
+    })
+
+    data.push(sum)
+
     ctx.body = data;
   },
   s4: async ctx => {
-    let today = date.formatDate(new Date(), 'YYYY-MM-DD');
+    let { selectTime } = ctx.request.body;
+
+    if (!selectTime) {
+      selectTime = date.formatDate(new Date(), 'YYYY-MM-DD');
+    }
+    
     let sql1 = `select postName, count(1) num from info_users where depId > 2 and postName != '愿检尽检人群' group by postName`;
     let sql2 = `select u.postName, count(1) num from (
       select userId from info_user_samps 
       where 
-        startTime <= '${today}' and 
-        endTime >= '${today}' and 
+        startTime <= '${selectTime}' and 
+        endTime >= '${selectTime}' and 
         handleType = '未采样' and 
         userId in (select id from info_users where depId > 2)
       ) a
@@ -1366,7 +1383,7 @@ module.exports = {
     let sql4 = `select u.postName, count(1) num from (
       select userId from info_user_samps 
       where 
-        DATE_FORMAT(handleTime,'%Y-%m-%d') = '${today}' and  
+        DATE_FORMAT(handleTime,'%Y-%m-%d') = '${selectTime}' and  
         handleType in ('已采样', '个人上传采样') and 
         userId in (select id from info_users where depId > 2)
       ) a
@@ -1385,11 +1402,27 @@ module.exports = {
       return {
         postName: m.postName,
         n1: m.num,
-        n2: f2 ? f2.num : 0,
-        n3: f3 ? f3.num : 0,
-        n4: f4 ? f4.num : 0
+        n2: f2 ? parseInt(f2.num) : 0,
+        n3: f3 ? parseInt(f3.num) : 0,
+        n4: f4 ? parseInt(f4.num) : 0
       }
     })
+
+    let sum = data.reduce((total, curr) => {
+      total.n1 += parseInt(curr.n1)
+      total.n2 += parseInt(curr.n2)
+      total.n3 += parseInt(curr.n3)
+      total.n4 += parseInt(curr.n4)
+      return total
+    }, {
+      postName: '合计',
+      n1: 0,
+      n2: 0,
+      n3: 0,
+      n4: 0
+    })
+
+    data.push(sum)
 
     ctx.body = data;
   },
