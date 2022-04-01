@@ -8,10 +8,13 @@
 
 console.time('AutoTaskExec');
 
+const path = require("path")
 const schedule = require('node-schedule');
 const sequelize = require('sequelize').Sequelize;
 const config = require('../config.js');
 const date = require('../utils/date');
+
+const oss = require('../utils/oss');
 
 // 自动取消订单，还原订单库存
 let automaticOrderRevertStock = null;
@@ -213,6 +216,69 @@ async function autoCompleteOrder () {
   console.log('autoCompleteOrder is over:%s', date.formatDate());
 }
 
+async function autoOSS () {
+  let filepath = path.resolve(__dirname, '../../assets/uploads/files/');
+
+  // https://mall.lixianggo.com/uploads/files/1620283132327.jpg
+  // https://mall.lixianggo.com/uploads/files/1620439115119.jpg,https://mall.lixianggo.com/uploads/files/1620439124184.jpg,https://mall.lixianggo.com/uploads/files/1620439131915.jpg
+
+  while (true) {
+    let sql = `select id, name, pic, album_pics from pms_product where is_del = 0 and pic like 'https://mall.lixianggo.com/%' limit 10`;
+    let pros = await ctx.orm().query(sql);
+
+    if (pros.length === 0) {
+      break;
+    }
+
+    for (let i = 0, j = pros.length; i < j; i++) {
+      let aliPic = "";
+      let aliAlbumPics = "";
+
+      if (pros[i].pic && pros[i].pic.length > 0) {
+        let picUrlArr = pros[i].pic.split('/');
+        let picFileName = picUrlArr.length > 0 ? picUrlArr[picUrlArr.length - 1] : '';
+
+        if (picFileName) {
+          let result = await oss.client.put(picFileName, path.normalize(filepath + '/' + picFileName));
+
+          if (result && result.url) {
+            aliPic = result.url.replace('http://', 'https://');
+          }
+        }
+      }
+
+      if (pros[i].album_pics && pros[i].album_pics.length > 0) {
+        let albumPics = pros[i].album_pics.split(',');
+
+        for (let x = 0, y = albumPics.length; x < y; x++) {
+          let albumPicUrlArr = albumPics[x].split('/');
+          let albumPicFileName = albumPicUrlArr.length > 0 ? albumPicUrlArr[albumPicUrlArr.length - 1] : '';
+
+          if (albumPicFileName) {
+            let result = await oss.client.put(albumPicFileName, path.normalize(filepath + '/' + albumPicFileName));
+            if (result && result.url) {
+              aliAlbumPics += result.url.replace('http://', 'https://') + ',';
+            }
+          }
+        }
+
+        aliAlbumPics = aliAlbumPics.length > 0 ? aliAlbumPics.substring(0, aliAlbumPics.length - 1) : aliAlbumPics;
+      }
+
+      await ctx.orm().pms_product.update({
+        pic: aliPic,
+        album_pics: aliAlbumPics
+      }, {
+        where: {
+          id: pros[i].id
+        }
+      });
+
+      console.log('成功上传OSS:%s,%s', pros[i].name, date.formatDate());
+    }
+  }
+}
+
 async function main () {
   // 使用koa-orm中间件，sequelize，mysql
   if (config.databases) {
@@ -241,8 +307,14 @@ async function main () {
 
   automaticCouponExpired = schedule.scheduleJob(
     automaticRule,
-    couponExpired
+    async () => {
+      await couponExpired
+    }
   );
+
+  schedule.scheduleJob('0 39 16 * * *', async () => {
+    autoOSS();
+  });
 }
 
 process.on('SIGINT', function () {
