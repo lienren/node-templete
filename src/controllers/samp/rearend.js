@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2022-03-08 11:00:28
+ * @LastEditTime: 2022-04-03 12:20:43
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/samp/rearend.js
@@ -1161,7 +1161,7 @@ module.exports = {
     }
 
     let sql1 = `select DATE_FORMAT(handleTime,'%Y-%m-%d') 日期, count(1) 采样人数 from info_user_samps 
-    where handleType != '未采样' and DATEDIFF(now(),handleTime) <= 30 ${where2}
+    where handleType != '未采样' and handleTime >= DATE_ADD(now(),INTERVAL -8 day) ${where2}
     group by DATE_FORMAT(handleTime,'%Y-%m-%d')`
 
     let sql2 = `select 't1' title, count(1) num from info_users where 1=1 ${where1} 
@@ -1181,7 +1181,7 @@ module.exports = {
     select 't8' title, count(1) num from SuperManagerInfo where verifyLevel = 1 and isDel = 0 ${sampName ? ` and depName = '${sampName}'` : ''}`
 
     let sql3 = `select * from (
-      select sampName 采样点, count(1) 采样人数 from info_user_samps where handleType != '未采样' and DATEDIFF(now(),handleTime) <= 30 ${where2} group by sampName
+      select sampName 采样点, count(1) 采样人数 from info_user_samps where handleType != '未采样' and handleTime >= DATE_ADD(now(),INTERVAL -8 day) ${where2} group by sampName
       ) a order by a.采样人数 desc `
 
 
