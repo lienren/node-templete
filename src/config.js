@@ -97,8 +97,8 @@ module.exports = {
       },
       timezone: '+08:00',
       pool: {
-        maxConnections: 200,
-        minConnections: 0,
+        maxConnections: 40,
+        minConnections: 5,
         maxIdleTime: 30000
       },
       define: {
