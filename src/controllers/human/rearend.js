@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2022-03-08 21:13:24
+ * @LastEditTime: 2022-04-13 12:37:33
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/human/rearend.js
@@ -217,6 +217,9 @@ module.exports = {
       let findUser = await ctx.orm().info_users.findOne({
         where: {
           idcard: idcard,
+          id: {
+            $en: id
+          },
           isDel: 0
         }
       })
