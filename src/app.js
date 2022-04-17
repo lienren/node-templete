@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2018-04-19 11:52:42
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-03-01 11:13:22
+ * @Last Modified time: 2021-06-06 11:28:46
  */
 'use strict';
 
@@ -23,6 +23,30 @@ app.use(koastatic(config.sys.staticPath));
 
 // 配置跨域访问
 app.use(cors());
+
+// 使用koa-bodyparser中间件
+app.use(async (ctx, next) => {
+  ctx.disableBodyParserReturn = false;
+  ctx.disableBodyParserMerge = false;
+
+  let path = ctx.path.toLowerCase();
+
+  if (path.indexOf('/base/getimagecodebybase64') >= 0 ||
+    path.indexOf('/mall/notify/weipay') >= 0 ||
+    path.indexOf('/mall/notify/alipay') >= 0 ||
+    path.indexOf('/mall/order/exportorders') >= 0 ||
+    path.indexOf('/mall/order/exprotproviderorders') >= 0 ||
+    path.indexOf('/samp/rearend/exportusersampss1') >= 0 ||
+    path.indexOf('/samp/rearend/exportusers') >= 0) {
+    ctx.disableBodyParserReturn = true;
+  }
+
+  if (path.indexOf('/mall/notify/weipay') >= 0 ||
+    path.indexOf('/mall/notify/alipay') >= 0) {
+    ctx.disableBodyParserMerge = true;
+  }
+  await next();
+});
 
 // 清除content-encoding请求头编码
 app.use(async (ctx, next) => {
@@ -51,7 +75,8 @@ app.use(requestFilter);
 
 // 路由
 const router = require('./router.js');
-app.use(router);
+const router_bike = require('./router_bike.js');
+app.use(router).use(router_bike);
 
 // 绑定访问端口
 http.createServer(app.callback()).listen(config.sys.port);
