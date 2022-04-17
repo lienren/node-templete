@@ -1,7 +1,7 @@
 {
   "apps": [
     {
-      "name": "node-templete",
+      "name": "aicy",
       "script": "./src/app.js",
       "watch": false,
       "ignore_watch": ["node_modules", "build", "logs"],
