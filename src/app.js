@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2018-04-19 11:52:42
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-03-01 11:13:22
+ * @Last Modified time: 2021-01-24 23:58:34
  */
 'use strict';
 
@@ -18,11 +18,11 @@ const config = require('./config.js');
 
 const app = new koa();
 
-// 静态存放地址
-app.use(koastatic(config.sys.staticPath));
-
 // 配置跨域访问
 app.use(cors());
+
+// 静态存放地址
+app.use(koastatic(config.sys.staticPath));
 
 // 清除content-encoding请求头编码
 app.use(async (ctx, next) => {
@@ -31,11 +31,22 @@ app.use(async (ctx, next) => {
 });
 
 // 使用koa-bodyparser中间件
+app.use(async (ctx, next) => {
+  ctx.disableBodyParserReturn = false;
+
+  let path = ctx.path.toLowerCase();
+
+  if (path.indexOf('/base/getimagecodebybase64') >= 0) {
+    ctx.disableBodyParserReturn = true;
+  }
+  await next();
+});
+
 app.use(
   bodyParser({
     enableTypes: ['json', 'form'],
     jsonLimit: '100mb',
-    formLimit: '100mb'
+    formLimit: '100mb',
   })
 );
 
@@ -51,7 +62,8 @@ app.use(requestFilter);
 
 // 路由
 const router = require('./router.js');
-app.use(router);
+const router_peipei = require('./router_peipei.js');
+app.use(router).use(router_peipei);
 
 // 绑定访问端口
 http.createServer(app.callback()).listen(config.sys.port);

@@ -1,0 +1,798 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg width="1124.000000" height="795.000000" viewBox="0 0 1124 795" coordinateExtent="0.000 0.000 788.072 477.104" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:cge="http://iec.ch/TC57/2005/SVG-schema#" preserveAspectRatio="xMidYMid">
+  <defs>
+    <style type="text/css"><![CDATA[symbol{overflow:visible}
+				.lkv1000 {fill:none;stroke:rgb(0,0,255)}
+				.kv1000 {fill:rgb(0,0,255);stroke:rgb(0,0,255);stroke-width:1}
+				.lkv750 {fill:none;stroke:rgb(250,128,10)}
+				.kv750 {fill:rgb(250,128,10);stroke:rgb(250,128,10);stroke-width:1}
+				.lkv500 {fill:none;stroke:rgb(255,0,0)}
+				.kv500 {fill:rgb(255,0,0);stroke:rgb(255,0,0);stroke-width:1}
+				.lkv330 {fill:none;stroke:rgb(30,144,255)}
+				.kv330 {fill:rgb(30,144,255);stroke:rgb(30,144,255);stroke-width:1}
+				.lkv220 {fill:none;stroke:rgb(128,0,128)}
+				.kv220 {fill:rgb(128,0,128);stroke:rgb(128,0,128);stroke-width:1}
+				.lkv110 {fill:none;stroke:rgb(240,65,85)}
+				.kv110 {fill:rgb(240,65,85);stroke:rgb(240,65,85);stroke-width:1}
+				.lkv66 {fill:none;stroke:rgb(255,204,0)}
+				.kv66 {fill:rgb(255,204,0);stroke:rgb(255,204,0);stroke-width:1}
+				.lkv35 {fill:none;stroke:rgb(255,255,0)}
+				.kv35 {fill:rgb(255,255,0);stroke:rgb(255,255,0);stroke-width:1}
+				.lkv20 {fill:none;stroke:rgb(226,172,6)}
+				.kv20 {fill:rgb(226,172,6);stroke:rgb(226,172,6);stroke-width:1}
+				.lkv15.75 {fill:none;stroke:rgb(0,128,0)}
+				.kv15.75 {fill:rgb(0,128,0);stroke:rgb(0,128,0);stroke-width:1}
+				.lkv13.8 {fill:none;stroke:rgb(0,210,0)}
+				.kv13.8 {fill:rgb(0,210,0);stroke:rgb(0,210,0);stroke-width:1}
+				.lkv10 {fill:none;stroke:rgb(185,72,66)}
+				.kv10 {fill:rgb(185,72,66);stroke:rgb(185,72,66);stroke-width:1}
+				.lkv6 {fill:none;stroke:rgb(0,0,139)}
+				.kv6 {fill:rgb(0,0,139);stroke:rgb(0,0,139);stroke-width:1}
+				.lkv3 {fill:none;stroke:rgb(0,100,0)}
+				.kv3 {fill:rgb(0,100,0);stroke:rgb(0,100,0);stroke-width:1}
+				.lv380 {fill:none;stroke:rgb(0,204,255)}
+				.v380 {fill:rgb(0,204,255);stroke:rgb(0,204,255);stroke-width:1}
+				.lv220 {fill:none;stroke:rgb(176,164,227)}
+				.v220 {fill:rgb(176,164,227);stroke:rgb(176,164,227);stroke-width:1}
+				.lv110 {fill:none;stroke:rgb(192,192,192)}
+				.v110 {fill:rgb(192,192,192);stroke:rgb(192,192,192);stroke-width:1}
+				.lvdc {fill:none;stroke:rgb(98,49,49)}
+				.vdc {fill:rgb(98,49,49);stroke:rgb(98,49,49);stroke-width:1}
+]]></style>
+    <symbol id="terminal">
+      <circle cx="0.000000" cy="0.000000" r="0.200000" fill="none" stroke="rgb(0,200,255)" stroke-width="0.100000" />
+    </symbol>
+    <symbol id="Junction_PMS25_20300000_3020011" width="2.794000" height="2.086000" viewBox="0 0 2.794000 2.086000">
+      <line x1="-1.344000" y1="0.000000" x2="0.030000" y2="-0.990000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <line x1="-0.029000" y1="-0.988000" x2="1.346000" y2="-0.003000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <line x1="1.346000" y1="-0.004000" x2="-0.029000" y2="0.996000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <line x1="-1.348000" y1="-0.005000" x2="0.027000" y2="0.995000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <line x1="0.000000" y1="-0.953000" x2="0.000000" y2="0.953000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <use x="0.000000" y="0.000000" terminal-index="1" type="0" xlink:href="#terminal" />
+    </symbol>
+    <symbol id="Junction_PMS25_20200000_3030010" width="1.600000" height="2.100000" viewBox="0 0 1.600000 2.100000">
+      <polygon points="0.875000,0.000000 -0.625000,-0.984000 -0.625000,1.000000 -0.625000,1.016000" fill="rgb(255,0,0)" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <use x="0.000000" y="0.000000" terminal-index="1" type="0" xlink:href="#terminal" />
+    </symbol>
+    <symbol id="Breaker_PMS25_30500000_4100010@1" width="7.016000" height="1.100000" viewBox="0 0 7.016000 1.100000">
+      <rect x="-1.500000" y="-0.437000" width="3.000000" height="0.938000" fill="rgb(255,0,0)" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <line x1="1.500000" y1="0.000000" x2="3.375000" y2="0.000000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <line x1="-1.500000" y1="0.000000" x2="-3.437000" y2="0.000000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <line x1="-3.500000" y1="0.034000" x2="-3.000000" y2="-0.466000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <line x1="-3.500000" y1="-0.034000" x2="-3.125000" y2="0.466000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <line x1="-3.000000" y1="0.027000" x2="-2.500000" y2="-0.411000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <line x1="-3.000000" y1="-0.027000" x2="-2.500000" y2="0.473000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <line x1="3.416000" y1="0.025000" x2="3.000000" y2="-0.500000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <line x1="3.416000" y1="-0.033000" x2="3.000000" y2="0.500000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <line x1="2.916000" y1="0.025000" x2="2.500000" y2="-0.500000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <line x1="2.916000" y1="-0.033000" x2="2.500000" y2="0.500000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <use x="3.500000" y="0.000000" terminal-index="1" type="0" xlink:href="#terminal" />
+      <use x="-3.500000" y="0.000000" terminal-index="2" type="0" xlink:href="#terminal" />
+    </symbol>
+    <symbol id="Breaker_PMS25_30500000_4100012@3" width="7.038000" height="1.065000" viewBox="0 0 7.038000 1.065000">
+      <rect x="-1.562000" y="-0.500000" width="3.000000" height="0.938000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <line x1="-3.562000" y1="-0.008000" x2="-3.062000" y2="-0.508000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <line x1="-3.562000" y1="-0.071000" x2="-3.187000" y2="0.429000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <line x1="3.375000" y1="-0.027000" x2="2.938000" y2="-0.527000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <line x1="3.375000" y1="-0.090000" x2="3.000000" y2="0.410000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <line x1="-2.500000" y1="-0.437000" x2="-2.500000" y2="0.250000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <line x1="-2.473000" y1="0.313000" x2="-2.973000" y2="0.000000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <line x1="-2.524000" y1="0.313000" x2="-2.024000" y2="0.000000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <line x1="2.438000" y1="-0.437000" x2="2.438000" y2="0.250000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <line x1="2.465000" y1="0.310000" x2="1.965000" y2="-0.003000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <line x1="2.410000" y1="0.310000" x2="2.910000" y2="-0.003000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <use x="3.500000" y="0.000000" terminal-index="1" type="0" xlink:href="#terminal" />
+      <use x="-3.500000" y="0.000000" terminal-index="2" type="0" xlink:href="#terminal" />
+    </symbol>
+    <symbol id="Breaker_PMS25_30500000_4100013@2" width="7.817000" height="1.100000" viewBox="0 0 7.817000 1.100000">
+      <rect x="-1.559000" y="-0.437000" width="3.000000" height="0.938000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <line x1="1.441000" y1="0.000000" x2="3.316000" y2="0.000000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <line x1="-1.559000" y1="0.000000" x2="-3.497000" y2="0.000000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <line x1="2.843000" y1="0.000000" x2="3.343000" y2="-0.500000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <line x1="2.843000" y1="0.000000" x2="3.218000" y2="0.500000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <line x1="3.318000" y1="0.000000" x2="3.818000" y2="-0.437000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <line x1="3.318000" y1="0.000000" x2="3.818000" y2="0.500000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <line x1="-3.024000" y1="0.000000" x2="-3.462000" y2="-0.500000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <line x1="-3.024000" y1="0.000000" x2="-3.399000" y2="0.500000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <line x1="-3.462000" y1="0.013000" x2="-3.899000" y2="-0.487000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <line x1="-3.512000" y1="0.013000" x2="-3.887000" y2="0.450000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <use x="3.500000" y="0.000000" terminal-index="1" type="0" xlink:href="#terminal" />
+      <use x="-3.500000" y="0.000000" terminal-index="2" type="0" xlink:href="#terminal" />
+    </symbol>
+    <symbol id="Breaker_PMS25_30500000_4100011@0" width="7.042000" height="1.069000" viewBox="0 0 7.042000 1.069000">
+      <rect x="-1.476000" y="-0.437000" width="3.000000" height="0.938000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <line x1="1.524000" y1="0.000000" x2="3.399000" y2="0.000000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <line x1="-1.476000" y1="0.000000" x2="-3.414000" y2="0.000000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <line x1="-3.480000" y1="0.031000" x2="-2.980000" y2="-0.469000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <line x1="-3.476000" y1="-0.033000" x2="-3.101000" y2="0.467000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <line x1="-2.976000" y1="0.000000" x2="-2.476000" y2="-0.437000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <line x1="-2.978000" y1="-0.008000" x2="-2.478000" y2="0.492000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <line x1="3.461000" y1="0.038000" x2="3.024000" y2="-0.462000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <line x1="3.461000" y1="-0.026000" x2="3.086000" y2="0.474000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <line x1="2.992000" y1="0.038000" x2="2.554000" y2="-0.462000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <line x1="2.961000" y1="0.000000" x2="2.586000" y2="0.438000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <use x="3.500000" y="0.000000" terminal-index="1" type="0" xlink:href="#terminal" />
+      <use x="-3.500000" y="0.000000" terminal-index="2" type="0" xlink:href="#terminal" />
+    </symbol>
+    <symbol id="Breaker_PMS25_30500000_84100015@9" width="7.044000" height="1.067000" viewBox="0 0 7.044000 1.067000">
+      <rect x="-1.500000" y="-0.437000" width="3.000000" height="0.938000" fill="rgb(255,0,0)" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <line x1="-3.506000" y1="0.033000" x2="-3.006000" y2="-0.467000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <line x1="-3.500000" y1="-0.031000" x2="-3.125000" y2="0.469000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <line x1="3.438000" y1="0.035000" x2="3.000000" y2="-0.465000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <line x1="3.438000" y1="-0.027000" x2="3.063000" y2="0.473000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <line x1="-2.437000" y1="-0.375000" x2="-2.437000" y2="0.313000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <line x1="-2.413000" y1="0.375000" x2="-2.913000" y2="0.063000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <line x1="-2.466000" y1="0.375000" x2="-1.966000" y2="0.063000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <line x1="2.500000" y1="-0.375000" x2="2.500000" y2="0.313000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <line x1="2.529000" y1="0.375000" x2="2.029000" y2="0.063000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <line x1="2.473000" y1="0.375000" x2="2.973000" y2="0.063000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <use x="3.500000" y="0.000000" terminal-index="1" type="0" xlink:href="#terminal" />
+      <use x="-3.500000" y="0.000000" terminal-index="2" type="0" xlink:href="#terminal" />
+    </symbol>
+    <symbol id="Breaker_PMS25_30500000_84100014@8" width="7.822000" height="1.100000" viewBox="0 0 7.822000 1.100000">
+      <rect x="-1.477000" y="-0.444000" width="3.000000" height="0.938000" fill="rgb(255,0,0)" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <line x1="1.523000" y1="-0.007000" x2="3.398000" y2="-0.007000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <line x1="-1.477000" y1="-0.007000" x2="-3.414000" y2="-0.007000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <line x1="2.926000" y1="-0.007000" x2="3.426000" y2="-0.507000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <line x1="2.926000" y1="-0.007000" x2="3.301000" y2="0.493000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <line x1="3.406000" y1="0.000000" x2="3.906000" y2="-0.438000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <line x1="3.395000" y1="-0.021000" x2="3.895000" y2="0.479000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <line x1="-2.942000" y1="-0.007000" x2="-3.379000" y2="-0.507000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <line x1="-2.942000" y1="-0.007000" x2="-3.317000" y2="0.493000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <line x1="-3.379000" y1="-0.007000" x2="-3.817000" y2="-0.507000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <line x1="-3.442000" y1="-0.007000" x2="-3.817000" y2="0.431000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <use x="3.500000" y="0.000000" terminal-index="1" type="0" xlink:href="#terminal" />
+      <use x="-3.500000" y="0.000000" terminal-index="2" type="0" xlink:href="#terminal" />
+    </symbol>
+    <symbol id="Junction_PMS25_32000000_4300010" width="4.078000" height="0.913000" viewBox="0 0 4.078000 0.913000">
+      <line x1="-1.978000" y1="0.000000" x2="0.460000" y2="0.000000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <polygon points="0.460000,-0.375000 0.460000,0.438000 2.000000,0.000000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <use x="0.000000" y="0.000000" terminal-index="1" type="0" xlink:href="#terminal" />
+    </symbol>
+    <symbol id="CompositeSwitch_PMS25_30700002_4070010@1" width="4.600000" height="3.647000" viewBox="0 0 4.600000 3.647000">
+      <line x1="-0.253000" y1="-3.239000" x2="0.247000" y2="-3.239000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <line x1="-0.500000" y1="-3.000000" x2="0.500000" y2="-3.000000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <line x1="-0.750000" y1="-2.733000" x2="0.750000" y2="-2.733000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <line x1="0.000000" y1="-2.688000" x2="0.000000" y2="-1.296000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <line x1="-0.287000" y1="-1.233000" x2="0.275000" y2="-1.233000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <line x1="-2.500000" y1="0.000000" x2="-1.000000" y2="0.000000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <line x1="-1.000000" y1="0.000000" x2="0.750000" y2="-0.563000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <line x1="0.530000" y1="0.000000" x2="2.000000" y2="0.000000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <circle cx="0.187000" cy="-0.004000" r="0.312000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <use x="1.989000" y="0.000000" terminal-index="1" type="0" xlink:href="#terminal" />
+      <use x="-0.011000" y="-1.563000" terminal-index="2" type="0" xlink:href="#terminal" />
+      <use x="-2.511000" y="0.000000" terminal-index="3" type="0" xlink:href="#terminal" />
+    </symbol>
+    <symbol id="CompositeSwitch_PMS25_30700002_4070011@0" width="4.600000" height="3.649000" viewBox="0 0 4.600000 3.649000">
+      <line x1="-0.255000" y1="-3.239000" x2="0.245000" y2="-3.239000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <line x1="-0.503000" y1="-3.000000" x2="0.497000" y2="-3.000000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <line x1="-0.753000" y1="-2.733000" x2="0.747000" y2="-2.733000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <line x1="0.000000" y1="-2.688000" x2="-0.003000" y2="-1.296000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <line x1="-0.290000" y1="-1.233000" x2="0.272000" y2="-1.233000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <line x1="-2.503000" y1="0.002000" x2="-1.003000" y2="0.002000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <line x1="-1.003000" y1="0.002000" x2="0.614000" y2="-1.125000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <line x1="0.527000" y1="0.002000" x2="1.997000" y2="0.002000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <circle cx="0.185000" cy="-0.002000" r="0.312000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <use x="1.989000" y="0.000000" terminal-index="1" type="0" xlink:href="#terminal" />
+      <use x="-0.011000" y="-1.563000" terminal-index="2" type="0" xlink:href="#terminal" />
+      <use x="-2.511000" y="0.000000" terminal-index="3" type="0" xlink:href="#terminal" />
+    </symbol>
+    <symbol id="CompositeSwitch_PMS25_30700002_4070012@4" width="4.600000" height="3.649000" viewBox="0 0 4.600000 3.649000">
+      <line x1="-0.256000" y1="-3.236000" x2="0.244000" y2="-3.236000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <line x1="-0.503000" y1="-2.998000" x2="0.497000" y2="-2.998000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <line x1="-0.753000" y1="-2.731000" x2="0.747000" y2="-2.731000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <line x1="0.000000" y1="-2.688000" x2="-0.003000" y2="-1.294000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <line x1="-0.290000" y1="-1.231000" x2="0.272000" y2="-1.231000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <line x1="-2.503000" y1="0.004000" x2="-1.003000" y2="0.004000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <line x1="-1.003000" y1="0.004000" x2="0.500000" y2="-1.500000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <line x1="0.527000" y1="0.004000" x2="1.997000" y2="0.004000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <circle cx="0.185000" cy="0.000000" r="0.312000" fill="none" stroke="rgb(255,0,0)" stroke-width="0.100000" />
+      <use x="1.989000" y="0.000000" terminal-index="1" type="0" xlink:href="#terminal" />
+      <use x="-0.011000" y="-1.563000" terminal-index="2" type="0" xlink:href="#terminal" />
+      <use x="-2.511000" y="0.000000" terminal-index="3" type="0" xlink:href="#terminal" />
+    </symbol>
+  </defs>
+  <g id="BackGround_Layer">
+    <rect x="0" y="0" width="1122.5202912" height="793.701216" fill="rgb(255,255,255)" />
+  </g>
+  <g id="Substation_Layer">
+    <g id="PD_30000000_3146391">
+      <polygon points="870.980658316412,97.1257693279645 1039.10803000239,97.1257693279645 1039.10803000239,265.253108412278 870.980658316412,265.253108412278 870.980658316412,97.1257693279645" fill="none" stroke="rgb(255,0,0)" stroke-width="0.1" class="lkv110" />
+      <metadata>
+        <cge:PSR_Ref ObjectID="PD_30000000_3146391" ObjectName="丁家山变" PSRType="zf01" GlobeID="123038966" LineType="Trunk" />
+        <cge:Layer_Ref ObjectName="Substation_Layer" />
+      </metadata>
+    </g>
+    <g id="PD_32400000_3280627">
+      <polygon points="144.173203839568,177.832570863003 398.828034054709,177.832570863003 398.828034054709,329.671903024559 144.173203839568,329.671903024559 144.173203839568,177.832570863003" fill="none" stroke="rgb(0,0,0)" stroke-width="0.1" class="lkv20" />
+      <metadata>
+        <cge:PSR_Ref ObjectID="PD_32400000_3280627" ObjectName="20kV西丁线#2环网柜" PSRType="zf07" GlobeID="df8c62ebbfff80808156383ea50156df8ab53a7c09" LineType="Trunk" />
+        <cge:Layer_Ref ObjectName="Substation_Layer" />
+      </metadata>
+    </g>
+  </g>
+  <g id="ConnLine_Layer">
+    <g id="PD_14000000_524115">
+      <polyline points="170.303195639529,299.704434972217 170.303201073139,612.21880132" fill="none" stroke="rgb(0,128,0)" stroke-width="0.1" stroke-dasharray="1 1" class="lkv20" />
+      <metadata>
+        <cge:PSR_Ref ObjectID="PD_14000000_524115" ObjectName="" PSRType="140000" GlobeID="" LineType="Trunk" />
+        <cge:GLink_Ref ObjectID="PD_36000000_29253178" />
+        <cge:GLink_Ref ObjectID="PD_32000000_9987557" />
+        <cge:GLink_Ref ObjectID="PD_0_F57" />
+        <cge:Layer_Ref ObjectName="ConnLine_Layer" />
+      </metadata>
+    </g>
+    <g id="PD_14000000_1383804">
+      <polyline points="268.853157638565,299.704434972217 268.853135904125,612.21880132" fill="none" stroke="rgb(0,128,0)" stroke-width="0.1" stroke-dasharray="1 1" class="lkv20" />
+      <metadata>
+        <cge:PSR_Ref ObjectID="PD_14000000_1383804" ObjectName="" PSRType="140000" GlobeID="" LineType="Trunk" />
+        <cge:GLink_Ref ObjectID="PD_36000000_29253220" />
+        <cge:GLink_Ref ObjectID="PD_32000000_9987574" />
+        <cge:GLink_Ref ObjectID="PD_0_F58" />
+        <cge:Layer_Ref ObjectName="ConnLine_Layer" />
+      </metadata>
+    </g>
+    <g id="PD_14000000_731684">
+      <polyline points="367.399892073213,299.704434972217 367.399870338773,612.21880132" fill="none" stroke="rgb(0,128,0)" stroke-width="0.1" stroke-dasharray="1 1" class="lkv20" />
+      <metadata>
+        <cge:PSR_Ref ObjectID="PD_14000000_731684" ObjectName="" PSRType="140000" GlobeID="" LineType="Trunk" />
+        <cge:GLink_Ref ObjectID="PD_36000000_29253227" />
+        <cge:GLink_Ref ObjectID="PD_32000000_9987576" />
+        <cge:GLink_Ref ObjectID="PD_0_F59" />
+        <cge:Layer_Ref ObjectName="ConnLine_Layer" />
+      </metadata>
+    </g>
+    <g id="PD_14000000_524129">
+      <polyline points="318.126524855889,357.699594012477 318.126524855889,299.704434972217" fill="none" stroke="rgb(0,0,0)" stroke-width="0.1" stroke-dasharray="1 1" class="lkv20" />
+      <metadata>
+        <cge:PSR_Ref ObjectID="PD_14000000_524129" ObjectName="" PSRType="140000" GlobeID="" LineType="Trunk" />
+        <cge:GLink_Ref ObjectID="PD_20100000_1909787" />
+        <cge:GLink_Ref ObjectID="PD_20200000_1872670" />
+        <cge:GLink_Ref ObjectID="PD_36000000_29253224" />
+        <cge:GLink_Ref ObjectID="PD_32000000_9987575" />
+        <cge:Layer_Ref ObjectName="ConnLine_Layer" />
+      </metadata>
+    </g>
+    <g id="PD_14000000_325577">
+      <polyline points="627.916326968052,181.189433436511 619.509967077529,181.189933328639" fill="none" stroke="rgb(0,0,0)" stroke-width="0.1" stroke-dasharray="1 1" class="lkv20" />
+      <metadata>
+        <cge:PSR_Ref ObjectID="PD_14000000_325577" ObjectName="" PSRType="140000" GlobeID="" LineType="Trunk" />
+        <cge:GLink_Ref ObjectID="PD_36000000_29165497" />
+        <cge:GLink_Ref ObjectID="PD_32000000_9966786" />
+        <cge:GLink_Ref ObjectID="PD_20100000_1909788" />
+        <cge:GLink_Ref ObjectID="PD_20200000_1572598" />
+        <cge:Layer_Ref ObjectName="ConnLine_Layer" />
+      </metadata>
+    </g>
+    <g id="PD_36000000_29165497">
+      <polyline points="633.006793705075,181.189933328639 627.916326968052,181.189433436511" fill="none" stroke="rgb(128,128,128)" stroke-width="0.1" class="lkv20" />
+      <metadata>
+        <cge:PSR_Ref ObjectID="PD_36000000_29165497" ObjectName="" PSRType="360000" GlobeID="" LineType="Trunk" />
+        <cge:GLink_Ref ObjectID="PD_30500000_890714" />
+        <cge:GLink_Ref ObjectID="PD_14000000_325577" />
+        <cge:GLink_Ref ObjectID="PD_32000000_9966786" />
+        <cge:Layer_Ref ObjectName="ConnLine_Layer" />
+      </metadata>
+    </g>
+    <g id="PD_36000000_29165494">
+      <polyline points="955.040171146857,181.193530378512 690.077608732822,181.189933328639" fill="none" stroke="rgb(128,128,128)" stroke-width="0.1" class="lkv20" />
+      <metadata>
+        <cge:PSR_Ref ObjectID="PD_36000000_29165494" ObjectName="" PSRType="360000" GlobeID="" LineType="Trunk" />
+        <cge:GLink_Ref ObjectID="PD_0_F61" />
+        <cge:GLink_Ref ObjectID="PD_30500000_890714" />
+        <cge:Layer_Ref ObjectName="ConnLine_Layer" />
+      </metadata>
+    </g>
+    <g id="PD_36000000_29253227">
+      <polyline points="367.391002687121,271.555987433862 367.399892073213,299.704434972217" fill="none" stroke="rgb(128,128,128)" stroke-width="0.1" class="lkv20" />
+      <metadata>
+        <cge:PSR_Ref ObjectID="PD_36000000_29253227" ObjectName="" PSRType="360000" GlobeID="" LineType="Trunk" />
+        <cge:GLink_Ref ObjectID="PD_36000000_29253226" />
+        <cge:GLink_Ref ObjectID="PD_0_151" />
+        <cge:GLink_Ref ObjectID="PD_14000000_731684" />
+        <cge:GLink_Ref ObjectID="PD_32000000_9987576" />
+        <cge:Layer_Ref ObjectName="ConnLine_Layer" />
+      </metadata>
+    </g>
+    <g id="PD_36000000_29253226">
+      <polyline points="367.399892073213,215.738423704044 367.391002687121,271.555987433862" fill="none" stroke="rgb(128,128,128)" stroke-width="0.1" class="lkv20" />
+      <metadata>
+        <cge:PSR_Ref ObjectID="PD_36000000_29253226" ObjectName="" PSRType="360000" GlobeID="" LineType="Trunk" />
+        <cge:GLink_Ref ObjectID="PD_30700002_2845002" />
+        <cge:GLink_Ref ObjectID="PD_36000000_29253227" />
+        <cge:GLink_Ref ObjectID="PD_0_151" />
+        <cge:Layer_Ref ObjectName="ConnLine_Layer" />
+      </metadata>
+    </g>
+    <g id="PD_36000000_29253225">
+      <polyline points="367.399870338773,180.039062111854 367.399892073213,183.617137818974" fill="none" stroke="rgb(128,128,128)" stroke-width="0.1" class="lkv20" />
+      <metadata>
+        <cge:PSR_Ref ObjectID="PD_36000000_29253225" ObjectName="" PSRType="360000" GlobeID="" LineType="Trunk" />
+        <cge:GLink_Ref ObjectID="PD_31100000_1569768" />
+        <cge:GLink_Ref ObjectID="PD_30700002_2845002" />
+        <cge:GLink_Ref ObjectID="PD_36000000_29253173" />
+        <cge:GLink_Ref ObjectID="PD_36000000_29253187" />
+        <cge:GLink_Ref ObjectID="PD_36000000_29253225" />
+        <cge:GLink_Ref ObjectID="PD_36000000_29253221" />
+        <cge:GLink_Ref ObjectID="PD_36000000_29253216" />
+        <cge:Layer_Ref ObjectName="ConnLine_Layer" />
+      </metadata>
+    </g>
+    <g id="PD_36000000_29253224">
+      <polyline points="318.117287718752,271.555987433862 318.126524855889,299.704434972217" fill="none" stroke="rgb(128,128,128)" stroke-width="0.1" class="lkv20" />
+      <metadata>
+        <cge:PSR_Ref ObjectID="PD_36000000_29253224" ObjectName="" PSRType="360000" GlobeID="" LineType="Trunk" />
+        <cge:GLink_Ref ObjectID="PD_36000000_29253223" />
+        <cge:GLink_Ref ObjectID="PD_0_152" />
+        <cge:GLink_Ref ObjectID="PD_14000000_524129" />
+        <cge:GLink_Ref ObjectID="PD_32000000_9987575" />
+        <cge:Layer_Ref ObjectName="ConnLine_Layer" />
+      </metadata>
+    </g>
+    <g id="PD_36000000_29253223">
+      <polyline points="318.126524855889,215.738423704044 318.117287718752,271.555987433862" fill="none" stroke="rgb(128,128,128)" stroke-width="0.1" class="lkv20" />
+      <metadata>
+        <cge:PSR_Ref ObjectID="PD_36000000_29253223" ObjectName="" PSRType="360000" GlobeID="" LineType="Trunk" />
+        <cge:GLink_Ref ObjectID="PD_30700002_2844999" />
+        <cge:GLink_Ref ObjectID="PD_36000000_29253224" />
+        <cge:GLink_Ref ObjectID="PD_0_152" />
+        <cge:Layer_Ref ObjectName="ConnLine_Layer" />
+      </metadata>
+    </g>
+    <g id="PD_36000000_29253221">
+      <polyline points="318.126524855889,180.039062111854 318.126524855889,183.617137818974" fill="none" stroke="rgb(128,128,128)" stroke-width="0.1" class="lkv20" />
+      <metadata>
+        <cge:PSR_Ref ObjectID="PD_36000000_29253221" ObjectName="" PSRType="360000" GlobeID="" LineType="Trunk" />
+        <cge:GLink_Ref ObjectID="PD_31100000_1569768" />
+        <cge:GLink_Ref ObjectID="PD_30700002_2844999" />
+        <cge:GLink_Ref ObjectID="PD_36000000_29253173" />
+        <cge:GLink_Ref ObjectID="PD_36000000_29253187" />
+        <cge:GLink_Ref ObjectID="PD_36000000_29253225" />
+        <cge:GLink_Ref ObjectID="PD_36000000_29253221" />
+        <cge:GLink_Ref ObjectID="PD_36000000_29253216" />
+        <cge:Layer_Ref ObjectName="ConnLine_Layer" />
+      </metadata>
+    </g>
+    <g id="PD_36000000_29253220">
+      <polyline points="268.84337714042,271.555987433862 268.853157638565,299.704434972217" fill="none" stroke="rgb(128,128,128)" stroke-width="0.1" class="lkv20" />
+      <metadata>
+        <cge:PSR_Ref ObjectID="PD_36000000_29253220" ObjectName="" PSRType="360000" GlobeID="" LineType="Trunk" />
+        <cge:GLink_Ref ObjectID="PD_36000000_29253218" />
+        <cge:GLink_Ref ObjectID="PD_0_153" />
+        <cge:GLink_Ref ObjectID="PD_14000000_1383804" />
+        <cge:GLink_Ref ObjectID="PD_32000000_9987574" />
+        <cge:Layer_Ref ObjectName="ConnLine_Layer" />
+      </metadata>
+    </g>
+    <g id="PD_36000000_29253218">
+      <polyline points="268.853157638565,215.738423704044 268.84337714042,271.555987433862" fill="none" stroke="rgb(128,128,128)" stroke-width="0.1" class="lkv20" />
+      <metadata>
+        <cge:PSR_Ref ObjectID="PD_36000000_29253218" ObjectName="" PSRType="360000" GlobeID="" LineType="Trunk" />
+        <cge:GLink_Ref ObjectID="PD_30700002_2844995" />
+        <cge:GLink_Ref ObjectID="PD_36000000_29253220" />
+        <cge:GLink_Ref ObjectID="PD_0_153" />
+        <cge:Layer_Ref ObjectName="ConnLine_Layer" />
+      </metadata>
+    </g>
+    <g id="PD_36000000_29253216">
+      <polyline points="268.853157638565,180.039062111854 268.853157638565,183.617137818974" fill="none" stroke="rgb(128,128,128)" stroke-width="0.1" class="lkv20" />
+      <metadata>
+        <cge:PSR_Ref ObjectID="PD_36000000_29253216" ObjectName="" PSRType="360000" GlobeID="" LineType="Trunk" />
+        <cge:GLink_Ref ObjectID="PD_31100000_1569768" />
+        <cge:GLink_Ref ObjectID="PD_30700002_2844995" />
+        <cge:GLink_Ref ObjectID="PD_36000000_29253173" />
+        <cge:GLink_Ref ObjectID="PD_36000000_29253187" />
+        <cge:GLink_Ref ObjectID="PD_36000000_29253225" />
+        <cge:GLink_Ref ObjectID="PD_36000000_29253221" />
+        <cge:GLink_Ref ObjectID="PD_36000000_29253216" />
+        <cge:Layer_Ref ObjectName="ConnLine_Layer" />
+      </metadata>
+    </g>
+    <g id="PD_36000000_29253215">
+      <polyline points="219.569673039271,271.555987433862 219.579627412939,299.704434972217" fill="none" stroke="rgb(128,128,128)" stroke-width="0.1" class="lkv20" />
+      <metadata>
+        <cge:PSR_Ref ObjectID="PD_36000000_29253215" ObjectName="" PSRType="360000" GlobeID="" LineType="Trunk" />
+        <cge:GLink_Ref ObjectID="PD_36000000_29253214" />
+        <cge:GLink_Ref ObjectID="PD_0_154" />
+        <cge:GLink_Ref ObjectID="PD_32000000_9987573" />
+        <cge:Layer_Ref ObjectName="ConnLine_Layer" />
+      </metadata>
+    </g>
+    <g id="PD_36000000_29253214">
+      <polyline points="219.579627412939,215.738423704044 219.569673039271,271.555987433862" fill="none" stroke="rgb(128,128,128)" stroke-width="0.1" class="lkv20" />
+      <metadata>
+        <cge:PSR_Ref ObjectID="PD_36000000_29253214" ObjectName="" PSRType="360000" GlobeID="" LineType="Trunk" />
+        <cge:GLink_Ref ObjectID="PD_30700002_2844986" />
+        <cge:GLink_Ref ObjectID="PD_36000000_29253215" />
+        <cge:GLink_Ref ObjectID="PD_0_154" />
+        <cge:Layer_Ref ObjectName="ConnLine_Layer" />
+      </metadata>
+    </g>
+    <g id="PD_36000000_29253187">
+      <polyline points="219.579627412939,180.039062111854 219.579627412939,183.617137818974" fill="none" stroke="rgb(128,128,128)" stroke-width="0.1" class="lkv20" />
+      <metadata>
+        <cge:PSR_Ref ObjectID="PD_36000000_29253187" ObjectName="" PSRType="360000" GlobeID="" LineType="Trunk" />
+        <cge:GLink_Ref ObjectID="PD_31100000_1569768" />
+        <cge:GLink_Ref ObjectID="PD_30700002_2844986" />
+        <cge:GLink_Ref ObjectID="PD_36000000_29253173" />
+        <cge:GLink_Ref ObjectID="PD_36000000_29253187" />
+        <cge:GLink_Ref ObjectID="PD_36000000_29253225" />
+        <cge:GLink_Ref ObjectID="PD_36000000_29253221" />
+        <cge:GLink_Ref ObjectID="PD_36000000_29253216" />
+        <cge:Layer_Ref ObjectName="ConnLine_Layer" />
+      </metadata>
+    </g>
+    <g id="PD_36000000_29253178">
+      <polyline points="170.295941770071,271.555987433862 170.303195639529,299.704434972217" fill="none" stroke="rgb(128,128,128)" stroke-width="0.1" class="lkv20" />
+      <metadata>
+        <cge:PSR_Ref ObjectID="PD_36000000_29253178" ObjectName="" PSRType="360000" GlobeID="" LineType="Trunk" />
+        <cge:GLink_Ref ObjectID="PD_36000000_29253176" />
+        <cge:GLink_Ref ObjectID="PD_0_155" />
+        <cge:GLink_Ref ObjectID="PD_14000000_524115" />
+        <cge:GLink_Ref ObjectID="PD_32000000_9987557" />
+        <cge:Layer_Ref ObjectName="ConnLine_Layer" />
+      </metadata>
+    </g>
+    <g id="PD_36000000_29253176">
+      <polyline points="170.303195639529,215.738423704044 170.295941770071,271.555987433862" fill="none" stroke="rgb(128,128,128)" stroke-width="0.1" class="lkv20" />
+      <metadata>
+        <cge:PSR_Ref ObjectID="PD_36000000_29253176" ObjectName="" PSRType="360000" GlobeID="" LineType="Trunk" />
+        <cge:GLink_Ref ObjectID="PD_30700002_2844962" />
+        <cge:GLink_Ref ObjectID="PD_36000000_29253178" />
+        <cge:GLink_Ref ObjectID="PD_0_155" />
+        <cge:Layer_Ref ObjectName="ConnLine_Layer" />
+      </metadata>
+    </g>
+    <g id="PD_36000000_29253173">
+      <polyline points="170.303195639529,180.039062111854 170.303195639529,183.617137818974" fill="none" stroke="rgb(128,128,128)" stroke-width="0.1" class="lkv20" />
+      <metadata>
+        <cge:PSR_Ref ObjectID="PD_36000000_29253173" ObjectName="" PSRType="360000" GlobeID="" LineType="Trunk" />
+        <cge:GLink_Ref ObjectID="PD_31100000_1569768" />
+        <cge:GLink_Ref ObjectID="PD_30700002_2844962" />
+        <cge:GLink_Ref ObjectID="PD_36000000_29253173" />
+        <cge:GLink_Ref ObjectID="PD_36000000_29253187" />
+        <cge:GLink_Ref ObjectID="PD_36000000_29253225" />
+        <cge:GLink_Ref ObjectID="PD_36000000_29253221" />
+        <cge:GLink_Ref ObjectID="PD_36000000_29253216" />
+        <cge:Layer_Ref ObjectName="ConnLine_Layer" />
+      </metadata>
+    </g>
+  </g>
+  <g id="ACLineSegment_Layer">
+    <g id="PD_20100000_1909787">
+      <polyline points="449.04344798619,300.370769443652 449.04344798619,419.171198516905 318.126524855889,419.171198516905 318.126524855889,357.699594012477" fill="none" stroke="rgb(0,0,0)" stroke-width="0.1" stroke-dasharray="2 1" class="lkv20" />
+      <metadata>
+        <cge:PSR_Ref ObjectID="PD_20100000_1909787" ObjectName="20kV丁家山#1线#2环网柜-对接头~站外-电缆终端头" PSRType="0201" GlobeID="14001139466555" LineType="Trunk" />
+        <cge:GLink_Ref ObjectID="PD_20100000_1909788" />
+        <cge:GLink_Ref ObjectID="PD_20300000_149379" />
+        <cge:GLink_Ref ObjectID="PD_14000000_524129" />
+        <cge:GLink_Ref ObjectID="PD_20200000_1872670" />
+        <cge:Layer_Ref ObjectName="ACLineSegment_Layer" />
+      </metadata>
+    </g>
+    <g id="PD_20100000_1909788">
+      <polyline points="619.509967077529,181.189933328639 449.042839421861,181.189433436511 449.04344798619,300.370769443652" fill="none" stroke="rgb(0,0,0)" stroke-width="0.1" stroke-dasharray="2 1" class="lkv20" />
+      <metadata>
+        <cge:PSR_Ref ObjectID="PD_20100000_1909788" ObjectName="GLT（A或B）丁家山#1线(西丁线#2环网柜-丁家山变176间隔01~20kV丁家山#1线#2环网柜-对接头" PSRType="0201" GlobeID="14001139468017" LineType="Trunk" />
+        <cge:GLink_Ref ObjectID="PD_14000000_325577" />
+        <cge:GLink_Ref ObjectID="PD_20200000_1572598" />
+        <cge:GLink_Ref ObjectID="PD_20100000_1909787" />
+        <cge:GLink_Ref ObjectID="PD_20300000_149379" />
+        <cge:Layer_Ref ObjectName="ACLineSegment_Layer" />
+      </metadata>
+    </g>
+  </g>
+  <g id="BusbarSection_Layer">
+    <g id="PD_31100000_1569768">
+      <polyline points="145.667511815122,180.039062111854 397.333693477494,180.039062111854" fill="none" stroke="rgb(0,0,0)" stroke-width="0.1" class="lkv20" />
+      <metadata>
+        <cge:PSR_Ref ObjectID="PD_31100000_1569768" ObjectName="20kV西丁线#2环网柜母线间隔母线" PSRType="0311" GlobeID="df8f4f3240ff80808156383ea50156df8da16d7c30" LineType="Trunk" />
+        <cge:GLink_Ref ObjectID="PD_36000000_29253173" />
+        <cge:GLink_Ref ObjectID="PD_36000000_29253187" />
+        <cge:GLink_Ref ObjectID="PD_36000000_29253225" />
+        <cge:GLink_Ref ObjectID="PD_36000000_29253221" />
+        <cge:GLink_Ref ObjectID="PD_36000000_29253216" />
+        <cge:Layer_Ref ObjectName="BusbarSection_Layer" />
+      </metadata>
+    </g>
+  </g>
+  <g id="Junction_Layer">
+    <g id="PD_20300000_149379">
+      <use x="449.04344798619" y="300.370769443652" width="2.79389691352844" height="2.08595204353333" xlink:href="#Junction_PMS25_20300000_3020011" transform="rotate(-90,449.04344798619,300.370769443652) translate(449.04344798619,300.370769443652) scale(2.79859683337114,2.79859683337114) translate(-449.043447993064,-300.370769425057)" class="lkv20" />
+      <metadata>
+        <cge:PSR_Ref ObjectID="PD_20300000_149379" ObjectName="20kV丁家山#1线#2环网柜-对接头" PSRType="0203" GlobeID="14001139470425" LineType="Trunk" />
+        <cge:GLink_Ref ObjectID="PD_20100000_1909787" />
+        <cge:GLink_Ref ObjectID="PD_20100000_1909788" />
+        <cge:Layer_Ref ObjectName="Junction_Layer" />
+      </metadata>
+    </g>
+    <g id="PD_20200000_1872670">
+      <use x="318.126524855889" y="357.699594012477" width="1.60000002384186" height="2.09999990463257" xlink:href="#Junction_PMS25_20200000_3030010" transform="rotate(90,318.126524855889,357.699594012477) translate(318.126524855889,357.699594012477) scale(3.90821879922678,3.90821879922678) translate(-318.126524854026,-357.699594010207)" class="lkv20" />
+      <metadata>
+        <cge:PSR_Ref ObjectID="PD_20200000_1872670" ObjectName="站外-电缆终端头" PSRType="0202" GlobeID="SBID0000003C50A9B987394836A46D7A731C7D841A" LineType="Trunk" />
+        <cge:GLink_Ref ObjectID="PD_14000000_524129" />
+        <cge:GLink_Ref ObjectID="PD_20100000_1909787" />
+        <cge:Layer_Ref ObjectName="Junction_Layer" />
+      </metadata>
+    </g>
+    <g id="PD_20200000_1572598">
+      <use x="619.509967077529" y="181.189933328639" width="1.60000002384186" height="2.09999990463257" xlink:href="#Junction_PMS25_20200000_3030010" transform="rotate(-180,619.509967077529,181.189933328639) translate(619.509967077529,181.189933328639) scale(3.90823951486522,3.90823951486522) translate(-619.509967075667,-181.189933326368)" class="lkv20" />
+      <metadata>
+        <cge:PSR_Ref ObjectID="PD_20200000_1572598" ObjectName="GLT（A或B）丁家山#1线(西丁线#2环网柜-丁家山变176间隔01" PSRType="0202" GlobeID="14001139468025" LineType="Trunk" />
+        <cge:GLink_Ref ObjectID="PD_14000000_325577" />
+        <cge:GLink_Ref ObjectID="PD_20100000_1909788" />
+        <cge:Layer_Ref ObjectName="Junction_Layer" />
+      </metadata>
+    </g>
+    <g id="PD_32000000_9966786">
+      <use x="627.916326968052" y="181.189433436511" width="4.07773542404175" height="0.912500023841858" xlink:href="#Junction_PMS25_32000000_4300010" transform="translate(627.916326968052,181.189433436511) scale(1.42438828103421,1.42438828103421) translate(-627.916326941951,-181.189433446126)" class="lkv20" />
+      <metadata>
+        <cge:PSR_Ref ObjectID="PD_32000000_9966786" ObjectName="" PSRType="" GlobeID="" LineType="Trunk" />
+        <cge:GLink_Ref ObjectID="PD_14000000_325577" />
+        <cge:GLink_Ref ObjectID="PD_36000000_29165497" />
+        <cge:Layer_Ref ObjectName="Junction_Layer" />
+      </metadata>
+    </g>
+    <g id="PD_32000000_9987576">
+      <use x="367.399892073213" y="299.704434972217" width="4.07773542404175" height="0.912500023841858" xlink:href="#Junction_PMS25_32000000_4300010" transform="rotate(90,367.399892073213,299.704434972217) translate(367.399892073213,299.704434972217) scale(0.65931586031327,0.65931586031327) translate(-367.399892047113,-299.704434981832)" class="lkv20" />
+      <metadata>
+        <cge:PSR_Ref ObjectID="PD_32000000_9987576" ObjectName="" PSRType="" GlobeID="" LineType="Trunk" />
+        <cge:GLink_Ref ObjectID="PD_14000000_731684" />
+        <cge:GLink_Ref ObjectID="PD_36000000_29253227" />
+        <cge:Layer_Ref ObjectName="Junction_Layer" />
+      </metadata>
+    </g>
+    <g id="PD_32000000_9987575">
+      <use x="318.126524855889" y="299.704434972217" width="4.07773542404175" height="0.912500023841858" xlink:href="#Junction_PMS25_32000000_4300010" transform="rotate(90,318.126524855889,299.704434972217) translate(318.126524855889,299.704434972217) scale(0.65931586031327,0.65931586031327) translate(-318.126524829789,-299.704434981832)" class="lkv20" />
+      <metadata>
+        <cge:PSR_Ref ObjectID="PD_32000000_9987575" ObjectName="" PSRType="" GlobeID="" LineType="Trunk" />
+        <cge:GLink_Ref ObjectID="PD_14000000_524129" />
+        <cge:GLink_Ref ObjectID="PD_36000000_29253224" />
+        <cge:Layer_Ref ObjectName="Junction_Layer" />
+      </metadata>
+    </g>
+    <g id="PD_32000000_9987574">
+      <use x="268.853157638565" y="299.704434972217" width="4.07773542404175" height="0.912500023841858" xlink:href="#Junction_PMS25_32000000_4300010" transform="rotate(90,268.853157638565,299.704434972217) translate(268.853157638565,299.704434972217) scale(0.65931586031327,0.65931586031327) translate(-268.853157612465,-299.704434981832)" class="lkv20" />
+      <metadata>
+        <cge:PSR_Ref ObjectID="PD_32000000_9987574" ObjectName="" PSRType="" GlobeID="" LineType="Trunk" />
+        <cge:GLink_Ref ObjectID="PD_14000000_1383804" />
+        <cge:GLink_Ref ObjectID="PD_36000000_29253220" />
+        <cge:Layer_Ref ObjectName="Junction_Layer" />
+      </metadata>
+    </g>
+    <g id="PD_32000000_9987573">
+      <use x="219.579627412939" y="299.704434972217" width="4.07773542404175" height="0.912500023841858" xlink:href="#Junction_PMS25_32000000_4300010" transform="rotate(90,219.579627412939,299.704434972217) translate(219.579627412939,299.704434972217) scale(0.65931586031327,0.65931586031327) translate(-219.579627386838,-299.704434981832)" class="lkv20" />
+      <metadata>
+        <cge:PSR_Ref ObjectID="PD_32000000_9987573" ObjectName="" PSRType="" GlobeID="" LineType="Trunk" />
+        <cge:GLink_Ref ObjectID="PD_36000000_29253215" />
+        <cge:Layer_Ref ObjectName="Junction_Layer" />
+      </metadata>
+    </g>
+    <g id="PD_32000000_9987557">
+      <use x="170.303195639529" y="299.704434972217" width="4.07773542404175" height="0.912500023841858" xlink:href="#Junction_PMS25_32000000_4300010" transform="rotate(90,170.303195639529,299.704434972217) translate(170.303195639529,299.704434972217) scale(0.65931586031327,0.65931586031327) translate(-170.303195613429,-299.704434981832)" class="lkv20" />
+      <metadata>
+        <cge:PSR_Ref ObjectID="PD_32000000_9987557" ObjectName="" PSRType="" GlobeID="" LineType="Trunk" />
+        <cge:GLink_Ref ObjectID="PD_14000000_524115" />
+        <cge:GLink_Ref ObjectID="PD_36000000_29253178" />
+        <cge:Layer_Ref ObjectName="Junction_Layer" />
+      </metadata>
+    </g>
+  </g>
+  <g id="Breaker_Layer">
+    <g id="PD_30500000_890714">
+      <use x="661.542201218949" y="181.189933328639" width="7.01579093933105" height="1.10000002384186" xlink:href="#Breaker_PMS25_30500000_4100010@1" transform="translate(661.542201218949,181.189933328639) scale(8.15297027641476,8.15297027641476) translate(-661.542201241748,-181.189933361958)" class="lkv20" />
+      <metadata>
+        <cge:PSR_Ref ObjectID="PD_30500000_890714" ObjectName="丁家山#1线226断路器" PSRType="0305" GlobeID="130660162" LineType="Trunk" />
+        <cge:GLink_Ref ObjectID="PD_36000000_29165494" />
+        <cge:GLink_Ref ObjectID="PD_36000000_29165497" />
+        <cge:Layer_Ref ObjectName="Breaker_Layer" />
+      </metadata>
+    </g>
+  </g>
+  <g id="CompositeSwitch_Layer">
+    <g id="PD_30700002_2845002">
+      <use x="367.399892073213" y="197.81220507635" width="4.59999990463257" height="3.64917325973511" xlink:href="#CompositeSwitch_PMS25_30700002_4070011@0" transform="rotate(-90,367.399892073213,197.81220507635) translate(367.399892073213,197.81220507635) scale(7.13806088867715,7.13806088867715) translate(-367.399891986068,-197.812204985094)" class="lkv20" />
+      <metadata>
+        <cge:PSR_Ref ObjectID="PD_30700002_2845002" ObjectName="至丁家山变开关室186间隔" PSRType="0307" GlobeID="df8f78b4cfff80808156383ea50156df8dcae97c3c" LineType="Trunk" />
+        <cge:GLink_Ref ObjectID="PD_36000000_29253225" />
+        <cge:GLink_Ref ObjectID="PD_36000000_29253226" />
+        <cge:Layer_Ref ObjectName="CompositeSwitch_Layer" />
+      </metadata>
+    </g>
+    <g id="PD_30700002_2844999">
+      <use x="318.126524855889" y="197.81220507635" width="4.59999990463257" height="3.64917325973511" xlink:href="#CompositeSwitch_PMS25_30700002_4070011@0" transform="rotate(-90,318.126524855889,197.81220507635) translate(318.126524855889,197.81220507635) scale(7.13806088867715,7.13806088867715) translate(-318.126524768744,-197.812204985094)" class="lkv20" />
+      <metadata>
+        <cge:PSR_Ref ObjectID="PD_30700002_2844999" ObjectName="至丁家山变开关室176间隔" PSRType="0307" GlobeID="df8f4db3bdff80808156383ea50156df8d9ff07c2c" LineType="Trunk" />
+        <cge:GLink_Ref ObjectID="PD_36000000_29253221" />
+        <cge:GLink_Ref ObjectID="PD_36000000_29253223" />
+        <cge:Layer_Ref ObjectName="CompositeSwitch_Layer" />
+      </metadata>
+    </g>
+    <g id="PD_30700002_2844995">
+      <use x="268.853157638565" y="197.81220507635" width="4.59999990463257" height="3.64702653884888" xlink:href="#CompositeSwitch_PMS25_30700002_4070010@1" transform="rotate(-90,268.853157638565,197.81220507635) translate(268.853157638565,197.81220507635) scale(7.13806088867715,7.13806088867715) translate(-268.85315755142,-197.812204985094)" class="lkv20" />
+      <metadata>
+        <cge:PSR_Ref ObjectID="PD_30700002_2844995" ObjectName="至润阳路线#1环网柜102" PSRType="0307" GlobeID="df8f77dbf2ff80808156383ea50156df8dca127c38" LineType="Trunk" />
+        <cge:GLink_Ref ObjectID="PD_36000000_29253216" />
+        <cge:GLink_Ref ObjectID="PD_36000000_29253218" />
+        <cge:Layer_Ref ObjectName="CompositeSwitch_Layer" />
+      </metadata>
+    </g>
+    <g id="PD_30700002_2844986">
+      <use x="219.579627412939" y="197.81220507635" width="4.59999990463257" height="3.64702653884888" xlink:href="#CompositeSwitch_PMS25_30700002_4070010@1" transform="rotate(-90,219.579627412939,197.81220507635) translate(219.579627412939,197.81220507635) scale(7.13806088867715,7.13806088867715) translate(-219.579627325794,-197.812204985094)" class="lkv20" />
+      <metadata>
+        <cge:PSR_Ref ObjectID="PD_30700002_2844986" ObjectName="备用" PSRType="0307" GlobeID="df8f755063ff80808156383ea50156df8dc7897c34" LineType="Trunk" />
+        <cge:GLink_Ref ObjectID="PD_36000000_29253187" />
+        <cge:GLink_Ref ObjectID="PD_36000000_29253214" />
+        <cge:Layer_Ref ObjectName="CompositeSwitch_Layer" />
+      </metadata>
+    </g>
+    <g id="PD_30700002_2844962">
+      <use x="170.303195639529" y="197.81220507635" width="4.59999990463257" height="3.64702653884888" xlink:href="#CompositeSwitch_PMS25_30700002_4070010@1" transform="rotate(-90,170.303195639529,197.81220507635) translate(170.303195639529,197.81220507635) scale(7.13806088867715,7.13806088867715) translate(-170.303195552384,-197.812204985094)" class="lkv20" />
+      <metadata>
+        <cge:PSR_Ref ObjectID="PD_30700002_2844962" ObjectName="由西丁线#1环网柜102开关供" PSRType="0307" GlobeID="df8da2c5aaff80808156383ea50156df8bf50f7c12" LineType="Trunk" />
+        <cge:GLink_Ref ObjectID="PD_36000000_29253173" />
+        <cge:GLink_Ref ObjectID="PD_36000000_29253176" />
+        <cge:Layer_Ref ObjectName="CompositeSwitch_Layer" />
+      </metadata>
+    </g>
+  </g>
+  <g id="Text_Layer">
+    <g id="TXT-PD_30500000_890714">
+      <text x="661.542201218949" y="209.297280605654" fill="rgb(0,0,0)" stroke="none" font-family="宋体" font-size="12.9619333574113" style="text-anchor:middle">丁家山#1线226断路器</text>
+      <metadata>
+        <cge:PSR_Ref ObjectID="TXT-PD_30500000_890714" />
+        <cge:Layer_Ref ObjectName="Text_Layer" />
+      </metadata>
+    </g>
+    <g id="TXT-PD_32400000_3280627">
+      <text x="271.500629814358" y="172.690540035689" fill="rgb(0,0,0)" stroke="none" font-family="宋体" font-size="23.9297231213747" style="text-anchor:middle">20kV西丁线#2环网柜
+HWD1159</text>
+      <metadata>
+        <cge:PSR_Ref ObjectID="TXT-PD_32400000_3280627" />
+        <cge:Layer_Ref ObjectName="Text_Layer" />
+      </metadata>
+    </g>
+    <g id="TXT-PD_30000000_3146391">
+      <text x="955.042257653128" y="93.5573045903555" fill="rgb(0,0,0)" stroke="none" font-family="宋体" font-size="44.8682308525776" style="text-anchor:middle">110kV丁家山变</text>
+      <metadata>
+        <cge:PSR_Ref ObjectID="TXT-PD_30000000_3146391" />
+        <cge:Layer_Ref ObjectName="Text_Layer" />
+      </metadata>
+    </g>
+    <g id="TXT-PD_30700002_2845002">
+      <text x="384.552473297595" y="211.906658936564" fill="rgb(0,0,0)" stroke="none" font-family="宋体" font-size="15.3742852104312" style="text-anchor:middle">103
+至</text>
+      <text x="384.552473297595" y="228.664629815934" fill="rgb(0,0,0)" stroke="none" font-family="宋体" font-size="15.3742852104312" style="text-anchor:middle">丁</text>
+      <text x="384.552473297595" y="245.422600695304" fill="rgb(0,0,0)" stroke="none" font-family="宋体" font-size="15.3742852104312" style="text-anchor:middle">家</text>
+      <text x="384.552473297595" y="262.180571574674" fill="rgb(0,0,0)" stroke="none" font-family="宋体" font-size="15.3742852104312" style="text-anchor:middle">山</text>
+      <text x="384.552473297595" y="278.938542454044" fill="rgb(0,0,0)" stroke="none" font-family="宋体" font-size="15.3742852104312" style="text-anchor:middle">变</text>
+      <text x="384.552473297595" y="295.696513333414" fill="rgb(0,0,0)" stroke="none" font-family="宋体" font-size="15.3742852104312" style="text-anchor:middle">开</text>
+      <text x="384.552473297595" y="312.454484212784" fill="rgb(0,0,0)" stroke="none" font-family="宋体" font-size="15.3742852104312" style="text-anchor:middle">关</text>
+      <text x="384.552473297595" y="329.212455092154" fill="rgb(0,0,0)" stroke="none" font-family="宋体" font-size="15.3742852104312" style="text-anchor:middle">室</text>
+      <text x="384.552473297595" y="345.970425971524" fill="rgb(0,0,0)" stroke="none" font-family="宋体" font-size="15.3742852104312" style="text-anchor:middle">186</text>
+      <text x="384.552473297595" y="362.728396850894" fill="rgb(0,0,0)" stroke="none" font-family="宋体" font-size="15.3742852104312" style="text-anchor:middle">间</text>
+      <text x="384.552473297595" y="379.486367730264" fill="rgb(0,0,0)" stroke="none" font-family="宋体" font-size="15.3742852104312" style="text-anchor:middle">隔</text>
+      <metadata>
+        <cge:PSR_Ref ObjectID="TXT-PD_30700002_2845002" />
+        <cge:Layer_Ref ObjectName="Text_Layer" />
+      </metadata>
+    </g>
+    <g id="TXT-PD_30700002_2844999">
+      <text x="335.279106080271" y="211.906658936564" fill="rgb(0,0,0)" stroke="none" font-family="宋体" font-size="15.3742852104312" style="text-anchor:middle">102
+至</text>
+      <text x="335.279106080271" y="228.664629815934" fill="rgb(0,0,0)" stroke="none" font-family="宋体" font-size="15.3742852104312" style="text-anchor:middle">丁</text>
+      <text x="335.279106080271" y="245.422600695304" fill="rgb(0,0,0)" stroke="none" font-family="宋体" font-size="15.3742852104312" style="text-anchor:middle">家</text>
+      <text x="335.279106080271" y="262.180571574674" fill="rgb(0,0,0)" stroke="none" font-family="宋体" font-size="15.3742852104312" style="text-anchor:middle">山</text>
+      <text x="335.279106080271" y="278.938542454044" fill="rgb(0,0,0)" stroke="none" font-family="宋体" font-size="15.3742852104312" style="text-anchor:middle">变</text>
+      <text x="335.279106080271" y="295.696513333414" fill="rgb(0,0,0)" stroke="none" font-family="宋体" font-size="15.3742852104312" style="text-anchor:middle">开</text>
+      <text x="335.279106080271" y="312.454484212784" fill="rgb(0,0,0)" stroke="none" font-family="宋体" font-size="15.3742852104312" style="text-anchor:middle">关</text>
+      <text x="335.279106080271" y="329.212455092154" fill="rgb(0,0,0)" stroke="none" font-family="宋体" font-size="15.3742852104312" style="text-anchor:middle">室</text>
+      <text x="335.279106080271" y="345.970425971524" fill="rgb(0,0,0)" stroke="none" font-family="宋体" font-size="15.3742852104312" style="text-anchor:middle">176</text>
+      <text x="335.279106080271" y="362.728396850894" fill="rgb(0,0,0)" stroke="none" font-family="宋体" font-size="15.3742852104312" style="text-anchor:middle">间</text>
+      <text x="335.279106080271" y="379.486367730264" fill="rgb(0,0,0)" stroke="none" font-family="宋体" font-size="15.3742852104312" style="text-anchor:middle">隔</text>
+      <metadata>
+        <cge:PSR_Ref ObjectID="TXT-PD_30700002_2844999" />
+        <cge:Layer_Ref ObjectName="Text_Layer" />
+      </metadata>
+    </g>
+    <g id="TXT-PD_30700002_2844995">
+      <text x="286.005760597388" y="211.906658936564" fill="rgb(0,0,0)" stroke="none" font-family="宋体" font-size="15.3742852104312" style="text-anchor:middle">112
+至</text>
+      <text x="286.005760597388" y="228.664629815934" fill="rgb(0,0,0)" stroke="none" font-family="宋体" font-size="15.3742852104312" style="text-anchor:middle">润</text>
+      <text x="286.005760597388" y="245.422600695304" fill="rgb(0,0,0)" stroke="none" font-family="宋体" font-size="15.3742852104312" style="text-anchor:middle">阳</text>
+      <text x="286.005760597388" y="262.180571574674" fill="rgb(0,0,0)" stroke="none" font-family="宋体" font-size="15.3742852104312" style="text-anchor:middle">路</text>
+      <text x="286.005760597388" y="278.938542454044" fill="rgb(0,0,0)" stroke="none" font-family="宋体" font-size="15.3742852104312" style="text-anchor:middle">线</text>
+      <text x="286.005760597388" y="295.696513333414" fill="rgb(0,0,0)" stroke="none" font-family="宋体" font-size="15.3742852104312" style="text-anchor:middle">#1</text>
+      <text x="286.005760597388" y="312.454484212784" fill="rgb(0,0,0)" stroke="none" font-family="宋体" font-size="15.3742852104312" style="text-anchor:middle">环</text>
+      <text x="286.005760597388" y="329.212455092154" fill="rgb(0,0,0)" stroke="none" font-family="宋体" font-size="15.3742852104312" style="text-anchor:middle">网</text>
+      <text x="286.005760597388" y="345.970425971524" fill="rgb(0,0,0)" stroke="none" font-family="宋体" font-size="15.3742852104312" style="text-anchor:middle">柜</text>
+      <text x="286.005760597388" y="362.728396850894" fill="rgb(0,0,0)" stroke="none" font-family="宋体" font-size="15.3742852104312" style="text-anchor:middle">102</text>
+      <metadata>
+        <cge:PSR_Ref ObjectID="TXT-PD_30700002_2844995" />
+        <cge:Layer_Ref ObjectName="Text_Layer" />
+      </metadata>
+    </g>
+    <g id="TXT-PD_30700002_2844986">
+      <text x="236.732219504541" y="211.906658936564" fill="rgb(0,0,0)" stroke="none" font-family="宋体" font-size="15.3742852104312" style="text-anchor:middle">111
+备</text>
+      <text x="236.732219504541" y="228.664629815934" fill="rgb(0,0,0)" stroke="none" font-family="宋体" font-size="15.3742852104312" style="text-anchor:middle">用</text>
+      <metadata>
+        <cge:PSR_Ref ObjectID="TXT-PD_30700002_2844986" />
+        <cge:Layer_Ref ObjectName="Text_Layer" />
+      </metadata>
+    </g>
+    <g id="TXT-PD_30700002_2844962">
+      <text x="187.455787731132" y="211.906658936564" fill="rgb(0,0,0)" stroke="none" font-family="宋体" font-size="15.3742852104312" style="text-anchor:middle">101
+由</text>
+      <text x="187.455787731132" y="228.664629815934" fill="rgb(0,0,0)" stroke="none" font-family="宋体" font-size="15.3742852104312" style="text-anchor:middle">西</text>
+      <text x="187.455787731132" y="245.422600695304" fill="rgb(0,0,0)" stroke="none" font-family="宋体" font-size="15.3742852104312" style="text-anchor:middle">丁</text>
+      <text x="187.455787731132" y="262.180571574674" fill="rgb(0,0,0)" stroke="none" font-family="宋体" font-size="15.3742852104312" style="text-anchor:middle">线</text>
+      <text x="187.455787731132" y="278.938542454044" fill="rgb(0,0,0)" stroke="none" font-family="宋体" font-size="15.3742852104312" style="text-anchor:middle">#1</text>
+      <text x="187.455787731132" y="295.696513333414" fill="rgb(0,0,0)" stroke="none" font-family="宋体" font-size="15.3742852104312" style="text-anchor:middle">环</text>
+      <text x="187.455787731132" y="312.454484212784" fill="rgb(0,0,0)" stroke="none" font-family="宋体" font-size="15.3742852104312" style="text-anchor:middle">网</text>
+      <text x="187.455787731132" y="329.212455092154" fill="rgb(0,0,0)" stroke="none" font-family="宋体" font-size="15.3742852104312" style="text-anchor:middle">柜</text>
+      <text x="187.455787731132" y="345.970425971524" fill="rgb(0,0,0)" stroke="none" font-family="宋体" font-size="15.3742852104312" style="text-anchor:middle">102</text>
+      <text x="187.455787731132" y="362.728396850894" fill="rgb(0,0,0)" stroke="none" font-family="宋体" font-size="15.3742852104312" style="text-anchor:middle">开</text>
+      <text x="187.455787731132" y="379.486367730264" fill="rgb(0,0,0)" stroke="none" font-family="宋体" font-size="15.3742852104312" style="text-anchor:middle">关</text>
+      <text x="187.455787731132" y="396.244338609634" fill="rgb(0,0,0)" stroke="none" font-family="宋体" font-size="15.3742852104312" style="text-anchor:middle">供</text>
+      <metadata>
+        <cge:PSR_Ref ObjectID="TXT-PD_30700002_2844962" />
+        <cge:Layer_Ref ObjectName="Text_Layer" />
+      </metadata>
+    </g>
+    <g id="TXT-PD_20100000_1909787">
+      <text x="510.162345993049" y="396.272865004147" fill="rgb(0,0,0)" stroke="none" font-family="宋体" font-size="15.9531487475831" style="text-anchor:middle">330
+YJV22-3*400</text>
+      <metadata>
+        <cge:PSR_Ref ObjectID="TXT-PD_20100000_1909787" />
+        <cge:Layer_Ref ObjectName="Text_Layer" />
+      </metadata>
+    </g>
+    <g id="TXT-PD_20100000_1909788">
+      <text x="509.714486115745" y="254.346165518067" fill="rgb(0,0,0)" stroke="none" font-family="宋体" font-size="15.9531487475831" style="text-anchor:middle">272
+YJV22-3*400</text>
+      <metadata>
+        <cge:PSR_Ref ObjectID="TXT-PD_20100000_1909788" />
+        <cge:Layer_Ref ObjectName="Text_Layer" />
+      </metadata>
+    </g>
+    <g id="TXT-PD_120410000_F51">
+      <text x="299.903370304497" y="476.196557266781" fill="rgb(0,0,0)" stroke="none" font-family="宋体" font-size="15.9531487475831" style="text-anchor:middle">至</text>
+      <text x="299.903370304497" y="493.585489401647" fill="rgb(0,0,0)" stroke="none" font-family="宋体" font-size="15.9531487475831" style="text-anchor:middle">20kV</text>
+      <text x="299.903370304497" y="510.974421536513" fill="rgb(0,0,0)" stroke="none" font-family="宋体" font-size="15.9531487475831" style="text-anchor:middle">西</text>
+      <text x="299.903370304497" y="528.363353671378" fill="rgb(0,0,0)" stroke="none" font-family="宋体" font-size="15.9531487475831" style="text-anchor:middle">丁</text>
+      <text x="299.903370304497" y="545.752285806244" fill="rgb(0,0,0)" stroke="none" font-family="宋体" font-size="15.9531487475831" style="text-anchor:middle">线</text>
+      <text x="299.903370304497" y="563.14121794111" fill="rgb(0,0,0)" stroke="none" font-family="宋体" font-size="15.9531487475831" style="text-anchor:middle">225</text>
+      <metadata>
+        <cge:PSR_Ref ObjectID="TXT-PD_120410000_F51" />
+        <cge:Layer_Ref ObjectName="Text_Layer" />
+      </metadata>
+    </g>
+    <g id="TXT-PD_120410000_F54">
+      <text x="202.469471816068" y="476.196557266781" fill="rgb(0,0,0)" stroke="none" font-family="宋体" font-size="15.9531487475831" style="text-anchor:middle">至</text>
+      <text x="202.469471816068" y="493.585489401647" fill="rgb(0,0,0)" stroke="none" font-family="宋体" font-size="15.9531487475831" style="text-anchor:middle">20kV</text>
+      <text x="202.469471816068" y="510.974421536513" fill="rgb(0,0,0)" stroke="none" font-family="宋体" font-size="15.9531487475831" style="text-anchor:middle">西</text>
+      <text x="202.469471816068" y="528.363353671378" fill="rgb(0,0,0)" stroke="none" font-family="宋体" font-size="15.9531487475831" style="text-anchor:middle">丁</text>
+      <text x="202.469471816068" y="545.752285806244" fill="rgb(0,0,0)" stroke="none" font-family="宋体" font-size="15.9531487475831" style="text-anchor:middle">线</text>
+      <text x="202.469471816068" y="563.14121794111" fill="rgb(0,0,0)" stroke="none" font-family="宋体" font-size="15.9531487475831" style="text-anchor:middle">225</text>
+      <metadata>
+        <cge:PSR_Ref ObjectID="TXT-PD_120410000_F54" />
+        <cge:Layer_Ref ObjectName="Text_Layer" />
+      </metadata>
+    </g>
+    <g id="TXT-PD_120410000_F55">
+      <text x="400.260061991516" y="479.304929984072" fill="rgb(0,0,0)" stroke="none" font-family="宋体" font-size="15.9531487475831" style="text-anchor:middle">至</text>
+      <text x="400.260061991516" y="496.693862118938" fill="rgb(0,0,0)" stroke="none" font-family="宋体" font-size="15.9531487475831" style="text-anchor:middle">20kV</text>
+      <text x="400.260061991516" y="514.082794253804" fill="rgb(0,0,0)" stroke="none" font-family="宋体" font-size="15.9531487475831" style="text-anchor:middle">丁</text>
+      <text x="400.260061991516" y="531.471726388669" fill="rgb(0,0,0)" stroke="none" font-family="宋体" font-size="15.9531487475831" style="text-anchor:middle">家</text>
+      <text x="400.260061991516" y="548.860658523535" fill="rgb(0,0,0)" stroke="none" font-family="宋体" font-size="15.9531487475831" style="text-anchor:middle">山</text>
+      <text x="400.260061991516" y="566.249590658401" fill="rgb(0,0,0)" stroke="none" font-family="宋体" font-size="15.9531487475831" style="text-anchor:middle">#2</text>
+      <text x="400.260061991516" y="583.638522793266" fill="rgb(0,0,0)" stroke="none" font-family="宋体" font-size="15.9531487475831" style="text-anchor:middle">线</text>
+      <text x="400.260061991516" y="601.027454928132" fill="rgb(0,0,0)" stroke="none" font-family="宋体" font-size="15.9531487475831" style="text-anchor:middle">186</text>
+      <metadata>
+        <cge:PSR_Ref ObjectID="TXT-PD_120410000_F55" />
+        <cge:Layer_Ref ObjectName="Text_Layer" />
+      </metadata>
+    </g>
+  </g>
+</svg>

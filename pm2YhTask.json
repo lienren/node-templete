@@ -1,8 +1,8 @@
 {
   "apps": [
     {
-      "name": "PeiPeiApiSystem",
-      "script": "./src/app.js",
+      "name": "YhAutoTask",
+      "script": "./src/tasks/autoYhTask.js",
       "watch": false,
       "ignore_watch": [
         "node_modules",
@@ -16,7 +16,7 @@
         "NODE_ENV": "production"
       },
       "exec_mode": "cluster",
-      "instances": "max",
+      "instances": "1",
       "autorestart": true
     }
   ]

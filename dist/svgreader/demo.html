@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>单线图SVG</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <meta name="viewport"
+    content="width=device-width,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0,viewport-fit=cover" />
+  <meta content="yes" name="apple-mobile-web-app-capable">
+  <meta content="black" name="apple-mobile-web-app-status-bar-style">
+  <meta content="telephone=no" name="format-detection">
+  <meta content="email=no" name="format-detection">
+  <style type="text/css">
+    body,
+    html {
+      text-align: center;
+      color: white;
+      padding: 0;
+      margin: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    body {
+      background-color: #333;
+    }
+
+    div.page {
+      height: 100%;
+      width: 100%;
+    }
+
+    img {
+      height: 100%;
+      width: 100%;
+    }
+
+    .buttons {
+      position: fixed;
+      display: flex;
+      width: 25px;
+      height: 375px;
+      padding: 0 5px 0 10px;
+      right: 0;
+      top: 0;
+      background-color: rgba(255, 255, 255, .1);
+      flex-direction: column-reverse;
+      justify-content: center;
+    }
+
+    .buttons div {
+      width: 20px;
+      height: 20px;
+      margin-bottom: 50px;
+      text-indent: -99999px;
+    }
+
+    .reset {
+      background: url("./images/reset.png") center center no-repeat;
+      background-size: contain;
+    }
+
+    .xml {
+      background: url("./images/xml.png") center center no-repeat;
+      background-size: contain;
+      margin-bottom: 50px !important;
+    }
+  </style>
+  <script src="./js/jquery.js"></script>
+  <script src="./js/pinch-zoom.umd.js"></script>
+</head>
+
+<body>
+  <div class="page">
+    <div class="pinch-zoom">
+      <img src="./1.svg" />
+    </div>
+    <div class="buttons">
+      <div class="reset">还原</div>
+      <div class="xml">XML</div>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    var el = document.querySelector('div.pinch-zoom');
+    var pz = new PinchZoom.default(el, {
+      tapZoomFactor: 5,
+      draggableUnzoomed: false,
+      animationDuration: 500,
+      maxZoom: 20
+    });
+
+    var $buttons = $('.buttons');
+    $buttons.find(".reset").click(function () {
+      location.reload();
+    });
+
+    $buttons.find(".xml").click(function () {
+      window.location.replace("./docs/" + encodeURIComponent(dir) + "/" + encodeURIComponent(xml) + '.xml');
+      window.history.back(-1);
+    });
+  </script>
+
+</body>
+
+</html>

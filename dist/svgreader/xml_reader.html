@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>单线图SVG</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <meta name="viewport"
+    content="width=device-width,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0,viewport-fit=cover" />
+  <meta content="yes" name="apple-mobile-web-app-capable">
+  <meta content="black" name="apple-mobile-web-app-status-bar-style">
+  <meta content="telephone=no" name="format-detection">
+  <meta content="email=no" name="format-detection">
+  <style type="text/css">
+    html,
+    body {
+      padding: 0;
+      margin: 0;
+      background: #F5FCFF;
+      color: #333666;
+    }
+
+    #auto-contain {
+      width: 100%;
+      text-align: center;
+      overflow: hidden;
+    }
+
+    .panzoom-parent {
+      width: 100%;
+      height: 100%;
+    }
+
+    .panzoom-parent .panzoom {
+      background-color: #f2f2f2;
+    }
+
+    .buttons {
+      position: fixed;
+      display: flex;
+      width: 25px;
+      height: 375px;
+      padding: 0 5px 0 10px;
+      right: 0;
+      top: 0;
+      background-color: rgba(0, 0, 0, .1);
+      flex-direction: column-reverse;
+      justify-content: center;
+    }
+
+    .buttons div {
+      width: 20px;
+      height: 20px;
+      margin-bottom: 15px;
+      text-indent: -99999px;
+    }
+
+    .zoom-in {
+      background: url("./images/zoomin.png") center center no-repeat;
+      background-size: contain;
+    }
+
+    .zoom-out {
+      background: url("./images/zoomout.png") center center no-repeat;
+      background-size: contain;
+    }
+
+    .reset {
+      background: url("./images/reset.png") center center no-repeat;
+      background-size: contain;
+    }
+
+    .svg {
+      background: url("./images/svg.png") center center no-repeat;
+      background-size: contain;
+      margin-bottom: 30px !important;
+    }
+  </style>
+  <script src="./js/jquery.js"></script>
+  <script src="./js/jquery.panzoom.min.js"></script>
+  <script src="./js/jquery.mousewheel.js"></script>
+</head>
+
+<body>
+  <section id="auto-contain">
+    <div class="panzoom-parent">
+      <img id="panzoom" class="panzoom" style="width:100%;height:100%;">
+    </div>
+    <div class="buttons">
+      <div class="zoom-in">放大</div>
+      <div class="zoom-out">缩小</div>
+      <div class="reset">还原</div>
+      <div class="svg">SVG</div>
+    </div>
+  </section>
+  <script>
+    var urlParam = null;
+    (function () {
+      var search = window.location.search.substring(1);
+      urlParam = new URLSearchParams(search);
+    })();
+
+    (function () {
+      var h = $(window).height();
+      $("#auto-contain").css("height", h + "px");
+
+      var dir = urlParam.get('dir');
+      var svg = urlParam.get('svg');
+      var xml = urlParam.get('xml');
+
+      dir = decodeURIComponent(dir);
+      svg = decodeURIComponent(svg);
+      xml = decodeURIComponent(xml);
+      $(document).attr('title', dir + "/" + xml.split('.')[0]);
+
+      console.log('dir:', dir);
+      console.log('svg:', svg);
+      console.log('xml:', xml);
+
+      $('#panzoom').attr('src', './docs/' + encodeURIComponent(dir) + '/' + encodeURIComponent(svg) + '.xml');
+
+      var $section = $('#auto-contain');
+      $section.find('.panzoom').panzoom({
+        $zoomIn: $section.find(".zoom-in"),
+        $zoomOut: $section.find(".zoom-out"),
+        $reset: $section.find(".reset"),
+        startTransform: 'scale(1.5)',
+        increment: 0.2,
+        minScale: 1,
+        maxScale: 20,
+        contain: 'automatic'
+      }).panzoom('zoom');
+
+      $section.find(".svg").click(function () {
+        window.location.replace("./svg_reader.html??dir=" + encodeURIComponent(dir) + "&svg=" + encodeURIComponent(svg) + "&xml=" + encodeURIComponent(xml));
+        window.history.back(-1);
+      });
+    })();
+  </script>
+</body>
+
+</html>
