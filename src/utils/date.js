@@ -1,8 +1,8 @@
 /*
- * @Author: Lienren 
- * @Date: 2018-04-19 12:02:43 
+ * @Author: Lienren
+ * @Date: 2018-04-19 12:02:43
  * @Last Modified by: Lienren
- * @Last Modified time: 2018-12-12 23:09:12
+ * @Last Modified time: 2019-11-06 23:19:02
  */
 'use strict';
 
@@ -11,7 +11,7 @@ const comm = require('./comm');
 
 module.exports = {
   // Date日期格式化
-  formatDate: function(date = new Date(), formate = 'YYYY-MM-DD HH:mm:ss', isunix = false) {
+  formatDate: function(date = new Date(), formate = 'YYYY-MM-DD HH:mm:ss') {
     if (!date) {
       date = new Date();
     }
@@ -20,12 +20,7 @@ module.exports = {
       formate = 'YYYY-MM-DD HH:mm:ss';
     }
 
-    let val;
-    if (isunix) {
-      val = moment.unix(date).format(formate);
-    } else {
-      val = moment(date).format(formate);
-    }
+    let val = moment(date).format(formate);
 
     return val;
   },
@@ -33,7 +28,7 @@ module.exports = {
   getTimeStamp: function(second) {
     let date = new Date().getTime();
 
-    if (second && comm.isNumber(second)) {
+    if (second) {
       date += second * 1000;
     }
 
@@ -76,5 +71,79 @@ module.exports = {
       starttime: new Date(new Date().setHours(0, 0, 0, 0)).getTime(),
       endtime: new Date(new Date().setHours(23, 59, 59, 999)).getTime()
     };
+  },
+  // 获取两个时间之间的时间段
+  dataScope: function(a, b) {
+    var date1 = getDate(a);
+    var date2 = getDate(b);
+    date2.setDate(date2.getDate() + 1);
+    if (date1 > date2) {
+      var tempDate = date1;
+      date1 = date2;
+      date2 = tempDate;
+    }
+    date1.setDate(date1.getDate());
+    var dateArr = [];
+    var i = 0;
+    while (
+      !(
+        date1.getFullYear() == date2.getFullYear() &&
+        date1.getMonth() == date2.getMonth() &&
+        date1.getDate() == date2.getDate()
+      )
+    ) {
+      var dayStr = date1.getDate().toString();
+      var monthStr = (date1.getMonth() + 1).toString();
+      dayStr = dayStr.length === 1 ? '0' + dayStr : dayStr;
+      monthStr = monthStr.length === 1 ? '0' + monthStr : monthStr;
+      dateArr[i] = date1.getFullYear() + '-' + monthStr + '-' + dayStr;
+      i++;
+      date1.setDate(date1.getDate() + 1);
+    }
+    return dateArr;
+  },
+  // 给日期加天
+  addDay: function(date, day) {
+    date = getDate(date);
+    date = date.setDate(date.getDate() + day);
+    date = new Date(date);
+    return date;
+  },
+  // 比较时间
+  compare: function(beginTime, endTime) {
+    beginTime = getDate(beginTime);
+    endTime = getDate(endTime);
+
+    return beginTime > endTime;
+  },
+  // 当前时间是否在区间内
+  isDateBetween: function(beginTime, endTime, nowTime) {
+    beginTime = getDate(beginTime);
+    endTime = getDate(endTime);
+    nowTime = getDate(nowTime);
+
+    return nowTime.getTime() - beginTime.getTime() > 0 && nowTime.getTime() - endTime.getTime() < 0;
   }
 };
+
+function getDate(date) {
+  if (!date) {
+    date = new Date();
+  } else {
+    // date类型
+    if (date instanceof Date) {
+    }
+    // unix时间戳
+    else if (/^\d{10}$/.test(date)) {
+      date = new Date(parseInt(date) * 1000);
+    }
+    // 普通时间字符串
+    else {
+      if (date.indexOf('.') > -1) {
+        date = date.split('.')[0];
+      }
+      date = new Date(date.replace(/-/g, '/'));
+    }
+  }
+  return date;
+}
