@@ -1,43 +1,52 @@
 /* jshint indent: 2 */
 
 module.exports = function(sequelize, DataTypes) {
-  return sequelize.define('info_user_level', {
+  return sequelize.define('info_house_yearrent', {
     id: {
       type: DataTypes.INTEGER(11),
       allowNull: false,
       primaryKey: true,
       autoIncrement: true
     },
-    userId: {
+    hid: {
       type: DataTypes.INTEGER(11),
       allowNull: true
     },
-    year: {
+    hhid: {
       type: DataTypes.INTEGER(11),
       allowNull: true
     },
-    levelType: {
-      type: DataTypes.STRING(20),
+    a1: {
+      type: DataTypes.DATEONLY,
       allowNull: true
     },
-    remark: {
-      type: DataTypes.STRING(500),
+    a2: {
+      type: DataTypes.DATEONLY,
       allowNull: true
     },
-    checkUser: {
-      type: DataTypes.STRING(100),
+    a3: {
+      type: DataTypes.DECIMAL,
       allowNull: true
     },
-    checkTime: {
-      type: DataTypes.DATE,
+    a4: {
+      type: DataTypes.DECIMAL,
+      allowNull: true
+    },
+    a5: {
+      type: DataTypes.STRING(10),
       allowNull: true
     },
     createTime: {
       type: DataTypes.DATE,
       allowNull: true,
       defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
+    },
+    modifyTime: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
     }
   }, {
-    tableName: 'info_user_level'
+    tableName: 'info_house_yearrent'
   });
 };

@@ -60,7 +60,7 @@ module.exports = {
     authOptions: {
       expiresIn: '24h',
       issuer: 'SAT System',
-      audience: 'Root R&D TEAM 2021-2022.',
+      audience: 'Root R&D TEAM 2022-2023.',
       algorithm: 'HS512'
     }
   },
@@ -74,16 +74,16 @@ module.exports = {
       sitepath: path.resolve(__dirname, '../assets/adminweb/index.html')
     }
   ],
-  // sequelize-auto -o "./src/models" -d human -h 47.111.64.7 -u root -p 3306 -x Ler@2019 -e mysql
+  // sequelize-auto -o "./src/models" -d assetmanage -h 120.55.97.164 -u root -p 3306 -x Ler@2021 -e mysql
   databases: [
     {
       modelPath: path.resolve(__dirname, './models'),
-      db: 'human',
+      db: 'assetmanage',
       dialect: 'mysql',
       port: 3306,
       replication: {
-        read: [{ host: '47.111.64.7', username: 'root', password: 'Ler@2019' }],
-        write: { host: '47.111.64.7', username: 'root', password: 'Ler@2019' }
+        read: [{ host: '120.55.97.164', username: 'root', password: 'Ler@2021' }],
+        write: { host: '120.55.97.164', username: 'root', password: 'Ler@2021' }
       },
       dialectOptions: {
         dateStrings: true,

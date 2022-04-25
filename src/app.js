@@ -55,7 +55,7 @@ app.use(async (ctx, next) => {
 
   let path = ctx.path.toLowerCase();
 
-  if ( path.indexOf('/human/rearend/exportusers') >= 0) {
+  if (path.indexOf('/human/rearend/exportusers') >= 0) {
     ctx.disableBodyParserReturn = true;
   }
 
@@ -84,7 +84,10 @@ app.use(requestFilter);
 // 路由
 const router = require('./router.js');
 const router_human = require('./router_human.js');
-app.use(router).use(router_human);
+const router_assetmanage = require('./router_assetmanage.js');
+app.use(router)
+  .use(router_human)
+  .use(router_assetmanage);
 
 // 绑定访问端口
 http.createServer(app.callback()).listen(config.sys.port);
