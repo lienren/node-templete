@@ -1103,6 +1103,14 @@ module.exports = {
       order: [['sort']]
     })
 
+    let tops = await ctx.orm().cmp_tops.findAll({
+      where: {
+        cmp_id: cmpId,
+        is_del: 0
+      },
+      order: [['sort']]
+    })
+
     let layouts = await ctx.orm().cmp_index_layouts.findAll({
       where: {
         cmp_id: cmpId,
@@ -1172,6 +1180,7 @@ module.exports = {
 
     ctx.body = {
       banners,
+      tops,
       layoutIndexs
     }
   },

@@ -57,6 +57,7 @@ module.exports = {
     let sourceType = ctx.request.body.sourceType;
     let payType = ctx.request.body.payType;
     let createTime = ctx.request.body.createTime || '';
+    let receiveTime = ctx.request.body.receiveTime || '';
     let nickName = ctx.request.body.nickName || '';
     let userName = ctx.request.body.userName || '';
     let providerId = ctx.request.body.providerId || 0;
@@ -123,6 +124,12 @@ module.exports = {
     if (createTime && createTime.length > 1) {
       where.create_time = {
         $between: [`${createTime[0]} 00:00:00`, `${createTime[1]} 23:59:59`]
+      }
+    }
+
+    if (receiveTime && receiveTime.length > 1) {
+      where.receive_time = {
+        $between: [`${receiveTime[0]} 00:00:00`, `${receiveTime[1]} 23:59:59`]
       }
     }
 
@@ -535,6 +542,7 @@ module.exports = {
     let sourceType = ctx.request.body.sourceType;
     let payType = ctx.request.body.payType;
     let createTime = ctx.request.body.createTime || '';
+    let receiveTime = ctx.request.body.receiveTime || '';
     let nickName = ctx.request.body.nickName || '';
     let userName = ctx.request.body.userName || '';
     let providerId = ctx.request.body.providerId || 0;
@@ -607,6 +615,12 @@ module.exports = {
     if (createTime && createTime.length > 1) {
       where.create_time = {
         $between: [`${createTime[0]} 00:00:00`, `${createTime[1]} 23:59:59`]
+      }
+    }
+
+    if (receiveTime && receiveTime.length > 1) {
+      where.receive_time = {
+        $between: [`${receiveTime[0]} 00:00:00`, `${receiveTime[1]} 23:59:59`]
       }
     }
 
@@ -772,6 +786,7 @@ module.exports = {
     let sourceType = ctx.request.body.sourceType;
     let payType = ctx.request.body.payType;
     let createTime = ctx.request.body.createTime || '';
+    let receiveTime = ctx.request.body.receiveTime || '';
     let nickName = ctx.request.body.nickName || '';
     let userName = ctx.request.body.userName || '';
     let providerId = ctx.request.body.providerId || 0;
@@ -844,6 +859,12 @@ module.exports = {
     if (createTime && createTime.length > 1) {
       where.create_time = {
         $between: [`${createTime[0]} 00:00:00`, `${createTime[1]} 23:59:59`]
+      }
+    }
+
+    if (receiveTime && receiveTime.length > 1) {
+      where.receive_time = {
+        $between: [`${receiveTime[0]} 00:00:00`, `${receiveTime[1]} 23:59:59`]
       }
     }
 

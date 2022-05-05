@@ -607,4 +607,71 @@ module.exports = {
 
     ctx.body = {}
   },
+  cmpTopsList: async (ctx) => {
+    let cmp_id = ctx.request.body.cmp_id || 0;
+
+    let result = await ctx.orm().cmp_tops.findAll({
+      where: {
+        cmp_id: cmp_id,
+        is_del: 0
+      },
+      order: [['sort']]
+    })
+
+    ctx.body = result;
+  },
+  cmpTopsCreate: async (ctx) => {
+    let title = ctx.request.body.title || '';
+    let cmp_id = ctx.request.body.cmp_id || 0;
+    let sort = ctx.request.body.sort || 0;
+    let img_url = ctx.request.body.img_url || '';
+    let link_url = ctx.request.body.link_url || '';
+
+    await ctx.orm().cmp_tops.create({
+      title,
+      cmp_id,
+      sort,
+      img_url,
+      link_url,
+      is_del: 0
+    });
+
+    ctx.body = {}
+  },
+  cmpTopsEdit: async (ctx) => {
+    let id = ctx.request.body.id || 0;
+    let title = ctx.request.body.title || '';
+    let cmp_id = ctx.request.body.cmp_id || 0;
+    let sort = ctx.request.body.sort || 0;
+    let img_url = ctx.request.body.img_url || '';
+    let link_url = ctx.request.body.link_url || '';
+
+    await ctx.orm().cmp_tops.update({
+      title,
+      cmp_id,
+      sort,
+      img_url,
+      link_url,
+      is_del: 0
+    }, {
+      where: {
+        id
+      }
+    });
+
+    ctx.body = {}
+  },
+  cmpTopsDel: async (ctx) => {
+    let id = ctx.request.body.id || 0;
+
+    await ctx.orm().cmp_tops.update({
+      is_del: 1
+    }, {
+      where: {
+        id
+      }
+    });
+
+    ctx.body = {}
+  }
 };

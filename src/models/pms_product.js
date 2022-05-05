@@ -29,7 +29,7 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: false
     },
     pic: {
-      type: DataTypes.STRING(255),
+      type: DataTypes.STRING(500),
       allowNull: true
     },
     product_sn: {
@@ -131,7 +131,7 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     album_pics: {
-      type: DataTypes.STRING(255),
+      type: DataTypes.TEXT,
       allowNull: true
     },
     detail_title: {
