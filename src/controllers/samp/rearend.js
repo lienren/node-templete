@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2022-04-03 12:20:43
+ * @LastEditTime: 2022-04-26 15:03:44
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/samp/rearend.js
@@ -1323,7 +1323,7 @@ module.exports = {
       case when u.depId = 2 then '愿检尽检' else '重点人群' end userType from info_user_samps s 
       inner join info_users u on u.id = s.userId 
       inner join info_samps ss on ss.sampName = s.sampName 
-      where 1=1 and s.handleType in ('已采样', '个人上传采样') ${where}) a 
+      where 1=1 and s.handleType = '已采样' ${where}) a 
       group by a.sampName, a.userType`;
 
     let result1 = await ctx.orm().query(sql1);
@@ -1379,12 +1379,12 @@ module.exports = {
       ) a
       inner join info_users u on u.id = a.userId
       group by u.postName`;
-    let sql3 = `select postName, count(1) num from info_user_samps where handleType in ('已采样', '个人上传采样') group by postName`;
+    let sql3 = `select postName, num from stats_postNameSamp`;
     let sql4 = `select u.postName, count(1) num from (
       select userId from info_user_samps 
       where 
         DATE_FORMAT(handleTime,'%Y-%m-%d') = '${selectTime}' and  
-        handleType in ('已采样', '个人上传采样') and 
+        handleType = '已采样' and 
         userId in (select id from info_users where depId > 2)
       ) a
       inner join info_users u on u.id = a.userId
