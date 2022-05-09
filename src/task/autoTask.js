@@ -396,7 +396,68 @@ async function getRestUsers () {
 每周一检，固定周期
 每月一检，固定周期
 每周2次（间隔2天以上），固定周期
+
+每天一检，固定周期
+每3天一检，固定周期
 */
+
+async function oneDaySamp () {
+  console.log('users samp day data:%s', date.formatDate());
+
+  let users = await ctx.orm().info_users.findAll({
+    where: {
+      sampStartTime: {
+        $lte: date.formatDate()
+      },
+      periodType: '每天一检',
+      depId: {
+        $gt: 2
+      },
+      userType: {
+        $in: ['在线', '已设置休假']
+      }
+    }
+  });
+
+  let now = date.formatDate(new Date(), 'YYYY-MM-DD')
+
+  // 今天
+  let d1 = now;
+  //明天
+  let d2 = now;
+
+  for (let i = 0, j = users.length; i < j; i++) {
+    let user = users[i];
+
+    let samp = await ctx.orm().info_user_samps.findOne({
+      where: {
+        userId: user.dataValues.id,
+        startTime: {
+          $lte: now
+        },
+        endTime: {
+          $gte: now
+        }
+      }
+    })
+
+    if (!samp) {
+      await ctx.orm().info_user_samps.create({
+        userId: user.id,
+        startTime: d1,
+        endTime: d2,
+        dayCount: 1,
+        realCount: 1,
+        postName: user.dataValues.postName,
+        periodType: user.dataValues.periodType,
+        handleType: '未采样',
+        isPlan: '计划内'
+      })
+    }
+  }
+
+  console.log('users samp day data:%s', date.formatDate());
+}
 
 async function daySamp () {
   console.log('users samp day data:%s', date.formatDate());
@@ -422,6 +483,64 @@ async function daySamp () {
   let d1 = now;
   //明天
   let d2 = moment(new Date()).add(1, 'days').format('YYYY-MM-DD');
+
+  for (let i = 0, j = users.length; i < j; i++) {
+    let user = users[i];
+
+    let samp = await ctx.orm().info_user_samps.findOne({
+      where: {
+        userId: user.dataValues.id,
+        startTime: {
+          $lte: now
+        },
+        endTime: {
+          $gte: now
+        }
+      }
+    })
+
+    if (!samp) {
+      await ctx.orm().info_user_samps.create({
+        userId: user.id,
+        startTime: d1,
+        endTime: d2,
+        dayCount: 1,
+        realCount: 1,
+        postName: user.dataValues.postName,
+        periodType: user.dataValues.periodType,
+        handleType: '未采样',
+        isPlan: '计划内'
+      })
+    }
+  }
+
+  console.log('users samp day data:%s', date.formatDate());
+}
+
+async function threeDaySamp () {
+  console.log('users samp day data:%s', date.formatDate());
+
+  let users = await ctx.orm().info_users.findAll({
+    where: {
+      sampStartTime: {
+        $lte: date.formatDate()
+      },
+      periodType: '每3天一检',
+      depId: {
+        $gt: 2
+      },
+      userType: {
+        $in: ['在线', '已设置休假']
+      }
+    }
+  });
+
+  let now = date.formatDate(new Date(), 'YYYY-MM-DD')
+
+  // 今天
+  let d1 = now;
+  //明天
+  let d2 = moment(new Date()).add(2, 'days').format('YYYY-MM-DD');
 
   for (let i = 0, j = users.length; i < j; i++) {
     let user = users[i];
@@ -1383,7 +1502,9 @@ async function main () {
   })
 
   dayJob = schedule.scheduleJob('0 10 0 * * *', function () {
+    oneDaySamp()
     daySamp()
+    threeDaySamp()
     getUpUsers()
   })
 
