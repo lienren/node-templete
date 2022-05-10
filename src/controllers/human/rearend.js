@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2022-04-13 12:37:33
+ * @LastEditTime: 2022-05-10 16:34:57
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/human/rearend.js
@@ -645,7 +645,7 @@ module.exports = {
     case postLevel when 15 then 1 else 0 end post15,
     case postLevel when 16 then 1 else 0 end post16,
     case postLevel when 17 then 1 else 0 end post17,
-    case postLevel when 18 then 1 else 0 end post18 from info_users where isresign = 1) a 
+    case postLevel when 18 then 1 else 0 end post18 from info_users where isresign = 1 and isretire = 1) a 
     group by a.street;`
     let sql2 = `select street, hold, count(1) num from info_users group by street, hold;`;
     let sql3 = `select u.street, c.certName, count(1) num from info_users u inner join info_user_cert c on c.userId = u.id group by u.street, c.certName;`;
