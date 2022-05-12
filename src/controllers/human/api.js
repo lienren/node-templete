@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-08-18 10:44:07
- * @LastEditTime: 2022-05-12 07:42:23
+ * @LastEditTime: 2022-05-12 12:48:45
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/human/api.js
@@ -96,23 +96,42 @@ module.exports = {
     ctx.body = result
   },
   submitQAUser: async ctx => {
-    let { id, openid, qid, uname, uphone, ucode, uimg } = ctx.request.body;
+    let { openid, qid, uname, uphone, ucode, uimg } = ctx.request.body;
 
-    if (id && id > 0) {
+    let user = await ctx.orm().info_qa_users.findOne({
+      where: {
+        openid,
+        qid
+      }
+    })
+
+    let id = 0
+    if (user) {
       await ctx.orm().info_qa_users.update({
-        qid, openid, uname, uphone, ucode, uimg
+        uname, uphone, ucode, uimg
       }, {
         where: {
-          id
+          id: user.id
         }
       })
+
+      id = user.id
     } else {
-      let result = await ctx.orm().info_qa_users.create({
+      user = await ctx.orm().info_qa_users.create({
         qid, openid, uname, uphone, ucode, uimg
       })
 
-      id = result.dataValues.id
+      id = user.dataValues.id
     }
+
+    let btime = parseInt(comm.rand(5, 14))
+    await ctx.orm().info_msg.create({
+      avatar: user.dataValues.uimg,
+      msg: '我来啦~~',
+      time: btime,
+      barrageStyle: `bbb${btime}`,
+      isSend: 0
+    })
 
     ctx.body = {
       id
@@ -186,5 +205,30 @@ module.exports = {
         errmsg: '您的信息不存在，请先登记'
       }
     }
-  }
+  },
+  getBarrage: async ctx => {
+    let pageSize = 20
+    let msgs = await ctx.orm().info_msg.findAll({
+      limit: pageSize,
+      where: {
+        isSend: 0
+      }
+    });
+
+    if (msgs && msgs.length > 0) {
+      await ctx.orm().info_msg.update({
+        isSend: 1
+      }, {
+        where: {
+          id: {
+            $in: msgs.map(m => {
+              return m.dataValues.id
+            })
+          }
+        }
+      })
+    }
+
+    ctx.body = msgs
+  },
 };
