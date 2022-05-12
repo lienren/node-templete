@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-08-18 10:44:07
- * @LastEditTime: 2021-12-30 18:09:17
+ * @LastEditTime: 2022-05-12 10:12:39
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/aicy/api.js
@@ -34,17 +34,17 @@ var wcApi = new WechatAPI(WechatAppId, WechatAppSecret, function () {
   fs.writeFileSync('access_token.txt', JSON.stringify(token));
 });
 
-function readAccessToken () {
-  if (fs.existsSync('web_access_token.txt')) {
-    let token = fs.readFileSync('web_access_token.txt', 'utf8');
+function readAccessToken (openid) {
+  if (fs.existsSync(`web_access_tokens/${openid}.txt`)) {
+    let token = fs.readFileSync(`web_access_tokens/${openid}.txt`, 'utf8');
     return token;
   } else {
     return '';
   }
 }
 
-function writeAccessToken (token) {
-  fs.writeFileSync('web_access_token.txt', token);
+function writeAccessToken (openid, token) {
+  fs.writeFileSync(`web_access_tokens/${openid}.txt`, token);
 }
 
 const handleStatusNameEnum = {
@@ -91,10 +91,8 @@ module.exports = {
       data: {}
     })
 
-    console.log('result.data:', result.data)
-
     if (result && result.data && result.data.openid && result.data.access_token) {
-      writeAccessToken(result.data.access_token)
+      writeAccessToken(result.data.openid, result.data.access_token)
       ctx.response.redirect(`${uri}?openid=${result.data.openid}`)
     }
 
@@ -112,7 +110,7 @@ module.exports = {
     // 52_TTDhqiKMZNHYtt4HGMhVLLVcJHgyx4E3jWyBQUeqIEvCltJzNf220mCW7wTzmJftfyu04uaTmI5PkHJGBaPjMpf1f0b-5zAskIrzmza2nIA
 
     // let access_token = '52_p7I10kv0WUrDu3b585HNimt9C4eZWcKzfSgeWF6KO1uCzpkgE78Tomo6RsRsV2zBoQwfUc3dpiB4cdFeDNP8WzjmNTFTZiO_JWLlM_2bG6E'
-    let access_token = readAccessToken()
+    let access_token = readAccessToken(openId)
 
     let result = await http.get({
       url: `https://api.weixin.qq.com/sns/userinfo?access_token=${access_token}&openid=${openId}&lang=zh_CN`,
