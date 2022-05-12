@@ -43,6 +43,11 @@ module.exports = async function(ctx, next) {
     return;
   }
 
+  if (ctx.path.indexOf('onlineqa_mobile') > -1) {
+    await sendfile(ctx, path.resolve(__dirname, '../../assets/onlineqa_mobile/index.html'));
+    return;
+  }
+
   /* let sitepath = await redirect(ctx, async (ctx, requestUrl, sitepath) => {
     let stats = await sendfile(ctx, sitepath);
 

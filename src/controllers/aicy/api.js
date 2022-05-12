@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-08-18 10:44:07
- * @LastEditTime: 2022-05-12 10:12:39
+ * @LastEditTime: 2022-05-12 10:26:26
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/aicy/api.js
@@ -93,7 +93,12 @@ module.exports = {
 
     if (result && result.data && result.data.openid && result.data.access_token) {
       writeAccessToken(result.data.openid, result.data.access_token)
-      ctx.response.redirect(`${uri}?openid=${result.data.openid}`)
+
+      if (uri.indexOf('?') > -1) {
+        ctx.response.redirect(`${uri}&openid=${result.data.openid}`)
+      } else {
+        ctx.response.redirect(`${uri}?openid=${result.data.openid}`)
+      }
     }
 
     ctx.body = {}
