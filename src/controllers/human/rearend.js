@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2022-05-10 16:34:57
+ * @LastEditTime: 2022-05-10 18:16:46
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/human/rearend.js
@@ -575,7 +575,7 @@ module.exports = {
 
     let sql = `select 't1', count(1) num from info_users where ${where} 
     union all 
-    select 't2', count(1) num from info_users where isresign = 1 and ${where} 
+    select 't2', count(1) num from info_users where isresign = 1 and isretire = 1 and ${where} 
     union all 
     select 't3', count(1) num from info_users where isresign = 2 and ${where} 
     union all 

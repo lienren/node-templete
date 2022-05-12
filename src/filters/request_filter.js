@@ -38,8 +38,13 @@ module.exports = async function (ctx, next) {
     return;
   }
 
-  if (ctx.path.indexOf('aicommunity') > -1) {
-    await sendfile(ctx, path.resolve(__dirname, '../../assets/aicommunity/index.html'));
+  if (ctx.path.indexOf('onlineqa_mobile') > -1) {
+    await sendfile(ctx, path.resolve(__dirname, '../../assets/onlineqa_mobile/index.html'));
+    return;
+  }
+
+  if (ctx.path.indexOf('onlineqa') > -1) {
+    await sendfile(ctx, path.resolve(__dirname, '../../assets/onlineqa/index.html'));
     return;
   }
 

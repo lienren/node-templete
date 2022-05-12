@@ -1,43 +1,41 @@
 /* jshint indent: 2 */
 
 module.exports = function(sequelize, DataTypes) {
-  return sequelize.define('info_user_level', {
+  return sequelize.define('info_qa', {
     id: {
       type: DataTypes.INTEGER(11),
       allowNull: false,
       primaryKey: true,
       autoIncrement: true
     },
-    userId: {
-      type: DataTypes.INTEGER(11),
+    title: {
+      type: DataTypes.STRING(255),
       allowNull: true
     },
-    year: {
-      type: DataTypes.INTEGER(11),
+    desc: {
+      type: DataTypes.STRING(1000),
       allowNull: true
     },
-    levelType: {
-      type: DataTypes.STRING(20),
-      allowNull: true
-    },
-    remark: {
-      type: DataTypes.STRING(500),
-      allowNull: true
-    },
-    checkUser: {
-      type: DataTypes.STRING(100),
-      allowNull: true
-    },
-    checkTime: {
-      type: DataTypes.DATE,
+    items: {
+      type: DataTypes.TEXT,
       allowNull: true
     },
     createTime: {
       type: DataTypes.DATE,
       allowNull: true,
       defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
+    },
+    updateTime: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
+    },
+    nowIndex: {
+      type: DataTypes.INTEGER(11),
+      allowNull: true,
+      defaultValue: '-1'
     }
   }, {
-    tableName: 'info_user_level'
+    tableName: 'info_qa'
   });
 };
