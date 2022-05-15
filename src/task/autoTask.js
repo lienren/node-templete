@@ -392,14 +392,30 @@ async function getRestUsers () {
 }
 
 /*
-每2天一检，固定周期
-每周一检，固定周期
-每月一检，固定周期
-每周2次（间隔2天以上），固定周期
-
 每天一检，固定周期
+每2天一检，固定周期
 每3天一检，固定周期
 每5天一检，固定周期
+每周一检，固定周期
+每周2次（间隔2天以上），固定周期
+每月一检，固定周期
+*/
+
+/*
+每天一检，不提醒
+每2天一检，前一天提醒
+每3天一检，前一天提醒
+每5天一检，前一天提醒，结束前2提醒
+每周一检，前一天提醒，结束前2天提醒
+每周2次（间隔2天以上），前一天提醒，中间提醒或做完中间提醒，结束前2天提醒
+每月一检，前一天提醒，中间提醒，结束前3天提醒
+
+一周一次改2次，5天参照一周，3天参照2天
+
+1、您好！为了您与家人健康，请于2021年11月5日-2021年11月6日期间进行下一周期核酸检测。感谢配合。
+2、
+如果是一周一检的人员：您好！今天是您本周期核酸检测的最后2天，请尽快到采样点检测核酸，感谢配合。
+如果是一月一检的人员：您好！今天是您本周期核酸检测的最后3天，请尽快到采样点检测核酸，感谢配合。
 */
 
 async function oneDaySamp () {
@@ -996,63 +1012,88 @@ async function importSamps () {
         })
       }
 
-      let samp = await ctx.orm().info_user_samps.findOne({
+      // 查找采样当天有没有已采样
+      let sameSamp = await ctx.orm().info_user_samps.findOne({
         where: {
           userId: user.id,
-          handleType: '未采样',
-          startTime: {
-            $lte: today
+          handleType: '已采样',
+          handleTime: {
+            $lte: `${today} 00:00:00`
           },
-          endTime: {
-            $gte: today
+          handleTime: {
+            $gte: `${today} 23:59:59`
           }
         }
       })
 
-      if (samp) {
-        await ctx.orm().info_user_samps.update({
-          handleType: '已采样',
-          handleTime: now,
-          handleCount: 1,
-          sampName: data.sampName,
-          sampUserName: '暂无',
-          imgUrl: '',
-          imgTime: now,
-          remark: '批量采样导入'
+      if (sameSamp) {
+        await ctx.orm().tmp_info_samps.update({
+          status: 1,
+          remark: '处理成功！有重复！'
         }, {
           where: {
-            id: samp.id
+            id: data.id
           }
         })
       } else {
-        await ctx.orm().info_user_samps.create({
-          userId: user.id,
-          startTime: today,
-          endTime: today,
-          dayCount: 1,
-          realCount: 1,
-          postName: user.postName,
-          periodType: user.periodType,
-          sampWay: user.sampWay,
-          handleType: '已采样',
-          handleTime: now,
-          handleCount: 1,
-          sampName: data.sampName,
-          sampUserName: '暂无',
-          imgUrl: '',
-          imgTime: now,
-          remark: '批量采样导入'
+        let samp = await ctx.orm().info_user_samps.findOne({
+          where: {
+            userId: user.id,
+            handleType: '未采样',
+            startTime: {
+              $lte: today
+            },
+            endTime: {
+              $gte: today
+            }
+          }
+        })
+
+        if (samp) {
+          await ctx.orm().info_user_samps.update({
+            handleType: '已采样',
+            handleTime: now,
+            handleCount: 1,
+            sampName: data.sampName,
+            sampUserName: '暂无',
+            imgUrl: '',
+            imgTime: now,
+            remark: '批量采样导入'
+          }, {
+            where: {
+              id: samp.id
+            }
+          })
+        } else {
+          await ctx.orm().info_user_samps.create({
+            userId: user.id,
+            startTime: today,
+            endTime: today,
+            dayCount: 1,
+            realCount: 1,
+            postName: user.postName,
+            periodType: user.periodType,
+            sampWay: user.sampWay,
+            handleType: '已采样',
+            handleTime: now,
+            handleCount: 1,
+            sampName: data.sampName,
+            sampUserName: '暂无',
+            imgUrl: '',
+            imgTime: now,
+            remark: '批量采样导入'
+          })
+        }
+
+        await ctx.orm().tmp_info_samps.update({
+          status: 1,
+          remark: '处理成功！'
+        }, {
+          where: {
+            id: data.id
+          }
         })
       }
-
-      await ctx.orm().tmp_info_samps.update({
-        status: 1,
-        remark: '处理成功！'
-      }, {
-        where: {
-          id: data.id
-        }
-      })
     }
   }
 
