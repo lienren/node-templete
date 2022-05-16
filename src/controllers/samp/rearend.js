@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2022-05-12 22:17:33
+ * @LastEditTime: 2022-05-15 11:33:57
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/samp/rearend.js
@@ -17,35 +17,6 @@ const sequelize = require('sequelize');
 const comm = require('../../utils/comm');
 const date = require('../../utils/date');
 const excel = require('../../utils/excel');
-const AipOcrClient = require("baidu-aip-sdk").ocr;
-const { debugPort } = require('process');
-
-const APP_ID = "25119032";
-const API_KEY = "3Hlx41svN2dnAKsjQzMtHnh0";
-const SECRET_KEY = "UdOj4Y4DFm4S58G23wzhDGXjgUm7bYpG";
-
-const client = new AipOcrClient(APP_ID, API_KEY, SECRET_KEY);
-
-/*
-每2天一检，固定周期
-每周一检，固定周期
-每月一检，固定周期
-每周2次（间隔2天以上），固定周期
-当天，无固定周期
-48小时内1次，无固定周期
-1、14，无固定周期
-2、7，无固定周期
-1、4、7、10、14，无固定周期
-2、7、14，无固定周期
-1、4、7、14，无固定周期
-1、4、7，无固定周期
-*/
-
-/*
-AppID：25119032
-API Key：3Hlx41svN2dnAKsjQzMtHnh0
-Secret Key：UdOj4Y4DFm4S58G23wzhDGXjgUm7bYpG
-*/
 
 function formatDate (num) {
   if (typeof num === 'number') {
@@ -62,68 +33,18 @@ module.exports = {
   getUsers: async ctx => {
     let pageIndex = ctx.request.body.pageIndex || 1;
     let pageSize = ctx.request.body.pageSize || 50;
-    let { tradeTypes, postNames, depName1s, depName2s, depName2, depStreet, name, phone, idcard, tradeType, postName, periodType, street, community, streets, communitys, address, userType,
-      sampStartTime, sampName, sampUserName, sampHandleTime, createTime, updateTime } = ctx.request.body;
+    let { batch_no, name, tel, cert_no, createTime, updateTime, cusId, cusName, opStatus, opStatusName } = ctx.request.body;
 
     let where = {};
 
-    Object.assign(where, depStreet && { depStreet })
+    Object.assign(where, batch_no && { batch_no })
     Object.assign(where, name && { name })
-    Object.assign(where, phone && { phone })
-    Object.assign(where, idcard && { idcard })
-    Object.assign(where, tradeType && { tradeType })
-    Object.assign(where, postName && { postName })
-    Object.assign(where, depName2 && { depName2 })
-    Object.assign(where, periodType && { periodType })
-    Object.assign(where, userType && { userType })
-    Object.assign(where, street && { street })
-    Object.assign(where, community && { community })
-    Object.assign(where, sampName && { sampName })
-    Object.assign(where, sampUserName && { sampUserName })
-
-    if (tradeTypes && tradeTypes.length > 0) {
-      where.tradeType = {
-        $in: tradeTypes
-      }
-    }
-
-    if (postNames && postNames.length > 0) {
-      where.postName = {
-        $in: postNames
-      }
-    }
-
-    if (depName1s && depName1s.length > 0) {
-      where.depName1 = {
-        $in: depName1s
-      }
-    }
-
-    if (depName2s && depName2s.length > 0) {
-      where.depName2 = {
-        $in: depName2s
-      }
-    }
-
-    if (streets && streets.length > 0) {
-      where.street = {
-        $in: streets
-      }
-    }
-
-    if (communitys && communitys.length > 0) {
-      where.community = {
-        $in: communitys
-      }
-    }
-
-    if (sampStartTime && sampStartTime.length > 0) {
-      where.sampStartTime = { $between: sampStartTime }
-    }
-
-    if (sampHandleTime && sampHandleTime.length > 0) {
-      where.sampHandleTime = { $between: sampHandleTime }
-    }
+    Object.assign(where, tel && { tel })
+    Object.assign(where, cert_no && { cert_no })
+    Object.assign(where, cusId && { cusId })
+    Object.assign(where, cusName && { cusName })
+    Object.assign(where, opStatus && { opStatus })
+    Object.assign(where, opStatusName && { opStatusName })
 
     if (createTime && createTime.length > 0) {
       where.createTime = { $between: createTime }
@@ -131,12 +52,6 @@ module.exports = {
 
     if (updateTime && updateTime.length > 0) {
       where.updateTime = { $between: updateTime }
-    }
-
-    if (address) {
-      where.address = {
-        $like: `%"${address}"%`
-      }
     }
 
     let result = await ctx.orm().info_users.findAndCountAll({
@@ -154,6 +69,68 @@ module.exports = {
       pageIndex,
       pageSize
     }
+  },
+  importUsers: async ctx => {
+    if (ctx.req.files && ctx.req.files.length > 0) {
+      ctx.body = {
+        filename: ctx.req.files[0].filename
+      };
+    } else {
+      ctx.body = {
+        filename: ''
+      };
+    }
+  },
+  handleUsers: async ctx => {
+    let { batchName, cusIds, fileName } = ctx.request.body;
+
+    let filePath = path.resolve(path.join(__dirname, `../../../assets/uploads/${fileName}`));
+    let xlsx = excel.readExcel(filePath);
+
+    console.log('batchName:', batchName)
+    console.log('cusIds:', cusIds)
+    console.log('xlsx:', xlsx)
+
+    let keys = xlsx[0]
+    xlsx.shift()
+
+    let cus = await ctx.orm().SuperManagerInfo.findAll({
+      where: {
+        id: {
+          $in: cusIds
+        }
+      }
+    })
+
+    assert.ok(cus && cus.length > 0, '客服不存在');
+
+    let data = xlsx.map((m, index) => {
+      let col = {
+        batchName: batchName,
+        cusId: cus[index % cus.length].dataValues.id,
+        cusName: cus[index % cus.length].dataValues.realName,
+        opStatusName: '未回访'
+      }
+
+      for (let i = 0, j = m.length; i < j; i++) {
+        if (keys[i] === 'id') {
+          col['cx_id'] = m[i]
+        } else if (keys[i] === 'cbp0107' || keys[i] === 'cbp0108' || keys[i] === 'create_time') {
+          col[keys[i]] = formatDate(m[i])
+        } else {
+          col[keys[i]] = m[i]
+        }
+      }
+      return col
+    });
+
+    await ctx.orm().info_users.bulkCreate(data);
+
+    // 删除文件
+    fs.unlink(filePath, function (error) {
+      console.log('delete import excel file error:', error)
+      return false
+    })
   },
   getUserSamps: async ctx => {
     let { id } = ctx.request.body;
@@ -1367,7 +1344,7 @@ module.exports = {
     if (!selectTime) {
       selectTime = date.formatDate(new Date(), 'YYYY-MM-DD');
     }
-    
+
     let sql1 = `select postName, count(1) num from info_users where depId > 2 and postName != '愿检尽检人群' group by postName`;
     let sql2 = `select u.postName, count(1) num from (
       select userId from info_user_samps 
@@ -1425,42 +1402,6 @@ module.exports = {
     data.push(sum)
 
     ctx.body = data;
-  },
-  importUsers: async ctx => {
-    if (ctx.req.files && ctx.req.files.length > 0) {
-      let filePath = path.resolve(path.join(__dirname, `../../../assets/uploads/${ctx.req.files[0].filename}`));
-
-      let xlsx = excel.readExcel(filePath);
-
-      let data = xlsx.filter(f => f.length === 9).map(m => {
-        return {
-          depName1: m[1].trim(),
-          depName2: m[2].trim(),
-          depStreet: m[3].trim(),
-          name: m[4].trim(),
-          tradeType: m[5].trim(),
-          postName: m[6].trim(),
-          idcard: m[7].toString().trim(),
-          phone: m[8].toString().trim(),
-          status: 0
-        }
-      });
-
-      // 删除首行
-      data.shift();
-
-      ctx.orm().tmp_info_users.bulkCreate(data);
-
-      // 删除文件
-      fs.unlink(filePath, function (error) {
-        console.log('delete import excel file error:', error)
-        return false
-      })
-
-      ctx.body = {};
-    } else {
-      ctx.body = {};
-    }
   },
   importSamp: async ctx => {
     let sampName = ctx.headers['sampname'] || ''

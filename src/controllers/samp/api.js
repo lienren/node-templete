@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-08-18 10:44:07
- * @LastEditTime: 2022-02-16 09:59:36
+ * @LastEditTime: 2022-05-15 08:38:27
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/samp/api.js
@@ -18,14 +18,6 @@ const date = require('../../utils/date');
 const jwt = require('../../utils/jwt');
 const encrypt = require('../../utils/encrypt');
 const config = require('../../config.js');
-
-const AipOcrClient = require("baidu-aip-sdk").ocr;
-
-const APP_ID = "25119032";
-const API_KEY = "3Hlx41svN2dnAKsjQzMtHnh0";
-const SECRET_KEY = "UdOj4Y4DFm4S58G23wzhDGXjgUm7bYpG";
-
-const client = new AipOcrClient(APP_ID, API_KEY, SECRET_KEY);
 
 module.exports = {
   getPostList: async ctx => {
@@ -44,64 +36,8 @@ module.exports = {
       let filePath = path.resolve(path.join(__dirname, `../../../assets/uploads/${ctx.req.files[0].filename}`));
       let image = fs.readFileSync(filePath).toString("base64");
       let idCardSide = "back";
-
-      let result = await client.idcard(image, idCardSide);
-
-      let user = null
-      if (result.words_result &&
-        result.words_result.姓名 &&
-        result.words_result.民族 &&
-        result.words_result.住址 &&
-        result.words_result.公民身份号码 &&
-        result.words_result.出生 &&
-        result.words_result.性别) {
-        let idardInfo = {
-          name: result.words_result.姓名.words,
-          idcard: result.words_result.公民身份号码.words,
-          sex: result.words_result.性别.words,
-          birthday: result.words_result.出生.words,
-          nation: result.words_result.民族.words,
-          address: result.words_result.住址.words
-        }
-
-        user = await ctx.orm().info_users.findOne({
-          where: {
-            idcard: idardInfo.idcard
-          }
-        })
-
-        if (!user) {
-          user = {
-            depId: 2,
-            depName1: '愿检尽检',
-            depName2: '愿检尽检',
-            name: idardInfo.name,
-            idcard: idardInfo.idcard,
-            address: idardInfo.address,
-            street: '',
-            community: '',
-            phone: '',
-            tradeType: '',
-            postName: '',
-            periodType: '',
-            sampWay: ''
-          }
-        }
-      } else {
-        // 删除文件
-        fs.unlink(filePath, function (error) {
-          console.log('delete file error:', error)
-          return false
-        })
-      }
-
-      ctx.body = {
-        filePath: config.sys.uploadVirtualFilePath + '/' + ctx.req.files[0].filename,
-        info: user
-      };
-    } else {
-      ctx.body = {};
     }
+    ctx.body = {};
   },
   idcardSamp: async ctx => {
     let { name, phone, idcard, address, tradeType, postName, periodType, street, community, sampName, sampUserName, imgUrl, remark } = ctx.request.body;
