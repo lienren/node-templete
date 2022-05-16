@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-08-18 10:44:07
- * @LastEditTime: 2022-02-16 09:59:36
+ * @LastEditTime: 2022-05-16 18:22:00
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/samp/api.js
@@ -87,13 +87,13 @@ module.exports = {
             sampWay: ''
           }
         }
-      } else {
-        // 删除文件
-        fs.unlink(filePath, function (error) {
-          console.log('delete file error:', error)
-          return false
-        })
       }
+      
+      // 删除文件
+      fs.unlink(filePath, function (error) {
+        console.log('delete file error:', error)
+        return false
+      })
 
       ctx.body = {
         filePath: config.sys.uploadVirtualFilePath + '/' + ctx.req.files[0].filename,
