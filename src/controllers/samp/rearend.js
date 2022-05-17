@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2022-05-12 22:17:33
+ * @LastEditTime: 2022-05-17 09:13:48
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/samp/rearend.js
@@ -19,6 +19,7 @@ const date = require('../../utils/date');
 const excel = require('../../utils/excel');
 const AipOcrClient = require("baidu-aip-sdk").ocr;
 const { debugPort } = require('process');
+const http = require('../../utils/http');
 
 const APP_ID = "25119032";
 const API_KEY = "3Hlx41svN2dnAKsjQzMtHnh0";
@@ -1367,7 +1368,7 @@ module.exports = {
     if (!selectTime) {
       selectTime = date.formatDate(new Date(), 'YYYY-MM-DD');
     }
-    
+
     let sql1 = `select postName, count(1) num from info_users where depId > 2 and postName != '愿检尽检人群' group by postName`;
     let sql2 = `select u.postName, count(1) num from (
       select userId from info_user_samps 
@@ -2113,5 +2114,16 @@ module.exports = {
         id: user.id
       }
     })
+  },
+  sendMsgTest: async ctx => {
+    let phone = '18652017319'
+    let sendMsg = `您好！为了您与家人健康，请于${date.formatDate(new Date(), 'YYYY年MM年DD日')}-${date.getTodayToPreDay(-1, 'YYYY年MM年DD日')}期间进行核酸检测。感谢配合。`;
+    let rep = await http.get({
+      url: `http://59.83.223.109:8513/sms/Api/Send.do?SpCode=1037&LoginName=jbxq_hsjc&Password=62E79c7Rk&MessageContent=${encodeURIComponent(sendMsg)}&UserNumber=${phone}&templateId=123456&SerialNumber=&ScheduleTime=&f=1`
+    })
+
+    ctx.body = {
+      data: rep.data
+    }
   }
 };

@@ -11,7 +11,7 @@ const comm = require('./comm');
 
 module.exports = {
   // Date日期格式化
-  formatDate: function(date = new Date(), formate = 'YYYY-MM-DD HH:mm:ss', isunix = false) {
+  formatDate: function (date = new Date(), formate = 'YYYY-MM-DD HH:mm:ss', isunix = false) {
     if (!date) {
       date = new Date();
     }
@@ -30,7 +30,7 @@ module.exports = {
     return val;
   },
   // 获取毫秒级时间戳
-  getTimeStamp: function(second) {
+  getTimeStamp: function (second) {
     let date = new Date().getTime();
 
     if (second && comm.isNumber(second)) {
@@ -40,7 +40,7 @@ module.exports = {
     return date;
   },
   // 获取秒级时间戳
-  getSecondStamp: function(second) {
+  getSecondStamp: function (second) {
     let date = parseInt(new Date().getTime() / 1000);
 
     if (second && comm.isNumber(second)) {
@@ -50,7 +50,7 @@ module.exports = {
     return date;
   },
   // 时间戳转时间，格式：yyyy-MM-DD HH:mm:ss
-  timestampToTime: function(timestamp, position) {
+  timestampToTime: function (timestamp, position) {
     if (/^\d{10}$/.test(timestamp)) {
       timestamp = new Date(parseInt(timestamp) * 1000);
     }
@@ -66,19 +66,19 @@ module.exports = {
     return Y + M + D + h + m + s;
   },
   // 时间转时间戳，时间格式：yyyy-MM-DD HH:mm:ss
-  timeToTimeStamp: function(time) {
+  timeToTimeStamp: function (time) {
     var date = new Date(time.replace(/-/g, '/'));
     return date.getTime();
   },
   // 获取今天开始和结束时间戳
-  getTodayTimeStamp: function() {
+  getTodayTimeStamp: function () {
     return {
       starttime: new Date(new Date().setHours(0, 0, 0, 0)).getTime(),
       endtime: new Date(new Date().setHours(23, 59, 59, 999)).getTime()
     };
   },
   // 获取两个时间之间的时间段
-  dataScope: function(a, b) {
+  dataScope: function (a, b) {
     var date1 = getDate(a);
     var date2 = getDate(b);
     date2.setDate(date2.getDate() + 1);
@@ -106,10 +106,14 @@ module.exports = {
       date1.setDate(date1.getDate() + 1);
     }
     return dateArr;
+  },
+  getTodayToPreDay (preDays, formate = 'YYYY-MM-DD HH:mm:ss', isunix = false) {
+    let time = new Date().getTime() - 86400000 * preDays;
+    return this.formatDate(new Date(time), formate, isunix);
   }
 };
 
-function getDate(date) {
+function getDate (date) {
   if (!date) {
     date = new Date();
   } else {

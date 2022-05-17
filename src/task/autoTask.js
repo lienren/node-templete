@@ -412,7 +412,8 @@ async function getRestUsers () {
 
 一周一次改2次，5天参照一周，3天参照2天
 
-1、您好！为了您与家人健康，请于2021年11月5日-2021年11月6日期间进行下一周期核酸检测。感谢配合。
+1、感谢您今天及时进行核酸检测，核酸结果未出之前，请勿人群集聚或外出。下次核酸检测时间为2021年11月5日-2021年11月6日期间。
+1、您好！为了您与家人健康，请于2021年11月5日-2021年11月6日期间进行核酸检测。感谢配合。
 2、
 如果是一周一检的人员：您好！今天是您本周期核酸检测的最后2天，请尽快到采样点检测核酸，感谢配合。
 如果是一月一检的人员：您好！今天是您本周期核酸检测的最后3天，请尽快到采样点检测核酸，感谢配合。
@@ -1100,6 +1101,122 @@ async function importSamps () {
   console.log('samp import Samps data:%s', date.formatDate());
 }
 
+// 发送短信
+async function autoSendMsg () {
+  console.log('samp send msg data:%s', date.formatDate());
+
+  // 每天当天提醒
+  let sql1 = `select a.*, u.phone from (
+      select id, userId, startTime, endTime, periodType from info_user_samps 
+      where 
+        startTime = '${date.formatDate(new Date(), 'YYYY-MM-DD')}' and 
+        handleType = '未采样' and 
+        postName != '愿检尽检人群' and 
+        periodType != '每天一检' 
+    ) a 
+    inner join info_users u on u.id = a.userId`;
+
+  let result1 = await ctx.orm().query(sql1);
+
+  for (let i = 0, j = result1.length; i < j; i++) {
+    let send = result1[i];
+    let sendTime = new Date();
+    let sendMsg = `您好！为了您与家人健康，请于${date.formatDate(new Date(), 'YYYY年MM年DD日')}-${date.formatDate(send.endTime, 'YYYY年MM年DD日')}期间进行核酸检测。感谢配合。`;
+    let rep = await http.get({
+      url: `http://59.83.223.109:8513/sms/Api/Send.do?SpCode=1037&LoginName=jbxq_hsjc&Password=62E79c7Rk&MessageContent=${encodeURIComponent(sendMsg)}&UserNumber=${send.phone}&templateId=123456&SerialNumber=&ScheduleTime=&f=1`
+    })
+
+    await ctx.orm().info_sendmsg.create({
+      sid: send.id,
+      userId: send.userId,
+      startTime: send.startTime,
+      endTime: send.endTime,
+      periodType: send.periodType,
+      sendPhone: send.phone,
+      sendTime: date.formatDate(sendTime, 'YYYY-MM-DD HH:mm:ss'),
+      sendContent: sendMsg,
+      repContent: rep.data,
+      repTime: date.formatDate()
+    })
+  }
+
+  let sql2 = `select a.*, u.phone from (
+    select * from (
+      select id, userId, startTime, endTime, TIMESTAMPDIFF(DAY,startTime,endTime) t1, TIMESTAMPDIFF(DAY,startTime,now()) t2, periodType from info_user_samps 
+      where 
+        startTime <= now() and 
+        endTime > now() and 
+        handleType = '未采样' and 
+        postName != '愿检尽检人群' and 
+        periodType in ('每月一检')	
+    ) b where b.t1 / 2 = b.t2 ) a 
+    inner join info_users u on u.id = a.userId`
+
+  let result2 = await ctx.orm().query(sql2);
+
+  for (let i = 0, j = result2.length; i < j; i++) {
+    let send = result2[i];
+
+    let sendTime = new Date();
+    let sendMsg = `您好！为了您与家人健康，请于${date.formatDate(new Date(), 'YYYY年MM年DD日')}-${date.formatDate(send.endTime, 'YYYY年MM年DD日')}期间进行核酸检测。感谢配合。`;
+    let rep = await http.get({
+      url: `http://59.83.223.109:8513/sms/Api/Send.do?SpCode=1037&LoginName=jbxq_hsjc&Password=62E79c7Rk&MessageContent=${encodeURIComponent(sendMsg)}&UserNumber=${send.phone}&templateId=123456&SerialNumber=&ScheduleTime=&f=1`
+    })
+
+    await ctx.orm().info_sendmsg.create({
+      sid: send.id,
+      userId: send.userId,
+      startTime: send.startTime,
+      endTime: send.endTime,
+      periodType: send.periodType,
+      sendPhone: send.phone,
+      sendTime: date.formatDate(sendTime, 'YYYY-MM-DD HH:mm:ss'),
+      sendContent: sendMsg,
+      repContent: rep.data,
+      repTime: date.formatDate()
+    })
+  }
+
+  let sql3 = `select a.*, u.phone from (
+    select * from (
+      select id, userId, startTime, endTime, TIMESTAMPDIFF(DAY,startTime,endTime) t1, TIMESTAMPDIFF(DAY,startTime,now()) t2, periodType from info_user_samps 
+      where 
+        startTime <= now() and 
+        endTime > now() and 
+        handleType = '未采样' and 
+        postName != '愿检尽检人群' and 
+        periodType in ('每5天一检', '每周一检', '每周2次', '每月一检') 
+    ) b where b.t1 = b.t2 + 2) a 
+    inner join info_users u on u.id = a.userId`
+
+  let result3 = await ctx.orm().query(sql3);
+
+  for (let i = 0, j = result3.length; i < j; i++) {
+    let send = result3[i];
+
+    let sendTime = new Date();
+    let sendMsg = `您好！今天是您本周期核酸检测的最后2天，请尽快到采样点检测核酸，感谢配合。`;
+    let rep = await http.get({
+      url: `http://59.83.223.109:8513/sms/Api/Send.do?SpCode=1037&LoginName=jbxq_hsjc&Password=62E79c7Rk&MessageContent=${encodeURIComponent(sendMsg)}&UserNumber=${send.phone}&templateId=123456&SerialNumber=&ScheduleTime=&f=1`
+    })
+
+    await ctx.orm().info_sendmsg.create({
+      sid: send.id,
+      userId: send.userId,
+      startTime: send.startTime,
+      endTime: send.endTime,
+      periodType: send.periodType,
+      sendPhone: send.phone,
+      sendTime: date.formatDate(sendTime, 'YYYY-MM-DD HH:mm:ss'),
+      sendContent: sendMsg,
+      repContent: rep.data,
+      repTime: date.formatDate()
+    })
+  }
+
+  console.log('samp send msg data:%s', date.formatDate());
+}
+
 let idcards = [
   /*'130224198011241561',
   '142601197301297375',
@@ -1612,6 +1729,11 @@ async function main () {
   weekJob = schedule.scheduleJob('0 10 0 * * 1', weekSamp)
 
   monthJob = schedule.scheduleJob('0 10 0 1 * *', monthSamp)
+
+  // 每天9点自动发送短信
+  schedule.scheduleJob('0 17 9 * * *', function () {
+    autoSendMsg()
+  })
 
   // handleTmp();
   // getUpUsers()
