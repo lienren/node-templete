@@ -1214,6 +1214,45 @@ async function autoSendMsg () {
     })
   }
 
+  let sql4 = `select a.*, u.phone from (
+    select id, userId, startTime, endTime, periodType from info_user_samps 
+      where 
+        endTime = '${date.getTodayToPreDay(-1, 'YYYY-MM-DD')}' and 
+        handleType = '未采样' and 
+        postName != '愿检尽检人群'
+    ) a 
+    inner join info_users u on u.id = a.userId`
+
+  let result4 = await ctx.orm().query(sql4);
+
+  for (let i = 0, j = result4.length; i < j; i++) {
+    let send = result4[i];
+
+    let sendTime = new Date();
+    let sendMsg = ''
+    if (send.periodType === '每天一检') {
+      sendMsg = `您于${date.formatDate(send.startTime, 'YYYY年MM年DD日')}未检测核酸，请及时进行下一次检测，两次以上应检未检会给您工作、生活带来不便，如果已检请忽略。`;
+    } else {
+      sendMsg = `您于${date.formatDate(send.startTime, 'YYYY年MM年DD日')}-${date.formatDate(send.endTime, 'YYYY年MM年DD日')}未检测核酸，请及时进行下一次检测，两次以上应检未检会给您工作、生活带来不便，如果已检请忽略。`;
+    }
+    let rep = await http.get({
+      url: `http://59.83.223.109:8513/sms/Api/Send.do?SpCode=1037&LoginName=jbxq_hsjc&Password=62E79c7Rk&MessageContent=${encodeURIComponent(sendMsg)}&UserNumber=${send.phone}&templateId=123456&SerialNumber=&ScheduleTime=&f=1`
+    })
+
+    await ctx.orm().info_sendmsg.create({
+      sid: send.id,
+      userId: send.userId,
+      startTime: send.startTime,
+      endTime: send.endTime,
+      periodType: send.periodType,
+      sendPhone: send.phone,
+      sendTime: date.formatDate(sendTime, 'YYYY-MM-DD HH:mm:ss'),
+      sendContent: sendMsg,
+      repContent: rep.data,
+      repTime: date.formatDate()
+    })
+  }
+
   console.log('samp send msg data:%s', date.formatDate());
 }
 
