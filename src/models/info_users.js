@@ -222,6 +222,10 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING(10),
       allowNull: true
     },
+    connectType: {
+      type: DataTypes.STRING(100),
+      allowNull: true
+    },
     qa1: {
       type: DataTypes.STRING(20),
       allowNull: true
@@ -276,6 +280,19 @@ module.exports = function(sequelize, DataTypes) {
     },
     cusTime: {
       type: DataTypes.DATE,
+      allowNull: true
+    },
+    cusConnectNum: {
+      type: DataTypes.INTEGER(11),
+      allowNull: true,
+      defaultValue: '0'
+    },
+    areaName: {
+      type: DataTypes.STRING(20),
+      allowNull: true
+    },
+    streetName: {
+      type: DataTypes.STRING(20),
       allowNull: true
     }
   }, {

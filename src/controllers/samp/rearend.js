@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2022-05-15 11:33:57
+ * @LastEditTime: 2022-05-17 18:13:41
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/samp/rearend.js
@@ -18,6 +18,132 @@ const comm = require('../../utils/comm');
 const date = require('../../utils/date');
 const excel = require('../../utils/excel');
 
+const opStatusNameEnum = {
+  1: '未回访',
+  2: '已回访'
+}
+
+const areaName = {
+  '320104': '秦淮区',
+  '320116': '六合区',
+  '320106': '鼓楼区',
+  '320114': '雨花台区',
+  '320117': '溧水区',
+  '320113': '栖霞区',
+  '320192': '江北新区',
+  '320102': '玄武区',
+  '320105': '建邺区',
+  '320118': '高淳区',
+  '320115': '江宁区',
+  '320111': '浦口区'
+}
+
+const streetName = {
+  '320104011000': '瑞金路街道',
+  '320105010000': '江心洲街道',
+  '320102007000': '锁金村街道',
+  '320116002000': '雄州街道',
+  '320115005000': '淳化街道',
+  '320104008000': '洪武路街道',
+  '320115001000': '东山街道',
+  '320113003000': '迈皋桥街道',
+  '320113002000': '马群街道',
+  '320116007000': '龙袍街道',
+  '320118006000': '桠溪街道',
+  '320106006000': '江东街道',
+  '320118004000': '固城街道',
+  '320102009000': '孝陵卫街道',
+  '320104014000': '朝天宫街道',
+  '320104001000': '秦虹街道',
+  '320114005000': '板桥街道',
+  '320192006000': '大厂街道',
+  '320117107000': '和凤镇',
+  '320106002000': '华侨路街道',
+  '320111009000': '永宁街道',
+  '320115007000': '横溪街道',
+  '320104009000': '五老村街道',
+  '320114006000': '铁心桥街道',
+  '320111006000': '汤泉街道',
+  '320106007000': '凤凰街道',
+  '320105007000': '南苑街道',
+  '320102008000': '红山街道',
+  '320116003000': '横梁街道',
+  '320117001000': '永阳街道',
+  '320114008000': '梅山街道',
+  '320106011000': '建宁路街道',
+  '320192008000': '顶山街道',
+  '320118001000': '淳溪街道',
+  '320117101000': '白马镇',
+  '320105011000': '莫愁湖街道',
+  '320104010000': '大光路街道',
+  '320115010000': '汤山街道',
+  '320105008000': '双闸街道',
+  '320117002000': '柘塘街道',
+  '320104007000': '红花街道',
+  '320117004000': '石湫街道',
+  '320113001000': '尧化街道',
+  '320111004000': '江浦街道',
+  '320106010000': '幕府山街道',
+  '320192010000': '盘城街道',
+  '320113004000': '燕子矶街道',
+  '320116004000': '金牛湖街道',
+  '320192004000': '葛塘街道',
+  '320113005000': '仙林街道',
+  '320104013000': '光华路街道',
+  '320105006000': '兴隆街道',
+  '320117005000': '洪蓝街道',
+  '320118003000': '漆桥街道',
+  '320104006000': '中华门街道',
+  '320115012000': '湖熟街道',
+  '320114002000': '赛虹桥街道',
+  '320114004000': '西善桥街道',
+  '320115004000': '禄口街道',
+  '320118005000': '东坝街道',
+  '320114009000': '古雄街道',
+  '320106008000': '下关街道',
+  '320116110000': '竹镇镇',
+  '320102002000': '梅园新村街道',
+  '320115011000': '秣陵街道',
+  '320102005000': '玄武门街道',
+  '320111400000': '老山林场',
+  '320111005000': '桥林街道',
+  '320111401000': '汤泉农场',
+  '320192007000': '泰山街道',
+  '320113009000': '八卦洲街道',
+  '320118101000': '阳江镇',
+  '320102003000': '新街口街道',
+  '320106012000': '宝塔桥街道',
+  '320192009000': '沿江街道',
+  '320115009000': '谷里街道',
+  '320113008000': '栖霞街道',
+  '320106001000': '宁海路街道',
+  '320104002000': '夫子庙街道',
+  '320114003000': '雨花街道',
+  '320106013000': '小市街道',
+  '320102010000': '玄武湖街道',
+  '320115006000': '麒麟街道',
+  '320118002000': '古柏街道',
+  '320118102000': '砖墙镇',
+  '320106003000': '湖南路街道',
+  '320117106000': '晶桥镇',
+  '320106009000': '热河南路街道',
+  '320106005000': '挹江门街道',
+  '320115008000': '江宁街道',
+  '320116001000': '龙池街道',
+  '320104012000': '月牙湖街道',
+  '320116006000': '马鞍街道',
+  '320105009000': '沙洲街道',
+  '320111008000': '星甸街道',
+  '320116005000': '程桥街道',
+  '320192005000': '长芦街道',
+  '320113010000': '西岗街道',
+  '320106004000': '中央门街道',
+  '320104004000': '双塘街道',
+  '320117003000': '东屏街道',
+  '320116008000': '冶山街道',
+  '320113007000': '龙潭街道'
+}
+
 function formatDate (num) {
   if (typeof num === 'number') {
     let time = new Date((num - 25567 - 2) * 86400 * 1000 - 8 * 3600 * 1000);
@@ -33,7 +159,7 @@ module.exports = {
   getUsers: async ctx => {
     let pageIndex = ctx.request.body.pageIndex || 1;
     let pageSize = ctx.request.body.pageSize || 50;
-    let { batch_no, name, tel, cert_no, createTime, updateTime, cusId, cusName, opStatus, opStatusName } = ctx.request.body;
+    let { batch_no, name, tel, cert_no, createTime, updateTime, cusId, cusName, opStatus, opStatusName, connectType, connectTypes, depName } = ctx.request.body;
 
     let where = {};
 
@@ -45,6 +171,8 @@ module.exports = {
     Object.assign(where, cusName && { cusName })
     Object.assign(where, opStatus && { opStatus })
     Object.assign(where, opStatusName && { opStatusName })
+    Object.assign(where, connectType && { connectType })
+    Object.assign(where, depName && { areaName: depName })
 
     if (createTime && createTime.length > 0) {
       where.createTime = { $between: createTime }
@@ -52,6 +180,12 @@ module.exports = {
 
     if (updateTime && updateTime.length > 0) {
       where.updateTime = { $between: updateTime }
+    }
+
+    if (connectTypes && connectTypes.length > 0) {
+      where.connectType = {
+        $in: connectTypes
+      }
     }
 
     let result = await ctx.orm().info_users.findAndCountAll({
@@ -87,10 +221,6 @@ module.exports = {
     let filePath = path.resolve(path.join(__dirname, `../../../assets/uploads/${fileName}`));
     let xlsx = excel.readExcel(filePath);
 
-    console.log('batchName:', batchName)
-    console.log('cusIds:', cusIds)
-    console.log('xlsx:', xlsx)
-
     let keys = xlsx[0]
     xlsx.shift()
 
@@ -105,11 +235,13 @@ module.exports = {
     assert.ok(cus && cus.length > 0, '客服不存在');
 
     let data = xlsx.map((m, index) => {
+
       let col = {
         batchName: batchName,
         cusId: cus[index % cus.length].dataValues.id,
         cusName: cus[index % cus.length].dataValues.realName,
-        opStatusName: '未回访'
+        opStatus: 1,
+        opStatusName: opStatusNameEnum[1]
       }
 
       for (let i = 0, j = m.length; i < j; i++) {
@@ -117,6 +249,12 @@ module.exports = {
           col['cx_id'] = m[i]
         } else if (keys[i] === 'cbp0107' || keys[i] === 'cbp0108' || keys[i] === 'create_time') {
           col[keys[i]] = formatDate(m[i])
+        } else if (keys[i] === 'ga_area') {
+          col[keys[i]] = m[i]
+          col['areaName'] = areaName[m[i]]
+        } else if (keys[i] === 'ga_organ') {
+          col[keys[i]] = m[i]
+          col['streetName'] = streetName[m[i]]
         } else {
           col[keys[i]] = m[i]
         }
@@ -132,718 +270,82 @@ module.exports = {
       return false
     })
   },
-  getUserSamps: async ctx => {
-    let { id } = ctx.request.body;
+  editUser: async ctx => {
+    let { id, tel, address, aap0112, bbp0103, bae0104, addr_area } = ctx.request.body;
 
-    let result = await ctx.orm().info_user_samps.findAll({
+    await ctx.orm().info_users.update({
+      tel, address, aap0112, bbp0103, bae0104, addr_area
+    }, {
       where: {
-        userId: id
-      },
-      order: [['createTime', 'desc']]
-    })
-
-    ctx.body = result
-  },
-  getUserSampsS1: async ctx => {
-    let pageIndex = ctx.request.body.pageIndex || 1;
-    let pageSize = ctx.request.body.pageSize || 50;
-    let { tradeTypes, postNames, depName1s, depName2s, depName2, depStreet, name, phone, idcard, tradeType, postName, periodType, street, community, streets, communitys, address, userType,
-      sampStartTime, sampName, sampUserName, sampHandleTime, startEndTime, createTime, updateTime } = ctx.request.body;
-
-    let where = '';
-
-    if (tradeTypes && tradeTypes.length > 0) {
-      where += ' and u.tradeType in (' + tradeTypes.map(m => {
-        return `'${m}'`
-      }).join(',') + ')';
-    }
-
-    if (postNames && postNames.length > 0) {
-      where += ' and u.postName in (' + postNames.map(m => {
-        return `'${m}'`
-      }).join(',') + ')';
-    }
-
-    if (depName1s && depName1s.length > 0) {
-      where += ' and u.depName1 in (' + depName1s.map(m => {
-        return `'${m}'`
-      }).join(',') + ')';
-    }
-
-    if (depName2s && depName2s.length > 0) {
-      where += ' and u.depName2 in (' + depName2s.map(m => {
-        return `'${m}'`
-      }).join(',') + ')';
-    }
-
-    if (depName2) {
-      where += ` and u.depName2 = '${depName2}' `;
-    }
-
-    if (depStreet) {
-      where += ` and u.depStreet = '${depStreet}'`;
-    }
-
-    if (name) {
-      where += ` and u.name = '${name}'`;
-    }
-
-    if (phone) {
-      where += ` and u.phone = '${phone}'`;
-    }
-
-    if (idcard) {
-      where += ` and u.idcard = '${idcard}'`;
-    }
-
-    if (tradeType) {
-      where += ` and u.tradeType = '${tradeType}'`;
-    }
-
-    if (postName) {
-      where += ` and u.postName = '${postName}'`;
-    }
-
-    if (periodType) {
-      where += ` and u.periodType = '${periodType}'`;
-    }
-
-    if (street) {
-      where += ` and u.street = '${street}'`;
-    }
-
-    if (community) {
-      where += ` and u.community = '${community}'`;
-    }
-
-    if (streets && streets.length > 0) {
-      where += ' and u.street in (' + streets.map(m => {
-        return `'${m}'`
-      }).join(',') + ')';
-    }
-
-    if (communitys && communitys.length > 0) {
-      where += ' and u.community in (' + communitys.map(m => {
-        return `'${m}'`
-      }).join(',') + ')';
-    }
-
-    if (address) {
-      where += ` and u.address like '%${address}%'`;
-    }
-
-    if (userType) {
-      where += ` and u.userType = '${userType}'`;
-    }
-
-    if (sampStartTime && sampStartTime.length > 0) {
-      where += ` and u.sampStartTime between '${sampStartTime[0]}' and '${sampStartTime[1]}'`;
-    }
-
-    if (sampName) {
-      where += ` and u.sampName = '${sampName}'`;
-    }
-
-    if (sampUserName) {
-      where += ` and u.sampUserName = '${sampUserName}'`;
-    }
-
-    if (sampHandleTime && sampHandleTime.length > 0) {
-      where += ` and u.sampHandleTime between '${sampHandleTime[0]}' and '${sampHandleTime[1]}'`;
-    }
-
-    if (startEndTime && startEndTime.length > 0) {
-      where += ` and s.startTime between '${startEndTime[0]}' and '${startEndTime[1]}'`;
-    }
-
-    if (createTime && createTime.length > 0) {
-      where += ` and u.createTime between '${createTime[0]}' and '${createTime[1]}'`;
-    }
-
-    if (updateTime && updateTime.length > 0) {
-      where += ` and u.updateTime between '${updateTime[0]}' and '${updateTime[1]}'`;
-    }
-
-    let sql = `select count(1) num from (
-      select a.userId from (
-      select s.userId from info_user_samps s
-      inner join info_users u on u.id = s.userId
-      where u.depId > 2 ${where} 
-      ) a
-      group by a.userId ) b `
-
-    let sql1 = `select u1.depName1, u1.depName2, u1.name, u1.idcard, u1.phone, u1.tradeType, u1.postName, u1.periodType, b.*, concat(format(b.sampNum/b.shouldSampNum*100,2), '%') srate, concat(format(b.noSampNum/b.shouldSampNum*100,2),'%') nrate from (
-      select a.userId, sum(a.shouldSampNum) shouldSampNum, sum(a.sampNum) sampNum, sum(a.noSampNum) noSampNum from (
-      select s.userId, u.depId, 1 shouldSampNum, 
-      case handleType 
-        when '已采样' then 1 
-        when '个人上传采样' then 1 
-        else 0 end sampNum,
-      case handleType 
-        when '未采样' then 1 
-        else 0 end noSampNum from info_user_samps s
-      inner join info_users u on u.id = s.userId
-      where u.depId > 2 ${where}
-      ) a
-      group by a.userId order by a.depId limit ${(pageIndex - 1) * pageSize},${pageSize}) b
-      inner join info_users u1 on u1.id = b.userId `;
-
-    let result = await ctx.orm().query(sql);
-    let result1 = await ctx.orm().query(sql1);
-
-    ctx.body = {
-      total: result && result.length > 0 ? result[0].num : 0,
-      list: result1,
-      pageIndex,
-      pageSize
-    }
-  },
-  exportUserSampsS1: async ctx => {
-    let { tradeTypes, postNames, depName1s, depName2s, depStreet, name, phone, idcard, tradeType, postName, periodType, street, community, streets, communitys, address, userType,
-      sampStartTime, sampName, sampUserName, sampHandleTime, startEndTime, createTime, updateTime } = ctx.request.body;
-
-    let where = '';
-
-    if (tradeTypes && tradeTypes.length > 0) {
-      where += ' and u.tradeType in (' + tradeTypes.map(m => {
-        return `'${m}'`
-      }).join(',') + ')';
-    }
-
-    if (postNames && postNames.length > 0) {
-      where += ' and u.postName in (' + postNames.map(m => {
-        return `'${m}'`
-      }).join(',') + ')';
-    }
-
-    if (depName1s && depName1s.length > 0) {
-      where += ' and u.depName1 in (' + depName1s.map(m => {
-        return `'${m}'`
-      }).join(',') + ')';
-    }
-
-    if (depName2s && depName2s.length > 0) {
-      where += ' and u.depName2 in (' + depName2s.map(m => {
-        return `'${m}'`
-      }).join(',') + ')';
-    }
-
-    if (depStreet) {
-      where += ` and u.depStreet = '${depStreet}'`;
-    }
-
-    if (name) {
-      where += ` and u.name = '${name}'`;
-    }
-
-    if (phone) {
-      where += ` and u.phone = '${phone}'`;
-    }
-
-    if (idcard) {
-      where += ` and u.idcard = '${idcard}'`;
-    }
-
-    if (tradeType) {
-      where += ` and u.tradeType = '${tradeType}'`;
-    }
-
-    if (postName) {
-      where += ` and u.postName = '${postName}'`;
-    }
-
-    if (periodType) {
-      where += ` and u.periodType = '${periodType}'`;
-    }
-
-    if (street) {
-      where += ` and u.street = '${street}'`;
-    }
-
-    if (community) {
-      where += ` and u.community = '${community}'`;
-    }
-
-    if (streets && streets.length > 0) {
-      where += ' and u.street in (' + streets.map(m => {
-        return `'${m}'`
-      }).join(',') + ')';
-    }
-
-    if (communitys && communitys.length > 0) {
-      where += ' and u.community in (' + communitys.map(m => {
-        return `'${m}'`
-      }).join(',') + ')';
-    }
-
-    if (address) {
-      where += ` and u.address like '%${address}%'`;
-    }
-
-    if (userType) {
-      where += ` and u.userType = '${userType}'`;
-    }
-
-    if (sampStartTime && sampStartTime.length > 0) {
-      where += ` and u.sampStartTime between '${sampStartTime[0]}' and '${sampStartTime[1]}'`;
-    }
-
-    if (sampName) {
-      where += ` and u.sampName = '${sampName}'`;
-    }
-
-    if (sampUserName) {
-      where += ` and u.sampUserName = '${sampUserName}'`;
-    }
-
-    if (sampHandleTime && sampHandleTime.length > 0) {
-      where += ` and u.sampHandleTime between '${sampHandleTime[0]}' and '${sampHandleTime[1]}'`;
-    }
-
-    if (startEndTime && startEndTime.length > 0) {
-      where += ` and s.startTime between '${startEndTime[0]}' and '${startEndTime[1]}'`;
-    }
-
-    if (createTime && createTime.length > 0) {
-      where += ` and u.createTime between '${createTime[0]}' and '${createTime[1]}'`;
-    }
-
-    if (updateTime && updateTime.length > 0) {
-      where += ` and u.updateTime between '${updateTime[0]}' and '${updateTime[1]}'`;
-    }
-
-    let sql1 = `select u1.depName1, u1.depName2, u1.name, u1.idcard, u1.phone, u1.tradeType, u1.postName, u1.periodType, b.*, concat(format(b.sampNum/b.shouldSampNum*100,2), '%') srate, concat(format(b.noSampNum/b.shouldSampNum*100,2),'%') nrate from (
-      select a.userId, sum(a.shouldSampNum) shouldSampNum, sum(a.sampNum) sampNum, sum(a.noSampNum) noSampNum from (
-      select s.userId, u.depId, 1 shouldSampNum, 
-      case handleType 
-        when '已采样' then 1 
-        when '个人上传采样' then 1 
-        else 0 end sampNum,
-      case handleType 
-        when '未采样' then 1 
-        else 0 end noSampNum from info_user_samps s
-      inner join info_users u on u.id = s.userId
-      where u.depId > 2 ${where} 
-      ) a
-      group by a.userId order by a.depId ) b
-      inner join info_users u1 on u1.id = b.userId `;
-
-    let result1 = await ctx.orm().query(sql1);
-
-    let xlsxObj = [];
-    xlsxObj.push({
-      name: '重点人群采样情况',
-      data: []
-    })
-
-    xlsxObj[0].data.push([
-      '部门',
-      '单位',
-      '姓名',
-      '手机号',
-      '身份证号',
-      '行业类别',
-      '职业名称',
-      '采样周期',
-      '应采次数',
-      '采样次数',
-      '脱落次数',
-      '采样完成率',
-      '脱落率'
-    ])
-
-    for (let i = 0, j = result1.length; i < j; i++) {
-      let user = result1[i];
-
-      let arr = new Array();
-      arr.push(user.depName1 || '');
-      arr.push(user.depName2 || '');
-      arr.push(user.name);
-      arr.push(user.phone);
-      arr.push(user.idcard);
-      arr.push(user.tradeType);
-      arr.push(user.postName);
-      arr.push(user.periodType);
-      arr.push(user.shouldSampNum);
-      arr.push(user.sampNum);
-      arr.push(user.noSampNum);
-      arr.push(user.srate);
-      arr.push(user.nrate);
-
-      xlsxObj[0].data.push(arr)
-    }
-
-    let excelFile = await excel.exportBigMoreSheetExcel(xlsxObj)
-
-    ctx.body = excelFile;
-  },
-  getUserSampsS2: async ctx => {
-    let pageIndex = ctx.request.body.pageIndex || 1;
-    let pageSize = ctx.request.body.pageSize || 50;
-    let { tradeTypes, postNames, depName1s, depName2s, depName2, depStreet, name, phone, idcard, tradeType, postName, periodType, street, community, streets, communitys, address, userType,
-      sampName, sampUserName } = ctx.request.body;
-
-    let where = '';
-
-    if (tradeTypes && tradeTypes.length > 0) {
-      where += ' and u.tradeType in (' + tradeTypes.map(m => {
-        return `'${m}'`
-      }).join(',') + ')';
-    }
-
-    if (postNames && postNames.length > 0) {
-      where += ' and u.postName in (' + postNames.map(m => {
-        return `'${m}'`
-      }).join(',') + ')';
-    }
-
-    if (depName1s && depName1s.length > 0) {
-      where += ' and u.depName1 in (' + depName1s.map(m => {
-        return `'${m}'`
-      }).join(',') + ')';
-    }
-
-    if (depName2s && depName2s.length > 0) {
-      where += ' and u.depName2 in (' + depName2s.map(m => {
-        return `'${m}'`
-      }).join(',') + ')';
-    }
-
-    if (depName2) {
-      where += ` and u.depName2 = '${depName2}' `;
-    }
-
-    if (depStreet) {
-      where += ` and u.depStreet = '${depStreet}'`;
-    }
-
-    if (name) {
-      where += ` and u.name = '${name}'`;
-    }
-
-    if (phone) {
-      where += ` and u.phone = '${phone}'`;
-    }
-
-    if (idcard) {
-      where += ` and u.idcard = '${idcard}'`;
-    }
-
-    if (tradeType) {
-      where += ` and u.tradeType = '${tradeType}'`;
-    }
-
-    if (postName) {
-      where += ` and u.postName = '${postName}'`;
-    }
-
-    if (periodType) {
-      where += ` and u.periodType = '${periodType}'`;
-    }
-
-    if (street) {
-      where += ` and u.street = '${street}'`;
-    }
-
-    if (community) {
-      where += ` and u.community = '${community}'`;
-    }
-
-    if (streets && streets.length > 0) {
-      where += ' and u.street in (' + streets.map(m => {
-        return `'${m}'`
-      }).join(',') + ')';
-    }
-
-    if (communitys && communitys.length > 0) {
-      where += ' and u.community in (' + communitys.map(m => {
-        return `'${m}'`
-      }).join(',') + ')';
-    }
-
-    if (address) {
-      where += ` and u.address like '%${address}%'`;
-    }
-
-    if (userType) {
-      where += ` and u.userType = '${userType}'`;
-    }
-
-    if (sampName) {
-      where += ` and u.sampName = '${sampName}'`;
-    }
-
-    if (sampUserName) {
-      where += ` and u.sampUserName = '${sampUserName}'`;
-    }
-
-    let sql = `select count(1) num from info_user_samps s
-    inner join info_users u on u.id = s.userId
-    where 
-      u.depId > 2 and 
-      u.userType in ('在线', '已设置休假') and 
-      s.handleType = '未采样' and 
-      s.startTime <= DATE_FORMAT(now(),'%Y-%m-%d') and 
-      DATE_FORMAT(now(),'%Y-%m-%d') <= s.endTime ${where};`
-
-    let sql1 = `select u.id, u.depName1, u.depName2, u.name, u.idcard, u.phone, u.tradeType, u.postName, u.periodType, current_date() startTime, s.endTime from info_user_samps s 
-    inner join info_users u on u.id = s.userId 
-    where 
-      u.depId > 2 and 
-      u.userType in ('在线', '已设置休假') and 
-      s.handleType = '未采样' and 
-      s.startTime <= DATE_FORMAT(now(),'%Y-%m-%d') and 
-      DATE_FORMAT(now(),'%Y-%m-%d') <= s.endTime ${where} 
-    order by u.depName1, u.depName2 limit ${(pageIndex - 1) * pageSize},${pageSize}`;
-
-    let result = await ctx.orm().query(sql);
-    let result1 = await ctx.orm().query(sql1);
-
-    ctx.body = {
-      total: result && result.length > 0 ? result[0].num : 0,
-      list: result1,
-      pageIndex,
-      pageSize
-    }
-  },
-  exportUserSampsS2: async ctx => {
-    let { tradeTypes, postNames, depName1s, depName2s, depStreet, name, phone, idcard, tradeType, postName, periodType, street, community, streets, communitys, address, userType,
-      sampName, sampUserName } = ctx.request.body;
-
-    let where = '';
-
-    if (tradeTypes && tradeTypes.length > 0) {
-      where += ' and u.tradeType in (' + tradeTypes.map(m => {
-        return `'${m}'`
-      }).join(',') + ')';
-    }
-
-    if (postNames && postNames.length > 0) {
-      where += ' and u.postName in (' + postNames.map(m => {
-        return `'${m}'`
-      }).join(',') + ')';
-    }
-
-    if (depName1s && depName1s.length > 0) {
-      where += ' and u.depName1 in (' + depName1s.map(m => {
-        return `'${m}'`
-      }).join(',') + ')';
-    }
-
-    if (depName2s && depName2s.length > 0) {
-      where += ' and u.depName2 in (' + depName2s.map(m => {
-        return `'${m}'`
-      }).join(',') + ')';
-    }
-
-    if (depStreet) {
-      where += ` and u.depStreet = '${depStreet}'`;
-    }
-
-    if (name) {
-      where += ` and u.name = '${name}'`;
-    }
-
-    if (phone) {
-      where += ` and u.phone = '${phone}'`;
-    }
-
-    if (idcard) {
-      where += ` and u.idcard = '${idcard}'`;
-    }
-
-    if (tradeType) {
-      where += ` and u.tradeType = '${tradeType}'`;
-    }
-
-    if (postName) {
-      where += ` and u.postName = '${postName}'`;
-    }
-
-    if (periodType) {
-      where += ` and u.periodType = '${periodType}'`;
-    }
-
-    if (street) {
-      where += ` and u.street = '${street}'`;
-    }
-
-    if (community) {
-      where += ` and u.community = '${community}'`;
-    }
-
-    if (streets && streets.length > 0) {
-      where += ' and u.street in (' + streets.map(m => {
-        return `'${m}'`
-      }).join(',') + ')';
-    }
-
-    if (communitys && communitys.length > 0) {
-      where += ' and u.community in (' + communitys.map(m => {
-        return `'${m}'`
-      }).join(',') + ')';
-    }
-
-    if (address) {
-      where += ` and u.address like '%${address}%'`;
-    }
-
-    if (userType) {
-      where += ` and u.userType = '${userType}'`;
-    }
-
-    if (sampName) {
-      where += ` and u.sampName = '${sampName}'`;
-    }
-
-    if (sampUserName) {
-      where += ` and u.sampUserName = '${sampUserName}'`;
-    }
-
-    let sql = `select u.id, u.depName1, u.depName2, u.name, u.idcard, u.phone, u.tradeType, u.postName, u.periodType, current_date() startTime, s.endTime from info_user_samps s 
-    inner join info_users u on u.id = s.userId 
-    where 
-      u.depId > 2 and 
-      u.userType in ('在线', '已设置休假') and 
-      s.handleType = '未采样' and 
-      s.startTime <= DATE_FORMAT(now(),'%Y-%m-%d') and 
-      DATE_FORMAT(now(),'%Y-%m-%d') <= s.endTime ${where} 
-    order by u.depName1, u.depName2`;
-
-    let result = await ctx.orm().query(sql);
-
-    let xlsxObj = [];
-    xlsxObj.push({
-      name: '核酸采样提醒',
-      data: []
-    })
-
-    xlsxObj[0].data.push([
-      '部门',
-      '单位',
-      '姓名',
-      '手机号',
-      '身份证号',
-      '行业类别',
-      '职业名称',
-      '采样周期',
-      '下一次采样时间段'
-    ])
-
-    for (let i = 0, j = result.length; i < j; i++) {
-      let user = result[i];
-
-      let arr = new Array();
-      arr.push(user.depName1 || '');
-      arr.push(user.depName2 || '');
-      arr.push(user.name);
-      arr.push(user.phone);
-      arr.push(user.idcard);
-      arr.push(user.tradeType);
-      arr.push(user.postName);
-      arr.push(user.periodType);
-      arr.push(user.startTime === user.endTime ? user.endTime : `${user.startTime}至${user.endTime}`);
-
-      xlsxObj[0].data.push(arr)
-    }
-
-    let excelFile = await excel.exportBigMoreSheetExcel(xlsxObj)
-
-    ctx.body = excelFile;
-  },
-  submitUsers: async ctx => {
-    let { id, depId, depName1, depName2, depStreet, name, phone, idcard, tradeType, postName, periodType, sampWay, street, community, address, userType, sampStartTime } = ctx.request.body;
-
-    let post = await ctx.orm().info_posts.findOne({
-      where: {
-        postName: postName,
-        tradeType: tradeType
+        id
       }
     })
-
-    if (id && id > 0) {
-      let user1 = await ctx.orm().info_users.findOne({
-        where: {
-          idcard: idcard
-        }
-      })
-
-      if (user1.id === id) {
-        await ctx.orm().info_users.update({
-          depId, depName1, depName2, depStreet, name, phone, idcard, tradeType, postName, periodType,
-          sampWay: post.sampWay, street, community, address, userType, sampStartTime, isUp: 0
-        }, {
-          where: {
-            id
-          }
-        })
-      } else {
-        // 新记录更新
-        await ctx.orm().info_users.update({
-          depId, depName1, depName2, depStreet, name, phone, idcard, tradeType, postName, periodType,
-          sampWay: post.sampWay, street, community, address, userType, sampStartTime, isUp: 0
-        }, {
-          where: {
-            id
-          }
-        })
-
-        // 更新老的采样数据
-        await ctx.orm().info_user_samps.update({
-          userId: id
-        }, {
-          where: {
-            userId: user1.id
-          }
-        })
-
-        // 删除老的用户
-        await ctx.orm().info_users.destroy({
-          where: {
-            id: user1.id
-          }
-        })
-      }
-    } else {
-      let user = await ctx.orm().info_users.findOne({
-        where: {
-          idcard: idcard
-        }
-      })
-
-      if (user) {
-        await ctx.orm().info_users.update({
-          depId, depName1, depName2, depStreet, name, phone, idcard, tradeType, postName, periodType,
-          sampWay: post.sampWay, street, community, address, userType, sampStartTime, isUp: 0
-        }, {
-          where: {
-            id: user.id
-          }
-        })
-      } else {
-        await ctx.orm().info_users.create({
-          depId, depName1, depName2, depStreet, name, phone, idcard, tradeType, postName, periodType,
-          sampWay: post.sampWay, street, community, address, userType, sampStartTime
-        })
-      }
-    }
 
     ctx.body = {}
   },
-  submitUserRemove: async ctx => {
-    let { id } = ctx.request.body;
+  editUserError: async ctx => {
+    let { id, tel, address, aap0112, bbp0103, bae0104, addr_area } = ctx.request.body;
 
     await ctx.orm().info_users.update({
-      depId: 2,
-      depName1: '愿检尽检',
-      depName2: '愿检尽检',
-      depStreet: '',
-      tradeType: '其他',
-      postName: '愿检尽检人群',
-      periodType: '当天',
-      sampWay: '1:1单管',
-      userType: '迁移',
-      isUp: 0
+      tel, address, aap0112, bbp0103, bae0104, addr_area,
+      opStatus: 1,
+      opStatusName: opStatusNameEnum[1],
+      connectType: ''
+    }, {
+      where: {
+        id
+      }
+    })
+
+    ctx.body = {}
+  },
+  editUsersQA: async ctx => {
+    let { id, qa1, qa2, qa3, qa4, qa5, qa6, qa7, qa8, qa9, qa10, qa11, qa12, qa13 } = ctx.request.body;
+
+    await ctx.orm().info_users.update({
+      qa1, qa2, qa3, qa4, qa5, qa6, qa7, qa8, qa9, qa10, qa11, qa12, qa13,
+      opStatus: 2,
+      opStatusName: opStatusNameEnum[2],
+      connectType: '已接听',
+      cusTime: date.formatDate(),
+      cusConnectNum: sequelize.literal(`cusConnectNum + 1`)
+    }, {
+      where: {
+        id
+      }
+    })
+
+    ctx.body = {}
+  },
+  editUserConnectType: async ctx => {
+    let { id, connectType, qa12 } = ctx.request.body;
+
+    // '无人接听': '无人接听',
+    // '信息有误': '信息有误',
+    // '关机': '关机',
+    // '空号': '空号',
+    // '停机': '停机',
+    // '限制呼入': '限制呼入'
+
+    let opStatus = 1
+    switch (connectType) {
+      case '信息有误':
+      case '空号':
+      case '停机':
+      case '限制呼入':
+        opStatus = 2
+        break;
+      default:
+        opStatus = 1
+        break;
+    }
+    await ctx.orm().info_users.update({
+      connectType,
+      qa12: qa12,
+      opStatus: opStatus,
+      opStatusName: opStatusNameEnum[opStatus],
+      cusTime: date.formatDate(),
+      cusConnectNum: sequelize.literal(`cusConnectNum + 1`)
     }, {
       where: {
         id
@@ -853,265 +355,58 @@ module.exports = {
     ctx.body = {}
   },
   s1: async ctx => {
-    let { tradeTypes, postNames, depName1s, depName2s, depName2, depStreet, name, phone, idcard, tradeType, postName, periodType, street, community, streets, communitys, address, userType,
-      sampStartTime, sampName, sampUserName, sampHandleTime, startEndTime, createTime, updateTime } = ctx.request.body;
-
     let where = '';
 
-    if (tradeTypes && tradeTypes.length > 0) {
-      where += ' and u.tradeType in (' + tradeTypes.map(m => {
-        return `'${m}'`
-      }).join(',') + ')';
-    }
-
-    if (postNames && postNames.length > 0) {
-      where += ' and u.postName in (' + postNames.map(m => {
-        return `'${m}'`
-      }).join(',') + ')';
-    }
-
-    if (depName1s && depName1s.length > 0) {
-      where += ' and u.depName1 in (' + depName1s.map(m => {
-        return `'${m}'`
-      }).join(',') + ')';
-    }
-
-    if (depName2s && depName2s.length > 0) {
-      where += ' and u.depName2 in (' + depName2s.map(m => {
-        return `'${m}'`
-      }).join(',') + ')';
-    }
-
-    if (depName2) {
-      where += ` and u.depName2 = '${depName2}' `;
-    }
-
-    if (depStreet) {
-      where += ` and u.depStreet = '${depStreet}'`;
-    }
-
-    if (name) {
-      where += ` and u.name = '${name}'`;
-    }
-
-    if (phone) {
-      where += ` and u.phone = '${phone}'`;
-    }
-
-    if (idcard) {
-      where += ` and u.idcard = '${idcard}'`;
-    }
-
-    if (tradeType) {
-      where += ` and u.tradeType = '${tradeType}'`;
-    }
-
-    if (postName) {
-      where += ` and u.postName = '${postName}'`;
-    }
-
-    if (periodType) {
-      where += ` and u.periodType = '${periodType}'`;
-    }
-
-    if (street) {
-      where += ` and u.street = '${street}'`;
-    }
-
-    if (community) {
-      where += ` and u.community = '${community}'`;
-    }
-
-    if (streets && streets.length > 0) {
-      where += ' and u.street in (' + streets.map(m => {
-        return `'${m}'`
-      }).join(',') + ')';
-    }
-
-    if (communitys && communitys.length > 0) {
-      where += ' and u.community in (' + communitys.map(m => {
-        return `'${m}'`
-      }).join(',') + ')';
-    }
-
-    if (address) {
-      where += ` and u.address like '%${address}%'`;
-    }
-
-    if (userType) {
-      where += ` and u.userType = '${userType}'`;
-    }
-
-    if (sampStartTime && sampStartTime.length > 0) {
-      where += ` and u.sampStartTime between '${sampStartTime[0]}' and '${sampStartTime[1]}'`;
-    }
-
-    if (sampName) {
-      where += ` and u.sampName = '${sampName}'`;
-    }
-
-    if (sampUserName) {
-      where += ` and u.sampUserName = '${sampUserName}'`;
-    }
-
-    if (sampHandleTime && sampHandleTime.length > 0) {
-      where += ` and u.sampHandleTime between '${sampHandleTime[0]}' and '${sampHandleTime[1]}'`;
-    }
-
-    if (createTime && createTime.length > 0) {
-      where += ` and u.createTime between '${createTime[0]}' and '${createTime[1]}'`;
-    }
-
-    if (updateTime && updateTime.length > 0) {
-      where += ` and u.updateTime between '${updateTime[0]}' and '${updateTime[1]}'`;
-    }
-
-    if (startEndTime && startEndTime.length > 0) {
-      where += ` and s.startTime >= '${startEndTime[0]}' and s.endTime <= '${startEndTime[1]}'`;
-    }
-
-    let sql1 = `select b.depName1, b.depName2, count(b.id) num, sum(b.oknum) oknum, sum(b.shouldSampNum) shouldSampNum, sum(b.sampNum) sampNum, sum(b.noSampNum) noSampNum, sum(b.inPlanNum) inPlanNum, sum(b.outPlanNum) outPlanNum from (
-      select a.id, a.depName1, a.depName2, if(sum(a.shouldSampNum)=sum(a.sampNum), 1, 0) oknum, sum(a.shouldSampNum) shouldSampNum, sum(a.sampNum) sampNum, sum(a.noSampNum) noSampNum, sum(a.inPlanNum) inPlanNum, sum(a.outPlanNum) outPlanNum from (
-      select u.id, u.depName1, u.depName2, 1 shouldSampNum, 
-      case handleType when '已采样' then 1 when '个人上传采样' then 1 else 0 end sampNum,
-      case handleType when '未采样' then 1 else 0 end noSampNum, 
-      case when handleType = '已采样' and isPlan = '计划内' then 1 else 0 end inPlanNum, 
-      case when handleType = '已采样' and isPlan = '计划外' then 1 else 0 end outPlanNum 
-      from info_users u 
-      inner join info_user_samps s on s.userId = u.id 
-      where u.depId > 2 ${where}) a 
-      group by a.id, a.depName1, a.depName2) b 
-      group by b.depName1, b.depName2`;
-
-    let sql2 = `select a.depName1, a.depName2, sum(a.num1) num1, sum(a.num2) num2, sum(a.num3) num3, sum(a.num4) num4, sum(a.num5) num5, sum(a.num6) num6, sum(a.noSampNum) noSampNum from (
-      select x.id, x.depName1, x.depName2, x.noSampNum,
-        case when x.noSampNum = 1 then 1 else 0 end as num1,
-        case when x.noSampNum = 2 then 1 else 0 end as num2,
-        case when x.noSampNum = 3 then 1 else 0 end as num3,
-        case when x.noSampNum = 4 then 1 else 0 end as num4,
-        case when x.noSampNum = 5 then 1 else 0 end as num5,
-        case when x.noSampNum > 5 then 1 else 0 end as num6 
-      from (
-        select u.id, u.depName1, u.depName2, count(1) noSampNum 
-        from info_users u 
-        inner join info_user_samps s on s.userId = u.id 
-        where 
-          u.depId > 2 and 
-          s.handleType = '未采样' and s.isPlan = '计划内' ${where} 
-        group by u.id, u.depName1, u.depName2
-      ) x
-    ) a
-    group by a.depName1, a.depName2`;
-
-    let sql3 = `select a.depName1, a.depName2, count(a.id) isPlanNum, sum(a.isPlanSampNum) isPlanSampNum from (
-      select y.id, y.depName1, y.depName2, sum(y.num1) isPlanSampNum from (
-        select x.id, x.depName1, x.depName2, sum(x.num1) num1, sum(x.num2) num2 from (
-          select
-            u.id, u.depName1, u.depName2, 
-            case when s.handleType = '已采样' then 1 else 0 end as num1,
-            case when s.handleType = '未采样' then 1 else 0 end as num2
-          from info_users u 
-          inner join info_user_samps s on s.userId = u.id 
-          where 
-            u.depId > 2 and s.isPlan = '计划内'  ${where}
-        ) x 
-        group by x.id, x.depName1, x.depName2
-      ) y
-      where y.num2 = 0
-      group by y.id, y.depName1, y.depName2
-    ) a
-    group by a.depName1, a.depName2`;
-
-    let sql4 = `select a.depName1, a.depName2, count(a.id) isPlanNum, sum(a.isPlanSampNum) isPlanSampNum from (
-      select u.id, u.depName1, u.depName2, count(1) isPlanSampNum 
-      from info_users u 
-      inner join info_user_samps s on s.userId = u.id 
-      where 
-        u.depId > 2 and 
-        s.isPlan = '计划内' ${where} 
-      group by u.id, u.depName1, u.depName2
-    ) a
-    group by a.depName1, a.depName2`;
+    let sql1 = `select 
+      a.areaName, a.uv, ifnull(b.uv,0) u2, ifnull(c.uv,0) u3, ifnull(d.uv,0) u4, ifnull(e.uv,0) u5,
+      ifnull(f.uv,0) u6, ifnull(g.uv,0) u7 
+    from (select areaName, count(1) uv from info_users group by areaName) a 
+    left join (
+      select areaName, count(1) uv from info_users where opStatus = 1 group by areaName
+    ) b on b.areaName = a.areaName 
+    left join (
+      select areaName, count(1) uv from info_users where opStatus = 2 and connectType = '已接听' group by areaName
+    ) c on c.areaName = a.areaName 
+    left join (
+      select areaName, count(1) uv from info_users where opStatus = 2 and connectType = '已接听' and qa10 = '满意' group by areaName
+    ) d on d.areaName = a.areaName 
+    left join (
+      select areaName, count(1) uv from info_users where opStatus = 2 and connectType = '已接听' and qa10 = '基本满意' group by areaName
+    ) e on e.areaName = a.areaName 
+    left join (
+      select areaName, count(1) uv from info_users where opStatus = 2 and connectType = '已接听' and qa10 = '不满意' group by areaName
+    ) f on f.areaName = a.areaName 
+    left join (
+      select areaName, count(1) uv from info_users where opStatus = 2 and connectType = '已接听' and qa10 = '不清楚/不记得' group by areaName
+    ) g on g.areaName = a.areaName`;
 
     let result1 = await ctx.orm().query(sql1);
-    let result2 = await ctx.orm().query(sql2);
-    let result3 = await ctx.orm().query(sql3);
-    let result4 = await ctx.orm().query(sql4);
 
-    let data = result1.map(m => {
-      let f = result2.find(f => f.depName1 === m.depName1 && f.depName2 === m.depName2)
-      let f1 = result3.find(f => f.depName1 === m.depName1 && f.depName2 === m.depName2)
-      let f2 = result4.find(f => f.depName1 === m.depName1 && f.depName2 === m.depName2)
-      return {
-        ...m,
-        shouldSampNum: parseInt(m.shouldSampNum),
-        t1: f ? f.num1 : 0,
-        t2: f ? f.num2 : 0,
-        t3: f ? f.num3 : 0,
-        t4: f ? f.num4 : 0,
-        t5: f ? f.num5 : 0,
-        t6: f ? f.num6 : 0,
-        noSampNum: parseInt(m.noSampNum),
-        isPlanNum: f1 ? parseInt(f1.isPlanNum) : 0,
-        isPlanSampNum: f1 ? parseInt(f1.isPlanSampNum) : 0,
-        isShouldPlanNum: f2 ? parseInt(f2.isPlanNum) : 0,
-        isShouldPlanSampNum: f2 ? parseInt(f2.isPlanSampNum) : 0,
-        crate: Math.floor(parseInt(m.oknum) / m.num * 10000) / 100,
-        trate: Math.floor(parseInt(m.noSampNum) / (f2 ? parseInt(f2.isPlanSampNum) : 0) * 10000) / 100,
-        prate: Math.floor(parseInt(f1 ? f1.isPlanNum : 0) / (f2 ? parseInt(f2.isPlanNum) : 0) * 10000) / 100
-      }
-    })
-
-    let sum = data.reduce((total, curr) => {
-      total.num += parseInt(curr.num)
-      total.shouldSampNum += parseInt(curr.shouldSampNum)
-      total.oknum += parseInt(curr.oknum)
-      total.t1 += parseInt(curr.t1)
-      total.t2 += parseInt(curr.t2)
-      total.t3 += parseInt(curr.t3)
-      total.t4 += parseInt(curr.t4)
-      total.t5 += parseInt(curr.t5)
-      total.t6 += parseInt(curr.t6)
-      total.inPlanNum += parseInt(curr.inPlanNum)
-      total.outPlanNum += parseInt(curr.outPlanNum)
-      total.sampNum += parseInt(curr.sampNum)
-      total.noSampNum += parseInt(curr.noSampNum)
-      total.isPlanNum += parseInt(curr.isPlanNum)
-      total.isPlanSampNum += parseInt(curr.isPlanSampNum)
-      total.isShouldPlanNum += parseInt(curr.isShouldPlanNum)
-      total.isShouldPlanSampNum += parseInt(curr.isShouldPlanSampNum)
-      total.crate = Math.floor(parseInt(total.oknum) / total.num * 10000) / 100,
-        total.trate = Math.floor(parseInt(total.noSampNum) / total.isShouldPlanSampNum * 10000) / 100,
-        total.prate = Math.floor(parseInt(total.isPlanNum) / total.isShouldPlanNum * 10000) / 100
-
+    let sum = result1.reduce((total, curr) => {
+      total.uv += parseInt(curr.uv)
+      total.u1 += parseInt(curr.u1)
+      total.u2 += parseInt(curr.u2)
+      total.u3 += parseInt(curr.u3)
+      total.u4 += parseInt(curr.u4)
+      total.u5 += parseInt(curr.u5)
+      total.u6 += parseInt(curr.u6)
+      total.u7 += parseInt(curr.u7)
       return total
     }, {
-      depName1: '合计',
-      num: 0,
-      shouldSampNum: 0,
-      oknum: 0,
-      t1: 0,
-      t2: 0,
-      t3: 0,
-      t4: 0,
-      t5: 0,
-      t6: 0,
-      inPlanNum: 0,
-      outPlanNum: 0,
-      sampNum: 0,
-      isPlanNum: 0,
-      isPlanSampNum: 0,
-      isShouldPlanNum: 0,
-      isShouldPlanSampNum: 0,
-      noSampNum: 0,
-      crate: 0,
-      trate: 0,
-      prate: 0
+      areaName: '合计',
+      uv: 0,
+      u1: 0,
+      u2: 0,
+      u3: 0,
+      u4: 0,
+      u5: 0,
+      u6: 0,
+      u7: 0
     })
 
-    data.push(sum)
+    result1.push(sum)
 
-    ctx.body = data;
+    ctx.body = result1;
   },
   s2: async ctx => {
     let sampName = ctx.request.body.sampName || '';
