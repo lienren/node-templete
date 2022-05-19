@@ -10,7 +10,7 @@ const path = require('path');
 
 module.exports = {
   sys: {
-    port: 20005,
+    port: 20006,
     staticPath: path.resolve(__dirname, '../assets/'),
     uploadFilePath: path.resolve(__dirname, '../assets/uploads/'),
     uploadVirtualFilePath: 'http://localhost:20005/uploads',
