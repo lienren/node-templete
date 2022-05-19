@@ -153,7 +153,7 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     cbp0113: {
-      type: DataTypes.INTEGER(11),
+      type: DataTypes.STRING(50),
       allowNull: true
     },
     cag0105: {
