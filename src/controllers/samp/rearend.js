@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2022-05-17 18:13:41
+ * @LastEditTime: 2022-05-19 14:33:53
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/samp/rearend.js
@@ -22,6 +22,21 @@ const opStatusNameEnum = {
   1: '未回访',
   2: '已回访'
 }
+
+const areaIndex = [
+  '玄武区',
+  '秦淮区',
+  '建邺区',
+  '鼓楼区',
+  '雨花台区',
+  '栖霞区',
+  '江宁区',
+  '浦口区',
+  '六合区',
+  '溧水区',
+  '高淳区',
+  '江北新区'
+]
 
 const areaName = {
   '320104': '秦淮区',
@@ -355,34 +370,84 @@ module.exports = {
     ctx.body = {}
   },
   s1: async ctx => {
-    let where = '';
+    let { batch_no, batchName } = ctx.request.body;
 
-    let sql1 = `select 
-      a.areaName, a.uv, ifnull(b.uv,0) u2, ifnull(c.uv,0) u3, ifnull(d.uv,0) u4, ifnull(e.uv,0) u5,
-      ifnull(f.uv,0) u6, ifnull(g.uv,0) u7 
-    from (select areaName, count(1) uv from info_users group by areaName) a 
+    let where = ' where 1=1 ';
+
+    if (batch_no) {
+      where += ` and batch_no = '${batch_no}' `
+    }
+
+    if (batchName) {
+      where += ` and batchName = '${batchName}' `
+    }
+
+    let sql1 = `select a.areaName, a.uv, ifnull(b.uv,0) u2, ifnull(c.uv,0) u3, ifnull(d.uv,0) u4, ifnull(e.uv,0) u5,
+      ifnull(f.uv,0) u6, ifnull(g.uv,0) u7,
+      ifnull(h1.uv,0) u9, ifnull(h2.uv,0) u10, ifnull(h3.uv,0) u11, ifnull(h4.uv,0) u12,
+      ifnull(i1.uv,0) u13, ifnull(i2.uv,0) u14, ifnull(i3.uv,0) u15, ifnull(i4.uv,0) u16, ifnull(i5.uv,0) u17, ifnull(i6.uv,0) u18 
+    from (select areaName, count(1) uv from info_users ${where} group by areaName) a 
     left join (
-      select areaName, count(1) uv from info_users where opStatus = 1 group by areaName
+      select areaName, count(1) uv from info_users ${where} and opStatus = 1 group by areaName
     ) b on b.areaName = a.areaName 
     left join (
-      select areaName, count(1) uv from info_users where opStatus = 2 and connectType = '已接听' group by areaName
+      select areaName, count(1) uv from info_users ${where} and opStatus = 2 and connectType = '已接听' group by areaName
     ) c on c.areaName = a.areaName 
     left join (
-      select areaName, count(1) uv from info_users where opStatus = 2 and connectType = '已接听' and qa10 = '满意' group by areaName
+      select areaName, count(1) uv from info_users ${where} and opStatus = 2 and connectType = '已接听' and qa2 = '是' and qa10 = '满意' group by areaName
     ) d on d.areaName = a.areaName 
     left join (
-      select areaName, count(1) uv from info_users where opStatus = 2 and connectType = '已接听' and qa10 = '基本满意' group by areaName
+      select areaName, count(1) uv from info_users ${where} and opStatus = 2 and connectType = '已接听' and qa2 = '是' and qa10 = '基本满意' group by areaName
     ) e on e.areaName = a.areaName 
     left join (
-      select areaName, count(1) uv from info_users where opStatus = 2 and connectType = '已接听' and qa10 = '不满意' group by areaName
+      select areaName, count(1) uv from info_users ${where} and opStatus = 2 and connectType = '已接听' and qa2 = '是' and qa10 = '不满意' group by areaName
     ) f on f.areaName = a.areaName 
     left join (
-      select areaName, count(1) uv from info_users where opStatus = 2 and connectType = '已接听' and qa10 = '不清楚/不记得' group by areaName
-    ) g on g.areaName = a.areaName`;
+      select areaName, count(1) uv from info_users ${where} and opStatus = 2 and connectType = '已接听' and qa2 = '是' and qa10 = '不清楚/不记得' group by areaName
+    ) g on g.areaName = a.areaName 
+    left join (
+      select areaName, count(1) uv from info_users ${where} and opStatus = 2 and connectType = '已接听' and qa2 = '否' and qa13 = '未享受，信息存在' group by areaName
+    ) h1 on g.areaName = a.areaName 
+    left join (
+      select areaName, count(1) uv from info_users ${where} and opStatus = 2 and connectType = '已接听' and qa2 = '否' and qa13 = '接通后挂断' group by areaName
+    ) h2 on g.areaName = a.areaName 
+    left join (
+      select areaName, count(1) uv from info_users ${where} and opStatus = 2 and connectType = '已接听' and qa2 = '否' and qa13 = '去世' group by areaName
+    ) h3 on g.areaName = a.areaName 
+    left join (
+      select areaName, count(1) uv from info_users ${where} and opStatus = 2 and connectType = '已接听' and qa2 = '不清楚/不记得' group by areaName
+    ) h4 on g.areaName = a.areaName 
+    left join (
+      select areaName, count(1) uv from info_users ${where} and opStatus = 2 and connectType = '无人接听' group by areaName
+    ) i1 on g.areaName = a.areaName 
+    left join (
+      select areaName, count(1) uv from info_users ${where} and opStatus = 2 and connectType = '信息有误' group by areaName
+    ) i2 on g.areaName = a.areaName 
+    left join (
+      select areaName, count(1) uv from info_users ${where} and opStatus = 2 and connectType = '关机' group by areaName
+    ) i3 on g.areaName = a.areaName 
+    left join (
+      select areaName, count(1) uv from info_users ${where} and opStatus = 2 and connectType = '空号' group by areaName
+    ) i4 on g.areaName = a.areaName 
+    left join (
+      select areaName, count(1) uv from info_users ${where} and opStatus = 2 and connectType = '停机' group by areaName
+    ) i5 on g.areaName = a.areaName 
+    left join (
+      select areaName, count(1) uv from info_users ${where} and opStatus = 2 and connectType = '限制呼入' group by areaName
+    ) i6 on g.areaName = a.areaName`;
 
     let result1 = await ctx.orm().query(sql1);
 
-    let sum = result1.reduce((total, curr) => {
+    let data = []
+    areaIndex.map(m => {
+      let f = result1.find(f => f.areaName === m)
+
+      if (f) {
+        data.push(f)
+      }
+    })
+
+    let sum = data.reduce((total, curr) => {
       total.uv += parseInt(curr.uv)
       total.u1 += parseInt(curr.u1)
       total.u2 += parseInt(curr.u2)
@@ -391,6 +456,16 @@ module.exports = {
       total.u5 += parseInt(curr.u5)
       total.u6 += parseInt(curr.u6)
       total.u7 += parseInt(curr.u7)
+      total.u9 += parseInt(curr.u9)
+      total.u10 += parseInt(curr.u10)
+      total.u11 += parseInt(curr.u11)
+      total.u12 += parseInt(curr.u12)
+      total.u13 += parseInt(curr.u13)
+      total.u14 += parseInt(curr.u14)
+      total.u15 += parseInt(curr.u15)
+      total.u16 += parseInt(curr.u16)
+      total.u17 += parseInt(curr.u17)
+      total.u18 += parseInt(curr.u18)
       return total
     }, {
       areaName: '合计',
@@ -401,12 +476,22 @@ module.exports = {
       u4: 0,
       u5: 0,
       u6: 0,
-      u7: 0
+      u7: 0,
+      u9: 0,
+      u10: 0,
+      u11: 0,
+      u12: 0,
+      u13: 0,
+      u14: 0,
+      u15: 0,
+      u16: 0,
+      u17: 0,
+      u18: 0
     })
 
-    result1.push(sum)
+    data.push(sum)
 
-    ctx.body = result1;
+    ctx.body = data;
   },
   s2: async ctx => {
     let sampName = ctx.request.body.sampName || '';
