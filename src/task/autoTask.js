@@ -818,7 +818,7 @@ async function importUsers () {
   console.log('samp import Users data:%s', date.formatDate());
 
   let result = await ctx.orm().tmp_info_users.findAll({
-    limit: 50,
+    limit: 100,
     where: {
       status: 0
     }
@@ -959,7 +959,7 @@ async function importSamps () {
   console.log('samp import Samps data:%s', date.formatDate());
 
   let result = await ctx.orm().tmp_info_samps.findAll({
-    limit: 50,
+    limit: 2000,
     where: {
       status: 0
     }
@@ -1019,10 +1019,7 @@ async function importSamps () {
           userId: user.id,
           handleType: '已采样',
           handleTime: {
-            $lte: `${today} 00:00:00`
-          },
-          handleTime: {
-            $gte: `${today} 23:59:59`
+            $between: [`${today} 00:00:00`, `${today} 23:59:59`]
           }
         }
       })
@@ -1121,7 +1118,7 @@ async function autoSendMsg () {
   for (let i = 0, j = result1.length; i < j; i++) {
     let send = result1[i];
     let sendTime = new Date();
-    let sendMsg = `您好！为了您与家人健康，请于${date.formatDate(new Date(), 'YYYY年MM年DD日')}-${date.formatDate(send.endTime, 'YYYY年MM年DD日')}期间进行核酸检测。感谢配合。`;
+    let sendMsg = `您是高风险岗位人员，请于${date.formatDate(new Date(), 'YYYY年MM年DD日')}-${date.formatDate(send.endTime, 'YYYY年MM年DD日')}期间进行下一周期核酸检测，两次以上应检未检会给您工作、生活带来不便，特别提醒。`;
     let rep = await http.get({
       url: `http://59.83.223.109:8513/sms/Api/Send.do?SpCode=1037&LoginName=jbxq_hsjc&Password=62E79c7Rk&MessageContent=${encodeURIComponent(sendMsg)}&UserNumber=${send.phone}&templateId=123456&SerialNumber=&ScheduleTime=&f=1`
     })
@@ -1231,9 +1228,9 @@ async function autoSendMsg () {
     let sendTime = new Date();
     let sendMsg = ''
     if (send.periodType === '每天一检') {
-      sendMsg = `您于${date.formatDate(send.startTime, 'YYYY年MM年DD日')}未检测核酸，请及时进行下一次检测，两次以上应检未检会给您工作、生活带来不便，如果已检请忽略。`;
+      sendMsg = `您是高风险岗位人员，在${date.formatDate(send.startTime, 'YYYY年MM年DD日')}未检测核酸，请及时进行下一次检测，两次以上应检未检会给您工作、生活带来不便。如果已检请忽略。`
     } else {
-      sendMsg = `您于${date.formatDate(send.startTime, 'YYYY年MM年DD日')}-${date.formatDate(send.endTime, 'YYYY年MM年DD日')}未检测核酸，请及时进行下一次检测，两次以上应检未检会给您工作、生活带来不便，如果已检请忽略。`;
+      sendMsg = `您是高风险岗位人员，在${date.formatDate(send.startTime, 'YYYY年MM年DD日')}-${date.formatDate(send.endTime, 'YYYY年MM年DD日')}未检测核酸，请及时进行下一次检测，两次以上应检未检会给您工作、生活带来不便。如果已检请忽略。`
     }
     let rep = await http.get({
       url: `http://59.83.223.109:8513/sms/Api/Send.do?SpCode=1037&LoginName=jbxq_hsjc&Password=62E79c7Rk&MessageContent=${encodeURIComponent(sendMsg)}&UserNumber=${send.phone}&templateId=123456&SerialNumber=&ScheduleTime=&f=1`
