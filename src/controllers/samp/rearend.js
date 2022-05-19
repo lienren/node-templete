@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2022-05-20 06:24:58
+ * @LastEditTime: 2022-05-20 06:35:52
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/samp/rearend.js
@@ -46,6 +46,7 @@ const areaName = {
   '320117': '溧水区',
   '320113': '栖霞区',
   '320192': '江北新区',
+  '320126': '江北新区',
   '320102': '玄武区',
   '320105': '建邺区',
   '320118': '高淳区',
@@ -281,6 +282,12 @@ module.exports = {
         } else if (keys[i] === 'ga_organ') {
           col[keys[i]] = m[i]
           col['streetName'] = streetName[m[i]]
+        } else if (keys[i] === 'IS_KCDJ') {
+          if (!m[i]) {
+            col[keys[i]] = 0
+          } else {
+            col[keys[i]] = m[i]
+          }
         } else {
           col[keys[i]] = m[i]
         }
