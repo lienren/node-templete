@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2022-05-20 06:35:52
+ * @LastEditTime: 2022-05-20 09:41:48
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/samp/rearend.js
@@ -263,6 +263,27 @@ module.exports = {
       for (let i = 0, j = m.length; i < j; i++) {
         if (keys[i] === 'id') {
           col['cx_id'] = m[i]
+        } else if (keys[i] === 'tel') {
+          if (m[i]) {
+            if (m[i].length === 8) {
+              col[keys[i]] = `025${m[i]}`
+            } else if (m[i].length === 11) {
+              col[keys[i]] = m[i]
+            } else {
+              col[keys[i]] = m[i]
+              col.opStatus = 2
+              col.opStatus = opStatusNameEnum[2]
+              col.connectType = '信息有误'
+              col.qa12 = '号码导入错误'
+            }
+          } else {
+            col[keys[i]] = m[i]
+            col.opStatus = 2
+            col.opStatus = opStatusNameEnum[2]
+            col.connectType = '信息有误'
+            col.qa12 = '号码导入错误'
+          }
+
         } else if (keys[i] === 'cbp0113') {
           if (comm.isNumber(m[i])) {
             let time = parseInt(m[i])
