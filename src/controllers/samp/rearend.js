@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2022-05-20 09:41:48
+ * @LastEditTime: 2022-05-23 09:12:10
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/samp/rearend.js
@@ -446,34 +446,34 @@ module.exports = {
     ) g on g.areaName = a.areaName 
     left join (
       select areaName, count(1) uv from info_users ${where} and opStatus = 2 and connectType = '已接听' and qa2 = '否' and qa13 = '未享受，信息存在' group by areaName
-    ) h1 on g.areaName = a.areaName 
+    ) h1 on h1.areaName = a.areaName 
     left join (
       select areaName, count(1) uv from info_users ${where} and opStatus = 2 and connectType = '已接听' and qa2 = '否' and qa13 = '接通后挂断' group by areaName
-    ) h2 on g.areaName = a.areaName 
+    ) h2 on h2.areaName = a.areaName 
     left join (
       select areaName, count(1) uv from info_users ${where} and opStatus = 2 and connectType = '已接听' and qa2 = '否' and qa13 = '去世' group by areaName
-    ) h3 on g.areaName = a.areaName 
+    ) h3 on h3.areaName = a.areaName 
     left join (
       select areaName, count(1) uv from info_users ${where} and opStatus = 2 and connectType = '已接听' and qa2 = '不清楚/不记得' group by areaName
-    ) h4 on g.areaName = a.areaName 
+    ) h4 on h4.areaName = a.areaName 
     left join (
       select areaName, count(1) uv from info_users ${where} and opStatus = 2 and connectType = '无人接听' group by areaName
-    ) i1 on g.areaName = a.areaName 
+    ) i1 on i1.areaName = a.areaName 
     left join (
       select areaName, count(1) uv from info_users ${where} and opStatus = 2 and connectType = '信息有误' group by areaName
-    ) i2 on g.areaName = a.areaName 
+    ) i2 on i2.areaName = a.areaName 
     left join (
       select areaName, count(1) uv from info_users ${where} and opStatus = 2 and connectType = '关机' group by areaName
-    ) i3 on g.areaName = a.areaName 
+    ) i3 on i3.areaName = a.areaName 
     left join (
       select areaName, count(1) uv from info_users ${where} and opStatus = 2 and connectType = '空号' group by areaName
-    ) i4 on g.areaName = a.areaName 
+    ) i4 on i4.areaName = a.areaName 
     left join (
       select areaName, count(1) uv from info_users ${where} and opStatus = 2 and connectType = '停机' group by areaName
-    ) i5 on g.areaName = a.areaName 
+    ) i5 on i5.areaName = a.areaName 
     left join (
       select areaName, count(1) uv from info_users ${where} and opStatus = 2 and connectType = '限制呼入' group by areaName
-    ) i6 on g.areaName = a.areaName`;
+    ) i6 on i6.areaName = a.areaName`;
 
     let result1 = await ctx.orm().query(sql1);
 
