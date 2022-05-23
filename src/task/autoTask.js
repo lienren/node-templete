@@ -1098,12 +1098,77 @@ async function importSamps () {
   console.log('samp import Samps data:%s', date.formatDate());
 }
 
+// 发送提醒短信
+async function autoWarnSendMsg () {
+  let sql1 = `select a.*, u.phone from (
+    select max(id) id, userId, startTime, endTime, periodType from info_user_samps 
+      where 
+        endTime = '${date.formatDate(new Date(), 'YYYY-MM-DD')}' and 
+        periodType != '每天一检' and 
+        postName != '愿检尽检人群' and 
+        isPlan = '计划内' 
+      group by userId, startTime, endTime, periodType 
+    ) a 
+    inner join info_users u on u.id = a.userId`;
+
+  let result1 = await ctx.orm().query(sql1);
+
+  for (let i = 0, j = result1.length; i < j; i++) {
+    let send = result1[i];
+    let sendTime = new Date();
+
+    let sendMsg = ''
+    // let sendMsg = `您是高风险岗位人员，请于${date.formatDate(new Date(), 'YYYY年MM月DD日')}-${date.formatDate(send.endTime, 'YYYY年MM月DD日')}期间进行下一周期核酸检测，两次以上应检未检会给您工作、生活带来不便，特别提醒。`;
+    switch (send.periodType) {
+      case '每2天一检':
+        sendMsg = `您是高风险岗位人员，请于${date.getTodayToPreDay(-1, 'YYYY年MM月DD日')}-${date.getTodayToPreDay(-2, 'YYYY年MM月DD日')}期间进行下一周期核酸检测，两次以上应检未检会给您工作、生活带来不便，特别提醒。`;
+        break;
+      case '每3天一检':
+        sendMsg = `您是高风险岗位人员，请于${date.getTodayToPreDay(-1, 'YYYY年MM月DD日')}-${date.getTodayToPreDay(-3, 'YYYY年MM月DD日')}期间进行下一周期核酸检测，两次以上应检未检会给您工作、生活带来不便，特别提醒。`;
+        break;
+      case '每5天一检':
+        sendMsg = `您是高风险岗位人员，请于${date.getTodayToPreDay(-1, 'YYYY年MM月DD日')}-${date.getTodayToPreDay(-5, 'YYYY年MM月DD日')}期间进行下一周期核酸检测，两次以上应检未检会给您工作、生活带来不便，特别提醒。`;
+        break;
+      case '每周一检':
+        sendMsg = `您是高风险岗位人员，请于${date.getTodayToPreDay(-1, 'YYYY年MM月DD日')}-${date.getTodayToPreDay(-7, 'YYYY年MM月DD日')}期间进行下一周期核酸检测，两次以上应检未检会给您工作、生活带来不便，特别提醒。`;
+        break;
+      case '每周2次':
+        sendMsg = `您是高风险岗位人员，请于${date.getTodayToPreDay(-1, 'YYYY年MM月DD日')}-${date.getTodayToPreDay(-7, 'YYYY年MM月DD日')}期间进行下一周期核酸检测，两次以上应检未检会给您工作、生活带来不便，特别提醒。`;
+        break;
+      case '每月一检':
+        sendMsg = `您是高风险岗位人员，请于${date.getTodayToPreDay(-1, 'YYYY年MM月DD日')}-${date.getTodayToPreDay(-30, 'YYYY年MM月DD日')}期间进行下一周期核酸检测，两次以上应检未检会给您工作、生活带来不便，特别提醒。`;
+        break;
+      default:
+        break;
+    }
+
+    if (sendMsg) {
+      let rep = await http.get({
+        url: `http://59.83.223.109:8513/sms/Api/Send.do?SpCode=1037&LoginName=jbxq_hsjc&Password=62E79c7Rk&MessageContent=${encodeURIComponent(sendMsg)}&UserNumber=${send.phone}&templateId=123456&SerialNumber=&ScheduleTime=&f=1`
+      })
+
+      await ctx.orm().info_sendmsg.create({
+        sid: send.id,
+        userId: send.userId,
+        startTime: send.startTime,
+        endTime: send.endTime,
+        periodType: send.periodType,
+        sendPhone: send.phone,
+        sendTime: date.formatDate(sendTime, 'YYYY-MM-DD HH:mm:ss'),
+        sendContent: sendMsg,
+        repContent: rep.data,
+        repTime: date.formatDate()
+      })
+    }
+  }
+}
+
 // 发送短信
 async function autoSendMsg () {
   console.log('samp send msg data:%s', date.formatDate());
 
   // 每天当天提醒
-  let sql1 = `select a.*, u.phone from (
+  /* let sql1 = `select a.*, u.phone from (
       select id, userId, startTime, endTime, periodType from info_user_samps 
       where 
         startTime = '${date.formatDate(new Date(), 'YYYY-MM-DD')}' and 
@@ -1118,7 +1183,7 @@ async function autoSendMsg () {
   for (let i = 0, j = result1.length; i < j; i++) {
     let send = result1[i];
     let sendTime = new Date();
-    let sendMsg = `您是高风险岗位人员，请于${date.formatDate(new Date(), 'YYYY年MM年DD日')}-${date.formatDate(send.endTime, 'YYYY年MM年DD日')}期间进行下一周期核酸检测，两次以上应检未检会给您工作、生活带来不便，特别提醒。`;
+    let sendMsg = `您是高风险岗位人员，请于${date.formatDate(new Date(), 'YYYY年MM月DD日')}-${date.formatDate(send.endTime, 'YYYY年MM月DD日')}期间进行下一周期核酸检测，两次以上应检未检会给您工作、生活带来不便，特别提醒。`;
     let rep = await http.get({
       url: `http://59.83.223.109:8513/sms/Api/Send.do?SpCode=1037&LoginName=jbxq_hsjc&Password=62E79c7Rk&MessageContent=${encodeURIComponent(sendMsg)}&UserNumber=${send.phone}&templateId=123456&SerialNumber=&ScheduleTime=&f=1`
     })
@@ -1135,7 +1200,7 @@ async function autoSendMsg () {
       repContent: rep.data,
       repTime: date.formatDate()
     })
-  }
+  } */
 
   let sql2 = `select a.*, u.phone from (
     select * from (
@@ -1155,7 +1220,7 @@ async function autoSendMsg () {
     let send = result2[i];
 
     let sendTime = new Date();
-    let sendMsg = `您好！为了您与家人健康，请于${date.formatDate(new Date(), 'YYYY年MM年DD日')}-${date.formatDate(send.endTime, 'YYYY年MM年DD日')}期间进行核酸检测。感谢配合。`;
+    let sendMsg = `您好！为了您与家人健康，请于${date.formatDate(new Date(), 'YYYY年MM月DD日')}-${date.formatDate(send.endTime, 'YYYY年MM月DD日')}期间进行核酸检测。感谢配合。`;
     let rep = await http.get({
       url: `http://59.83.223.109:8513/sms/Api/Send.do?SpCode=1037&LoginName=jbxq_hsjc&Password=62E79c7Rk&MessageContent=${encodeURIComponent(sendMsg)}&UserNumber=${send.phone}&templateId=123456&SerialNumber=&ScheduleTime=&f=1`
     })
@@ -1214,7 +1279,7 @@ async function autoSendMsg () {
   let sql4 = `select a.*, u.phone from (
     select id, userId, startTime, endTime, periodType from info_user_samps 
       where 
-        endTime = '${date.getTodayToPreDay(-1, 'YYYY-MM-DD')}' and 
+        endTime = '${date.getTodayToPreDay(1, 'YYYY-MM-DD')}' and 
         handleType = '未采样' and 
         postName != '愿检尽检人群'
     ) a 
@@ -1228,9 +1293,9 @@ async function autoSendMsg () {
     let sendTime = new Date();
     let sendMsg = ''
     if (send.periodType === '每天一检') {
-      sendMsg = `您是高风险岗位人员，在${date.formatDate(send.startTime, 'YYYY年MM年DD日')}未检测核酸，请及时进行下一次检测，两次以上应检未检会给您工作、生活带来不便。如果已检请忽略。`
+      sendMsg = `您是高风险岗位人员，在${date.formatDate(send.startTime, 'YYYY年MM月DD日')}未检测核酸，请及时进行下一次检测，两次以上应检未检会给您工作、生活带来不便。如果已检请忽略。`
     } else {
-      sendMsg = `您是高风险岗位人员，在${date.formatDate(send.startTime, 'YYYY年MM年DD日')}-${date.formatDate(send.endTime, 'YYYY年MM年DD日')}未检测核酸，请及时进行下一次检测，两次以上应检未检会给您工作、生活带来不便。如果已检请忽略。`
+      sendMsg = `您是高风险岗位人员，在${date.formatDate(send.startTime, 'YYYY年MM月DD日')}-${date.formatDate(send.endTime, 'YYYY年MM月DD日')}未检测核酸，请及时进行下一次检测，两次以上应检未检会给您工作、生活带来不便。如果已检请忽略。`
     }
     let rep = await http.get({
       url: `http://59.83.223.109:8513/sms/Api/Send.do?SpCode=1037&LoginName=jbxq_hsjc&Password=62E79c7Rk&MessageContent=${encodeURIComponent(sendMsg)}&UserNumber=${send.phone}&templateId=123456&SerialNumber=&ScheduleTime=&f=1`
@@ -1766,8 +1831,13 @@ async function main () {
 
   monthJob = schedule.scheduleJob('0 10 0 1 * *', monthSamp)
 
+  // 每天16点自动发送短信
+  schedule.scheduleJob('0 0 16 * * *', function () {
+    autoWarnSendMsg()
+  })
+
   // 每天9点自动发送短信
-  schedule.scheduleJob('0 17 9 * * *', function () {
+  schedule.scheduleJob('0 0 9 * * *', function () {
     autoSendMsg()
   })
 
