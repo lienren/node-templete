@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-08-18 10:44:07
- * @LastEditTime: 2022-05-16 18:22:00
+ * @LastEditTime: 2022-05-24 14:35:36
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/samp/api.js
@@ -369,7 +369,9 @@ module.exports = {
       })
     }
 
-    ctx.body = {}
+    ctx.body = {
+      openId: openId
+    }
   },
   getUserSamps: async ctx => {
     let { openId } = ctx.request.body;
