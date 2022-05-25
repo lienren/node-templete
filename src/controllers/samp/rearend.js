@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2022-05-23 09:12:10
+ * @LastEditTime: 2022-05-25 11:08:36
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/samp/rearend.js
@@ -272,14 +272,14 @@ module.exports = {
             } else {
               col[keys[i]] = m[i]
               col.opStatus = 2
-              col.opStatus = opStatusNameEnum[2]
+              col.opStatusName = opStatusNameEnum[2]
               col.connectType = '信息有误'
               col.qa12 = '号码导入错误'
             }
           } else {
             col[keys[i]] = m[i]
             col.opStatus = 2
-            col.opStatus = opStatusNameEnum[2]
+            col.opStatusName = opStatusNameEnum[2]
             col.connectType = '信息有误'
             col.qa12 = '号码导入错误'
           }
