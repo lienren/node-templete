@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2022-05-17 09:13:48
+ * @LastEditTime: 2022-05-28 10:46:55
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/samp/rearend.js
@@ -2125,5 +2125,40 @@ module.exports = {
     ctx.body = {
       data: rep.data
     }
-  }
+  },
+  getRegular: async ctx => {
+    let { regularDate, regularType } = ctx.request.body;
+
+    let result = await ctx.orm().stat_regular.findAll({
+      where: {
+        regularDate,
+        regularType
+      },
+      order: [['regularRate', 'desc']]
+    })
+
+    let data = result.map(m => {
+      return {
+        ...m.dataValues
+      }
+    })
+
+    let sum = data.reduce((total, curr) => {
+      total.regularSum += parseInt(curr.regularSum)
+      total.regularNum += parseInt(curr.regularNum)
+      total.regularNoNum += parseInt(curr.regularNoNum)
+      total.regularRate = Math.floor(total.regularNum / total.regularSum * 10000) / 100
+      return total
+    }, {
+      regularName: '合计',
+      regularSum: 0,
+      regularNum: 0,
+      regularNoNum: 0,
+      regularRate: 0
+    })
+
+    data.push(sum)
+
+    ctx.body = data;
+  },
 };
