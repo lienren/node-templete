@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2022-05-28 10:46:55
+ * @LastEditTime: 2022-05-28 11:10:06
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/samp/rearend.js
@@ -868,6 +868,19 @@ module.exports = {
       sampWay: '1:1单管',
       userType: '迁移',
       isUp: 0
+    }, {
+      where: {
+        id
+      }
+    })
+
+    ctx.body = {}
+  },
+  removeUserWx: async ctx => {
+    let { id } = ctx.request.body;
+
+    await ctx.orm().info_users.update({
+      openId: ''
     }, {
       where: {
         id

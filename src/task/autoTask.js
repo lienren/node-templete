@@ -1907,7 +1907,7 @@ async function main () {
     autoSendMsg()
   })
 
-  schedule.scheduleJob('0 30 9 * * *', function () {
+  schedule.scheduleJob('0 0 3 * * *', function () {
     autoRegular()
   })
 
