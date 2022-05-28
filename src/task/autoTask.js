@@ -1109,7 +1109,7 @@ async function autoWarnSendMsg () {
         isPlan = '计划内' 
       group by userId, startTime, endTime, periodType 
     ) a 
-    inner join info_users u on u.id = a.userId`;
+    inner join info_users u on u.id = a.userId and u.userType = '在线'`;
 
   let result1 = await ctx.orm().query(sql1);
 
@@ -1167,41 +1167,6 @@ async function autoWarnSendMsg () {
 async function autoSendMsg () {
   console.log('samp send msg data:%s', date.formatDate());
 
-  // 每天当天提醒
-  /* let sql1 = `select a.*, u.phone from (
-      select id, userId, startTime, endTime, periodType from info_user_samps 
-      where 
-        startTime = '${date.formatDate(new Date(), 'YYYY-MM-DD')}' and 
-        handleType = '未采样' and 
-        postName != '愿检尽检人群' and 
-        periodType != '每天一检' 
-    ) a 
-    inner join info_users u on u.id = a.userId`;
-
-  let result1 = await ctx.orm().query(sql1);
-
-  for (let i = 0, j = result1.length; i < j; i++) {
-    let send = result1[i];
-    let sendTime = new Date();
-    let sendMsg = `您是高风险岗位人员，请于${date.formatDate(new Date(), 'YYYY年MM月DD日')}-${date.formatDate(send.endTime, 'YYYY年MM月DD日')}期间进行下一周期核酸检测，两次以上应检未检会给您工作、生活带来不便，特别提醒。`;
-    let rep = await http.get({
-      url: `http://59.83.223.109:8513/sms/Api/Send.do?SpCode=1037&LoginName=jbxq_hsjc&Password=62E79c7Rk&MessageContent=${encodeURIComponent(sendMsg)}&UserNumber=${send.phone}&templateId=123456&SerialNumber=&ScheduleTime=&f=1`
-    })
-
-    await ctx.orm().info_sendmsg.create({
-      sid: send.id,
-      userId: send.userId,
-      startTime: send.startTime,
-      endTime: send.endTime,
-      periodType: send.periodType,
-      sendPhone: send.phone,
-      sendTime: date.formatDate(sendTime, 'YYYY-MM-DD HH:mm:ss'),
-      sendContent: sendMsg,
-      repContent: rep.data,
-      repTime: date.formatDate()
-    })
-  } */
-
   let sql2 = `select a.*, u.phone from (
     select * from (
       select id, userId, startTime, endTime, TIMESTAMPDIFF(DAY,startTime,endTime) t1, TIMESTAMPDIFF(DAY,startTime,now()) t2, periodType from info_user_samps 
@@ -1212,7 +1177,7 @@ async function autoSendMsg () {
         postName != '愿检尽检人群' and 
         periodType in ('每月一检')	
     ) b where b.t1 / 2 = b.t2 ) a 
-    inner join info_users u on u.id = a.userId`
+    inner join info_users u on u.id = a.userId and u.userType = '在线'`
 
   let result2 = await ctx.orm().query(sql2);
 
@@ -1249,7 +1214,7 @@ async function autoSendMsg () {
         postName != '愿检尽检人群' and 
         periodType in ('每5天一检', '每周一检', '每周2次', '每月一检') 
     ) b where b.t1 = b.t2 + 2) a 
-    inner join info_users u on u.id = a.userId`
+    inner join info_users u on u.id = a.userId and u.userType = '在线'`
 
   let result3 = await ctx.orm().query(sql3);
 
@@ -1283,7 +1248,7 @@ async function autoSendMsg () {
         handleType = '未采样' and 
         postName != '愿检尽检人群'
     ) a 
-    inner join info_users u on u.id = a.userId`
+    inner join info_users u on u.id = a.userId and u.userType = '在线'`
 
   let result4 = await ctx.orm().query(sql4);
 
@@ -1316,6 +1281,107 @@ async function autoSendMsg () {
   }
 
   console.log('samp send msg data:%s', date.formatDate());
+}
+
+async function autoRegular () {
+  console.log('samp regular data:%s', date.formatDate());
+
+  let users = await ctx.orm().info_users.findAll({
+    attributes: ['id'],
+    where: {
+      depId: {
+        $gt: 2
+      },
+      userType: {
+        $in: ['在线', '已设置休假']
+      }
+    }
+  })
+
+  if (users && users.length > 0) {
+    for (let i = 0, j = users.length; i < j; i++) {
+      let id = users[i].id
+
+      // 获取上个阶段采样情况
+      let samp = await ctx.orm().info_user_samps.findOne({
+        attributes: ['handleType'],
+        where: {
+          userId: id,
+          isPlan: '计划内',
+          endTime: {
+            $lt: date.formatDate()
+          }
+        },
+        limit: 1,
+        order: [['endTime', 'desc']]
+      })
+
+      // 更新合格率
+      if (samp) {
+        await ctx.orm().info_users.update({
+          isRegular: samp.handleType === '已采样' ? 1 : 0,
+          regularTime: date.formatDate()
+        }, {
+          where: {
+            id: id
+          }
+        })
+      } else {
+        await ctx.orm().info_users.update({
+          isRegular: -1,
+          regularTime: date.formatDate()
+        }, {
+          where: {
+            id: id
+          }
+        })
+      }
+    }
+  }
+
+  await ctx.orm().info_users.update({
+    isRegular: -1,
+    regularTime: date.formatDate()
+  }, {
+    where: {
+      depId: {
+        $gt: 2
+      },
+      userType: {
+        $ne: '在线'
+      }
+    }
+  })
+
+  let sql1 = `insert into stat_regular 
+  (regularDate, regularType, regularName, regularSum, regularNum, regularNoNum, regularRate) 
+  select CURRENT_DATE(), '部门', b.depName1, b.regularSum, b.regularNum, b.regularNoNum, convert(b.regularNum/b.regularSum*100,decimal(10,2)) regularRate from (
+  select a.depName1, sum(a.regularSum) regularSum, sum(a.regularNum) regularNum, sum(a.regularNoNum) regularNoNum from (
+  select 
+    depName1, 
+    1 regularSum, 
+    case when isRegular > 0 then 1 else 0 end regularNum, 
+    case when isRegular = 0 then 1 else 0 end regularNoNum 
+  from info_users 
+  where depId > 2 and isRegular > -1) a 
+  group by a.depName1) b`
+  let sql2 = `insert into stat_regular 
+  (regularDate, regularType, regularName, regularSum, regularNum, regularNoNum, regularRate) 
+  select CURRENT_DATE(), '职业', b.postName, b.regularSum, b.regularNum, b.regularNoNum, convert(b.regularNum/b.regularSum*100,decimal(10,2)) regularRate from (
+  select a.postName, sum(a.regularSum) regularSum, sum(a.regularNum) regularNum, sum(a.regularNoNum) regularNoNum from (
+  select 
+    postName, 
+    1 regularSum, 
+    case when isRegular > 0 then 1 else 0 end regularNum, 
+    case when isRegular = 0 then 1 else 0 end regularNoNum 
+  from info_users 
+  where depId > 2 and isRegular > -1) a 
+  group by a.postName) b`
+
+  await ctx.orm().query(sql1, {}, { type: ctx.orm().sequelize.QueryTypes.INSERT });
+  await ctx.orm().query(sql2, {}, { type: ctx.orm().sequelize.QueryTypes.INSERT });
+
+  console.log('samp regular data:%s', date.formatDate());
 }
 
 let idcards = [
@@ -1839,6 +1905,10 @@ async function main () {
   // 每天9点自动发送短信
   schedule.scheduleJob('0 0 9 * * *', function () {
     autoSendMsg()
+  })
+
+  schedule.scheduleJob('0 30 9 * * *', function () {
+    autoRegular()
   })
 
   // handleTmp();

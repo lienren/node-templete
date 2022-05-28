@@ -118,6 +118,15 @@ module.exports = function(sequelize, DataTypes) {
     restEndTime: {
       type: DataTypes.DATEONLY,
       allowNull: true
+    },
+    isRegular: {
+      type: DataTypes.INTEGER(11),
+      allowNull: true,
+      defaultValue: '0'
+    },
+    regularTime: {
+      type: DataTypes.DATE,
+      allowNull: true
     }
   }, {
     tableName: 'info_users'
