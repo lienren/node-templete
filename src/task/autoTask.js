@@ -1118,25 +1118,25 @@ async function autoWarnSendMsg () {
     let sendTime = new Date();
 
     let sendMsg = ''
-    // let sendMsg = `您是高风险岗位人员，请于${date.formatDate(new Date(), 'YYYY年MM月DD日')}-${date.formatDate(send.endTime, 'YYYY年MM月DD日')}期间进行下一周期核酸检测，两次以上应检未检会给您工作、生活带来不便，特别提醒。`;
+    // let sendMsg = `您属于核酸应检尽检重点人员，请于${date.formatDate(new Date(), 'YYYY年MM月DD日')}-${date.formatDate(send.endTime, 'YYYY年MM月DD日')}期间进行下一周期核酸检测，两次以上应检未检会给您工作、生活带来不便，特别提醒。`;
     switch (send.periodType) {
       case '每2天一检':
-        sendMsg = `您是高风险岗位人员，请于${date.getTodayToPreDay(-1, 'YYYY年MM月DD日')}-${date.getTodayToPreDay(-2, 'YYYY年MM月DD日')}期间进行下一周期核酸检测，两次以上应检未检会给您工作、生活带来不便，特别提醒。`;
+        sendMsg = `您属于核酸应检尽检重点人员，请于${date.getTodayToPreDay(-1, 'YYYY年MM月DD日')}-${date.getTodayToPreDay(-2, 'YYYY年MM月DD日')}期间进行下一周期核酸检测，两次以上应检未检会给您工作、生活带来不便，特别提醒。`;
         break;
       case '每3天一检':
-        sendMsg = `您是高风险岗位人员，请于${date.getTodayToPreDay(-1, 'YYYY年MM月DD日')}-${date.getTodayToPreDay(-3, 'YYYY年MM月DD日')}期间进行下一周期核酸检测，两次以上应检未检会给您工作、生活带来不便，特别提醒。`;
+        sendMsg = `您属于核酸应检尽检重点人员，请于${date.getTodayToPreDay(-1, 'YYYY年MM月DD日')}-${date.getTodayToPreDay(-3, 'YYYY年MM月DD日')}期间进行下一周期核酸检测，两次以上应检未检会给您工作、生活带来不便，特别提醒。`;
         break;
       case '每5天一检':
-        sendMsg = `您是高风险岗位人员，请于${date.getTodayToPreDay(-1, 'YYYY年MM月DD日')}-${date.getTodayToPreDay(-5, 'YYYY年MM月DD日')}期间进行下一周期核酸检测，两次以上应检未检会给您工作、生活带来不便，特别提醒。`;
+        sendMsg = `您属于核酸应检尽检重点人员，请于${date.getTodayToPreDay(-1, 'YYYY年MM月DD日')}-${date.getTodayToPreDay(-5, 'YYYY年MM月DD日')}期间进行下一周期核酸检测，两次以上应检未检会给您工作、生活带来不便，特别提醒。`;
         break;
       case '每周一检':
-        sendMsg = `您是高风险岗位人员，请于${date.getTodayToPreDay(-1, 'YYYY年MM月DD日')}-${date.getTodayToPreDay(-7, 'YYYY年MM月DD日')}期间进行下一周期核酸检测，两次以上应检未检会给您工作、生活带来不便，特别提醒。`;
+        sendMsg = `您属于核酸应检尽检重点人员，请于${date.getTodayToPreDay(-1, 'YYYY年MM月DD日')}-${date.getTodayToPreDay(-7, 'YYYY年MM月DD日')}期间进行下一周期核酸检测，两次以上应检未检会给您工作、生活带来不便，特别提醒。`;
         break;
       case '每周2次':
-        sendMsg = `您是高风险岗位人员，请于${date.getTodayToPreDay(-1, 'YYYY年MM月DD日')}-${date.getTodayToPreDay(-7, 'YYYY年MM月DD日')}期间进行下一周期核酸检测，两次以上应检未检会给您工作、生活带来不便，特别提醒。`;
+        sendMsg = `您属于核酸应检尽检重点人员，请于${date.getTodayToPreDay(-1, 'YYYY年MM月DD日')}-${date.getTodayToPreDay(-7, 'YYYY年MM月DD日')}期间进行下一周期核酸检测，两次以上应检未检会给您工作、生活带来不便，特别提醒。`;
         break;
       case '每月一检':
-        sendMsg = `您是高风险岗位人员，请于${date.getTodayToPreDay(-1, 'YYYY年MM月DD日')}-${date.getTodayToPreDay(-30, 'YYYY年MM月DD日')}期间进行下一周期核酸检测，两次以上应检未检会给您工作、生活带来不便，特别提醒。`;
+        sendMsg = `您属于核酸应检尽检重点人员，请于${date.getTodayToPreDay(-1, 'YYYY年MM月DD日')}-${date.getTodayToPreDay(-30, 'YYYY年MM月DD日')}期间进行下一周期核酸检测，两次以上应检未检会给您工作、生活带来不便，特别提醒。`;
         break;
       default:
         break;
@@ -1258,9 +1258,9 @@ async function autoSendMsg () {
     let sendTime = new Date();
     let sendMsg = ''
     if (send.periodType === '每天一检') {
-      sendMsg = `您是高风险岗位人员，在${date.formatDate(send.startTime, 'YYYY年MM月DD日')}未检测核酸，请及时进行下一次检测，两次以上应检未检会给您工作、生活带来不便。如果已检请忽略。`
+      sendMsg = `您属于核酸应检尽检重点人员，在${date.formatDate(send.startTime, 'YYYY年MM月DD日')}未检测核酸，请及时进行下一次检测，两次以上应检未检会给您工作、生活带来不便。如果已检请忽略。`
     } else {
-      sendMsg = `您是高风险岗位人员，在${date.formatDate(send.startTime, 'YYYY年MM月DD日')}-${date.formatDate(send.endTime, 'YYYY年MM月DD日')}未检测核酸，请及时进行下一次检测，两次以上应检未检会给您工作、生活带来不便。如果已检请忽略。`
+      sendMsg = `您属于核酸应检尽检重点人员，在${date.formatDate(send.startTime, 'YYYY年MM月DD日')}-${date.formatDate(send.endTime, 'YYYY年MM月DD日')}未检测核酸，请及时进行下一次检测，两次以上应检未检会给您工作、生活带来不便。如果已检请忽略。`
     }
     let rep = await http.get({
       url: `http://59.83.223.109:8513/sms/Api/Send.do?SpCode=1037&LoginName=jbxq_hsjc&Password=62E79c7Rk&MessageContent=${encodeURIComponent(sendMsg)}&UserNumber=${send.phone}&templateId=123456&SerialNumber=&ScheduleTime=&f=1`
@@ -1898,14 +1898,14 @@ async function main () {
   monthJob = schedule.scheduleJob('0 10 0 1 * *', monthSamp)
 
   // 每天16点自动发送短信
-  schedule.scheduleJob('0 0 16 * * *', function () {
-    autoWarnSendMsg()
-  })
+  // schedule.scheduleJob('0 0 16 * * *', function () {
+    // autoWarnSendMsg()
+  // })
 
   // 每天9点自动发送短信
-  schedule.scheduleJob('0 0 9 * * *', function () {
-    autoSendMsg()
-  })
+  // schedule.scheduleJob('0 0 9 * * *', function () {
+    // autoSendMsg()
+  // })
 
   schedule.scheduleJob('0 0 3 * * *', function () {
     autoRegular()
