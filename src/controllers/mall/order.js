@@ -556,6 +556,10 @@ module.exports = {
       status = status.split(',')
     }
 
+    if (!Array.isArray(receiveTime) && receiveTime.indexOf(',') >= 0) {
+      receiveTime = receiveTime.split(',')
+    }
+
     let where = {
       delete_status: 0
     }
@@ -798,6 +802,10 @@ module.exports = {
 
     if (!Array.isArray(status) && status.indexOf(',') >= 0) {
       status = status.split(',')
+    }
+
+    if (!Array.isArray(receiveTime) && receiveTime.indexOf(',') >= 0) {
+      receiveTime = receiveTime.split(',')
     }
 
     let where = {
