@@ -294,6 +294,10 @@ module.exports = function(sequelize, DataTypes) {
     streetName: {
       type: DataTypes.STRING(20),
       allowNull: true
+    },
+    summary: {
+      type: DataTypes.STRING(255),
+      allowNull: true
     }
   }, {
     tableName: 'info_users'

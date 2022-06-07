@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2022-05-29 14:16:19
+ * @LastEditTime: 2022-06-07 14:21:31
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/samp/rearend.js
@@ -175,11 +175,12 @@ module.exports = {
   getUsers: async ctx => {
     let pageIndex = ctx.request.body.pageIndex || 1;
     let pageSize = ctx.request.body.pageSize || 50;
-    let { batch_no, name, tel, cert_no, createTime, updateTime, cusId, cusName, opStatus, opStatusName, connectType, connectTypes, depName } = ctx.request.body;
+    let { batch_no, batchName, name, tel, cert_no, createTime, updateTime, cusTime, cusId, cusName, opStatus, opStatusName, connectType, connectTypes, depName } = ctx.request.body;
 
     let where = {};
 
     Object.assign(where, batch_no && { batch_no })
+    Object.assign(where, batchName && { batchName })
     Object.assign(where, name && { name })
     Object.assign(where, tel && { tel })
     Object.assign(where, cert_no && { cert_no })
@@ -191,11 +192,15 @@ module.exports = {
     Object.assign(where, depName && { areaName: depName })
 
     if (createTime && createTime.length > 0) {
-      where.createTime = { $between: createTime }
+      where.createTime = { $between: [`${createTime[0]} 00:00:00`, `${createTime[1]} 23:59:59`] }
     }
 
     if (updateTime && updateTime.length > 0) {
-      where.updateTime = { $between: updateTime }
+      where.updateTime = { $between: [`${updateTime[0]} 00:00:00`, `${updateTime[1]} 23:59:59`] }
+    }
+
+    if (cusTime && cusTime.length > 0) {
+      where.cusTime = { $between: [`${cusTime[0]} 00:00:00`, `${cusTime[1]} 23:59:59`] }
     }
 
     if (connectTypes && connectTypes.length > 0) {
@@ -344,7 +349,8 @@ module.exports = {
       tel, address, aap0112, bbp0103, bae0104, addr_area,
       opStatus: 1,
       opStatusName: opStatusNameEnum[1],
-      connectType: ''
+      connectType: '',
+      summary: ''
     }, {
       where: {
         id
@@ -356,7 +362,23 @@ module.exports = {
   editUsersQA: async ctx => {
     let { id, qa1, qa2, qa3, qa4, qa5, qa6, qa7, qa8, qa9, qa10, qa11, qa12, qa13 } = ctx.request.body;
 
+    // 写入总结
+    // 不清楚/不记得、未享受，信息存在、去世
+
+    let summary = '';
+    if (qa2 === '不清楚/不记得') {
+      summary = '不清楚/不记得';
+    } else {
+      switch (qa13) {
+        case '未享受，信息存在':
+        case '去世':
+          summary = qa13;
+          break;
+      }
+    }
+
     await ctx.orm().info_users.update({
+      summary,
       qa1, qa2, qa3, qa4, qa5, qa6, qa7, qa8, qa9, qa10, qa11, qa12, qa13,
       opStatus: 2,
       opStatusName: opStatusNameEnum[2],
@@ -381,6 +403,9 @@ module.exports = {
     // '停机': '停机',
     // '限制呼入': '限制呼入'
 
+    // 写入总结
+    // 接通后挂断、无人接听、信息有误、关机、空号、停机、限制呼入
+
     let opStatus = 1
     switch (connectType) {
       case '信息有误':
@@ -393,7 +418,19 @@ module.exports = {
         opStatus = 1
         break;
     }
+    let user = await ctx.orm().info_users.findOne({
+      where: {
+        id
+      }
+    })
+
+    // 按要求“无人接听、关机、拒接、正忙”每天轮打三次属于已完成工单
+    if (user && user.cusConnectNum > 2) {
+      opStatus = 2
+    }
+
     await ctx.orm().info_users.update({
+      summary: connectType,
       connectType,
       qa12: qa12,
       opStatus: opStatus,
@@ -448,7 +485,7 @@ module.exports = {
       select areaName, count(1) uv from info_users ${where} and opStatus = 2 and connectType = '已接听' and qa2 = '否' and qa13 = '未享受，信息存在' group by areaName
     ) h1 on h1.areaName = a.areaName 
     left join (
-      select areaName, count(1) uv from info_users ${where} and opStatus = 2 and connectType = '已接听' and qa2 = '否' and qa13 = '接通后挂断' group by areaName
+      select areaName, count(1) uv from info_users ${where} and opStatus = 2 and connectType = '接通后挂断' group by areaName
     ) h2 on h2.areaName = a.areaName 
     left join (
       select areaName, count(1) uv from info_users ${where} and opStatus = 2 and connectType = '已接听' and qa2 = '否' and qa13 = '去世' group by areaName
@@ -859,11 +896,12 @@ module.exports = {
     }
   },
   exportUsers: async ctx => {
-    let { batch_no, name, tel, cert_no, createTime, updateTime, cusId, cusName, opStatus, opStatusName, connectType, connectTypes, depName } = ctx.request.body;
+    let { batch_no, batchName, name, tel, cert_no, createTime, updateTime, cusTime, cusId, cusName, opStatus, opStatusName, connectType, connectTypes, depName } = ctx.request.body;
 
     let where = {};
 
     Object.assign(where, batch_no && { batch_no })
+    Object.assign(where, batchName && { batchName })
     Object.assign(where, name && { name })
     Object.assign(where, tel && { tel })
     Object.assign(where, cert_no && { cert_no })
@@ -875,11 +913,15 @@ module.exports = {
     Object.assign(where, depName && { areaName: depName })
 
     if (createTime && createTime.length > 0) {
-      where.createTime = { $between: createTime }
+      where.createTime = { $between: [`${createTime[0]} 00:00:00`, `${createTime[1]} 23:59:59`] }
     }
 
     if (updateTime && updateTime.length > 0) {
-      where.updateTime = { $between: updateTime }
+      where.updateTime = { $between: [`${updateTime[0]} 00:00:00`, `${updateTime[1]} 23:59:59`] }
+    }
+
+    if (cusTime && cusTime.length > 0) {
+      where.cusTime = { $between: [`${cusTime[0]} 00:00:00`, `${cusTime[1]} 23:59:59`] }
     }
 
     if (connectTypes && connectTypes.length > 0) {
@@ -967,7 +1009,7 @@ module.exports = {
       arr.push(user.qa10);
       arr.push(user.qa11);
       arr.push(user.qa12);
-      arr.push(user.qa13);
+      arr.push(user.summary);
 
       xlsxObj[0].data.push(arr)
     }
