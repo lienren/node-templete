@@ -1309,7 +1309,7 @@ async function autoRegular () {
           userId: id,
           isPlan: '计划内',
           endTime: {
-            $lt: date.formatDate()
+            $lt: date.formatDate(new Date(), 'YYYY-MM-DD')
           }
         },
         limit: 1,
@@ -1907,7 +1907,7 @@ async function main () {
     // autoSendMsg()
   // })
 
-  schedule.scheduleJob('0 0 3 * * *', function () {
+  schedule.scheduleJob('0 0 3/12 * * *', function () {
     autoRegular()
   })
 
