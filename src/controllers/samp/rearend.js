@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2022-06-07 14:21:31
+ * @LastEditTime: 2022-06-08 23:32:38
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/samp/rearend.js
@@ -225,6 +225,67 @@ module.exports = {
       pageSize
     }
   },
+  getErrorUsers: async ctx => {
+    let pageIndex = ctx.request.body.pageIndex || 1;
+    let pageSize = ctx.request.body.pageSize || 50;
+    let { batch_no, batchName, name, tel, cert_no, createTime, updateTime, cusTime, cusId, cusName, opStatus, opStatusName, connectType, connectTypes, depName } = ctx.request.body;
+
+    let where = {};
+
+    Object.assign(where, batch_no && { batch_no })
+    Object.assign(where, batchName && { batchName })
+    Object.assign(where, name && { name })
+    Object.assign(where, tel && { tel })
+    Object.assign(where, cert_no && { cert_no })
+    Object.assign(where, cusId && { cusId })
+    Object.assign(where, cusName && { cusName })
+    Object.assign(where, opStatus && { opStatus })
+    Object.assign(where, opStatusName && { opStatusName })
+    Object.assign(where, connectType && { connectType })
+    Object.assign(where, depName && { areaName: depName })
+
+    if (createTime && createTime.length > 0) {
+      where.createTime = { $between: [`${createTime[0]} 00:00:00`, `${createTime[1]} 23:59:59`] }
+    }
+
+    if (updateTime && updateTime.length > 0) {
+      where.updateTime = { $between: [`${updateTime[0]} 00:00:00`, `${updateTime[1]} 23:59:59`] }
+    }
+
+    if (cusTime && cusTime.length > 0) {
+      where.cusTime = { $between: [`${cusTime[0]} 00:00:00`, `${cusTime[1]} 23:59:59`] }
+    }
+
+    where.$or = [
+      {
+        connectType: {
+          $in: ['信息有误', '空号', '停机', '限制呼入']
+        }
+      },
+      {
+        connectType: '无人接听',
+        cusConnectNum: {
+          $gte: 3
+        }
+      }
+    ]
+
+    let result = await ctx.orm().info_users.findAndCountAll({
+      offset: (pageIndex - 1) * pageSize,
+      limit: pageSize,
+      where,
+      order: [
+        ['id', 'desc']
+      ]
+    });
+
+    ctx.body = {
+      total: result.count,
+      list: result.rows,
+      pageIndex,
+      pageSize
+    }
+  },
   importUsers: async ctx => {
     if (ctx.req.files && ctx.req.files.length > 0) {
       ctx.body = {
@@ -360,7 +421,7 @@ module.exports = {
     ctx.body = {}
   },
   editUsersQA: async ctx => {
-    let { id, qa1, qa2, qa3, qa4, qa5, qa6, qa7, qa8, qa9, qa10, qa11, qa12, qa13 } = ctx.request.body;
+    let { id, qa1, qa2, qa3, qa4, qa5, qa6, qa7, qa8, qa9, qa10, qa11, qa12, qa13, cusConnectNum } = ctx.request.body;
 
     // 写入总结
     // 不清楚/不记得、未享受，信息存在、去世
@@ -384,7 +445,7 @@ module.exports = {
       opStatusName: opStatusNameEnum[2],
       connectType: '已接听',
       cusTime: date.formatDate(),
-      cusConnectNum: sequelize.literal(`cusConnectNum + 1`)
+      cusConnectNum: sequelize.literal(`cusConnectNum + ${cusConnectNum}`)
     }, {
       where: {
         id
@@ -394,7 +455,7 @@ module.exports = {
     ctx.body = {}
   },
   editUserConnectType: async ctx => {
-    let { id, connectType, qa12 } = ctx.request.body;
+    let { id, connectType, qa12, cusConnectNum } = ctx.request.body;
 
     // '无人接听': '无人接听',
     // '信息有误': '信息有误',
@@ -436,7 +497,7 @@ module.exports = {
       opStatus: opStatus,
       opStatusName: opStatusNameEnum[opStatus],
       cusTime: date.formatDate(),
-      cusConnectNum: sequelize.literal(`cusConnectNum + 1`)
+      cusConnectNum: sequelize.literal(`cusConnectNum + ${cusConnectNum}`)
     }, {
       where: {
         id
