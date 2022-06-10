@@ -1384,6 +1384,13 @@ async function autoRegular () {
   console.log('samp regular data:%s', date.formatDate());
 }
 
+async function autoSysSamp () {
+  let sql = `insert into samp.sys_samp_data (date, user_name, user_idcard) 
+  select DATE_ADD(CURRENT_DATE(),INTERVAL -1 DAY), name, idcard from info_users where depId > 2 and userType = '在线'`;
+
+  await ctx.orm().query(sql, {}, { type: ctx.orm().sequelize.QueryTypes.INSERT });
+}
+
 let idcards = [
   /*'130224198011241561',
   '142601197301297375',
@@ -1890,26 +1897,30 @@ async function main () {
     twoDaySamp()
     threeDaySamp()
     fiveDaySamp()
-    getUpUsers()
+    // getUpUsers()
   })
 
   weekJob = schedule.scheduleJob('0 10 0 * * 1', weekSamp)
 
   monthJob = schedule.scheduleJob('0 10 0 1 * *', monthSamp)
 
-  // 每天16点自动发送短信
-  // schedule.scheduleJob('0 0 16 * * *', function () {
-    // autoWarnSendMsg()
-  // })
-
-  // 每天9点自动发送短信
-  schedule.scheduleJob('0 0 9 * * *', function () {
-    autoSendMsg()
+  schedule.scheduleJob('0 0 2 * * *', function () {
+    autoSysSamp()
   })
 
   schedule.scheduleJob('0 0 3/12 * * *', function () {
     autoRegular()
   })
+
+  // 每天9点自动发送短信
+  schedule.scheduleJob('0 0 9 * * *', function () {
+    // autoSendMsg()
+  })
+
+  // 每天16点自动发送短信
+  // schedule.scheduleJob('0 0 16 * * *', function () {
+  // autoWarnSendMsg()
+  // })
 
   // handleTmp();
   // getUpUsers()
