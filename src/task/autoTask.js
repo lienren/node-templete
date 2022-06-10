@@ -1903,9 +1903,9 @@ async function main () {
   // })
 
   // 每天9点自动发送短信
-  // schedule.scheduleJob('0 0 9 * * *', function () {
-    // autoSendMsg()
-  // })
+  schedule.scheduleJob('0 0 9 * * *', function () {
+    autoSendMsg()
+  })
 
   schedule.scheduleJob('0 0 3/12 * * *', function () {
     autoRegular()
