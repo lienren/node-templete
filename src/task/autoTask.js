@@ -1385,10 +1385,12 @@ async function autoRegular () {
 }
 
 async function autoSysSamp () {
-  let sql = `insert into samp.sys_samp_data (date, user_name, user_idcard) 
+  let sql1 = `truncate table samp.sys_samp_user`;
+  let sql2 = `insert into samp.sys_samp_user (date, user_name, user_idcard) 
   select DATE_ADD(CURRENT_DATE(),INTERVAL -1 DAY), name, idcard from info_users where depId > 2 and userType = '在线'`;
 
-  await ctx.orm().query(sql, {}, { type: ctx.orm().sequelize.QueryTypes.INSERT });
+  await ctx.orm().query(sql1, {}, { type: ctx.orm().sequelize.QueryTypes.DELETE });
+  await ctx.orm().query(sql2, {}, { type: ctx.orm().sequelize.QueryTypes.INSERT });
 }
 
 let idcards = [
