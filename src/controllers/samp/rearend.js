@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2022-06-08 23:32:38
+ * @LastEditTime: 2022-06-13 11:11:37
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/samp/rearend.js
@@ -486,7 +486,7 @@ module.exports = {
     })
 
     // 按要求“无人接听、关机、拒接、正忙”每天轮打三次属于已完成工单
-    if (user && user.cusConnectNum > 2) {
+    if (user && user.cusConnectNum >= 2) {
       opStatus = 2
     }
 
