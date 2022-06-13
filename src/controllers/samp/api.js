@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-08-18 10:44:07
- * @LastEditTime: 2022-05-24 14:35:36
+ * @LastEditTime: 2022-06-13 00:57:33
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/samp/api.js
@@ -16,6 +16,7 @@ const sequelize = require('sequelize');
 const comm = require('../../utils/comm');
 const date = require('../../utils/date');
 const jwt = require('../../utils/jwt');
+const http = require('../../utils/http');
 const encrypt = require('../../utils/encrypt');
 const config = require('../../config.js');
 
@@ -43,27 +44,17 @@ module.exports = {
     if (ctx.req.files && ctx.req.files.length > 0) {
       let filePath = path.resolve(path.join(__dirname, `../../../assets/uploads/${ctx.req.files[0].filename}`));
       let image = fs.readFileSync(filePath).toString("base64");
-      let idCardSide = "back";
+      let user = null;
 
-      let result = await client.idcard(image, idCardSide);
-
-      let user = null
-      if (result.words_result &&
-        result.words_result.姓名 &&
-        result.words_result.民族 &&
-        result.words_result.住址 &&
-        result.words_result.公民身份号码 &&
-        result.words_result.出生 &&
-        result.words_result.性别) {
-        let idardInfo = {
-          name: result.words_result.姓名.words,
-          idcard: result.words_result.公民身份号码.words,
-          sex: result.words_result.性别.words,
-          birthday: result.words_result.出生.words,
-          nation: result.words_result.民族.words,
-          address: result.words_result.住址.words
+      let res = await http.post({
+        url: `http://192.168.149.97:20005/samp/api/idcardImgToJson`,
+        data: {
+          image
         }
+      })
 
+      if (res.data && res.data.data && res.data.data.idardInfo) {
+        let idardInfo = res.data.data.idardInfo
         user = await ctx.orm().info_users.findOne({
           where: {
             idcard: idardInfo.idcard
@@ -88,7 +79,7 @@ module.exports = {
           }
         }
       }
-      
+
       // 删除文件
       fs.unlink(filePath, function (error) {
         console.log('delete file error:', error)
@@ -101,6 +92,43 @@ module.exports = {
       };
     } else {
       ctx.body = {};
+    }
+  },
+  // 上传文件
+  idcardImgToJson: async ctx => {
+    let { image } = ctx.request.body;
+
+    if (image) {
+      // let filePath = path.resolve(path.join(__dirname, `../../../assets/uploads/${ctx.req.files[0].filename}`));
+      // let image = fs.readFileSync(filePath).toString("base64");
+      let idCardSide = "back";
+
+      let result = await client.idcard(image, idCardSide);
+
+      if (result.words_result &&
+        result.words_result.姓名 &&
+        result.words_result.民族 &&
+        result.words_result.住址 &&
+        result.words_result.公民身份号码 &&
+        result.words_result.出生 &&
+        result.words_result.性别) {
+        let idardInfo = {
+          name: result.words_result.姓名.words,
+          idcard: result.words_result.公民身份号码.words,
+          sex: result.words_result.性别.words,
+          birthday: result.words_result.出生.words,
+          nation: result.words_result.民族.words,
+          address: result.words_result.住址.words
+        }
+
+        ctx.body = {
+          idardInfo: idardInfo
+        }
+      } else {
+        ctx.body = {}
+      }
+    } else {
+      ctx.body = {}
     }
   },
   idcardSamp: async ctx => {
