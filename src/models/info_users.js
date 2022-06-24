@@ -311,6 +311,11 @@ module.exports = function(sequelize, DataTypes) {
     parent_id: {
       type: DataTypes.INTEGER(11),
       allowNull: true
+    },
+    is_repair: {
+      type: DataTypes.INTEGER(11),
+      allowNull: true,
+      defaultValue: '0'
     }
   }, {
     tableName: 'info_users'

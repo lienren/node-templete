@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2022-06-24 08:11:41
+ * @LastEditTime: 2022-06-24 10:53:15
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/samp/rearend.js
@@ -257,6 +257,7 @@ module.exports = {
     }
 
     where.qa_num = 1
+    where.is_repair = 0
     where.$or = [
       {
         connectType: {
@@ -413,6 +414,14 @@ module.exports = {
       }
     })
 
+    /*
+    insert into info_users
+    (info_id,cx_id,batch_no,batchName,name,cert_type,cert_no,birthday,age,sex,tel,nation,contact_name,contact_relation,ga_area,ga_organ,ga_town,ga_address,addr_area,address,abp0114,abp0113,aap0113,is_assessment,assessment_organ,cbp0101,is_gpps,aap0114,abp0110,aap0112,bae0104,bae0102,bbp0103,bbp0102,cbp0107,cbp0108,cbp0113,cag0105,cag0104,cbp0103,creator_id,create_time,flag,result,addr_organ,gdid,IS_KCDJ,createTime,updateTime,
+    cusId,cusName,opStatus,opStatusName,cusConnectNum,areaName,streetName,qa_num,parent_id)
+    select u.info_id,u.cx_id,u.batch_no,CONCAT(u.batchName,'-二次'),u.name,u.cert_type,u.cert_no,u.birthday,u.age,u.sex,a.a3,u.nation,u.contact_name,u.contact_relation,u.ga_area,u.ga_organ,u.ga_town,u.ga_address,u.addr_area,u.address,u.abp0114,u.abp0113,u.aap0113,u.is_assessment,u.assessment_organ,u.cbp0101,u.is_gpps,u.aap0114,u.abp0110,u.aap0112,u.bae0104,u.bae0102,u.bbp0103,u.bbp0102,u.cbp0107,u.cbp0108,u.cbp0113,u.cag0105,u.cag0104,u.cbp0103,u.creator_id,u.create_time,u.flag,u.result,u.addr_organ,u.gdid,u.IS_KCDJ,u.createTime,u.updateTime,
+    u.cusId,u.cusName,1,'未回访',0,u.areaName,u.streetName,2,u.id from abc a
+    inner join info_users u on u.batchName = a.a1 and u.cert_no = a.a4;
+    */
 
     if (user) {
       // 新增新回访
@@ -495,7 +504,8 @@ module.exports = {
       await ctx.orm().info_users.update({
         opStatus: 2,
         opStatusName: opStatusNameEnum[2],
-        tmp_data: ''
+        tmp_data: '',
+        is_repair: 1
       }, {
         where: {
           id
