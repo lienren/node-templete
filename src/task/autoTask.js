@@ -351,12 +351,13 @@ async function getUpUsers () {
         }
       }
 
-      if (sendData.length > 0) {
+      if (sendData.data.length > 0) {
         let upRep = await http.post({
           url: 'http://yjjj.yqfkpt.njga.gov.cn:9088/common/yjjj/ryAdd',
           data: sendData
         })
 
+        console.log('upRep.data:', upRep.data)
         if (upRep && upRep.data && upRep.data.code === 0) {
           // 刷新所有isUp状态
           await ctx.orm().info_users.update({
