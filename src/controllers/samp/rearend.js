@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2022-06-13 11:11:37
+ * @LastEditTime: 2022-06-24 08:11:41
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/samp/rearend.js
@@ -256,6 +256,7 @@ module.exports = {
       where.cusTime = { $between: [`${cusTime[0]} 00:00:00`, `${cusTime[1]} 23:59:59`] }
     }
 
+    where.qa_num = 1
     where.$or = [
       {
         connectType: {
@@ -406,17 +407,101 @@ module.exports = {
   editUserError: async ctx => {
     let { id, tel, address, aap0112, bbp0103, bae0104, addr_area } = ctx.request.body;
 
-    await ctx.orm().info_users.update({
-      tel, address, aap0112, bbp0103, bae0104, addr_area,
-      opStatus: 1,
-      opStatusName: opStatusNameEnum[1],
-      connectType: '',
-      summary: ''
-    }, {
+    let user = await ctx.orm().info_users.findOne({
       where: {
         id
       }
     })
+
+
+    if (user) {
+      // 新增新回访
+      await ctx.orm().info_users.create({
+        info_id: user.info_id
+        , cx_id: user.cx_id
+        , batch_no: user.batch_no
+        , batchName: user.batchName + '-二次'
+        , name: user.name
+        , cert_type: user.cert_type
+        , cert_no: user.cert_no
+        , birthday: user.birthday
+        , age: user.age
+        , sex: user.sex
+        , tel: tel
+        , nation: user.nation
+        , contact_name: user.contact_name
+        , contact_relation: user.contact_relation
+        , ga_area: user.ga_area
+        , ga_organ: user.ga_organ
+        , ga_town: user.ga_town
+        , ga_address: user.ga_address
+        , addr_area: addr_area
+        , address: address
+        , abp0114: user.abp0114
+        , abp0113: user.abp0113
+        , aap0113: user.aap0113
+        , is_assessment: user.is_assessment
+        , assessment_organ: user.assessment_organ
+        , cbp0101: user.cbp0101
+        , is_gpps: user.is_gpps
+        , aap0114: user.aap0114
+        , abp0110: user.abp0110
+        , aap0112: aap0112
+        , bae0104: bae0104
+        , bae0102: user.bae0102
+        , bbp0103: bbp0103
+        , bbp0102: user.bbp0102
+        , cbp0107: user.cbp0107
+        , cbp0108: user.cbp0108
+        , cbp0113: user.cbp0113
+        , cag0105: user.cag0105
+        , cag0104: user.cag0104
+        , cbp0103: user.cbp0103
+        , creator_id: user.creator_id
+        , create_time: user.create_time
+        , flag: user.flag
+        , result: user.result
+        , addr_organ: user.addr_organ
+        , gdid: user.gdid
+        , IS_KCDJ: user.IS_KCDJ
+        , cusId: user.cusId
+        , cusName: user.cusName
+        , opStatus: 1
+        , opStatusName: opStatusNameEnum[1]
+        , connectType: user.connectType
+        , qa1: user.qa1
+        , qa2: user.qa2
+        , qa3: user.qa3
+        , qa4: user.qa4
+        , qa5: user.qa5
+        , qa6: user.qa6
+        , qa7: user.qa7
+        , qa8: user.qa8
+        , qa9: user.qa9
+        , qa10: user.qa10
+        , qa11: user.qa11
+        , qa12: user.qa12
+        , qa13: user.qa13
+        , cusTime: user.cusTime
+        , cusConnectNum: user.cusConnectNum
+        , areaName: user.areaName
+        , streetName: user.streetName
+        , summary: user.summary
+        , qa_num: 2
+        , parent_id: id
+      })
+
+      // 刷新原回访为已回状态
+      await ctx.orm().info_users.update({
+        opStatus: 2,
+        opStatusName: opStatusNameEnum[2],
+        tmp_data: ''
+      }, {
+        where: {
+          id
+        }
+      })
+    }
 
     ctx.body = {}
   },
@@ -445,7 +530,25 @@ module.exports = {
       opStatusName: opStatusNameEnum[2],
       connectType: '已接听',
       cusTime: date.formatDate(),
-      cusConnectNum: sequelize.literal(`cusConnectNum + ${cusConnectNum}`)
+      cusConnectNum: sequelize.literal(`cusConnectNum + ${cusConnectNum}`),
+      tmp_data: ''
+    }, {
+      where: {
+        id
+      }
+    })
+
+    ctx.body = {}
+  },
+  tmpUsersQA: async ctx => {
+    let { id, qa1, qa2, qa3, qa4, qa5, qa6, qa7, qa8, qa9, qa10, qa11, qa12, qa13 } = ctx.request.body;
+
+    let tmp_data = {
+      qa1, qa2, qa3, qa4, qa5, qa6, qa7, qa8, qa9, qa10, qa11, qa12, qa13
+    }
+
+    await ctx.orm().info_users.update({
+      tmp_data: JSON.stringify(tmp_data)
     }, {
       where: {
         id
@@ -497,7 +600,8 @@ module.exports = {
       opStatus: opStatus,
       opStatusName: opStatusNameEnum[opStatus],
       cusTime: date.formatDate(),
-      cusConnectNum: sequelize.literal(`cusConnectNum + ${cusConnectNum}`)
+      cusConnectNum: sequelize.literal(`cusConnectNum + ${cusConnectNum}`),
+      tmp_data: ''
     }, {
       where: {
         id
@@ -507,9 +611,9 @@ module.exports = {
     ctx.body = {}
   },
   s1: async ctx => {
-    let { batch_no, batchName } = ctx.request.body;
+    let { batch_no, batchName, depName, createTime } = ctx.request.body;
 
-    let where = ' where 1=1 ';
+    let where = ' where 1=1 and qa_num = 1 ';
 
     if (batch_no) {
       where += ` and batch_no = '${batch_no}' `
@@ -517,6 +621,14 @@ module.exports = {
 
     if (batchName) {
       where += ` and batchName = '${batchName}' `
+    }
+
+    if (depName) {
+      where += ` and areaName = '${depName}' `
+    }
+
+    if (createTime && createTime.length > 0) {
+      where += ` and createTime between '${createTime[0]} 00:00:00' and '${createTime[1]} 23:59:59' `
     }
 
     let sql1 = `select a.areaName, a.uv, ifnull(b.uv,0) u2, ifnull(c.uv,0) u3, ifnull(d.uv,0) u4, ifnull(e.uv,0) u5,
@@ -631,224 +743,263 @@ module.exports = {
     ctx.body = data;
   },
   s2: async ctx => {
-    let sampName = ctx.request.body.sampName || '';
-    let depName1 = ctx.request.body.depName1 || '';
-    let depName2 = ctx.request.body.depName2 || '';
-    let where1 = ''
-    let where2 = ''
-    let where3 = ''
+    let { batch_no, batchName, depName, createTime } = ctx.request.body;
 
-    if (sampName) {
-      where1 += ` and sampName = '${sampName}'`
-      where2 += ` and sampName = '${sampName}'`
-      where3 += ` and sampName = '${sampName}'`
+    let where = ' where 1=1 and qa_num = 2 ';
+
+    if (batch_no) {
+      where += ` and batch_no = '${batch_no}' `
     }
 
-    if (depName1) {
-      where1 += ` and depName1 = '${depName1}'`
-      where2 += ` and exists(select * from info_users where depName1 = '${depName1}' and id = info_user_samps.userId)`
+    if (batchName) {
+      where += ` and batchName = '${batchName}' `
     }
 
-    if (depName2) {
-      where1 += ` and depName2 = '${depName2}'`
-      where2 += ` and exists(select * from info_users where depName2 = '${depName2}' and id = info_user_samps.userId)`
-    }
-
-    let sql1 = `select DATE_FORMAT(handleTime,'%Y-%m-%d') 日期, count(1) 采样人数 from info_user_samps 
-    where handleType != '未采样' and handleTime >= DATE_ADD(now(),INTERVAL -8 day) ${where2}
-    group by DATE_FORMAT(handleTime,'%Y-%m-%d')`
-
-    let sql2 = `select 't1' title, count(1) num from info_users where 1=1 ${where1} 
-    union all 
-    select 't2' title, count(1) num from info_users where depId > 2 ${where1} 
-    union all 
-    select 't3' title, count(1) num from info_users where depId <= 2 ${where1} 
-    union all 
-    select 't4' title, count(1) num from info_user_samps where handleType != '未采样'  ${where2} 
-    union all 
-    select 't5' title, count(1) num from info_users where createTime >= DATE_FORMAT(now(),'%Y-%m-%d')  ${where1} 
-    union all 
-    select 't6' title, count(1) num from info_user_samps where handleTime >= DATE_FORMAT(now(),'%Y-%m-%d') and handleType != '未采样'  ${where2} 
-    union all 
-    select 't7' title, count(1) num from info_samps where 1=1 ${where3} 
-    union all 
-    select 't8' title, count(1) num from SuperManagerInfo where verifyLevel = 1 and isDel = 0 ${sampName ? ` and depName = '${sampName}'` : ''}`
-
-    let sql3 = `select * from (
-      select sampName 采样点, count(1) 采样人数 from info_user_samps where handleType != '未采样' and handleTime >= CURDATE() ${where2} group by sampName
-      ) a order by a.采样人数 desc `
-
-
-    let result1 = await ctx.orm().query(sql1);
-    let result2 = await ctx.orm().query(sql2);
-    let result3 = await ctx.orm().query(sql3);
-
-    ctx.body = {
-      line: result1,
-      stat2: result2,
-      line1: result3
-    };
-  },
-  s3: async ctx => {
-    let { tradeTypes, postNames, depName1s, depName2s, depName2, depStreet, name, phone, idcard, tradeType, postName, periodType, street, community, streets, communitys, address, userType,
-      sampStartTime, sampType, sampName, sampUserName, sampHandleTime, startEndTime, createTime, updateTime } = ctx.request.body;
-
-    let where = '';
-
-    if (sampType && sampType.length > 0) {
-      where += ` and ss.sampType = '${sampType}'`;
-    }
-
-    if (tradeTypes && tradeTypes.length > 0) {
-      where += ' and u.tradeType in (' + tradeTypes.map(m => {
-        return `'${m}'`
-      }).join(',') + ')';
-    }
-
-    if (postNames && postNames.length > 0) {
-      where += ' and u.postName in (' + postNames.map(m => {
-        return `'${m}'`
-      }).join(',') + ')';
-    }
-
-    if (depName1s && depName1s.length > 0) {
-      where += ' and u.depName1 in (' + depName1s.map(m => {
-        return `'${m}'`
-      }).join(',') + ')';
-    }
-
-    if (depName2s && depName2s.length > 0) {
-      where += ' and u.depName2 in (' + depName2s.map(m => {
-        return `'${m}'`
-      }).join(',') + ')';
-    }
-
-    if (depName2) {
-      where += ` and u.depName2 = '${depName2}' `;
-    }
-
-    if (depStreet) {
-      where += ` and u.depStreet = '${depStreet}'`;
-    }
-
-    if (name) {
-      where += ` and u.name = '${name}'`;
-    }
-
-    if (phone) {
-      where += ` and u.phone = '${phone}'`;
-    }
-
-    if (idcard) {
-      where += ` and u.idcard = '${idcard}'`;
-    }
-
-    if (tradeType) {
-      where += ` and u.tradeType = '${tradeType}'`;
-    }
-
-    if (postName) {
-      where += ` and u.postName = '${postName}'`;
-    }
-
-    if (periodType) {
-      where += ` and u.periodType = '${periodType}'`;
-    }
-
-    if (street) {
-      where += ` and u.street = '${street}'`;
-    }
-
-    if (community) {
-      where += ` and u.community = '${community}'`;
-    }
-
-    if (streets && streets.length > 0) {
-      where += ' and u.street in (' + streets.map(m => {
-        return `'${m}'`
-      }).join(',') + ')';
-    }
-
-    if (communitys && communitys.length > 0) {
-      where += ' and u.community in (' + communitys.map(m => {
-        return `'${m}'`
-      }).join(',') + ')';
-    }
-
-    if (address) {
-      where += ` and u.address like '%${address}%'`;
-    }
-
-    if (userType) {
-      where += ` and u.userType = '${userType}'`;
-    }
-
-    if (sampStartTime && sampStartTime.length > 0) {
-      where += ` and u.sampStartTime between '${sampStartTime[0]}' and '${sampStartTime[1]}'`;
-    }
-
-    if (sampName) {
-      where += ` and u.sampName = '${sampName}'`;
-    }
-
-    if (sampUserName) {
-      where += ` and u.sampUserName = '${sampUserName}'`;
-    }
-
-    if (sampHandleTime && sampHandleTime.length > 0) {
-      where += ` and u.sampHandleTime between '${sampHandleTime[0]}' and '${sampHandleTime[1]}'`;
+    if (depName) {
+      where += ` and areaName = '${depName}' `
     }
 
     if (createTime && createTime.length > 0) {
-      where += ` and u.createTime between '${createTime[0]}' and '${createTime[1]}'`;
+      where += ` and createTime between '${createTime[0]} 00:00:00' and '${createTime[1]} 23:59:59' `
     }
 
-    if (updateTime && updateTime.length > 0) {
-      where += ` and u.updateTime between '${updateTime[0]}' and '${updateTime[1]}'`;
-    }
-
-    if (startEndTime && startEndTime.length > 0) {
-      where += ` and s.startTime >= '${startEndTime[0]}' and s.endTime <= '${startEndTime[1]}'`;
-    }
-
-    let sql1 = `select a.sampName, a.userType, count(1) num from (
-      select 
-      s.sampName, 
-      case when u.depId = 2 then '愿检尽检' else '重点人群' end userType from info_user_samps s 
-      inner join info_users u on u.id = s.userId 
-      inner join info_samps ss on ss.sampName = s.sampName 
-      where 1=1 and s.handleType = '已采样' ${where}) a 
-      group by a.sampName, a.userType`;
+    let sql1 = `select a.areaName, a.uv, ifnull(b.uv,0) u2, ifnull(c.uv,0) u3, ifnull(d.uv,0) u4, ifnull(e.uv,0) u5,
+      ifnull(f.uv,0) u6, ifnull(g.uv,0) u7,
+      ifnull(h1.uv,0) u9, ifnull(h2.uv,0) u10, ifnull(h3.uv,0) u11, ifnull(h4.uv,0) u12,
+      ifnull(i1.uv,0) u13, ifnull(i2.uv,0) u14, ifnull(i3.uv,0) u15, ifnull(i4.uv,0) u16, ifnull(i5.uv,0) u17, ifnull(i6.uv,0) u18 
+    from (select areaName, count(1) uv from info_users ${where} group by areaName) a 
+    left join (
+      select areaName, count(1) uv from info_users ${where} and opStatus = 1 group by areaName
+    ) b on b.areaName = a.areaName 
+    left join (
+      select areaName, count(1) uv from info_users ${where} and opStatus = 2 and connectType = '已接听' group by areaName
+    ) c on c.areaName = a.areaName 
+    left join (
+      select areaName, count(1) uv from info_users ${where} and opStatus = 2 and connectType = '已接听' and qa2 = '是' and qa10 = '满意' group by areaName
+    ) d on d.areaName = a.areaName 
+    left join (
+      select areaName, count(1) uv from info_users ${where} and opStatus = 2 and connectType = '已接听' and qa2 = '是' and qa10 = '基本满意' group by areaName
+    ) e on e.areaName = a.areaName 
+    left join (
+      select areaName, count(1) uv from info_users ${where} and opStatus = 2 and connectType = '已接听' and qa2 = '是' and qa10 = '不满意' group by areaName
+    ) f on f.areaName = a.areaName 
+    left join (
+      select areaName, count(1) uv from info_users ${where} and opStatus = 2 and connectType = '已接听' and qa2 = '是' and qa10 = '不清楚/不记得' group by areaName
+    ) g on g.areaName = a.areaName 
+    left join (
+      select areaName, count(1) uv from info_users ${where} and opStatus = 2 and connectType = '已接听' and qa2 = '否' and qa13 = '未享受，信息存在' group by areaName
+    ) h1 on h1.areaName = a.areaName 
+    left join (
+      select areaName, count(1) uv from info_users ${where} and opStatus = 2 and connectType = '接通后挂断' group by areaName
+    ) h2 on h2.areaName = a.areaName 
+    left join (
+      select areaName, count(1) uv from info_users ${where} and opStatus = 2 and connectType = '已接听' and qa2 = '否' and qa13 = '去世' group by areaName
+    ) h3 on h3.areaName = a.areaName 
+    left join (
+      select areaName, count(1) uv from info_users ${where} and opStatus = 2 and connectType = '已接听' and qa2 = '不清楚/不记得' group by areaName
+    ) h4 on h4.areaName = a.areaName 
+    left join (
+      select areaName, count(1) uv from info_users ${where} and opStatus = 2 and connectType = '无人接听' group by areaName
+    ) i1 on i1.areaName = a.areaName 
+    left join (
+      select areaName, count(1) uv from info_users ${where} and opStatus = 2 and connectType = '信息有误' group by areaName
+    ) i2 on i2.areaName = a.areaName 
+    left join (
+      select areaName, count(1) uv from info_users ${where} and opStatus = 2 and connectType = '关机' group by areaName
+    ) i3 on i3.areaName = a.areaName 
+    left join (
+      select areaName, count(1) uv from info_users ${where} and opStatus = 2 and connectType = '空号' group by areaName
+    ) i4 on i4.areaName = a.areaName 
+    left join (
+      select areaName, count(1) uv from info_users ${where} and opStatus = 2 and connectType = '停机' group by areaName
+    ) i5 on i5.areaName = a.areaName 
+    left join (
+      select areaName, count(1) uv from info_users ${where} and opStatus = 2 and connectType = '限制呼入' group by areaName
+    ) i6 on i6.areaName = a.areaName`;
 
     let result1 = await ctx.orm().query(sql1);
 
-    let data = [];
-    result1.map(m => {
-      let f = data.find(f => f.name === m.sampName);
+    let data = []
+    areaIndex.map(m => {
+      let f = result1.find(f => f.areaName === m)
 
       if (f) {
-        if (m.userType === '愿检尽检') {
-          f.d1 = m.num;
-        } else {
-          f.d2 = m.num;
-        }
-      } else {
-        data.push({
-          name: m.sampName,
-          d1: m.userType === '愿检尽检' ? m.num : 0,
-          d2: m.userType === '重点人群' ? m.num : 0
-        })
+        data.push(f)
       }
-    });
+    })
 
     let sum = data.reduce((total, curr) => {
-      total.d1 += parseInt(curr.d1)
-      total.d2 += parseInt(curr.d2)
+      total.uv += parseInt(curr.uv)
+      total.u1 += parseInt(curr.u1)
+      total.u2 += parseInt(curr.u2)
+      total.u3 += parseInt(curr.u3)
+      total.u4 += parseInt(curr.u4)
+      total.u5 += parseInt(curr.u5)
+      total.u6 += parseInt(curr.u6)
+      total.u7 += parseInt(curr.u7)
+      total.u9 += parseInt(curr.u9)
+      total.u10 += parseInt(curr.u10)
+      total.u11 += parseInt(curr.u11)
+      total.u12 += parseInt(curr.u12)
+      total.u13 += parseInt(curr.u13)
+      total.u14 += parseInt(curr.u14)
+      total.u15 += parseInt(curr.u15)
+      total.u16 += parseInt(curr.u16)
+      total.u17 += parseInt(curr.u17)
+      total.u18 += parseInt(curr.u18)
       return total
     }, {
-      name: '合计',
-      d1: 0,
-      d2: 0
+      areaName: '合计',
+      uv: 0,
+      u1: 0,
+      u2: 0,
+      u3: 0,
+      u4: 0,
+      u5: 0,
+      u6: 0,
+      u7: 0,
+      u9: 0,
+      u10: 0,
+      u11: 0,
+      u12: 0,
+      u13: 0,
+      u14: 0,
+      u15: 0,
+      u16: 0,
+      u17: 0,
+      u18: 0
+    })
+
+    data.push(sum)
+
+    ctx.body = data;
+  },
+  s3: async ctx => {
+    let { batch_no, batchName, depName, createTime } = ctx.request.body;
+
+    let where = ' where 1=1 and qa_num = 1 ';
+
+    if (batch_no) {
+      where += ` and batch_no = '${batch_no}' `
+    }
+
+    if (batchName) {
+      where += ` and batchName = '${batchName}' `
+    }
+
+    if (depName) {
+      where += ` and areaName = '${depName}' `
+    }
+
+    if (createTime && createTime.length > 0) {
+      where += ` and createTime between '${createTime[0]} 00:00:00' and '${createTime[1]} 23:59:59' `
+    }
+
+    let sql1 = `select a.areaName, a.uv, ifnull(b.uv,0) u2, ifnull(c.uv,0) u3, ifnull(d.uv,0) u4, ifnull(e.uv,0) u5,
+      ifnull(f.uv,0) u6, ifnull(g.uv,0) u7,
+      ifnull(h1.uv,0) u9, ifnull(h2.uv,0) u10, ifnull(h3.uv,0) u11, ifnull(h4.uv,0) u12,
+      ifnull(i1.uv,0) u13, ifnull(i2.uv,0) u14, ifnull(i3.uv,0) u15, ifnull(i4.uv,0) u16, ifnull(i5.uv,0) u17, ifnull(i6.uv,0) u18 
+    from (select areaName, count(1) uv from info_users ${where} group by areaName) a 
+    left join (
+      select areaName, count(1) uv from info_users ${where} and opStatus = 1 group by areaName
+    ) b on b.areaName = a.areaName 
+    left join (
+      select areaName, count(1) uv from info_users ${where} and opStatus = 2 and connectType = '已接听' group by areaName
+    ) c on c.areaName = a.areaName 
+    left join (
+      select areaName, count(1) uv from info_users ${where} and opStatus = 2 and connectType = '已接听' and qa2 = '是' and qa10 = '满意' group by areaName
+    ) d on d.areaName = a.areaName 
+    left join (
+      select areaName, count(1) uv from info_users ${where} and opStatus = 2 and connectType = '已接听' and qa2 = '是' and qa10 = '基本满意' group by areaName
+    ) e on e.areaName = a.areaName 
+    left join (
+      select areaName, count(1) uv from info_users ${where} and opStatus = 2 and connectType = '已接听' and qa2 = '是' and qa10 = '不满意' group by areaName
+    ) f on f.areaName = a.areaName 
+    left join (
+      select areaName, count(1) uv from info_users ${where} and opStatus = 2 and connectType = '已接听' and qa2 = '是' and qa10 = '不清楚/不记得' group by areaName
+    ) g on g.areaName = a.areaName 
+    left join (
+      select areaName, count(1) uv from info_users ${where} and opStatus = 2 and connectType = '已接听' and qa2 = '否' and qa13 = '未享受，信息存在' group by areaName
+    ) h1 on h1.areaName = a.areaName 
+    left join (
+      select areaName, count(1) uv from info_users ${where} and opStatus = 2 and connectType = '接通后挂断' group by areaName
+    ) h2 on h2.areaName = a.areaName 
+    left join (
+      select areaName, count(1) uv from info_users ${where} and opStatus = 2 and connectType = '已接听' and qa2 = '否' and qa13 = '去世' group by areaName
+    ) h3 on h3.areaName = a.areaName 
+    left join (
+      select areaName, count(1) uv from info_users ${where} and opStatus = 2 and connectType = '已接听' and qa2 = '不清楚/不记得' group by areaName
+    ) h4 on h4.areaName = a.areaName 
+    left join (
+      select areaName, count(1) uv from info_users ${where} and opStatus = 2 and connectType = '无人接听' group by areaName
+    ) i1 on i1.areaName = a.areaName 
+    left join (
+      select areaName, count(1) uv from info_users ${where} and opStatus = 2 and connectType = '信息有误' group by areaName
+    ) i2 on i2.areaName = a.areaName 
+    left join (
+      select areaName, count(1) uv from info_users ${where} and opStatus = 2 and connectType = '关机' group by areaName
+    ) i3 on i3.areaName = a.areaName 
+    left join (
+      select areaName, count(1) uv from info_users ${where} and opStatus = 2 and connectType = '空号' group by areaName
+    ) i4 on i4.areaName = a.areaName 
+    left join (
+      select areaName, count(1) uv from info_users ${where} and opStatus = 2 and connectType = '停机' group by areaName
+    ) i5 on i5.areaName = a.areaName 
+    left join (
+      select areaName, count(1) uv from info_users ${where} and opStatus = 2 and connectType = '限制呼入' group by areaName
+    ) i6 on i6.areaName = a.areaName`;
+
+    let result1 = await ctx.orm().query(sql1);
+
+    let data = []
+    areaIndex.map(m => {
+      let f = result1.find(f => f.areaName === m)
+
+      if (f) {
+        data.push(f)
+      }
+    })
+
+    let sum = data.reduce((total, curr) => {
+      total.uv += parseInt(curr.uv)
+      total.u1 += parseInt(curr.u1)
+      total.u2 += parseInt(curr.u2)
+      total.u3 += parseInt(curr.u3)
+      total.u4 += parseInt(curr.u4)
+      total.u5 += parseInt(curr.u5)
+      total.u6 += parseInt(curr.u6)
+      total.u7 += parseInt(curr.u7)
+      total.u9 += parseInt(curr.u9)
+      total.u10 += parseInt(curr.u10)
+      total.u11 += parseInt(curr.u11)
+      total.u12 += parseInt(curr.u12)
+      total.u13 += parseInt(curr.u13)
+      total.u14 += parseInt(curr.u14)
+      total.u15 += parseInt(curr.u15)
+      total.u16 += parseInt(curr.u16)
+      total.u17 += parseInt(curr.u17)
+      total.u18 += parseInt(curr.u18)
+      return total
+    }, {
+      areaName: '合计',
+      uv: 0,
+      u1: 0,
+      u2: 0,
+      u3: 0,
+      u4: 0,
+      u5: 0,
+      u6: 0,
+      u7: 0,
+      u9: 0,
+      u10: 0,
+      u11: 0,
+      u12: 0,
+      u13: 0,
+      u14: 0,
+      u15: 0,
+      u16: 0,
+      u17: 0,
+      u18: 0
     })
 
     data.push(sum)

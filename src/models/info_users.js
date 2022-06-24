@@ -298,6 +298,19 @@ module.exports = function(sequelize, DataTypes) {
     summary: {
       type: DataTypes.STRING(255),
       allowNull: true
+    },
+    tmp_data: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
+    qa_num: {
+      type: DataTypes.INTEGER(11),
+      allowNull: true,
+      defaultValue: '1'
+    },
+    parent_id: {
+      type: DataTypes.INTEGER(11),
+      allowNull: true
     }
   }, {
     tableName: 'info_users'
