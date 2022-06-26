@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2022-06-24 10:53:15
+ * @LastEditTime: 2022-06-27 07:38:29
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/samp/rearend.js
@@ -887,7 +887,7 @@ module.exports = {
   s3: async ctx => {
     let { batch_no, batchName, depName, createTime } = ctx.request.body;
 
-    let where = ' where 1=1 and qa_num = 1 ';
+    let where = ' where 1=1 ';
 
     if (batch_no) {
       where += ` and batch_no = '${batch_no}' `
@@ -909,54 +909,156 @@ module.exports = {
       ifnull(f.uv,0) u6, ifnull(g.uv,0) u7,
       ifnull(h1.uv,0) u9, ifnull(h2.uv,0) u10, ifnull(h3.uv,0) u11, ifnull(h4.uv,0) u12,
       ifnull(i1.uv,0) u13, ifnull(i2.uv,0) u14, ifnull(i3.uv,0) u15, ifnull(i4.uv,0) u16, ifnull(i5.uv,0) u17, ifnull(i6.uv,0) u18 
-    from (select areaName, count(1) uv from info_users ${where} group by areaName) a 
+    from (select areaName, count(1) uv from info_users where id in (
+      select max(id) from (
+      select id, batchName, cert_no from info_users ${where} 
+      union all 
+      select id, REPLACE(batchName,'-二次','') batchName, cert_no from info_users where parent_id in (select id from info_users ${where})) x
+      group by x.batchName, x.cert_no
+    ) group by areaName) a 
     left join (
-      select areaName, count(1) uv from info_users ${where} and opStatus = 1 group by areaName
+      select areaName, count(1) uv from info_users where id in (
+        select max(id) from (
+        select id, batchName, cert_no from info_users ${where} 
+        union all 
+        select id, REPLACE(batchName,'-二次','') batchName, cert_no from info_users where parent_id in (select id from info_users ${where})) a
+        group by a.batchName, a.cert_no
+      ) and opStatus = 1 group by areaName
     ) b on b.areaName = a.areaName 
     left join (
-      select areaName, count(1) uv from info_users ${where} and opStatus = 2 and connectType = '已接听' group by areaName
+      select areaName, count(1) uv from info_users where id in (
+        select max(id) from (
+        select id, batchName, cert_no from info_users ${where} 
+        union all 
+        select id, REPLACE(batchName,'-二次','') batchName, cert_no from info_users where parent_id in (select id from info_users ${where})) a
+        group by a.batchName, a.cert_no
+      ) and opStatus = 2 and connectType = '已接听' group by areaName
     ) c on c.areaName = a.areaName 
     left join (
-      select areaName, count(1) uv from info_users ${where} and opStatus = 2 and connectType = '已接听' and qa2 = '是' and qa10 = '满意' group by areaName
+      select areaName, count(1) uv from info_users where id in (
+        select max(id) from (
+        select id, batchName, cert_no from info_users ${where} 
+        union all 
+        select id, REPLACE(batchName,'-二次','') batchName, cert_no from info_users where parent_id in (select id from info_users ${where})) a
+        group by a.batchName, a.cert_no
+      ) and opStatus = 2 and connectType = '已接听' and qa2 = '是' and qa10 = '满意' group by areaName
     ) d on d.areaName = a.areaName 
     left join (
-      select areaName, count(1) uv from info_users ${where} and opStatus = 2 and connectType = '已接听' and qa2 = '是' and qa10 = '基本满意' group by areaName
+      select areaName, count(1) uv from info_users where id in (
+        select max(id) from (
+        select id, batchName, cert_no from info_users ${where} 
+        union all 
+        select id, REPLACE(batchName,'-二次','') batchName, cert_no from info_users where parent_id in (select id from info_users ${where})) a
+        group by a.batchName, a.cert_no
+      ) and opStatus = 2 and connectType = '已接听' and qa2 = '是' and qa10 = '基本满意' group by areaName
     ) e on e.areaName = a.areaName 
     left join (
-      select areaName, count(1) uv from info_users ${where} and opStatus = 2 and connectType = '已接听' and qa2 = '是' and qa10 = '不满意' group by areaName
+      select areaName, count(1) uv from info_users where id in (
+        select max(id) from (
+        select id, batchName, cert_no from info_users ${where} 
+        union all 
+        select id, REPLACE(batchName,'-二次','') batchName, cert_no from info_users where parent_id in (select id from info_users ${where})) a
+        group by a.batchName, a.cert_no
+      ) and opStatus = 2 and connectType = '已接听' and qa2 = '是' and qa10 = '不满意' group by areaName
     ) f on f.areaName = a.areaName 
     left join (
-      select areaName, count(1) uv from info_users ${where} and opStatus = 2 and connectType = '已接听' and qa2 = '是' and qa10 = '不清楚/不记得' group by areaName
+      select areaName, count(1) uv from info_users where id in (
+        select max(id) from (
+        select id, batchName, cert_no from info_users ${where} 
+        union all 
+        select id, REPLACE(batchName,'-二次','') batchName, cert_no from info_users where parent_id in (select id from info_users ${where})) a
+        group by a.batchName, a.cert_no
+      ) and opStatus = 2 and connectType = '已接听' and qa2 = '是' and qa10 = '不清楚/不记得' group by areaName
     ) g on g.areaName = a.areaName 
     left join (
-      select areaName, count(1) uv from info_users ${where} and opStatus = 2 and connectType = '已接听' and qa2 = '否' and qa13 = '未享受，信息存在' group by areaName
+      select areaName, count(1) uv from info_users where id in (
+        select max(id) from (
+        select id, batchName, cert_no from info_users ${where} 
+        union all 
+        select id, REPLACE(batchName,'-二次','') batchName, cert_no from info_users where parent_id in (select id from info_users ${where})) a
+        group by a.batchName, a.cert_no
+      ) and opStatus = 2 and connectType = '已接听' and qa2 = '否' and qa13 = '未享受，信息存在' group by areaName
     ) h1 on h1.areaName = a.areaName 
     left join (
-      select areaName, count(1) uv from info_users ${where} and opStatus = 2 and connectType = '接通后挂断' group by areaName
+      select areaName, count(1) uv from info_users where id in (
+        select max(id) from (
+        select id, batchName, cert_no from info_users ${where} 
+        union all 
+        select id, REPLACE(batchName,'-二次','') batchName, cert_no from info_users where parent_id in (select id from info_users ${where})) a
+        group by a.batchName, a.cert_no
+      ) and opStatus = 2 and connectType = '接通后挂断' group by areaName
     ) h2 on h2.areaName = a.areaName 
     left join (
-      select areaName, count(1) uv from info_users ${where} and opStatus = 2 and connectType = '已接听' and qa2 = '否' and qa13 = '去世' group by areaName
+      select areaName, count(1) uv from info_users where id in (
+        select max(id) from (
+        select id, batchName, cert_no from info_users ${where} 
+        union all 
+        select id, REPLACE(batchName,'-二次','') batchName, cert_no from info_users where parent_id in (select id from info_users ${where})) a
+        group by a.batchName, a.cert_no
+      ) and opStatus = 2 and connectType = '已接听' and qa2 = '否' and qa13 = '去世' group by areaName
     ) h3 on h3.areaName = a.areaName 
     left join (
-      select areaName, count(1) uv from info_users ${where} and opStatus = 2 and connectType = '已接听' and qa2 = '不清楚/不记得' group by areaName
+      select areaName, count(1) uv from info_users where id in (
+        select max(id) from (
+        select id, batchName, cert_no from info_users ${where} 
+        union all 
+        select id, REPLACE(batchName,'-二次','') batchName, cert_no from info_users where parent_id in (select id from info_users ${where})) a
+        group by a.batchName, a.cert_no
+      ) and opStatus = 2 and connectType = '已接听' and qa2 = '不清楚/不记得' group by areaName
     ) h4 on h4.areaName = a.areaName 
     left join (
-      select areaName, count(1) uv from info_users ${where} and opStatus = 2 and connectType = '无人接听' group by areaName
+      select areaName, count(1) uv from info_users where id in (
+        select max(id) from (
+        select id, batchName, cert_no from info_users ${where} 
+        union all 
+        select id, REPLACE(batchName,'-二次','') batchName, cert_no from info_users where parent_id in (select id from info_users ${where})) a
+        group by a.batchName, a.cert_no
+      ) and opStatus = 2 and connectType = '无人接听' group by areaName
     ) i1 on i1.areaName = a.areaName 
     left join (
-      select areaName, count(1) uv from info_users ${where} and opStatus = 2 and connectType = '信息有误' group by areaName
+      select areaName, count(1) uv from info_users where id in (
+        select max(id) from (
+        select id, batchName, cert_no from info_users ${where} 
+        union all 
+        select id, REPLACE(batchName,'-二次','') batchName, cert_no from info_users where parent_id in (select id from info_users ${where})) a
+        group by a.batchName, a.cert_no
+      ) and opStatus = 2 and connectType = '信息有误' group by areaName
     ) i2 on i2.areaName = a.areaName 
     left join (
-      select areaName, count(1) uv from info_users ${where} and opStatus = 2 and connectType = '关机' group by areaName
+      select areaName, count(1) uv from info_users where id in (
+        select max(id) from (
+        select id, batchName, cert_no from info_users ${where} 
+        union all 
+        select id, REPLACE(batchName,'-二次','') batchName, cert_no from info_users where parent_id in (select id from info_users ${where})) a
+        group by a.batchName, a.cert_no
+      ) and opStatus = 2 and connectType = '关机' group by areaName
     ) i3 on i3.areaName = a.areaName 
     left join (
-      select areaName, count(1) uv from info_users ${where} and opStatus = 2 and connectType = '空号' group by areaName
+      select areaName, count(1) uv from info_users where id in (
+        select max(id) from (
+        select id, batchName, cert_no from info_users ${where} 
+        union all 
+        select id, REPLACE(batchName,'-二次','') batchName, cert_no from info_users where parent_id in (select id from info_users ${where})) a
+        group by a.batchName, a.cert_no
+      ) and opStatus = 2 and connectType = '空号' group by areaName
     ) i4 on i4.areaName = a.areaName 
     left join (
-      select areaName, count(1) uv from info_users ${where} and opStatus = 2 and connectType = '停机' group by areaName
+      select areaName, count(1) uv from info_users where id in (
+        select max(id) from (
+        select id, batchName, cert_no from info_users ${where} 
+        union all 
+        select id, REPLACE(batchName,'-二次','') batchName, cert_no from info_users where parent_id in (select id from info_users ${where})) a
+        group by a.batchName, a.cert_no
+      ) and opStatus = 2 and connectType = '停机' group by areaName
     ) i5 on i5.areaName = a.areaName 
     left join (
-      select areaName, count(1) uv from info_users ${where} and opStatus = 2 and connectType = '限制呼入' group by areaName
+      select areaName, count(1) uv from info_users where id in (
+        select max(id) from (
+        select id, batchName, cert_no from info_users ${where} 
+        union all 
+        select id, REPLACE(batchName,'-二次','') batchName, cert_no from info_users where parent_id in (select id from info_users ${where})) a
+        group by a.batchName, a.cert_no
+      ) and opStatus = 2 and connectType = '限制呼入' group by areaName
     ) i6 on i6.areaName = a.areaName`;
 
     let result1 = await ctx.orm().query(sql1);
