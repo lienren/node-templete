@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2022-06-27 07:38:29
+ * @LastEditTime: 2022-06-27 12:11:22
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/samp/rearend.js
@@ -265,7 +265,9 @@ module.exports = {
         }
       },
       {
-        connectType: '无人接听',
+        connectType: {
+          $in: ['接通后挂断', '无人接听', '关机']
+        },
         cusConnectNum: {
           $gte: 3
         }
@@ -492,7 +494,7 @@ module.exports = {
         , qa12: user.qa12
         , qa13: user.qa13
         , cusTime: user.cusTime
-        , cusConnectNum: user.cusConnectNum
+        , cusConnectNum: 0
         , areaName: user.areaName
         , streetName: user.streetName
         , summary: user.summary
