@@ -62,7 +62,7 @@ let postToUpPost = {
   '国内旅客运输相关从业人员': '11',
   '港口、船舶等登临国际航行船舶作业人员': '12',
   '移民、海关及市场监管系统一线人员': '18.1',
-  '移民、海关、民航、港口非一线人员': '18.2',
+  '移民、海关、民航、港口非一线人员': '13',
   '接触进口冷链食品人员': '22.2',
   '接触进口货物人员': '23.1',
   '接触国际邮件快件人员': '24',
@@ -131,11 +131,11 @@ let depToUpDep = {
   '公安分局': 'GA0',
   '科技创新局': '',
   '规划和自然资源局': '',
-  '教育和社会保障局': '',
-  '行政审批局': '',
-  '宣传和统战部': '',
+  '教育和社会保障局': 'JY0',
+  '行政审批局': 'ZWB',
+  '宣传和统战部': 'WL0',
   '教培机构': '',
-  '市场监督管理局': '',
+  '市场监督管理局': 'SJ0',
   '大厂街道(医)': 'WJW',
   '教育(医)': 'WJW',
   '民政(医)': 'WJW',
@@ -296,6 +296,114 @@ async function getSuccessed () {
 
 async function getUpUsers () {
   console.log('up user send data:%s', date.formatDate());
+
+  while (true) {
+    let removeUsers = await ctx.orm().info_users.findAll({
+      limit: 1,
+      where: {
+        isUp: 0,
+        userType: '迁移'
+      }
+    })
+
+    if (removeUsers && removeUsers.length > 0) {
+      if (!upUserToken) {
+        // 没有Token，获取Token
+        // http://yjjj.yqfkpt.njga.gov.cn:9088/common/yjjj/token?lyxt=320112000000
+        let tokenRep = await http.get({
+          url: 'http://yjjj.yqfkpt.njga.gov.cn:9088/common/yjjj/token?lyxt=320112000000',
+          data: {}
+        })
+
+        if (tokenRep && tokenRep.data && tokenRep.data.data) {
+          upUserToken = tokenRep.data.data
+          console.log('上传人员信息Token:', upUserToken)
+        }
+      }
+
+      let sendData = {
+        token: upUserToken,
+        lyxt: '320112000000',
+        data: []
+      }
+
+      for (let i = 0, j = removeUsers.length; i < j; i++) {
+        sendData.data.push({
+          xm: removeUsers[i].name,
+          xb: getIdCardSex(removeUsers[i].idcard),
+          zjlx: removeUsers[i].idcard.length === 18 ? 111 : 14,
+          zjhm: removeUsers[i].idcard,
+          sjhm: removeUsers[i].phone,
+          sfzg: 0,
+          zdrqlb: 60,  // 重点人群类别
+          zrbm: 'NUL',// 责任部门
+          sszrqbh: '320112000000',
+          sszrjdbh: streetToUpStreet[removeUsers[i].street],
+          sszrsqbh: communityToUpCommunity[removeUsers[i].community],
+          tyshxydm: '',
+          dwjdbh: streetToUpStreet[removeUsers[i].depStreet],
+          gj: removeUsers[i].idcard.length === 18 ? '中国' : '未知'
+        })
+      }
+
+      if (sendData.data.length > 0) {
+        let upRep = await http.post({
+          url: 'http://yjjj.yqfkpt.njga.gov.cn:9088/common/yjjj/ryAdd',
+          data: sendData
+        })
+
+        console.log('upRep.data:', upRep.data)
+        if (upRep && upRep.data && upRep.data.code === 0) {
+          // 刷新所有isUp状态
+          await ctx.orm().info_users.update({
+            isUp: 1,
+            upTime: date.formatDate(),
+            upRep: '更新成功'
+          }, {
+            where: {
+              id: {
+                $in: removeUsers.map(m => {
+                  return m.dataValues.id
+                })
+              }
+            }
+          })
+        } else {
+          // 刷新所有isUp状态
+          await ctx.orm().info_users.update({
+            isUp: 2,
+            upTime: date.formatDate(),
+            upRep: JSON.stringify(upRep.data)
+          }, {
+            where: {
+              id: {
+                $in: removeUsers.map(m => {
+                  return m.dataValues.id
+                })
+              }
+            }
+          })
+        }
+      } else {
+        // 刷新所有isUp状态
+        await ctx.orm().info_users.update({
+          isUp: 1,
+          upTime: date.formatDate(),
+          upRep: '更新成功'
+        }, {
+          where: {
+            id: {
+              $in: users.map(m => {
+                return m.dataValues.id
+              })
+            }
+          }
+        })
+      }
+    } else {
+      break;
+    }
+  }
 
   while (true) {
     let users = await ctx.orm().info_users.findAll({
