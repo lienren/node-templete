@@ -369,20 +369,36 @@ async function getUpUsers () {
             }
           })
         } else {
-          // 刷新所有isUp状态
-          await ctx.orm().info_users.update({
-            isUp: 2,
-            upTime: date.formatDate(),
-            upRep: JSON.stringify(upRep.data)
-          }, {
-            where: {
-              id: {
-                $in: removeUsers.map(m => {
-                  return m.dataValues.id
-                })
+          try {
+            // 刷新所有isUp状态
+            await ctx.orm().info_users.update({
+              isUp: 2,
+              upTime: date.formatDate(),
+              upRep: JSON.stringify(upRep.data)
+            }, {
+              where: {
+                id: {
+                  $in: removeUsers.map(m => {
+                    return m.dataValues.id
+                  })
+                }
               }
-            }
-          })
+            })
+          } catch (error) {
+            await ctx.orm().info_users.update({
+              isUp: 2,
+              upTime: date.formatDate(),
+              upRep: upRep.data
+            }, {
+              where: {
+                id: {
+                  $in: removeUsers.map(m => {
+                    return m.dataValues.id
+                  })
+                }
+              }
+            })
+          }
         }
       } else {
         // 刷新所有isUp状态
@@ -483,19 +499,36 @@ async function getUpUsers () {
           })
         } else {
           // 刷新所有isUp状态
-          await ctx.orm().info_users.update({
-            isUp: 2,
-            upTime: date.formatDate(),
-            upRep: JSON.stringify(upRep.data)
-          }, {
-            where: {
-              id: {
-                $in: users.map(m => {
-                  return m.dataValues.id
-                })
+          try {
+            await ctx.orm().info_users.update({
+              isUp: 2,
+              upTime: date.formatDate(),
+              upRep: JSON.stringify(upRep.data)
+            }, {
+              where: {
+                id: {
+                  $in: users.map(m => {
+                    return m.dataValues.id
+                  })
+                }
               }
-            }
-          })
+            })
+          } catch (error) {
+            await ctx.orm().info_users.update({
+              isUp: 2,
+              upTime: date.formatDate(),
+              upRep: upRep.data
+            }, {
+              where: {
+                id: {
+                  $in: users.map(m => {
+                    return m.dataValues.id
+                  })
+                }
+              }
+            })
+          }
+
         }
       } else {
         // 刷新所有isUp状态
