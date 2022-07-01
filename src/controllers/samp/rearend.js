@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2022-06-27 12:11:22
+ * @LastEditTime: 2022-07-01 09:37:54
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/samp/rearend.js
@@ -1266,6 +1266,144 @@ module.exports = {
     let xlsxObj = [];
     xlsxObj.push({
       name: '回访数据',
+      data: []
+    })
+
+    xlsxObj[0].data.push([
+      '序号',
+      '回访日期',
+      '话务员姓名',
+      '服务对象',
+      '联系电话',
+      '身份证',
+      '年龄',
+      '性别',
+      '现居住地址',
+      '服务地址',
+      '服务项目',
+      '服务人员',
+      '服务组织',
+      '开始时间',
+      '结束时间',
+      '服务时长(分钟)',
+      '现居住县区市',
+      '是否为本人',
+      '是否享受上门服务',
+      '享受服务项目',
+      '服务次数/月',
+      '服务时长/次',
+      '服务人员是否固定',
+      '服务人员是否着工作服、戴工牌',
+      '服务员是否留下联系方式',
+      '是否清楚提供服务的组织名称',
+      '对服务人员整体评价',
+      '服务意见和建议',
+      '备注',
+      '总结'
+    ])
+
+    for (let i = 0, j = users.length; i < j; i++) {
+      let user = users[i];
+
+      let arr = new Array();
+      arr.push(user.id);
+      arr.push(user.cusTime);
+      arr.push(user.cusName);
+      arr.push(user.name);
+      arr.push(user.tel);
+      arr.push(user.cert_no);
+      arr.push(user.age);
+      arr.push(user.sex);
+      arr.push(user.address);
+      arr.push(user.aap0112);
+      arr.push(user.cag0104);
+      arr.push(user.bbp0103);
+      arr.push(user.bae0104);
+      arr.push(user.cbp0107);
+      arr.push(user.cbp0108);
+      arr.push(user.cbp0113);
+      arr.push(user.addr_area);
+      arr.push(user.qa1);
+      arr.push(user.qa2);
+      arr.push(user.qa3);
+      arr.push(user.qa4);
+      arr.push(user.qa5);
+      arr.push(user.qa6);
+      arr.push(user.qa7);
+      arr.push(user.qa8);
+      arr.push(user.qa9);
+      arr.push(user.qa10);
+      arr.push(user.qa11);
+      arr.push(user.qa12);
+      arr.push(user.summary);
+
+      xlsxObj[0].data.push(arr)
+    }
+
+    let excelFile = await excel.exportBigMoreSheetExcel(xlsxObj)
+
+    // ctx.set('Content-Type', 'application/vnd.openxmlformats');
+    // ctx.set('Access-Control-Expose-Headers', 'Content-Disposition')
+    // ctx.set('Content-Disposition', 'attachment; filename=' + 'orders_export.xlsx');
+    ctx.body = excelFile;
+  },
+  exportErrorUsers: async ctx => {
+    let { batch_no, batchName, name, tel, cert_no, createTime, updateTime, cusTime, cusId, cusName, opStatus, opStatusName, connectType, connectTypes, depName } = ctx.request.body;
+
+    let where = {};
+
+    Object.assign(where, batch_no && { batch_no })
+    Object.assign(where, batchName && { batchName })
+    Object.assign(where, name && { name })
+    Object.assign(where, tel && { tel })
+    Object.assign(where, cert_no && { cert_no })
+    Object.assign(where, cusId && { cusId })
+    Object.assign(where, cusName && { cusName })
+    Object.assign(where, opStatus && { opStatus })
+    Object.assign(where, opStatusName && { opStatusName })
+    Object.assign(where, connectType && { connectType })
+    Object.assign(where, depName && { areaName: depName })
+
+    if (createTime && createTime.length > 0) {
+      where.createTime = { $between: [`${createTime[0]} 00:00:00`, `${createTime[1]} 23:59:59`] }
+    }
+
+    if (updateTime && updateTime.length > 0) {
+      where.updateTime = { $between: [`${updateTime[0]} 00:00:00`, `${updateTime[1]} 23:59:59`] }
+    }
+
+    if (cusTime && cusTime.length > 0) {
+      where.cusTime = { $between: [`${cusTime[0]} 00:00:00`, `${cusTime[1]} 23:59:59`] }
+    }
+
+    where.qa_num = 1
+    where.is_repair = 0
+    where.$or = [
+      {
+        connectType: {
+          $in: ['信息有误', '空号', '停机', '限制呼入']
+        }
+      },
+      {
+        connectType: {
+          $in: ['接通后挂断', '无人接听', '关机']
+        },
+        cusConnectNum: {
+          $gte: 3
+        }
+      }
+    ]
+
+    let users = await ctx.orm().info_users.findAll({
+      where,
+      order: [
+        ['id', 'desc']
+      ]
+    });
+
+    let xlsxObj = [];
+    xlsxObj.push({
+      name: '异常数据',
       data: []
     })
 
