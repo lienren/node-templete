@@ -1562,6 +1562,56 @@ async function autoSysSamp () {
   await ctx.orm().query(sql2, {}, { type: ctx.orm().sequelize.QueryTypes.INSERT });
 }
 
+async function autoSysSampUpdate () {
+  console.log('auto sys samp update data:%s', date.formatDate());
+
+  let samps = await ctx.orm().info_user_samps.findAll({
+    where: {
+      handleType: '未采样',
+      isPlan: '计划内',
+      createTime: {
+        $between: ['2022-06-01', date.formatDate(new Date(), 'YYYY-MM-DD')]
+      }
+    }
+  })
+
+  if (samps) {
+    for (let i = 0, j = samps.length; i < j; i++) {
+      let samp = samps[i]
+      let user = await ctx.orm().info_users.findOne({
+        where: {
+          id: samp.userId
+        }
+      })
+
+      if (user && user.depId > 2) {
+        let sql = `select * from samp.sys_samp_data where user_idcard = '${user.idcard}' and samp_date between '${samp.startTime} 00:00:00' and '${samp.endTime} 23:59:59' limit 1`;
+
+        let result = await ctx.orm().query(sql);
+        if (result && result.length > 0) {
+          console.log('更新采样数据（根据省系统数据）:%s, %s, %s, %s', user.idcard, result[0].samp_date, samp.id, date.formatDate());
+          await ctx.orm().info_user_samps.update({
+            sampWay: result[0].samp_mode,
+            handleType: '已采样',
+            handleTime: result[0].samp_date,
+            handleCount: 1,
+            sampName: result[0].test_facility,
+            sampUserName: result[0].if_user_name,
+            remark: '获取省系统数据自动更新'
+          }, {
+            where: {
+              id: samp.id,
+              handleType: '未采样'
+            }
+          })
+        }
+      }
+    }
+  }
+
+  console.log('auto sys samp update data:%s', date.formatDate());
+}
+
 let idcards = [
   /*'130224198011241561',
   '142601197301297375',
@@ -2093,8 +2143,14 @@ async function main () {
   // autoWarnSendMsg()
   // })
 
+  // 每天12点自动更新采样数据（根据省系统数据）
+  schedule.scheduleJob('0 0 12 * * *', function () {
+    autoSysSampUpdate()
+  })
+
   // handleTmp();
-  getUpUsers()
+  // getUpUsers()
+  autoSysSampUpdate()
 }
 
 process.on('SIGINT', function () {
