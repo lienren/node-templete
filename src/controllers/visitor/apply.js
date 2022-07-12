@@ -205,9 +205,6 @@ module.exports = {
   },
   getApplyList: async ctx => {
     let openId = ctx.request.body.openId || '';
-    let verifyAdminId1 = ctx.request.body.verifyAdminId1 || '';
-    let verifyAdminId2 = ctx.request.body.verifyAdminId2 || '';
-    let status = ctx.request.body.status || [];
     let pageIndex = ctx.request.body.pageIndex || 1;
     let pageSize = ctx.request.body.pageSize || 50;
 
@@ -217,73 +214,39 @@ module.exports = {
 
     if (openId) {
       where.openId = openId
-    }
 
-    if (verifyAdminId1) {
-      where.verifyAdminId1 = {
-        $like: `%,${verifyAdminId1},%`
-      }
-    }
+      let result = await ctx.orm().applyInfo.findAndCountAll({
+        offset: (pageIndex - 1) * pageSize,
+        limit: pageSize,
+        where,
+        order: [
+          ['createTime', 'desc']
+        ]
+      });
 
-    if (verifyAdminId2) {
-      let admin = ctx.orm().SuperManagerInfo.findOne({
-        where: {
-          id: parseInt(verifyAdminId2),
-          depName: '保卫处',
-          isDel: 0
+      // 过滤超期一级未审核和二级未审核
+      let data = result.rows.filter((f) => {
+        if (f.dataValues.status === 1 || f.dataValues.status === 2) {
+          return date.getTimeStamp() <= date.timeToTimeStamp(date.formatDate(f.dataValues.visitorEndTime, 'YYYY-MM-DD') + ' ' + f.dataValues.visitorEndTimeNum + ':00');
         }
-      })
 
-      if (admin != null && status.includes(4)) {
-        where.$or = [{
-          visitorDepartment: '校级访客通道'
-        }, {
-          verifyAdminId2: {
-            $like: `%,${verifyAdminId2},%`
-          }
-        }]
-      } else {
-        where.verifyAdminId2 = {
-          $like: `%,${verifyAdminId2},%`
+        return true;
+      });
+
+      ctx.body = data.map(m => {
+        return {
+          ...m.dataValues,
+          _visitorTime: m.dataValues.visitorTime,
+          visitorTime: date.formatDate(m.dataValues.visitorTime, 'YYYY年MM月DD日'),
+          _visitorEndTime: m.dataValues.visitorEndTime,
+          visitorEndTime: date.formatDate(m.dataValues.visitorEndTime, 'YYYY年MM月DD日'),
+          createTime: date.formatDate(m.dataValues.createTime, 'YYYY年MM月DD日 HH:mm:ss'),
+          updateTime: date.formatDate(m.dataValues.updateTime, 'YYYY年MM月DD日 HH:mm:ss')
         }
-      }
+      });
+    } else {
+      ctx.body = [];
     }
-
-    if (status.length > 0) {
-      where.status = {
-        $in: status
-      }
-    }
-
-    let result = await ctx.orm().applyInfo.findAndCountAll({
-      offset: (pageIndex - 1) * pageSize,
-      limit: pageSize,
-      where,
-      order: [
-        ['createTime', 'desc']
-      ]
-    });
-
-    // 过滤超期一级未审核和二级未审核
-    let data = result.rows.filter((f) => {
-      if (f.dataValues.status === 1 || f.dataValues.status === 2) {
-        return date.getTimeStamp() <= date.timeToTimeStamp(date.formatDate(f.dataValues.visitorEndTime, 'YYYY-MM-DD') + ' ' + f.dataValues.visitorEndTimeNum + ':00');
-      }
-
-      return true;
-    });
-
-    ctx.body = data.map(m => {
-      return {
-        ...m.dataValues,
-        _visitorTime: m.dataValues.visitorTime,
-        visitorTime: date.formatDate(m.dataValues.visitorTime, 'YYYY年MM月DD日'),
-        _visitorEndTime: m.dataValues.visitorEndTime,
-        visitorEndTime: date.formatDate(m.dataValues.visitorEndTime, 'YYYY年MM月DD日'),
-        createTime: date.formatDate(m.dataValues.createTime, 'YYYY年MM月DD日 HH:mm:ss'),
-        updateTime: date.formatDate(m.dataValues.updateTime, 'YYYY年MM月DD日 HH:mm:ss')
-      }
-    });
   },
   getApplyVerifyList: async ctx => {
     let openId = ctx.request.body.openId || '';
