@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2022-05-28 11:24:05
+ * @LastEditTime: 2022-07-13 13:30:09
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/samp/rearend.js
@@ -1519,7 +1519,7 @@ module.exports = {
   },
   exportUsers: async ctx => {
     let { tradeTypes, postNames, depName1s, depName2s, depStreet, name, phone, idcard, tradeType, postName, periodType, street, community, streets, communitys, address, userType,
-      sampStartTime, sampName, sampUserName, sampHandleTime, createTime, updateTime } = ctx.request.body;
+      sampStartTime, sampName, sampUserName, sampHandleTime, createTime, updateTime, isRegular } = ctx.request.body;
 
     let where = {};
 
@@ -1535,6 +1535,11 @@ module.exports = {
     Object.assign(where, community && { community })
     Object.assign(where, sampName && { sampName })
     Object.assign(where, sampUserName && { sampUserName })
+    Object.assign(where, isRegular && { isRegular })
+
+    if (isRegular === 0) {
+      where.isRegular = isRegular
+    }
 
     if (tradeTypes && tradeTypes.length > 0) {
       where.tradeType = {
@@ -1743,7 +1748,8 @@ module.exports = {
       '最新采样人姓名',
       '最新采样时间',
       '创建时间',
-      '最后修改时间'
+      '最后修改时间',
+      '是否合格'
     ])
 
     xlsxObj[1].data.push([
@@ -1794,6 +1800,14 @@ module.exports = {
       arr.push(user.sampHandleTime);
       arr.push(user.createTime);
       arr.push(user.updateTime);
+
+      if (user.isRegular === 0) {
+        arr.push('不合格');
+      } else if (user.isRegular === 1) {
+        arr.push('合格');
+      } else {
+        arr.push('不计算');
+      }
 
       xlsxObj[0].data.push(arr)
     }
