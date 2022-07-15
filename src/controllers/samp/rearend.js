@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2022-07-13 13:30:09
+ * @LastEditTime: 2022-07-15 07:52:10
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/samp/rearend.js
@@ -1604,118 +1604,118 @@ module.exports = {
     });
 
     let samps = []
-    if (users && users.length > 0) {
-      let where1 = '';
-
-      if (tradeTypes && tradeTypes.length > 0) {
-        where1 += ' and u.tradeType in (' + tradeTypes.map(m => {
-          return `'${m}'`
-        }).join(',') + ')';
-      }
-
-      if (postNames && postNames.length > 0) {
-        where1 += ' and u.postName in (' + postNames.map(m => {
-          return `'${m}'`
-        }).join(',') + ')';
-      }
-
-      if (depName1s && depName1s.length > 0) {
-        where1 += ' and u.depName1 in (' + depName1s.map(m => {
-          return `'${m}'`
-        }).join(',') + ')';
-      }
-
-      if (depName2s && depName2s.length > 0) {
-        where1 += ' and u.depName2 in (' + depName2s.map(m => {
-          return `'${m}'`
-        }).join(',') + ')';
-      }
-
-      if (depStreet) {
-        where1 += ` and u.depStreet = '${depStreet}'`;
-      }
-
-      if (name) {
-        where1 += ` and u.name = '${name}'`;
-      }
-
-      if (phone) {
-        where1 += ` and u.phone = '${phone}'`;
-      }
-
-      if (idcard) {
-        where1 += ` and u.idcard = '${idcard}'`;
-      }
-
-      if (tradeType) {
-        where1 += ` and u.tradeType = '${tradeType}'`;
-      }
-
-      if (postName) {
-        where1 += ` and u.postName = '${postName}'`;
-      }
-
-      if (periodType) {
-        where1 += ` and u.periodType = '${periodType}'`;
-      }
-
-      if (street) {
-        where1 += ` and u.street = '${street}'`;
-      }
-
-      if (community) {
-        where1 += ` and u.community = '${community}'`;
-      }
-
-      if (streets && streets.length > 0) {
-        where1 += ' and u.street in (' + streets.map(m => {
-          return `'${m}'`
-        }).join(',') + ')';
-      }
-
-      if (communitys && communitys.length > 0) {
-        where1 += ' and u.community in (' + communitys.map(m => {
-          return `'${m}'`
-        }).join(',') + ')';
-      }
-
-      if (address) {
-        where1 += ` and u.address like '%${address}%'`;
-      }
-
-      if (userType) {
-        where1 += ` and u.userType = '${userType}'`;
-      }
-
-      if (sampStartTime && sampStartTime.length > 0) {
-        where1 += ` and u.sampStartTime between '${sampStartTime[0]}' and '${sampStartTime[1]}'`;
-      }
-
-      if (sampName) {
-        where1 += ` and u.sampName = '${sampName}'`;
-      }
-
-      if (sampUserName) {
-        where1 += ` and u.sampUserName = '${sampUserName}'`;
-      }
-
-      if (sampHandleTime && sampHandleTime.length > 0) {
-        where1 += ` and u.sampHandleTime between '${sampHandleTime[0]}' and '${sampHandleTime[1]}'`;
-      }
-
-      if (createTime && createTime.length > 0) {
-        where1 += ` and u.createTime between '${createTime[0]}' and '${createTime[1]}'`;
-      }
-
-      if (updateTime && updateTime.length > 0) {
-        where1 += ` and u.updateTime between '${updateTime[0]}' and '${updateTime[1]}'`;
-      }
-
-      let sql1 = `select s.*, u.depName1, u.depName2, u.depStreet, u.name, u.phone, u.idcard, u.street, u.community, u.address from info_user_samps s 
-      inner join info_users u on u.id = s.userId 
-      where 1=1 ${where1}`;
-      samps = await ctx.orm().query(sql1);
-    }
+    // if (users && users.length > 0) {
+    //   let where1 = '';
+    // 
+    //   if (tradeTypes && tradeTypes.length > 0) {
+    //     where1 += ' and u.tradeType in (' + tradeTypes.map(m => {
+    //       return `'${m}'`
+    //     }).join(',') + ')';
+    //   }
+    // 
+    //   if (postNames && postNames.length > 0) {
+    //     where1 += ' and u.postName in (' + postNames.map(m => {
+    //       return `'${m}'`
+    //     }).join(',') + ')';
+    //   }
+    // 
+    //   if (depName1s && depName1s.length > 0) {
+    //     where1 += ' and u.depName1 in (' + depName1s.map(m => {
+    //       return `'${m}'`
+    //     }).join(',') + ')';
+    //   }
+    // 
+    //   if (depName2s && depName2s.length > 0) {
+    //     where1 += ' and u.depName2 in (' + depName2s.map(m => {
+    //       return `'${m}'`
+    //     }).join(',') + ')';
+    //   }
+    // 
+    //   if (depStreet) {
+    //     where1 += ` and u.depStreet = '${depStreet}'`;
+    //   }
+    // 
+    //   if (name) {
+    //     where1 += ` and u.name = '${name}'`;
+    //   }
+    // 
+    //   if (phone) {
+    //     where1 += ` and u.phone = '${phone}'`;
+    //   }
+    // 
+    //   if (idcard) {
+    //     where1 += ` and u.idcard = '${idcard}'`;
+    //   }
+    // 
+    //   if (tradeType) {
+    //     where1 += ` and u.tradeType = '${tradeType}'`;
+    //   }
+    // 
+    //   if (postName) {
+    //     where1 += ` and u.postName = '${postName}'`;
+    //   }
+    // 
+    //   if (periodType) {
+    //     where1 += ` and u.periodType = '${periodType}'`;
+    //   }
+    // 
+    //   if (street) {
+    //     where1 += ` and u.street = '${street}'`;
+    //   }
+    // 
+    //   if (community) {
+    //     where1 += ` and u.community = '${community}'`;
+    //   }
+    // 
+    //   if (streets && streets.length > 0) {
+    //     where1 += ' and u.street in (' + streets.map(m => {
+    //       return `'${m}'`
+    //     }).join(',') + ')';
+    //   }
+    // 
+    //   if (communitys && communitys.length > 0) {
+    //     where1 += ' and u.community in (' + communitys.map(m => {
+    //       return `'${m}'`
+    //     }).join(',') + ')';
+    //   }
+    // 
+    //   if (address) {
+    //     where1 += ` and u.address like '%${address}%'`;
+    //   }
+    // 
+    //   if (userType) {
+    //     where1 += ` and u.userType = '${userType}'`;
+    //   }
+    // 
+    //   if (sampStartTime && sampStartTime.length > 0) {
+    //     where1 += ` and u.sampStartTime between '${sampStartTime[0]}' and '${sampStartTime[1]}'`;
+    //   }
+    // 
+    //   if (sampName) {
+    //     where1 += ` and u.sampName = '${sampName}'`;
+    //   }
+    // 
+    //   if (sampUserName) {
+    //     where1 += ` and u.sampUserName = '${sampUserName}'`;
+    //   }
+    // 
+    //   if (sampHandleTime && sampHandleTime.length > 0) {
+    //     where1 += ` and u.sampHandleTime between '${sampHandleTime[0]}' and '${sampHandleTime[1]}'`;
+    //   }
+    // 
+    //   if (createTime && createTime.length > 0) {
+    //     where1 += ` and u.createTime between '${createTime[0]}' and '${createTime[1]}'`;
+    //   }
+    // 
+    //   if (updateTime && updateTime.length > 0) {
+    //     where1 += ` and u.updateTime between '${updateTime[0]}' and '${updateTime[1]}'`;
+    //   }
+    // 
+    //   let sql1 = `select s.*, u.depName1, u.depName2, u.depStreet, u.name, u.phone, u.idcard, u.street, u.community, u.address from info_user_samps s 
+    //   inner join info_users u on u.id = s.userId 
+    //   where 1=1 ${where1}`;
+    //   samps = await ctx.orm().query(sql1);
+    // }
 
     let xlsxObj = [];
     xlsxObj.push({
@@ -1723,10 +1723,10 @@ module.exports = {
       data: []
     })
 
-    xlsxObj.push({
-      name: '采样信息列表',
-      data: []
-    })
+    // xlsxObj.push({
+    //   name: '采样信息列表',
+    //   data: []
+    // })
 
     xlsxObj[0].data.push([
       '编号',
@@ -1752,28 +1752,28 @@ module.exports = {
       '是否合格'
     ])
 
-    xlsxObj[1].data.push([
-      '编号',
-      '部门',
-      '单位',
-      '单位所在街道',
-      '姓名',
-      '手机号',
-      '身份证号',
-      '职业名称',
-      '采样周期',
-      '街道',
-      '社区',
-      '住址',
-      '应采样开始时间',
-      '应采样结束时间',
-      '采样状态',
-      '实际采样时间',
-      '采样点',
-      '采样人',
-      '创建时间',
-      '最后修改时间'
-    ])
+    // xlsxObj[1].data.push([
+    //   '编号',
+    //   '部门',
+    //   '单位',
+    //   '单位所在街道',
+    //   '姓名',
+    //   '手机号',
+    //   '身份证号',
+    //   '职业名称',
+    //   '采样周期',
+    //   '街道',
+    //   '社区',
+    //   '住址',
+    //   '应采样开始时间',
+    //   '应采样结束时间',
+    //   '采样状态',
+    //   '实际采样时间',
+    //   '采样点',
+    //   '采样人',
+    //   '创建时间',
+    //   '最后修改时间'
+    // ])
 
 
     for (let i = 0, j = users.length; i < j; i++) {
