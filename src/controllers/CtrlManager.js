@@ -283,7 +283,7 @@ module.exports = {
     assert.notStrictEqual(id, 0, 'InputParamIsNull');
     assert.notStrictEqual(loginName, '', 'InputParamIsNull');
     assert.notStrictEqual(realName, '', 'InputParamIsNull');
-    assert.notStrictEqual(phone, '', 'InputParamIsNull');
+    // assert.notStrictEqual(phone, '', 'InputParamIsNull');
 
     // 超级管理员禁止更新
     assert.notStrictEqual(id, 1, 'SuperManagerNotUpdate');
