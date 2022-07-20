@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2022-07-01 09:37:54
+ * @LastEditTime: 2022-07-20 08:37:56
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/samp/rearend.js
@@ -17,6 +17,8 @@ const sequelize = require('sequelize');
 const comm = require('../../utils/comm');
 const date = require('../../utils/date');
 const excel = require('../../utils/excel');
+
+const configData = require('../ConfigData');
 
 const opStatusNameEnum = {
   1: '未回访',
@@ -412,7 +414,8 @@ module.exports = {
 
     let user = await ctx.orm().info_users.findOne({
       where: {
-        id
+        id,
+        is_repair: 0
       }
     })
 
@@ -1783,5 +1786,26 @@ module.exports = {
         id: user.id
       }
     })
-  }
+  },
+  getUpdateErrorSwitch: async ctx => {
+    let updateErrorSwitch = await configData.getConfig(ctx, 'UpdateErrorSwitch');
+
+    ctx.body = {
+      val: updateErrorSwitch
+    }
+  },
+  setUpdateErrorSwitch: async ctx => {
+    let { val } = ctx.request.body;
+
+    await ctx.orm().BaseConfig.update({
+      value: val,
+      lasttime: date.getTimeStamp()
+    }, {
+      where: {
+        key: 'UpdateErrorSwitch'
+      }
+    })
+
+    ctx.body = {}
+  },
 };
