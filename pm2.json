@@ -1,7 +1,7 @@
 {
   "apps": [
     {
-      "name": "samp",
+      "name": "eldercheck",
       "script": "./src/app.js",
       "watch": false,
       "ignore_watch": ["node_modules", "build", "logs"],
