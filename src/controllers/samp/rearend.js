@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2022-07-20 08:37:56
+ * @LastEditTime: 2022-07-27 06:07:44
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/samp/rearend.js
@@ -288,6 +288,51 @@ module.exports = {
     ctx.body = {
       total: result.count,
       list: result.rows,
+      pageIndex,
+      pageSize
+    }
+  },
+  getIntegrateUsers: async ctx => {
+    let pageIndex = ctx.request.body.pageIndex || 1;
+    let pageSize = ctx.request.body.pageSize || 50;
+    let { batchName, cert_no, depName } = ctx.request.body;
+
+    let where = ' where 1=1'
+
+    if (batchName) {
+      where += ` and batchName='${batchName}'`
+    }
+
+    if (cert_no) {
+      where += ` and cert_no='${cert_no}'`
+    }
+
+    if (depName) {
+      where += ` and areaName='${depName}'`
+    }
+
+    let sql1 = `select count(1) num from info_users where id in (
+      select max(id) from (
+      select id, batchName, cert_no from info_users ${where} 
+      union all 
+      select id, REPLACE(batchName,'-二次','') batchName, cert_no from info_users where parent_id in (select id from info_users ${where})) x 
+      group by x.batchName, x.cert_no
+    )`
+
+    let sql2 = `select * from info_users where id in (
+      select max(id) from (
+      select id, batchName, cert_no from info_users ${where} 
+      union all 
+      select id, REPLACE(batchName,'-二次','') batchName, cert_no from info_users where parent_id in (select id from info_users ${where})) x 
+      group by x.batchName, x.cert_no
+    ) order by id desc limit ${(pageIndex - 1) * pageSize}, ${pageSize}`
+
+    let result1 = await ctx.orm().query(sql1);
+    let result2 = await ctx.orm().query(sql2);
+
+    ctx.body = {
+      total: result1.length > 0 ? result1[0].num : 0,
+      list: result2,
       pageIndex,
       pageSize
     }
@@ -1445,6 +1490,117 @@ module.exports = {
 
     for (let i = 0, j = users.length; i < j; i++) {
       let user = users[i];
+
+      let arr = new Array();
+      arr.push(user.id);
+      arr.push(user.cusTime);
+      arr.push(user.cusName);
+      arr.push(user.name);
+      arr.push(user.tel);
+      arr.push(user.cert_no);
+      arr.push(user.age);
+      arr.push(user.sex);
+      arr.push(user.address);
+      arr.push(user.aap0112);
+      arr.push(user.cag0104);
+      arr.push(user.bbp0103);
+      arr.push(user.bae0104);
+      arr.push(user.cbp0107);
+      arr.push(user.cbp0108);
+      arr.push(user.cbp0113);
+      arr.push(user.addr_area);
+      arr.push(user.qa1);
+      arr.push(user.qa2);
+      arr.push(user.qa3);
+      arr.push(user.qa4);
+      arr.push(user.qa5);
+      arr.push(user.qa6);
+      arr.push(user.qa7);
+      arr.push(user.qa8);
+      arr.push(user.qa9);
+      arr.push(user.qa10);
+      arr.push(user.qa11);
+      arr.push(user.qa12);
+      arr.push(user.summary);
+
+      xlsxObj[0].data.push(arr)
+    }
+
+    let excelFile = await excel.exportBigMoreSheetExcel(xlsxObj)
+
+    // ctx.set('Content-Type', 'application/vnd.openxmlformats');
+    // ctx.set('Access-Control-Expose-Headers', 'Content-Disposition')
+    // ctx.set('Content-Disposition', 'attachment; filename=' + 'orders_export.xlsx');
+    ctx.body = excelFile;
+  },
+  exportIntegrateUsers: async ctx => {
+    let { batchName, cert_no, depName } = ctx.request.body;
+
+    let where = ' where 1=1'
+
+    if (batchName) {
+      where += ` and batchName='${batchName}'`
+    }
+
+    if (cert_no) {
+      where += ` and cert_no='${cert_no}'`
+    }
+
+    if (depName) {
+      where += ` and areaName='${depName}'`
+    }
+
+    let sql2 = `select * from info_users where id in (
+      select max(id) from (
+      select id, batchName, cert_no from info_users ${where} 
+      union all 
+      select id, REPLACE(batchName,'-二次','') batchName, cert_no from info_users where parent_id in (select id from info_users ${where})) x 
+      group by x.batchName, x.cert_no
+    ) order by id desc`
+
+    let result2 = await ctx.orm().query(sql2);
+
+    let xlsxObj = [];
+    xlsxObj.push({
+      name: '回访数据',
+      data: []
+    })
+
+    xlsxObj[0].data.push([
+      '序号',
+      '回访日期',
+      '话务员姓名',
+      '服务对象',
+      '联系电话',
+      '身份证',
+      '年龄',
+      '性别',
+      '现居住地址',
+      '服务地址',
+      '服务项目',
+      '服务人员',
+      '服务组织',
+      '开始时间',
+      '结束时间',
+      '服务时长(分钟)',
+      '现居住县区市',
+      '是否为本人',
+      '是否享受上门服务',
+      '享受服务项目',
+      '服务次数/月',
+      '服务时长/次',
+      '服务人员是否固定',
+      '服务人员是否着工作服、戴工牌',
+      '服务员是否留下联系方式',
+      '是否清楚提供服务的组织名称',
+      '对服务人员整体评价',
+      '服务意见和建议',
+      '备注',
+      '总结'
+    ])
+
+    for (let i = 0, j = result2.length; i < j; i++) {
+      let user = result2[i];
 
       let arr = new Array();
       arr.push(user.id);
