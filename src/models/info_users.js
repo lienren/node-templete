@@ -127,6 +127,10 @@ module.exports = function(sequelize, DataTypes) {
     regularTime: {
       type: DataTypes.DATE,
       allowNull: true
+    },
+    tyshxydm: {
+      type: DataTypes.STRING(50),
+      allowNull: true
     }
   }, {
     tableName: 'info_users'

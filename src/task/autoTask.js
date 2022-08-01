@@ -60,9 +60,9 @@ let postToUpPost = {
   '新住院患者及其陪护': '10',
   '国际交通运输人员（含保洁、地勤）': '13',
   '国内旅客运输、城市公共交通、出租车（含网约车）一线从业人员': '23',
-  '港口、船舶等登临国际航行船舶作业人员': '20',
+  '港口、船舶等登临国际航行船舶作业人员': '20.1',
   '移民、海关及市场监管系统一线人员': '16.1',
-  '移民、海关、民航、港口非一线人员': '16.2',
+  '移民、海关、民航、港口非一线人员': '20.2',
   '接触进口冷链食品人员': '26.3',
   '装卸、搬运、仓管、保洁、消杀进口货物人员': '27.2',
   '接触国际邮件快件人员': '29',
@@ -328,7 +328,7 @@ async function getUpUsers () {
           zjhm: removeUsers[i].idcard,
           sjhm: removeUsers[i].phone,
           sfzg: 0,
-          zdrqlb: 60,  // 重点人群类别
+          zdrqlb: 54,  // 重点人群类别
           zrbm: 'NUL',// 责任部门
           sszrqbh: '320112000000',
           sszrjdbh: streetToUpStreet[removeUsers[i].street],
@@ -345,8 +345,8 @@ async function getUpUsers () {
           data: sendData
         })
 
-        console.log('upRep.data:', upRep.data)
-        if (upRep && upRep.data && upRep.data.code === 0) {
+        if (upRep && upRep.data && upRep.data.code === 0 &&
+          upRep.data.data && upRep.data.data.success && upRep.data.data.success.length > 0) {
           // 刷新所有isUp状态
           await ctx.orm().info_users.update({
             isUp: 1,
@@ -362,6 +362,9 @@ async function getUpUsers () {
             }
           })
         } else {
+          console.log('sendData:', sendData)
+          console.log('upRep.data:', upRep.data)
+
           try {
             // 刷新所有isUp状态
             await ctx.orm().info_users.update({
@@ -452,16 +455,16 @@ async function getUpUsers () {
           sendData.data.push({
             xm: users[i].name,
             xb: getIdCardSex(users[i].idcard),
-            zjlx: users[i].idcard.length === 18 ? 111 : 214,
+            zjlx: users[i].idcard.length === 18 ? 111 : 14,
             zjhm: users[i].idcard,
             sjhm: users[i].phone,
             sfzg: users[i].userType === '在线' || users[i].userType === '已设置休假' ? 1 : 0,
             zdrqlb: postToUpPost[users[i].postName],  // 重点人群类别
             zrbm: depToUpDep[users[i].depName1],// 责任部门
             sszrqbh: '320112000000',
-            sszrjdbh: streetToUpStreet[users[i].street],
+            sszrjdbh: users[i].street ? streetToUpStreet[users[i].street] : streetToUpStreet[users[i].depStreet],
             sszrsqbh: communityToUpCommunity[users[i].community],
-            tyshxydm: '',
+            tyshxydm: users[i].tyshxydm,
             dwjdbh: streetToUpStreet[users[i].depStreet],
             gj: users[i].idcard.length === 18 ? '中国' : '未知'
           })
@@ -474,8 +477,8 @@ async function getUpUsers () {
           data: sendData
         })
 
-        console.log('upRep.data:', upRep.data)
-        if (upRep && upRep.data && upRep.data.code === 0) {
+        if (upRep && upRep.data && upRep.data.code === 0 &&
+          upRep.data.data && upRep.data.data.success && upRep.data.data.success.length > 0) {
           // 刷新所有isUp状态
           await ctx.orm().info_users.update({
             isUp: 1,
@@ -491,6 +494,9 @@ async function getUpUsers () {
             }
           })
         } else {
+          console.log('sendData:', sendData)
+          console.log('upRep.data:', upRep.data)
+
           // 刷新所有isUp状态
           try {
             await ctx.orm().info_users.update({
@@ -526,9 +532,9 @@ async function getUpUsers () {
       } else {
         // 刷新所有isUp状态
         await ctx.orm().info_users.update({
-          isUp: 1,
+          isUp: 2,
           upTime: date.formatDate(),
-          upRep: '更新成功'
+          upRep: '更新失败，没有对应职业或对应部门'
         }, {
           where: {
             id: {
@@ -1024,12 +1030,22 @@ async function importUsers () {
       })
 
       if (!dep2) {
-        dep2 = await ctx.orm().info_deps.create({
+        await ctx.orm().tmp_info_users.update({
+          status: 2,
+          remark: '单位不存在！'
+        }, {
+          where: {
+            id: data.id
+          }
+        })
+        continue;
+
+        /* dep2 = await ctx.orm().info_deps.create({
           depName: data.depName2,
           depLevel: 2,
           depStreet: data.depStreet,
           parentId: dep.id
-        })
+        }) */
       }
 
       let post = await ctx.orm().info_posts.findOne({
@@ -1595,6 +1611,16 @@ async function autoSysSampUpdate () {
             where: {
               id: samp.id,
               handleType: '未采样'
+            }
+          })
+
+          await ctx.orm().info_users.update({
+            sampName: result[0].test_facility,
+            sampUserName: result[0].if_user_name,
+            sampHandleTime: result[0].samp_date
+          }, {
+            where: {
+              id: user.id
             }
           })
         }

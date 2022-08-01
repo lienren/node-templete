@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2022-07-15 07:52:10
+ * @LastEditTime: 2022-07-29 06:40:51
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/samp/rearend.js
@@ -64,7 +64,7 @@ module.exports = {
     let pageIndex = ctx.request.body.pageIndex || 1;
     let pageSize = ctx.request.body.pageSize || 50;
     let { tradeTypes, postNames, depName1s, depName2s, depName2, depStreet, name, phone, idcard, tradeType, postName, periodType, street, community, streets, communitys, address, userType,
-      sampStartTime, sampName, sampUserName, sampHandleTime, createTime, updateTime, isRegular } = ctx.request.body;
+      sampStartTime, sampName, sampUserName, sampHandleTime, createTime, updateTime, isRegular, isUp } = ctx.request.body;
 
     let where = {};
 
@@ -82,9 +82,14 @@ module.exports = {
     Object.assign(where, sampName && { sampName })
     Object.assign(where, sampUserName && { sampUserName })
     Object.assign(where, isRegular && { isRegular })
+    Object.assign(where, isUp && { isUp })
 
     if (isRegular === 0) {
       where.isRegular = isRegular
+    }
+
+    if (isUp === 0) {
+      where.isUp = isUp
     }
 
     if (tradeTypes && tradeTypes.length > 0) {
@@ -1519,7 +1524,7 @@ module.exports = {
   },
   exportUsers: async ctx => {
     let { tradeTypes, postNames, depName1s, depName2s, depStreet, name, phone, idcard, tradeType, postName, periodType, street, community, streets, communitys, address, userType,
-      sampStartTime, sampName, sampUserName, sampHandleTime, createTime, updateTime, isRegular } = ctx.request.body;
+      sampStartTime, sampName, sampUserName, sampHandleTime, createTime, updateTime, isRegular, isUp } = ctx.request.body;
 
     let where = {};
 
@@ -1536,9 +1541,14 @@ module.exports = {
     Object.assign(where, sampName && { sampName })
     Object.assign(where, sampUserName && { sampUserName })
     Object.assign(where, isRegular && { isRegular })
+    Object.assign(where, isUp && { isUp })
 
     if (isRegular === 0) {
       where.isRegular = isRegular
+    }
+
+    if (isUp === 0) {
+      where.isUp = isUp
     }
 
     if (tradeTypes && tradeTypes.length > 0) {
@@ -1749,7 +1759,9 @@ module.exports = {
       '最新采样时间',
       '创建时间',
       '最后修改时间',
-      '是否合格'
+      '是否合格',
+      '是否在宁搏疫',
+      '宁搏疫返回结果'
     ])
 
     // xlsxObj[1].data.push([
@@ -1808,6 +1820,16 @@ module.exports = {
       } else {
         arr.push('不计算');
       }
+
+      if (user.isUp === 0) {
+        arr.push('未上传');
+      } else if (user.isUp === 1) {
+        arr.push('已上传');
+      } else {
+        arr.push('上传异常');
+      }
+
+      arr.push(user.upRep);
 
       xlsxObj[0].data.push(arr)
     }
@@ -2030,10 +2052,11 @@ module.exports = {
     ctx.body = excelFile;
   },
   submitDep: async ctx => {
-    let { id, depName, depStreet, parentDepName } = ctx.request.body;
+    let { id, depName, depStreet, tyshxydm, parentDepName } = ctx.request.body;
 
     assert.ok(!!depName, 'InputParamIsNull');
     assert.ok(!!depStreet, 'InputParamIsNull');
+    assert.ok(!!tyshxydm, 'InputParamIsNull');
     assert.ok(!!parentDepName, 'InputParamIsNull');
 
     let parentDep = await ctx.orm().info_deps.findOne({
@@ -2055,18 +2078,35 @@ module.exports = {
 
       await ctx.orm().info_deps.update({
         depName,
-        depStreet
+        depStreet,
+        tyshxydm
       }, {
         where: {
           id: dep.id
         }
       })
 
+      let updateContent = null
       if (dep.depName !== depName) {
-        await ctx.orm().info_users.update({
+        updateContent = {
           depName2: depName,
           isUp: 0
-        }, {
+        }
+      }
+
+      if (dep.tyshxydm !== tyshxydm) {
+        if (updateContent) {
+          updateContent.tyshxydm = tyshxydm
+        } else {
+          updateContent = {
+            tyshxydm: tyshxydm,
+            isUp: 0
+          }
+        }
+      }
+
+      if (updateContent) {
+        await ctx.orm().info_users.update(updateContent, {
           where: {
             depName2: dep.depName
           }

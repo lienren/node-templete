@@ -24,6 +24,10 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.INTEGER(11),
       allowNull: true
     },
+    tyshxydm: {
+      type: DataTypes.STRING(50),
+      allowNull: true
+    },
     createTime: {
       type: DataTypes.DATE,
       allowNull: true,
