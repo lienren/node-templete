@@ -567,6 +567,7 @@ async function getRestUsers () {
 每周一检，固定周期
 每周2次（间隔2天以上），固定周期
 每月一检，固定周期
+48小时内1次
 */
 
 /*
@@ -1465,7 +1466,7 @@ async function autoRegular () {
   console.log('samp regular data:%s', date.formatDate());
 
   let users = await ctx.orm().info_users.findAll({
-    attributes: ['id'],
+    attributes: ['id', 'periodType'],
     where: {
       depId: {
         $gt: 2
@@ -1479,34 +1480,107 @@ async function autoRegular () {
   if (users && users.length > 0) {
     for (let i = 0, j = users.length; i < j; i++) {
       let id = users[i].id
+      let periodType = users[i].periodType
+
+      /*
+        每天一检，固定周期
+        每2天一检，固定周期
+        每3天一检，固定周期
+        每5天一检，固定周期
+        每周一检，固定周期
+        每周2次（间隔2天以上），固定周期
+        每月一检，固定周期
+        48小时内1次
+      */
+
+      let where = {
+        userId: id,
+        handleType: '已采样'
+      }
+      switch (periodType) {
+        case '每天一检':
+          where.handleTime = {
+            $between: [date.getTodayToPreDay(0, 'YYYY-MM-DD'), date.formatDate(new Date(), 'YYYY-MM-DD 23:59:59')]
+          }
+          break;
+        case '每2天一检':
+          where.handleTime = {
+            $between: [date.getTodayToPreDay(1, 'YYYY-MM-DD'), date.formatDate(new Date(), 'YYYY-MM-DD 23:59:59')]
+          }
+          break;
+        case '每3天一检':
+          where.handleTime = {
+            $between: [date.getTodayToPreDay(2, 'YYYY-MM-DD'), date.formatDate(new Date(), 'YYYY-MM-DD 23:59:59')]
+          }
+          break;
+        case '每5天一检':
+          where.handleTime = {
+            $between: [date.getTodayToPreDay(4, 'YYYY-MM-DD'), date.formatDate(new Date(), 'YYYY-MM-DD 23:59:59')]
+          }
+          break;
+        case '每周一检':
+          where.handleTime = {
+            $between: [date.getTodayToPreDay(6, 'YYYY-MM-DD'), date.formatDate(new Date(), 'YYYY-MM-DD 23:59:59')]
+          }
+          break;
+        case '每周2次':
+          where.handleTime = {
+            $between: [date.getTodayToPreDay(6, 'YYYY-MM-DD'), date.formatDate(new Date(), 'YYYY-MM-DD 23:59:59')]
+          }
+          break;
+        case '每月一检':
+          where.handleTime = {
+            $between: [date.getTodayToPreDay(30, 'YYYY-MM-DD'), date.formatDate(new Date(), 'YYYY-MM-DD 23:59:59')]
+          }
+          break;
+        case '48小时内1次':
+          where.handleTime = {
+            $between: [date.getTodayToPreDay(2, 'YYYY-MM-DD'), date.formatDate(new Date(), 'YYYY-MM-DD 23:59:59')]
+          }
+          break;
+      }
 
       // 获取上个阶段采样情况
-      let samp = await ctx.orm().info_user_samps.findOne({
-        attributes: ['handleType'],
-        where: {
-          userId: id,
-          isPlan: '计划内',
-          endTime: {
-            $lt: date.formatDate(new Date(), 'YYYY-MM-DD')
-          }
-        },
-        limit: 1,
-        order: [['endTime', 'desc']]
+      let samps = await ctx.orm().info_user_samps.findAll({
+        attributes: ['id', 'handleType'],
+        where
       })
 
       // 更新合格率
-      if (samp) {
-        await ctx.orm().info_users.update({
-          isRegular: samp.handleType === '已采样' ? 1 : 0,
-          regularTime: date.formatDate()
-        }, {
-          where: {
-            id: id
+      if (samps && samps.length > 0) {
+        if (periodType === '每周2次') {
+          if (samps.length >= 2) {
+            await ctx.orm().info_users.update({
+              isRegular: 1,
+              regularTime: date.formatDate()
+            }, {
+              where: {
+                id: id
+              }
+            })
+          } else {
+            await ctx.orm().info_users.update({
+              isRegular: 0,
+              regularTime: date.formatDate()
+            }, {
+              where: {
+                id: id
+              }
+            })
           }
-        })
+        } else {
+          await ctx.orm().info_users.update({
+            isRegular: 1,
+            regularTime: date.formatDate()
+          }, {
+            where: {
+              id: id
+            }
+          })
+        }
       } else {
         await ctx.orm().info_users.update({
-          isRegular: -1,
+          isRegular: 0,
           regularTime: date.formatDate()
         }, {
           where: {
@@ -2168,7 +2242,8 @@ async function main () {
   })
 
   // handleTmp();
-  getUpUsers()
+  // getUpUsers()
+  autoRegular()
   // autoSysSampUpdate()
 }
 
