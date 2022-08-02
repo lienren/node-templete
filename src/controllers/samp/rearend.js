@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2022-07-27 06:07:44
+ * @LastEditTime: 2022-08-02 08:54:17
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/samp/rearend.js
@@ -432,6 +432,8 @@ module.exports = {
       }
       return col
     });
+
+    data = data.filter(f => !!f.cx_id)
 
     await ctx.orm().info_users.bulkCreate(data);
 
