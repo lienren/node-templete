@@ -36,6 +36,10 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.DATE,
       allowNull: true,
       defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
+    },
+    lbyId: {
+      type: DataTypes.STRING(10),
+      allowNull: true
     }
   }, {
     tableName: 'info_posts'

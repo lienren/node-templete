@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-08-18 10:44:07
- * @LastEditTime: 2022-06-13 00:57:33
+ * @LastEditTime: 2022-08-05 07:59:31
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/samp/api.js
@@ -30,7 +30,14 @@ const client = new AipOcrClient(APP_ID, API_KEY, SECRET_KEY);
 
 module.exports = {
   getPostList: async ctx => {
-    let result = await ctx.orm().info_posts.findAll({});
+    let { postName } = ctx.request.body;
+
+    let where = {};
+    Object.assign(where, postName && { postName })
+
+    let result = await ctx.orm().info_posts.findAll({
+      where
+    });
 
     ctx.body = result;
   },

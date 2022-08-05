@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2022-07-29 06:40:51
+ * @LastEditTime: 2022-08-05 07:24:20
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/samp/rearend.js
@@ -2153,7 +2153,8 @@ module.exports = {
     await ctx.orm().info_users.update({
       userType: userType,
       restStartTime: restTime[0],
-      restEndTime: restTime[1]
+      restEndTime: restTime[1],
+      isUp: 0
     }, {
       where: {
         id: user.id
@@ -2180,7 +2181,8 @@ module.exports = {
     await ctx.orm().info_users.update({
       userType: '在线',
       restStartTime: null,
-      restEndTime: null
+      restEndTime: null,
+      isUp: 0
     }, {
       where: {
         id: user.id
@@ -2233,4 +2235,71 @@ module.exports = {
 
     ctx.body = data;
   },
+  submitPost: async ctx => {
+    let { id, postName, tradeType, cycleType, periodType, sampWay, remark, lbyId } = ctx.request.body;
+
+    if (id) {
+      // 更新
+      let postinfo = await ctx.orm().info_posts.findOne({
+        where: { id }
+      })
+
+      assert.ok(!!postinfo, '职业不存在');
+
+      if (postinfo) {
+        let isUpdateUser = false
+        let updateUser = {}
+
+        if (postinfo.postName !== postName) {
+          updateUser.postName = postName
+          updateUser.isUp = 0
+          isUpdateUser = true
+        }
+
+        if (postinfo.tradeType !== tradeType) {
+          updateUser.tradeType = tradeType
+          isUpdateUser = true
+        }
+
+        if (postinfo.periodType !== periodType) {
+          updateUser.periodType = periodType
+          isUpdateUser = true
+        }
+
+        if (postinfo.sampWay !== sampWay) {
+          updateUser.sampWay = sampWay
+          isUpdateUser = true
+        }
+
+        if (postinfo.lbyId !== lbyId) {
+          updateUser.isUp = 0
+          isUpdateUser = true
+        }
+
+        if (isUpdateUser) {
+          await ctx.orm().info_users.update(updateUser, {
+            where: {
+              depId: {
+                $gt: 2
+              },
+              postName: postinfo.postName
+            }
+          })
+        }
+
+        await ctx.orm().info_posts.update({
+          postName, tradeType, cycleType, periodType, sampWay, remark, lbyId
+        }, {
+          where: {
+            id: postinfo.id
+          }
+        })
+      }
+    } else {
+      // 新增
+      await ctx.orm().info_posts.create({
+        postName, tradeType, cycleType, periodType, sampWay, remark, lbyId
+      })
+    }
+  }
 };
