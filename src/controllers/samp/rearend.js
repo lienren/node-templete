@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2022-08-06 11:10:32
+ * @LastEditTime: 2022-08-06 11:33:11
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/samp/rearend.js
@@ -1872,33 +1872,39 @@ module.exports = {
   },
   importLBYUsers: async ctx => {
     if (ctx.req.files && ctx.req.files.length > 0) {
-      ctx.body = {
-        filename: ctx.req.files[0].filename
-      }
+      let filePath = path.resolve(path.join(__dirname, `../../../assets/uploads/${ctx.req.files[0].filename}`))
+      let xlsx = excel.readExcel(filePath);
+
+      let data = xlsx.filter(f => f.length > 0).map(m => {
+        return {
+          idcard: m[0].trim()
+        }
+      });
+
+      // 删除首行
+      data.shift();
+
+      // 清除数据
+      let sql1 = `truncate table tmp_info_lbyusers`;
+      await ctx.orm().query(sql1, {}, { type: ctx.orm().sequelize.QueryTypes.DELETE });
+
+      ctx.orm().tmp_info_lbyusers.bulkCreate(data);
+
+      // 删除文件
+      fs.unlink(filePath, function (error) {
+        console.log('delete import excel file error:', error)
+        return false
+      })
+
+      ctx.body = {}
     } else {
-      ctx.body = {
-        filename: ''
-      }
+      ctx.body = {}
     }
   },
   exportLBYUsers: async ctx => {
-    let { filename } = ctx.request.body
-
-    assert.ok(!!filename, '文件名称不能为空');
-
-    let filePath = path.resolve(path.join(__dirname, `../../../assets/uploads/${filename}`))
-    let xlsx = excel.readExcel(filePath);
-
-    let data = xlsx.filter(f => f.length > 0).map(m => {
-      return m[0]
-    });
-
-    // 删除首行
-    data.shift();
-
     let where = {
       idcard: {
-        $in: data
+        $in: sequelize.literal(`(select idcard from tmp_info_lbyusers)`)
       }
     };
 
@@ -1985,12 +1991,6 @@ module.exports = {
     }
 
     let excelFile = await excel.exportBigMoreSheetExcel(xlsxObj)
-
-    // 删除文件
-    fs.unlink(filePath, function (error) {
-      console.log('delete import excel file error:', error)
-      return false
-    })
 
     // ctx.set('Content-Type', 'application/vnd.openxmlformats');
     // ctx.set('Access-Control-Expose-Headers', 'Content-Disposition')
