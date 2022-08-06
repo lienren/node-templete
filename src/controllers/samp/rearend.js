@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2022-08-05 07:24:20
+ * @LastEditTime: 2022-08-06 11:10:32
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/samp/rearend.js
@@ -1864,6 +1864,133 @@ module.exports = {
     }
 
     let excelFile = await excel.exportBigMoreSheetExcel(xlsxObj)
+
+    // ctx.set('Content-Type', 'application/vnd.openxmlformats');
+    // ctx.set('Access-Control-Expose-Headers', 'Content-Disposition')
+    // ctx.set('Content-Disposition', 'attachment; filename=' + 'orders_export.xlsx');
+    ctx.body = excelFile;
+  },
+  importLBYUsers: async ctx => {
+    if (ctx.req.files && ctx.req.files.length > 0) {
+      ctx.body = {
+        filename: ctx.req.files[0].filename
+      }
+    } else {
+      ctx.body = {
+        filename: ''
+      }
+    }
+  },
+  exportLBYUsers: async ctx => {
+    let { filename } = ctx.request.body
+
+    assert.ok(!!filename, '文件名称不能为空');
+
+    let filePath = path.resolve(path.join(__dirname, `../../../assets/uploads/${filename}`))
+    let xlsx = excel.readExcel(filePath);
+
+    let data = xlsx.filter(f => f.length > 0).map(m => {
+      return m[0]
+    });
+
+    // 删除首行
+    data.shift();
+
+    let where = {
+      idcard: {
+        $in: data
+      }
+    };
+
+    let users = await ctx.orm().info_users.findAll({
+      where
+    });
+
+    let xlsxObj = [];
+    xlsxObj.push({
+      name: '人员列表',
+      data: []
+    })
+
+    xlsxObj[0].data.push([
+      '编号',
+      '部门',
+      '单位',
+      '单位所在街道',
+      '姓名',
+      '手机号',
+      '身份证号',
+      '行业类别',
+      '职业名称',
+      '采样周期',
+      '街道',
+      '社区',
+      '住址',
+      '用户类型',
+      '采集开始时间',
+      '最新采样点名称',
+      '最新采样人姓名',
+      '最新采样时间',
+      '创建时间',
+      '最后修改时间',
+      '是否合格',
+      '是否在宁搏疫',
+      '宁搏疫返回结果'
+    ])
+
+    for (let i = 0, j = users.length; i < j; i++) {
+      let user = users[i];
+
+      let arr = new Array();
+      arr.push(user.id || '');
+      arr.push(user.depName1 || '');
+      arr.push(user.depName2 || '');
+      arr.push(user.depStreet || '');
+      arr.push(user.name);
+      arr.push(user.phone);
+      arr.push(user.idcard);
+      arr.push(user.tradeType);
+      arr.push(user.postName);
+      arr.push(user.periodType);
+      arr.push(user.street);
+      arr.push(user.community);
+      arr.push(user.address);
+      arr.push(user.userType);
+      arr.push(user.sampStartTime);
+      arr.push(user.sampName);
+      arr.push(user.sampUserName);
+      arr.push(user.sampHandleTime);
+      arr.push(user.createTime);
+      arr.push(user.updateTime);
+
+      if (user.isRegular === 0) {
+        arr.push('不合格');
+      } else if (user.isRegular === 1) {
+        arr.push('合格');
+      } else {
+        arr.push('不计算');
+      }
+
+      if (user.isUp === 0) {
+        arr.push('未上传');
+      } else if (user.isUp === 1) {
+        arr.push('已上传');
+      } else {
+        arr.push('上传异常');
+      }
+
+      arr.push(user.upRep);
+
+      xlsxObj[0].data.push(arr)
+    }
+
+    let excelFile = await excel.exportBigMoreSheetExcel(xlsxObj)
+
+    // 删除文件
+    fs.unlink(filePath, function (error) {
+      console.log('delete import excel file error:', error)
+      return false
+    })
 
     // ctx.set('Content-Type', 'application/vnd.openxmlformats');
     // ctx.set('Access-Control-Expose-Headers', 'Content-Disposition')

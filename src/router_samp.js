@@ -26,6 +26,9 @@ for (let className in ctrl) {
     } else if (funName === 'importSamp') {
       // 上传文件
       router.post(`/${className}/${funName}`, uploadFile.getMulter('files').any(), ctrl[className][funName])
+    } else if (funName === 'importLBYUsers') {
+      // 上传文件
+      router.post(`/${className}/${funName}`, uploadFile.getMulter('files').any(), ctrl[className][funName])
     } else {
       router.all(`/${className}/${funName}`, ctrl[className][funName]);
     }
