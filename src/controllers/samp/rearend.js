@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2022-08-06 11:33:11
+ * @LastEditTime: 2022-08-07 07:43:00
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/samp/rearend.js
@@ -1905,6 +1905,9 @@ module.exports = {
     let where = {
       idcard: {
         $in: sequelize.literal(`(select idcard from tmp_info_lbyusers)`)
+      },
+      depId: {
+        $gt: 2
       }
     };
 

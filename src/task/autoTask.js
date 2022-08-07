@@ -1428,6 +1428,23 @@ async function autoRegular () {
       let id = users[i].id
       let periodType = users[i].periodType
 
+      // 新加入系统的人员（频次为7天1次、2次的），在加入的前7天都默认为合格
+      if (periodType === '每周一检' || periodType === '每周2次') {
+        let createDays = moment(new Date()).diff(moment(users.createTime), 'days')
+        if (createDays <= 7) {
+          await ctx.orm().info_users.update({
+            isRegular: 1,
+            regularTime: date.formatDate()
+          }, {
+            where: {
+              id: users[i].id
+            }
+          })
+
+          continue;
+        }
+      }
+
       /*
         每天一检，固定周期
         每2天一检，固定周期
@@ -1445,18 +1462,21 @@ async function autoRegular () {
       }
       switch (periodType) {
         case '每天一检':
-          where.handleTime = {
-            $between: [date.getTodayToPreDay(0, 'YYYY-MM-DD'), date.formatDate(new Date(), 'YYYY-MM-DD 23:59:59')]
-          }
-          break;
-        case '每2天一检':
+          // 请把每日一检的判定调整下，要放一天
           where.handleTime = {
             $between: [date.getTodayToPreDay(1, 'YYYY-MM-DD'), date.formatDate(new Date(), 'YYYY-MM-DD 23:59:59')]
           }
           break;
-        case '每3天一检':
+        case '每2天一检':
+          // 2天和3天的判定也要放一天
           where.handleTime = {
             $between: [date.getTodayToPreDay(2, 'YYYY-MM-DD'), date.formatDate(new Date(), 'YYYY-MM-DD 23:59:59')]
+          }
+          break;
+        case '每3天一检':
+          // 2天和3天的判定也要放一天
+          where.handleTime = {
+            $between: [date.getTodayToPreDay(3, 'YYYY-MM-DD'), date.formatDate(new Date(), 'YYYY-MM-DD 23:59:59')]
           }
           break;
         case '每5天一检':
@@ -2170,7 +2190,7 @@ async function main () {
     autoSysSamp()
   })
 
-  schedule.scheduleJob('0 0 3/12 * * *', function () {
+  schedule.scheduleJob('0 0 3,8,12,15,18 * * *', function () {
     autoRegular()
   })
 
@@ -2191,7 +2211,7 @@ async function main () {
 
   // handleTmp();
   getUpUsers()
-  // autoRegular()
+  autoRegular()
   // autoSysSampUpdate()
 }
 
