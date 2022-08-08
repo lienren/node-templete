@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2022-08-06 16:13:15
+ * @LastEditTime: 2022-08-08 10:18:06
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/assetmanage/rearend.js
@@ -226,7 +226,7 @@ module.exports = {
           id: project.id
         }
       })
-  
+
       await ctx.orm().info_project_update.create({
         sub_title: '更新项目资料',
         pro_id: project.id,
@@ -243,12 +243,21 @@ module.exports = {
   getProjects: async ctx => {
     let pageIndex = ctx.request.body.pageIndex || 1;
     let pageSize = ctx.request.body.pageSize || 50;
-    let { pro_code, pro_name, create_time, update_time } = ctx.request.body;
+    let { pro_code, pro_name, pro_level, pro_status, pro_type, pro_source, verify_status, verify_num, create_time, update_time } = ctx.request.body;
 
     let where = {};
 
     Object.assign(where, pro_code && { pro_code })
     Object.assign(where, pro_name && { pro_name })
+    Object.assign(where, pro_level && { pro_level })
+    Object.assign(where, pro_type && { pro_type })
+    Object.assign(where, pro_source && { pro_source })
+    Object.assign(where, verify_status && { verify_status })
+    Object.assign(where, verify_num && { verify_num })
+
+    if (pro_status && pro_status.length > 0) {
+      where.pro_status = { $in: pro_status }
+    }
 
     if (create_time && create_time.length === 2) {
       where.create_time = { $between: create_time }
@@ -264,6 +273,70 @@ module.exports = {
       where,
       order: [['id', 'desc']]
     });
+
+    ctx.body = {
+      total: result.count,
+      list: result.rows,
+      pageIndex,
+      pageSize
+    }
+  },
+  submitProgress: async ctx => {
+    let { id, pro_id, p_type, p_level, p_status, p_source, p_mtype, a1, a2, a2stime, a2etime, a3, a3stime, a3etime, manage_id, manage_user } = ctx.request.body;
+
+    if (id) {
+      let iprogress = await ctx.orm().info_progress.findOne({
+        where: {
+          id
+        }
+      })
+
+      assert.ok(!!project, '项目进展不存在!')
+
+      await ctx.orm().info_projects.update({
+        p_type, p_level, p_status, p_source, p_mtype, a1, a2, a2stime, a2etime, a3, a3stime, a3etime, manage_id, manage_user
+      }, {
+        where: {
+          id: iprogress.id
+        }
+      })
+    } else {
+      await ctx.orm().info_progress.create({
+        pro_id, p_type, p_level, p_status, p_source, p_mtype,
+        a1, a2, a2stime, a2etime, a3, a3stime, a3etime,
+        manage_id, manage_user
+      })
+    }
+  },
+  getProgress: async ctx => {
+    let pageIndex = ctx.request.body.pageIndex || 1;
+    let pageSize = ctx.request.body.pageSize || 50;
+    let { pro_id } = ctx.request.body;
+
+    let where = {};
+
+    Object.assign(where, pro_id && { id: pro_id })
+
+    let projects = await ctx.orm().info_projects.findAll({
+      attributes: ['id'],
+      where
+    })
+
+    let where1 = {};
+    Object.assign(where1, projects.length > 0 && {
+      pro_id: {
+        $in: projects.map(m => {
+          return m.dataValues.id
+        })
+      }
+    })
+
+    let result = await ctx.orm().info_progress.findAndCountAll({
+      offset: (pageIndex - 1) * pageSize,
+      limit: pageSize,
+      where: where1,
+      order: [['id', 'desc']]
+    })
 
     ctx.body = {
       total: result.count,
@@ -343,7 +416,7 @@ module.exports = {
 
       if (project.verify_num === 2) {
         update = {
-          pro_status: verify === '通过' ? '投后' : '投前跟进',
+          pro_status: verify === '通过' ? '投后管理' : '投前跟进',
           verify_status: verify === '通过' ? '审核通过' : '二审不通过',
           verify2: verify,
           verify2_manage_id: verify_manage_id,
@@ -367,7 +440,7 @@ module.exports = {
       sub_title = verify === '通过' ? '投后三审通过' : '投后三审不通过'
 
       update = {
-        pro_status: verify === '通过' ? '投后' : '投前跟进',
+        pro_status: verify === '通过' ? '投后管理' : '投前跟进',
         verify_status: verify === '通过' ? '审核通过' : '三审不通过',
         verify3: verify,
         verify3_manage_id: verify_manage_id,

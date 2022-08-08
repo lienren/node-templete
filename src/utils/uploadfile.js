@@ -16,7 +16,7 @@ module.exports = {
   getMulter: savepath => {
     let storage = multer.diskStorage({
       //文件保存路径
-      destination: function(req, file, cb) {
+      destination: function (req, file, cb) {
         savepath = config.sys.uploadFilePath
 
         // 新建目录
@@ -25,9 +25,9 @@ module.exports = {
         });
       },
       //修改文件名称
-      filename: function(req, file, cb) {
+      filename: function (req, file, cb) {
         let fileFormat = file.originalname.split('.');
-        cb(null, Date.now() + '.' + fileFormat[fileFormat.length - 1]);
+        cb(null, fileFormat[0] + '' + Date.now() + '.' + fileFormat[fileFormat.length - 1]);
       }
     });
 
