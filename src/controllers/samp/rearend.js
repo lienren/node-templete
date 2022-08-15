@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2022-08-15 08:24:05
+ * @LastEditTime: 2022-08-15 10:08:58
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/samp/rearend.js
@@ -2462,5 +2462,30 @@ module.exports = {
         postName, tradeType, cycleType, periodType, sampWay, remark, lbyId
       })
     }
+  },
+  deletePost: async ctx => {
+    let { id } = ctx.request.body
+
+    let postinfo = await ctx.orm().info_posts.findOne({
+      where: { id }
+    })
+
+    assert.ok(!!postinfo, '职业不存在');
+
+    let count = await ctx.orm().info_users.count({
+      where: {
+        postName: postinfo.postName
+      }
+    })
+
+    assert.ok(count === 0, '职位中还有人员，不能删除')
+
+    await ctx.orm().info_posts.destroy({
+      where: {
+        id
+      }
+    })
+
+    ctx.body = {}
   }
 };
