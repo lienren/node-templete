@@ -1028,7 +1028,7 @@ async function importUsers () {
           depStreet: dep2.depStreet,
           name: data.name,
           phone: data.phone,
-          idcard: data.idcard,
+          idcard: data.idcard.replace('x', 'X'),
           tradeType: post.tradeType,
           postName: post.postName,
           periodType: post.periodType,
@@ -1056,7 +1056,7 @@ async function importUsers () {
           depStreet: dep2.depStreet,
           name: data.name,
           phone: data.phone,
-          idcard: data.idcard,
+          idcard: data.idcard.replace('x', 'X'),
           tradeType: post.tradeType,
           postName: post.postName,
           periodType: post.periodType,
@@ -1114,7 +1114,7 @@ async function importSamps () {
           depStreet: '',
           name: data.name,
           phone: data.phone,
-          idcard: data.idcard,
+          idcard: data.idcard.replace('x', 'X'),
           tradeType: '其他',
           postName: '愿检尽检人群',
           periodType: '当天',
@@ -1429,6 +1429,17 @@ async function autoRegular () {
       let periodType = users[i].periodType
       let createTime = users[i].createTime
 
+      /*
+        每天一检，固定周期
+        每2天一检，固定周期
+        每3天一检，固定周期
+        每5天一检，固定周期
+        每周一检，固定周期
+        每周2次（间隔2天以上），固定周期
+        每月一检，固定周期
+        48小时内1次
+      */
+
       if (periodType === '每2天一检') {
         let createDays = moment(new Date()).diff(moment(createTime), 'days')
         if (createDays <= 2) {
@@ -1461,6 +1472,22 @@ async function autoRegular () {
         }
       }
 
+      if (periodType === '每5天一检') {
+        let createDays = moment(new Date()).diff(moment(createTime), 'days')
+        if (createDays <= 5) {
+          await ctx.orm().info_users.update({
+            isRegular: 1,
+            regularTime: date.formatDate()
+          }, {
+            where: {
+              id: id
+            }
+          })
+
+          continue;
+        }
+      }
+
       // 新加入系统的人员（频次为7天1次、2次的），在加入的前7天都默认为合格
       if (periodType === '每周一检' || periodType === '每周2次') {
         let createDays = moment(new Date()).diff(moment(createTime), 'days')
@@ -1478,16 +1505,21 @@ async function autoRegular () {
         }
       }
 
-      /*
-        每天一检，固定周期
-        每2天一检，固定周期
-        每3天一检，固定周期
-        每5天一检，固定周期
-        每周一检，固定周期
-        每周2次（间隔2天以上），固定周期
-        每月一检，固定周期
-        48小时内1次
-      */
+      if (periodType === '每月一检') {
+        let createDays = moment(new Date()).diff(moment(createTime), 'days')
+        if (createDays <= 30) {
+          await ctx.orm().info_users.update({
+            isRegular: 1,
+            regularTime: date.formatDate()
+          }, {
+            where: {
+              id: id
+            }
+          })
+
+          continue;
+        }
+      }
 
       let where = {
         userId: id,

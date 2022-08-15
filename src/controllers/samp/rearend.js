@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2022-08-15 08:02:33
+ * @LastEditTime: 2022-08-15 08:24:05
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/samp/rearend.js
@@ -2263,6 +2263,25 @@ module.exports = {
         isDel: 0
       })
     }
+
+    ctx.body = {}
+  },
+  deleteDep: async ctx => {
+    let { id } = ctx.request.body;
+
+    let count = await ctx.orm().info_users.count({
+      where: {
+        depId: id
+      }
+    })
+
+    assert.ok(count === 0, '单位中还有人员，不能删除')
+
+    await ctx.orm().info_deps.destroy({
+      where: {
+        id
+      }
+    })
 
     ctx.body = {}
   },
