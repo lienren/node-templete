@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2022-08-07 07:43:00
+ * @LastEditTime: 2022-08-15 08:02:33
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/samp/rearend.js
@@ -1464,7 +1464,7 @@ module.exports = {
           name: m[4].trim(),
           tradeType: m[5].trim(),
           postName: m[6].trim(),
-          idcard: m[7].toString().trim(),
+          idcard: m[7].toString().trim().replace("'", ""),
           phone: m[8].toString().trim(),
           status: 0
         }
@@ -1498,7 +1498,7 @@ module.exports = {
       let data = xlsx.filter(f => f.length >= 5).map(m => {
         return {
           name: m[1].toString().trim(),
-          idcard: m[2].toString().trim(),
+          idcard: m[2].toString().trim().replace("'"),
           phone: m[3] ? m[3].toString().trim() : '',
           sampName: sampName,
           sampTime: formatDate(m[4]),
@@ -2182,21 +2182,12 @@ module.exports = {
     ctx.body = excelFile;
   },
   submitDep: async ctx => {
-    let { id, depName, depStreet, tyshxydm, parentDepName } = ctx.request.body;
+    let { id, depName, depStreet, depCommunity, tyshxydm, parentDepName } = ctx.request.body;
 
     assert.ok(!!depName, 'InputParamIsNull');
     assert.ok(!!depStreet, 'InputParamIsNull');
+    assert.ok(!!depCommunity, 'InputParamIsNull');
     assert.ok(!!tyshxydm, 'InputParamIsNull');
-    assert.ok(!!parentDepName, 'InputParamIsNull');
-
-    let parentDep = await ctx.orm().info_deps.findOne({
-      where: {
-        depName: parentDepName,
-        depLevel: 1,
-        parentId: 0
-      }
-    })
-    assert.ok(!!parentDep, '部门不存在');
 
     if (id) {
       let dep = await ctx.orm().info_deps.findOne({
@@ -2209,6 +2200,7 @@ module.exports = {
       await ctx.orm().info_deps.update({
         depName,
         depStreet,
+        depCommunity,
         tyshxydm
       }, {
         where: {
@@ -2216,26 +2208,34 @@ module.exports = {
         }
       })
 
-      let updateContent = null
+      let isUpdate = false
+      let updateContent = {}
       if (dep.depName !== depName) {
-        updateContent = {
-          depName2: depName,
-          isUp: 0
-        }
+        isUpdate = true
+        updateContent.depName2 = depName
+        updateContent.isUp = 0
       }
 
       if (dep.tyshxydm !== tyshxydm) {
-        if (updateContent) {
-          updateContent.tyshxydm = tyshxydm
-        } else {
-          updateContent = {
-            tyshxydm: tyshxydm,
-            isUp: 0
-          }
-        }
+        isUpdate = true
+        updateContent.tyshxydm = tyshxydm
+        updateContent.isUp = 0
       }
 
-      if (updateContent) {
+      if (dep.depStreet !== depStreet) {
+        isUpdate = true
+        updateContent.depStreet = depStreet
+        updateContent.street = depStreet
+        updateContent.isUp = 0
+      }
+
+      if (dep.depCommunity !== depCommunity) {
+        isUpdate = true
+        updateContent.community = depCommunity
+        updateContent.isUp = 0
+      }
+
+      if (isUpdate) {
         await ctx.orm().info_users.update(updateContent, {
           where: {
             depName2: dep.depName
@@ -2243,10 +2243,22 @@ module.exports = {
         })
       }
     } else {
+      assert.ok(!!parentDepName, 'InputParamIsNull');
+
+      let parentDep = await ctx.orm().info_deps.findOne({
+        where: {
+          depName: parentDepName,
+          depLevel: 1,
+          parentId: 0
+        }
+      })
+      assert.ok(!!parentDep, '部门不存在');
+
       await ctx.orm().info_deps.create({
         depName,
         depLevel: 2,
         depStreet,
+        depCommunity,
         parentId: parentDep.id,
         isDel: 0
       })

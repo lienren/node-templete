@@ -1412,7 +1412,7 @@ async function autoRegular () {
   console.log('samp regular data:%s', date.formatDate());
 
   let users = await ctx.orm().info_users.findAll({
-    attributes: ['id', 'periodType'],
+    attributes: ['id', 'periodType', 'createTime'],
     where: {
       depId: {
         $gt: 2
@@ -1427,17 +1427,50 @@ async function autoRegular () {
     for (let i = 0, j = users.length; i < j; i++) {
       let id = users[i].id
       let periodType = users[i].periodType
+      let createTime = users[i].createTime
+
+      if (periodType === '每2天一检') {
+        let createDays = moment(new Date()).diff(moment(createTime), 'days')
+        if (createDays <= 2) {
+          await ctx.orm().info_users.update({
+            isRegular: 1,
+            regularTime: date.formatDate()
+          }, {
+            where: {
+              id: id
+            }
+          })
+
+          continue;
+        }
+      }
+
+      if (periodType === '每3天一检') {
+        let createDays = moment(new Date()).diff(moment(createTime), 'days')
+        if (createDays <= 3) {
+          await ctx.orm().info_users.update({
+            isRegular: 1,
+            regularTime: date.formatDate()
+          }, {
+            where: {
+              id: id
+            }
+          })
+
+          continue;
+        }
+      }
 
       // 新加入系统的人员（频次为7天1次、2次的），在加入的前7天都默认为合格
       if (periodType === '每周一检' || periodType === '每周2次') {
-        let createDays = moment(new Date()).diff(moment(users.createTime), 'days')
+        let createDays = moment(new Date()).diff(moment(createTime), 'days')
         if (createDays <= 7) {
           await ctx.orm().info_users.update({
             isRegular: 1,
             regularTime: date.formatDate()
           }, {
             where: {
-              id: users[i].id
+              id: id
             }
           })
 
@@ -1571,6 +1604,7 @@ async function autoRegular () {
     }
   })
 
+  let sql0 = `delete from stat_regular where regularDate = CURRENT_DATE()`
   let sql1 = `insert into stat_regular 
   (regularDate, regularType, regularName, regularSum, regularNum, regularNoNum, regularRate) 
   select CURRENT_DATE(), '部门', b.depName1, b.regularSum, b.regularNum, b.regularNoNum, convert(b.regularNum/b.regularSum*100,decimal(10,2)) regularRate from (
@@ -1596,6 +1630,7 @@ async function autoRegular () {
   where depId > 2 and isRegular > -1) a 
   group by a.postName) b`
 
+  await ctx.orm().query(sql0, {}, { type: ctx.orm().sequelize.QueryTypes.DELETE });
   await ctx.orm().query(sql1, {}, { type: ctx.orm().sequelize.QueryTypes.INSERT });
   await ctx.orm().query(sql2, {}, { type: ctx.orm().sequelize.QueryTypes.INSERT });
 
@@ -1621,7 +1656,7 @@ async function autoSysSampUpdate () {
       handleType: '未采样',
       isPlan: '计划内',
       createTime: {
-        $between: ['2022-06-01', date.formatDate(new Date(), 'YYYY-MM-DD')]
+        $between: ['2022-08-01', date.formatDate(new Date(), 'YYYY-MM-DD')]
       }
     }
   })
@@ -1636,35 +1671,81 @@ async function autoSysSampUpdate () {
       })
 
       if (user && user.depId > 2) {
-        let sql = `select * from samp.sys_samp_data where user_idcard = '${user.idcard}' and samp_date between '${samp.startTime} 00:00:00' and '${samp.endTime} 23:59:59' limit 1`;
-
+        let sql = `select * from samp.sys_samp_data where user_idcard = '${user.idcard}' and samp_date between '${samp.startTime} 00:00:00' and '${samp.endTime} 23:59:59' order by samp_date desc limit 1`;
         let result = await ctx.orm().query(sql);
-        if (result && result.length > 0) {
-          console.log('更新采样数据（根据省系统数据）:%s, %s, %s, %s', user.idcard, result[0].samp_date, samp.id, date.formatDate());
-          await ctx.orm().info_user_samps.update({
-            sampWay: result[0].samp_mode,
-            handleType: '已采样',
-            handleTime: result[0].samp_date,
-            handleCount: 1,
-            sampName: result[0].test_facility,
-            sampUserName: result[0].if_user_name,
-            remark: '获取省系统数据自动更新'
-          }, {
-            where: {
-              id: samp.id,
-              handleType: '未采样'
-            }
-          })
 
-          await ctx.orm().info_users.update({
-            sampName: result[0].test_facility,
-            sampUserName: result[0].if_user_name,
-            sampHandleTime: result[0].samp_date
-          }, {
-            where: {
-              id: user.id
+        if (result && result.length > 0) {
+          if (samp.periodType === '每周2次') {
+            let sameSamp = await ctx.orm().info_user_samps.findOne({
+              where: {
+                userId: user.id,
+                periodType: '每周2次',
+                handleType: '已采样',
+                handleTime: {
+                  $between: [date.formatDate(result[0].samp_date, 'YYYY-MM-DD 00:00:00'), date.formatDate(result[0].samp_date, 'YYYY-MM-DD 23:59:59')]
+                },
+                createTime: {
+                  $between: ['2022-08-01', date.formatDate(new Date(), 'YYYY-MM-DD')]
+                }
+              }
+            })
+
+            if (!sameSamp) {
+              console.log('更新采样数据（根据省系统数据）:%s, %s, %s, %s', user.idcard, result[0].samp_date, samp.id, date.formatDate());
+
+              await ctx.orm().info_user_samps.update({
+                sampWay: result[0].samp_mode,
+                handleType: '已采样',
+                handleTime: result[0].samp_date,
+                handleCount: 1,
+                sampName: result[0].test_facility,
+                sampUserName: result[0].if_user_name,
+                remark: '获取省系统数据自动更新'
+              }, {
+                where: {
+                  id: samp.id,
+                  handleType: '未采样'
+                }
+              })
+
+              await ctx.orm().info_users.update({
+                sampName: result[0].test_facility,
+                sampUserName: result[0].if_user_name,
+                sampHandleTime: result[0].samp_date
+              }, {
+                where: {
+                  id: user.id
+                }
+              })
             }
-          })
+          } else {
+            console.log('更新采样数据（根据省系统数据）:%s, %s, %s, %s', user.idcard, result[0].samp_date, samp.id, date.formatDate());
+
+            await ctx.orm().info_user_samps.update({
+              sampWay: result[0].samp_mode,
+              handleType: '已采样',
+              handleTime: result[0].samp_date,
+              handleCount: 1,
+              sampName: result[0].test_facility,
+              sampUserName: result[0].if_user_name,
+              remark: '获取省系统数据自动更新'
+            }, {
+              where: {
+                id: samp.id,
+                handleType: '未采样'
+              }
+            })
+
+            await ctx.orm().info_users.update({
+              sampName: result[0].test_facility,
+              sampUserName: result[0].if_user_name,
+              sampHandleTime: result[0].samp_date
+            }, {
+              where: {
+                id: user.id
+              }
+            })
+          }
         }
       }
     }
@@ -1673,292 +1754,7 @@ async function autoSysSampUpdate () {
   console.log('auto sys samp update data:%s', date.formatDate());
 }
 
-let idcards = [
-  /*'130224198011241561',
-  '142601197301297375',
-  '210113198605240553',
-  '21020319630706652X',
-  '220104199308112221',
-  '230125198702183713',
-  '230206199302200730',
-  '230421199011022625',
-  '23071019860627041x',
-  '320102197007221215',
-  '320102197112033611',
-  '320102199207161228',
-  '320103196711140517',
-  '320103197909021817',
-  '320104196011282457',
-  '320104196711022410',
-  '320105196205011619',
-  '320106196708092031',
-  '320106199007302829',
-  '320107196804264215',
-  '32010719790521182X',
-  '320107198512214215',
-  '320111196302203636',
-  '320111196403160428',
-  '32011119641206442X',
-  '320111196603054814',
-  '320111196812024486',
-  '320111196905173624',
-  '320111197007111223',
-  '320111197112014820',
-  '320111197201144811',
-  '320111197212104823',
-  '320111197307114426',
-  '320111197802274427',
-  '320111198110033248',
-  '320111199012070015',
-  '320111199107103617',
-  '320111199306263226',
-  '320111199503210422',
-  '320111199610244820',
-  '320111199802265212',
-  '320111199807254811',
-  '320112195903160418',
-  '320112196206120028',
-  '320112196206251220',
-  '320112196208211214',
-  '320112196306100411',
-  '320112196310230817',
-  '320112196407220826',
-  '320112196408011217',
-  '32011219650428002X',
-  '320112196608050448',
-  '320112196611221615',
-  '320112196704121613',
-  '320112196707271633',
-  '320112196710250016',
-  '320112196812081671',
-  '320112197008160824',
-  '320112197103161614',
-  '320112197205250415',
-  '320112197209231211',
-  '320112197411070829',
-  '320112197510220829',
-  '320112197601200444',
-  '320112197708110852',
-  '320112197709240421',
-  '32011219771103001X',
-  '320112197805021624',
-  '320112197806291220',
-  '320112197809230466',
-  '320112197907141221',
-  '320112198109051613',
-  '320112198112101626',
-  '320112198212250434',
-  '320112198503290022',
-  '320112198504290016',
-  '320112198610181227',
-  '320112198803160465',
-  '320112199011020426',
-  '320112199208211672',
-  '320112199401121636',
-  '320112199712200817',
-  '320112199801221636',
-  '320113196303072415',
-  '320113196801291215',
-  '320113197208130810',
-  '32011319760802403x',
-  '32011419761109211x',
-  '32011419900707212x',
-  '32012119680217351X',
-  '320121199208184148',
-  '320122196308204022',
-  '320122196503054445',
-  '320122196705131226',
-  '320122197002160033',
-  '32012219710202010x',
-  '320122197109280027',
-  '320122198604051234',
-  '320122198607011625',
-  '320122200105202827',
-  '320123196307261216',
-  '320123196311051633',
-  '32012319640417101X',
-  '320123196502181211',
-  '320123196601101619',
-  '320123196611164058',
-  '320123196709222623',
-  '320123196807241035',
-  '320123196812041011',
-  '320123196905230647',
-  '320123196907081016',
-  '32012319701223061X',
-  '320123197104120610',
-  '320123197109210615',
-  '320123197207311217',
-  '320123197611090225',
-  '320123197710081017',
-  '320123197903181647',
-  '320123198201044810',
-  '320123198512051014',
-  '320123198604090029',
-  '320123198706054424',
-  '320123198810151822',
-  '320123198811081010',
-  '320123198910131044',
-  '320123198911101218',
-  '320123198912154012',
-  '320123199104203423',
-  '320123199207081238',
-  '320123199208015216',
-  '320123199310100054',
-  '320123199408181817',
-  '320123199412090045',
-  '320123199508141011',
-  '320123199509133021',
-  '32012319960116121X',
-  '320123199710172014',
-  '320123199807154840',
-  '320123199808212029',
-  '320123199811010612',
-  '320123199909093022',
-  '320123200206125214',
-  '320124197202033226',
-  '320124199707300827',
-  '320125196906164832',
-  '320321199006231226',
-  '320322199004015921',
-  '320323199809304014',
-  '32032419640121654x',
-  '320324198903061874',
-  '320324199211230635',
-  '320381199411230020',
-  '320382199403186521',
-  '320411198706132841',
-  '320481198201141047',
-  '320481198204045472',
-  '320481198204060824',
-  '320483199601250944',
-  '320622196109106603',
-  '320623198009114695',
-  '32062319870112606X',
-  '320682199407068289',
-  '320705199408022015',
-  '320721198810150643',
-  '320721198908292615',
-  '320723198005202052',
-  '320821199806100520',
-  '320823196512092632',
-  '32082319670312561X',
-  '320825196901263338',
-  '320825197001112184',
-  '320827196307183012',
-  '320827196905210826',
-  '320827197109241415',
-  '32082719730507401x',
-  '320827197805134170',
-  '32082919680327221X',
-  '320829197112230656',
-  '320829197408070639',
-  '320830196812015675',
-  '320831197802280265',
-  '320882199309042211',
-  '320911197709153720',
-  '320922198605223089',
-  '32092219901212686X',
-  '320922199808183026',
-  '320923195410240914',
-  '320923199008163912',
-  '320925199804237444',
-  '32098119980321222X',
-  '321023196305251052',
-  '321023199803083227',
-  '321081198509201519',
-  '321083197506256811',
-  '32108319770403454X',
-  '321102197302070545',
-  '321102199002011526',
-  '321119197001232368',
-  '321283198205180011',
-  '32128319920722721X',
-  '321283199307063822',
-  '321322197201242738',
-  '321322197912071218',
-  '321323199306295313',
-  '321324198105020024',
-  '321324198604163433',
-  '321324199405184236',
-  '340311197211190621',
-  '34032119840112530X',
-  '340321198803085304',
-  '340321198810101237',
-  '340323198706290018',
-  '340402199108060413',
-  '340405199211150213',
-  '340502198501150010',
-  '340503197607200356',
-  '340602198307222813',
-  '340621198703216019',
-  '340702199012221047',
-  '340826199410118711',
-  '341102198410230436',
-  '341122197710043617',
-  '341122198211282423',
-  '341124198703134024',
-  '341124199112170220',
-  '341124199510014813',
-  '341125195808083078',
-  '341125198902116888',
-  '341125199009180953',
-  '34112619960508282X',
-  '341127196807122829',
-  '34112819810916121X',
-  '341181199308192015',
-  '341202199612062506',
-  '341224197803153514',
-  '341224198604258238',
-  '341225198509190016',
-  '341225199310060040',
-  '341282198810166100',
-  '342128197304018116',
-  '342222199008036092',
-  '342222200003270061',
-  '342224198202161709',
-  '342301196705142018',
-  '342321196701136214',
-  '342322196210032820',
-  '34232219681202182X',
-  '342322197102180433',
-  '342322197111124038',
-  '342322197112061825',
-  '342422198912027289',
-  '342626199712105060',
-  '410323198506101014',
-  '410727199411209622',
-  '411702199602162947',
-  '412726198404074118',
-  '420325197211185126',
-  '422301197812060928',
-  '510212197302087032',
-  '511021196907263205',
-  '51302519670215159X',
-  '532925196501281189',
-  '620123198311186618'*/
-  '320102196409121212',
-  '320106199810260429',
-  '320111200103074025',
-  '320112196512160810',
-  '320112198101191611',
-  '320112200006111222',
-  '320122199811220840',
-  '320123195407151239',
-  '320123195411301615',
-  '320123196502021218',
-  '320123197207101252',
-  '320123197211151033',
-  '320421196712034715',
-  '320830195410041059',
-  '32083019901122522X',
-  '320926198110260043',
-  '32132419910918002X',
-  '340123198208058063',
-  '340211198001280628',
-  '341122195609151411',
-  '342626199810156427',
-  '362525198412193633']
+let idcards = ['130224198011241561']
 async function handleTmp () {
 
   for (let i = 0, j = idcards.length; i < j; i++) {
@@ -2179,7 +1975,6 @@ async function main () {
     twoDaySamp()
     threeDaySamp()
     fiveDaySamp()
-    getUpUsers()
   })
 
   weekJob = schedule.scheduleJob('0 10 0 * * 1', weekSamp)
@@ -2188,6 +1983,10 @@ async function main () {
 
   schedule.scheduleJob('0 0 2 * * *', function () {
     autoSysSamp()
+  })
+
+  schedule.scheduleJob('0 0 0,3,6,9,12,15,18,21 * * *', function () {
+    getUpUsers()
   })
 
   schedule.scheduleJob('0 0 3,8,12,15,18 * * *', function () {
@@ -2205,12 +2004,12 @@ async function main () {
   // })
 
   // 每天12点自动更新采样数据（根据省系统数据）
-  schedule.scheduleJob('0 0 12 * * *', function () {
+  schedule.scheduleJob('0 0 2,4,6,8,10,12,14,16,18,20,22 * * *', function () {
     autoSysSampUpdate()
   })
 
   // handleTmp();
-  getUpUsers()
+  // getUpUsers()
   autoRegular()
   // autoSysSampUpdate()
 }
