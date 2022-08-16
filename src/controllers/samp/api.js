@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-08-18 10:44:07
- * @LastEditTime: 2022-08-05 07:59:31
+ * @LastEditTime: 2022-08-16 19:14:30
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/samp/api.js
@@ -185,53 +185,66 @@ module.exports = {
       })
     }
 
-    let samp = await ctx.orm().info_user_samps.findOne({
+    // 查找采样当天有没有已采样
+    let sameSamp = await ctx.orm().info_user_samps.findOne({
       where: {
         userId: user.id,
-        handleType: '未采样',
-        startTime: {
-          $lte: today
-        },
-        endTime: {
-          $gte: today
+        handleType: '已采样',
+        handleTime: {
+          $between: [`${today} 00:00:00`, `${today} 23:59:59`]
         }
       }
     })
 
-    if (samp) {
-      await ctx.orm().info_user_samps.update({
-        handleType: '已采样',
-        handleTime: now,
-        handleCount: 1,
-        sampName,
-        sampUserName,
-        imgUrl,
-        imgTime: now,
-        remark
-      }, {
+    if (!sameSamp) {
+      let samp = await ctx.orm().info_user_samps.findOne({
         where: {
-          id: samp.id
+          userId: user.id,
+          handleType: '未采样',
+          startTime: {
+            $lte: today
+          },
+          endTime: {
+            $gte: today
+          }
         }
       })
-    } else {
-      await ctx.orm().info_user_samps.create({
-        userId: user.id,
-        startTime: today,
-        endTime: today,
-        dayCount: 1,
-        realCount: 1,
-        postName: user.postName,
-        periodType: user.periodType,
-        sampWay: user.sampWay,
-        handleType: '已采样',
-        handleTime: now,
-        handleCount: 1,
-        sampName,
-        sampUserName,
-        imgUrl,
-        imgTime: now,
-        remark
-      })
+
+      if (samp) {
+        await ctx.orm().info_user_samps.update({
+          handleType: '已采样',
+          handleTime: now,
+          handleCount: 1,
+          sampName,
+          sampUserName,
+          imgUrl,
+          imgTime: now,
+          remark
+        }, {
+          where: {
+            id: samp.id
+          }
+        })
+      } else {
+        await ctx.orm().info_user_samps.create({
+          userId: user.id,
+          startTime: today,
+          endTime: today,
+          dayCount: 1,
+          realCount: 1,
+          postName: user.postName,
+          periodType: user.periodType,
+          sampWay: user.sampWay,
+          handleType: '已采样',
+          handleTime: now,
+          handleCount: 1,
+          sampName,
+          sampUserName,
+          imgUrl,
+          imgTime: now,
+          remark
+        })
+      }
     }
 
     ctx.body = {}

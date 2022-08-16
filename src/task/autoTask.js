@@ -512,6 +512,7 @@ async function getRestUsers () {
 每5天一检，固定周期
 每周一检，固定周期
 每周2次（间隔2天以上），固定周期
+每周3次（间隔2天以上），固定周期
 每月一检，固定周期
 48小时内1次
 */
@@ -523,6 +524,7 @@ async function getRestUsers () {
 每5天一检，前一天提醒，结束前2提醒
 每周一检，前一天提醒，结束前2天提醒
 每周2次（间隔2天以上），前一天提醒，中间提醒或做完中间提醒，结束前2天提醒
+每周3次（间隔2天以上），固定周期
 每月一检，前一天提醒，中间提醒，结束前3天提醒
 
 一周一次改2次，5天参照一周，3天参照2天
@@ -775,7 +777,7 @@ async function weekSamp () {
         $lte: date.formatDate()
       },
       periodType: {
-        $in: ['每周一检', '每周2次']
+        $in: ['每周一检', '每周2次', '每周3次']
       },
       depId: {
         $gt: 2
@@ -854,6 +856,80 @@ async function weekSamp () {
           endTime: d2,
           dayCount: 7,
           realCount: 2,
+          postName: user.dataValues.postName,
+          periodType: user.dataValues.periodType,
+          handleType: '未采样',
+          isPlan: '计划内'
+        })
+      }
+    } else if (user.periodType === '每周3次') {
+      if (samp && samp.length === 0) {
+        await ctx.orm().info_user_samps.create({
+          userId: user.id,
+          startTime: d1,
+          endTime: d2,
+          dayCount: 7,
+          realCount: 3,
+          postName: user.dataValues.postName,
+          periodType: user.dataValues.periodType,
+          handleType: '未采样',
+          isPlan: '计划内'
+        })
+
+        await ctx.orm().info_user_samps.create({
+          userId: user.id,
+          startTime: d1,
+          endTime: d2,
+          dayCount: 7,
+          realCount: 3,
+          postName: user.dataValues.postName,
+          periodType: user.dataValues.periodType,
+          handleType: '未采样',
+          isPlan: '计划内'
+        })
+
+        await ctx.orm().info_user_samps.create({
+          userId: user.id,
+          startTime: d1,
+          endTime: d2,
+          dayCount: 7,
+          realCount: 3,
+          postName: user.dataValues.postName,
+          periodType: user.dataValues.periodType,
+          handleType: '未采样',
+          isPlan: '计划内'
+        })
+      } else if (samp && samp.length === 1) {
+        await ctx.orm().info_user_samps.create({
+          userId: user.id,
+          startTime: d1,
+          endTime: d2,
+          dayCount: 7,
+          realCount: 3,
+          postName: user.dataValues.postName,
+          periodType: user.dataValues.periodType,
+          handleType: '未采样',
+          isPlan: '计划内'
+        })
+
+        await ctx.orm().info_user_samps.create({
+          userId: user.id,
+          startTime: d1,
+          endTime: d2,
+          dayCount: 7,
+          realCount: 3,
+          postName: user.dataValues.postName,
+          periodType: user.dataValues.periodType,
+          handleType: '未采样',
+          isPlan: '计划内'
+        })
+      } else if (samp && samp.length === 2) {
+        await ctx.orm().info_user_samps.create({
+          userId: user.id,
+          startTime: d1,
+          endTime: d2,
+          dayCount: 7,
+          realCount: 3,
           postName: user.dataValues.postName,
           periodType: user.dataValues.periodType,
           handleType: '未采样',
@@ -1260,6 +1336,9 @@ async function autoWarnSendMsg () {
       case '每周2次':
         sendMsg = `您属于核酸应检尽检重点人员，请于${date.getTodayToPreDay(-1, 'YYYY年MM月DD日')}-${date.getTodayToPreDay(-7, 'YYYY年MM月DD日')}期间进行下一周期核酸检测，两次以上应检未检会给您工作、生活带来不便，特别提醒。`;
         break;
+      case '每周3次':
+        sendMsg = `您属于核酸应检尽检重点人员，请于${date.getTodayToPreDay(-1, 'YYYY年MM月DD日')}-${date.getTodayToPreDay(-7, 'YYYY年MM月DD日')}期间进行下一周期核酸检测，两次以上应检未检会给您工作、生活带来不便，特别提醒。`;
+        break;
       case '每月一检':
         sendMsg = `您属于核酸应检尽检重点人员，请于${date.getTodayToPreDay(-1, 'YYYY年MM月DD日')}-${date.getTodayToPreDay(-30, 'YYYY年MM月DD日')}期间进行下一周期核酸检测，两次以上应检未检会给您工作、生活带来不便，特别提醒。`;
         break;
@@ -1337,7 +1416,7 @@ async function autoSendMsg () {
         endTime > now() and 
         handleType = '未采样' and 
         postName != '愿检尽检人群' and 
-        periodType in ('每5天一检', '每周一检', '每周2次', '每月一检') 
+        periodType in ('每5天一检', '每周一检', '每周2次', '每周3次', '每月一检') 
     ) b where b.t1 = b.t2 + 2) a 
     inner join info_users u on u.id = a.userId and u.userType = '在线'`
 
@@ -1436,6 +1515,7 @@ async function autoRegular () {
         每5天一检，固定周期
         每周一检，固定周期
         每周2次（间隔2天以上），固定周期
+        每周3次（间隔2天以上），固定周期
         每月一检，固定周期
         48小时内1次
       */
@@ -1489,7 +1569,7 @@ async function autoRegular () {
       }
 
       // 新加入系统的人员（频次为7天1次、2次的），在加入的前7天都默认为合格
-      if (periodType === '每周一检' || periodType === '每周2次') {
+      if (periodType === '每周一检' || periodType === '每周2次' || periodType === '每周3次') {
         let createDays = moment(new Date()).diff(moment(createTime), 'days')
         if (createDays <= 7) {
           await ctx.orm().info_users.update({
@@ -1546,17 +1626,22 @@ async function autoRegular () {
           break;
         case '每5天一检':
           where.handleTime = {
-            $between: [date.getTodayToPreDay(4, 'YYYY-MM-DD'), date.formatDate(new Date(), 'YYYY-MM-DD 23:59:59')]
+            $between: [date.getTodayToPreDay(5, 'YYYY-MM-DD'), date.formatDate(new Date(), 'YYYY-MM-DD 23:59:59')]
           }
           break;
         case '每周一检':
           where.handleTime = {
-            $between: [date.getTodayToPreDay(6, 'YYYY-MM-DD'), date.formatDate(new Date(), 'YYYY-MM-DD 23:59:59')]
+            $between: [date.getTodayToPreDay(7, 'YYYY-MM-DD'), date.formatDate(new Date(), 'YYYY-MM-DD 23:59:59')]
           }
           break;
         case '每周2次':
           where.handleTime = {
-            $between: [date.getTodayToPreDay(6, 'YYYY-MM-DD'), date.formatDate(new Date(), 'YYYY-MM-DD 23:59:59')]
+            $between: [date.getTodayToPreDay(7, 'YYYY-MM-DD'), date.formatDate(new Date(), 'YYYY-MM-DD 23:59:59')]
+          }
+          break;
+        case '每周3次':
+          where.handleTime = {
+            $between: [date.getTodayToPreDay(7, 'YYYY-MM-DD'), date.formatDate(new Date(), 'YYYY-MM-DD 23:59:59')]
           }
           break;
         case '每月一检':
@@ -1581,6 +1666,26 @@ async function autoRegular () {
       if (samps && samps.length > 0) {
         if (periodType === '每周2次') {
           if (samps.length >= 2) {
+            await ctx.orm().info_users.update({
+              isRegular: 1,
+              regularTime: date.formatDate()
+            }, {
+              where: {
+                id: id
+              }
+            })
+          } else {
+            await ctx.orm().info_users.update({
+              isRegular: 0,
+              regularTime: date.formatDate()
+            }, {
+              where: {
+                id: id
+              }
+            })
+          }
+        } else if (periodType === '每周3次') {
+          if (samps.length >= 3) {
             await ctx.orm().info_users.update({
               isRegular: 1,
               regularTime: date.formatDate()
@@ -1712,6 +1817,49 @@ async function autoSysSampUpdate () {
               where: {
                 userId: user.id,
                 periodType: '每周2次',
+                handleType: '已采样',
+                handleTime: {
+                  $between: [date.formatDate(result[0].samp_date, 'YYYY-MM-DD 00:00:00'), date.formatDate(result[0].samp_date, 'YYYY-MM-DD 23:59:59')]
+                },
+                createTime: {
+                  $between: ['2022-08-01', date.formatDate(new Date(), 'YYYY-MM-DD')]
+                }
+              }
+            })
+
+            if (!sameSamp) {
+              console.log('更新采样数据（根据省系统数据）:%s, %s, %s, %s', user.idcard, result[0].samp_date, samp.id, date.formatDate());
+
+              await ctx.orm().info_user_samps.update({
+                sampWay: result[0].samp_mode,
+                handleType: '已采样',
+                handleTime: result[0].samp_date,
+                handleCount: 1,
+                sampName: result[0].test_facility,
+                sampUserName: result[0].if_user_name,
+                remark: '获取省系统数据自动更新'
+              }, {
+                where: {
+                  id: samp.id,
+                  handleType: '未采样'
+                }
+              })
+
+              await ctx.orm().info_users.update({
+                sampName: result[0].test_facility,
+                sampUserName: result[0].if_user_name,
+                sampHandleTime: result[0].samp_date
+              }, {
+                where: {
+                  id: user.id
+                }
+              })
+            }
+          } else if (samp.periodType === '每周3次') {
+            let sameSamp = await ctx.orm().info_user_samps.findOne({
+              where: {
+                userId: user.id,
+                periodType: '每周3次',
                 handleType: '已采样',
                 handleTime: {
                   $between: [date.formatDate(result[0].samp_date, 'YYYY-MM-DD 00:00:00'), date.formatDate(result[0].samp_date, 'YYYY-MM-DD 23:59:59')]

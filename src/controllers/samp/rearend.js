@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2022-08-15 10:08:58
+ * @LastEditTime: 2022-08-16 20:37:11
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/samp/rearend.js
@@ -32,6 +32,7 @@ const client = new AipOcrClient(APP_ID, API_KEY, SECRET_KEY);
 每周一检，固定周期
 每月一检，固定周期
 每周2次（间隔2天以上），固定周期
+每周3次（间隔2天以上），固定周期
 当天，无固定周期
 48小时内1次，无固定周期
 1、14，无固定周期
@@ -58,7 +59,6 @@ function formatDate (num) {
   }
 }
 
-
 module.exports = {
   getUsers: async ctx => {
     let pageIndex = ctx.request.body.pageIndex || 1;
@@ -66,7 +66,121 @@ module.exports = {
     let { tradeTypes, postNames, depName1s, depName2s, depName2, depStreet, name, phone, idcard, tradeType, postName, periodType, street, community, streets, communitys, address, userType,
       sampStartTime, sampName, sampUserName, sampHandleTime, createTime, updateTime, isRegular, isUp } = ctx.request.body;
 
-    let where = {};
+    let where = {
+      depId: {
+        $gt: 2
+      }
+    };
+
+    Object.assign(where, depStreet && { depStreet })
+    Object.assign(where, name && { name })
+    Object.assign(where, phone && { phone })
+    Object.assign(where, idcard && { idcard })
+    Object.assign(where, tradeType && { tradeType })
+    Object.assign(where, postName && { postName })
+    Object.assign(where, depName2 && { depName2 })
+    Object.assign(where, periodType && { periodType })
+    Object.assign(where, userType && { userType })
+    Object.assign(where, street && { street })
+    Object.assign(where, community && { community })
+    Object.assign(where, sampName && { sampName })
+    Object.assign(where, sampUserName && { sampUserName })
+    Object.assign(where, isRegular && { isRegular })
+    Object.assign(where, isUp && { isUp })
+
+    if (isRegular === 0) {
+      where.isRegular = isRegular
+    }
+
+    if (isUp === 0) {
+      where.isUp = isUp
+    }
+
+    if (tradeTypes && tradeTypes.length > 0) {
+      where.tradeType = {
+        $in: tradeTypes
+      }
+    }
+
+    if (postNames && postNames.length > 0) {
+      where.postName = {
+        $in: postNames
+      }
+    }
+
+    if (depName1s && depName1s.length > 0) {
+      where.depName1 = {
+        $in: depName1s
+      }
+    }
+
+    if (depName2s && depName2s.length > 0) {
+      where.depName2 = {
+        $in: depName2s
+      }
+    }
+
+    if (streets && streets.length > 0) {
+      where.street = {
+        $in: streets
+      }
+    }
+
+    if (communitys && communitys.length > 0) {
+      where.community = {
+        $in: communitys
+      }
+    }
+
+    if (sampStartTime && sampStartTime.length > 0) {
+      where.sampStartTime = { $between: sampStartTime }
+    }
+
+    if (sampHandleTime && sampHandleTime.length > 0) {
+      where.sampHandleTime = { $between: sampHandleTime }
+    }
+
+    if (createTime && createTime.length > 0) {
+      where.createTime = { $between: createTime }
+    }
+
+    if (updateTime && updateTime.length > 0) {
+      where.updateTime = { $between: updateTime }
+    }
+
+    if (address) {
+      where.address = {
+        $like: `%"${address}"%`
+      }
+    }
+
+    let result = await ctx.orm().info_users.findAndCountAll({
+      offset: (pageIndex - 1) * pageSize,
+      limit: pageSize,
+      where,
+      order: [
+        ['id', 'desc']
+      ]
+    });
+
+    ctx.body = {
+      total: result.count,
+      list: result.rows,
+      pageIndex,
+      pageSize
+    }
+  },
+  getUserWillings: async ctx => {
+    let pageIndex = ctx.request.body.pageIndex || 1;
+    let pageSize = ctx.request.body.pageSize || 50;
+    let { tradeTypes, postNames, depName1s, depName2s, depName2, depStreet, name, phone, idcard, tradeType, postName, periodType, street, community, streets, communitys, address, userType,
+      sampStartTime, sampName, sampUserName, sampHandleTime, createTime, updateTime, isRegular, isUp } = ctx.request.body;
+
+    let where = {
+      depId: {
+        $lte: 2
+      }
+    };
 
     Object.assign(where, depStreet && { depStreet })
     Object.assign(where, name && { name })
@@ -1526,7 +1640,363 @@ module.exports = {
     let { tradeTypes, postNames, depName1s, depName2s, depStreet, name, phone, idcard, tradeType, postName, periodType, street, community, streets, communitys, address, userType,
       sampStartTime, sampName, sampUserName, sampHandleTime, createTime, updateTime, isRegular, isUp } = ctx.request.body;
 
-    let where = {};
+    let where = {
+      depId: {
+        $gt: 2
+      }
+    };
+
+    Object.assign(where, depStreet && { depStreet })
+    Object.assign(where, name && { name })
+    Object.assign(where, phone && { phone })
+    Object.assign(where, idcard && { idcard })
+    Object.assign(where, tradeType && { tradeType })
+    Object.assign(where, postName && { postName })
+    Object.assign(where, periodType && { periodType })
+    Object.assign(where, userType && { userType })
+    Object.assign(where, street && { street })
+    Object.assign(where, community && { community })
+    Object.assign(where, sampName && { sampName })
+    Object.assign(where, sampUserName && { sampUserName })
+    Object.assign(where, isRegular && { isRegular })
+    Object.assign(where, isUp && { isUp })
+
+    if (isRegular === 0) {
+      where.isRegular = isRegular
+    }
+
+    if (isUp === 0) {
+      where.isUp = isUp
+    }
+
+    if (tradeTypes && tradeTypes.length > 0) {
+      where.tradeType = {
+        $in: tradeTypes
+      }
+    }
+
+    if (postNames && postNames.length > 0) {
+      where.postName = {
+        $in: postNames
+      }
+    }
+
+    if (depName1s && depName1s.length > 0) {
+      where.depName1 = {
+        $in: depName1s
+      }
+    }
+
+    if (depName2s && depName2s.length > 0) {
+      where.depName2 = {
+        $in: depName2s
+      }
+    }
+
+    if (streets && streets.length > 0) {
+      where.street = {
+        $in: streets
+      }
+    }
+
+    if (communitys && communitys.length > 0) {
+      where.community = {
+        $in: communitys
+      }
+    }
+
+    if (sampStartTime && sampStartTime.length > 0) {
+      where.sampStartTime = { $between: sampStartTime }
+    }
+
+    if (sampHandleTime && sampHandleTime.length > 0) {
+      where.sampHandleTime = { $between: sampHandleTime }
+    }
+
+    if (createTime && createTime.length > 0) {
+      where.createTime = { $between: createTime }
+    }
+
+    if (updateTime && updateTime.length > 0) {
+      where.updateTime = { $between: updateTime }
+    }
+
+    if (address) {
+      where.address = {
+        $like: `%"${address}"%`
+      }
+    }
+
+    let users = await ctx.orm().info_users.findAll({
+      where
+    });
+
+    let samps = []
+    // if (users && users.length > 0) {
+    //   let where1 = '';
+    // 
+    //   if (tradeTypes && tradeTypes.length > 0) {
+    //     where1 += ' and u.tradeType in (' + tradeTypes.map(m => {
+    //       return `'${m}'`
+    //     }).join(',') + ')';
+    //   }
+    // 
+    //   if (postNames && postNames.length > 0) {
+    //     where1 += ' and u.postName in (' + postNames.map(m => {
+    //       return `'${m}'`
+    //     }).join(',') + ')';
+    //   }
+    // 
+    //   if (depName1s && depName1s.length > 0) {
+    //     where1 += ' and u.depName1 in (' + depName1s.map(m => {
+    //       return `'${m}'`
+    //     }).join(',') + ')';
+    //   }
+    // 
+    //   if (depName2s && depName2s.length > 0) {
+    //     where1 += ' and u.depName2 in (' + depName2s.map(m => {
+    //       return `'${m}'`
+    //     }).join(',') + ')';
+    //   }
+    // 
+    //   if (depStreet) {
+    //     where1 += ` and u.depStreet = '${depStreet}'`;
+    //   }
+    // 
+    //   if (name) {
+    //     where1 += ` and u.name = '${name}'`;
+    //   }
+    // 
+    //   if (phone) {
+    //     where1 += ` and u.phone = '${phone}'`;
+    //   }
+    // 
+    //   if (idcard) {
+    //     where1 += ` and u.idcard = '${idcard}'`;
+    //   }
+    // 
+    //   if (tradeType) {
+    //     where1 += ` and u.tradeType = '${tradeType}'`;
+    //   }
+    // 
+    //   if (postName) {
+    //     where1 += ` and u.postName = '${postName}'`;
+    //   }
+    // 
+    //   if (periodType) {
+    //     where1 += ` and u.periodType = '${periodType}'`;
+    //   }
+    // 
+    //   if (street) {
+    //     where1 += ` and u.street = '${street}'`;
+    //   }
+    // 
+    //   if (community) {
+    //     where1 += ` and u.community = '${community}'`;
+    //   }
+    // 
+    //   if (streets && streets.length > 0) {
+    //     where1 += ' and u.street in (' + streets.map(m => {
+    //       return `'${m}'`
+    //     }).join(',') + ')';
+    //   }
+    // 
+    //   if (communitys && communitys.length > 0) {
+    //     where1 += ' and u.community in (' + communitys.map(m => {
+    //       return `'${m}'`
+    //     }).join(',') + ')';
+    //   }
+    // 
+    //   if (address) {
+    //     where1 += ` and u.address like '%${address}%'`;
+    //   }
+    // 
+    //   if (userType) {
+    //     where1 += ` and u.userType = '${userType}'`;
+    //   }
+    // 
+    //   if (sampStartTime && sampStartTime.length > 0) {
+    //     where1 += ` and u.sampStartTime between '${sampStartTime[0]}' and '${sampStartTime[1]}'`;
+    //   }
+    // 
+    //   if (sampName) {
+    //     where1 += ` and u.sampName = '${sampName}'`;
+    //   }
+    // 
+    //   if (sampUserName) {
+    //     where1 += ` and u.sampUserName = '${sampUserName}'`;
+    //   }
+    // 
+    //   if (sampHandleTime && sampHandleTime.length > 0) {
+    //     where1 += ` and u.sampHandleTime between '${sampHandleTime[0]}' and '${sampHandleTime[1]}'`;
+    //   }
+    // 
+    //   if (createTime && createTime.length > 0) {
+    //     where1 += ` and u.createTime between '${createTime[0]}' and '${createTime[1]}'`;
+    //   }
+    // 
+    //   if (updateTime && updateTime.length > 0) {
+    //     where1 += ` and u.updateTime between '${updateTime[0]}' and '${updateTime[1]}'`;
+    //   }
+    // 
+    //   let sql1 = `select s.*, u.depName1, u.depName2, u.depStreet, u.name, u.phone, u.idcard, u.street, u.community, u.address from info_user_samps s 
+    //   inner join info_users u on u.id = s.userId 
+    //   where 1=1 ${where1}`;
+    //   samps = await ctx.orm().query(sql1);
+    // }
+
+    let xlsxObj = [];
+    xlsxObj.push({
+      name: '采样人员列表',
+      data: []
+    })
+
+    // xlsxObj.push({
+    //   name: '采样信息列表',
+    //   data: []
+    // })
+
+    xlsxObj[0].data.push([
+      '编号',
+      '部门',
+      '单位',
+      '单位所在街道',
+      '姓名',
+      '手机号',
+      '身份证号',
+      '行业类别',
+      '职业名称',
+      '采样周期',
+      '街道',
+      '社区',
+      '住址',
+      '用户类型',
+      '采集开始时间',
+      '最新采样点名称',
+      '最新采样人姓名',
+      '最新采样时间',
+      '创建时间',
+      '最后修改时间',
+      '是否合格',
+      '是否在宁搏疫',
+      '宁搏疫返回结果'
+    ])
+
+    // xlsxObj[1].data.push([
+    //   '编号',
+    //   '部门',
+    //   '单位',
+    //   '单位所在街道',
+    //   '姓名',
+    //   '手机号',
+    //   '身份证号',
+    //   '职业名称',
+    //   '采样周期',
+    //   '街道',
+    //   '社区',
+    //   '住址',
+    //   '应采样开始时间',
+    //   '应采样结束时间',
+    //   '采样状态',
+    //   '实际采样时间',
+    //   '采样点',
+    //   '采样人',
+    //   '创建时间',
+    //   '最后修改时间'
+    // ])
+
+
+    for (let i = 0, j = users.length; i < j; i++) {
+      let user = users[i];
+
+      let arr = new Array();
+      arr.push(user.id || '');
+      arr.push(user.depName1 || '');
+      arr.push(user.depName2 || '');
+      arr.push(user.depStreet || '');
+      arr.push(user.name);
+      arr.push(user.phone);
+      arr.push(user.idcard);
+      arr.push(user.tradeType);
+      arr.push(user.postName);
+      arr.push(user.periodType);
+      arr.push(user.street);
+      arr.push(user.community);
+      arr.push(user.address);
+      arr.push(user.userType);
+      arr.push(user.sampStartTime);
+      arr.push(user.sampName);
+      arr.push(user.sampUserName);
+      arr.push(user.sampHandleTime);
+      arr.push(user.createTime);
+      arr.push(user.updateTime);
+
+      if (user.isRegular === 0) {
+        arr.push('不合格');
+      } else if (user.isRegular === 1) {
+        arr.push('合格');
+      } else {
+        arr.push('不计算');
+      }
+
+      if (user.isUp === 0) {
+        arr.push('未上传');
+      } else if (user.isUp === 1) {
+        arr.push('已上传');
+      } else {
+        arr.push('上传异常');
+      }
+
+      arr.push(user.upRep);
+
+      xlsxObj[0].data.push(arr)
+    }
+
+    for (let i = 0, j = samps.length; i < j; i++) {
+      let samp = samps[i];
+      // let user = users.find(f => f.id === samp.dataValues.userId)
+
+      let arr = new Array();
+      arr.push(samp.id || '');
+      arr.push(samp.depName1 || '');
+      arr.push(samp.depName2 || '');
+      arr.push(samp.depStreet || '');
+      arr.push(samp.name);
+      arr.push(samp.phone);
+      arr.push(samp.idcard);
+      arr.push(samp.postName);
+      arr.push(samp.periodType);
+      arr.push(samp.street);
+      arr.push(samp.community);
+      arr.push(samp.address);
+      arr.push(samp.startTime);
+      arr.push(samp.endTime);
+      arr.push(samp.handleType);
+      arr.push(samp.handleTime);
+      arr.push(samp.sampName);
+      arr.push(samp.sampUserName);
+      arr.push(samp.createTime);
+      arr.push(samp.updateTime);
+
+      xlsxObj[1].data.push(arr)
+    }
+
+    let excelFile = await excel.exportBigMoreSheetExcel(xlsxObj)
+
+    // ctx.set('Content-Type', 'application/vnd.openxmlformats');
+    // ctx.set('Access-Control-Expose-Headers', 'Content-Disposition')
+    // ctx.set('Content-Disposition', 'attachment; filename=' + 'orders_export.xlsx');
+    ctx.body = excelFile;
+  },
+  exportUserWillings: async ctx => {
+    let { tradeTypes, postNames, depName1s, depName2s, depStreet, name, phone, idcard, tradeType, postName, periodType, street, community, streets, communitys, address, userType,
+      sampStartTime, sampName, sampUserName, sampHandleTime, createTime, updateTime, isRegular, isUp } = ctx.request.body;
+
+    let where = {
+      depId: {
+        $lte: 2
+      }
+    };
 
     Object.assign(where, depStreet && { depStreet })
     Object.assign(where, name && { name })
@@ -2351,14 +2821,17 @@ module.exports = {
     })
   },
   sendMsgTest: async ctx => {
-    let phone = '18652017319'
-    let sendMsg = `您好！为了您与家人健康，请于${date.formatDate(new Date(), 'YYYY年MM年DD日')}-${date.getTodayToPreDay(-1, 'YYYY年MM年DD日')}期间进行核酸检测。感谢配合。`;
-    let rep = await http.get({
-      url: `http://59.83.223.109:8513/sms/Api/Send.do?SpCode=1037&LoginName=jbxq_hsjc&Password=62E79c7Rk&MessageContent=${encodeURIComponent(sendMsg)}&UserNumber=${phone}&templateId=123456&SerialNumber=&ScheduleTime=&f=1`
-    })
+    let phones = ['18012932597', '18652017319']
+
+    let sendMsg = `您是新区应检尽检重点人群，尚未按要求进行核酸检测，如果未检，将被苏康码推送弹窗提示，如果两次弹窗将可能会被赋码。由此会给您的生活和出行带来不便，请尽快按照要求进行核酸检测。`;
+
+    for (let i = 0, j = phones.length; i < j; i++) {
+      await http.get({
+        url: `http://59.83.223.109:8513/sms/Api/Send.do?SpCode=1037&LoginName=jbxq_hsjc&Password=62E79c7Rk&MessageContent=${encodeURIComponent(sendMsg)}&UserNumber=${phones[i]}&templateId=123456&SerialNumber=&ScheduleTime=&f=1`
+      })
+    }
 
     ctx.body = {
-      data: rep.data
     }
   },
   getRegular: async ctx => {
