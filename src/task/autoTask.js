@@ -51,7 +51,8 @@ let depToUpDep = {
   '民政部门': 'MZ0',
   '市场监督管理局': 'SJ0',
   '建设与交通局': 'JT0',
-  '经济发展局': 'SW0',
+  '投资促进和商务局': 'SW0',
+  '经济发展局': 'GX0',
   '综合行政执法局': 'CG0',
   '葛塘街道': 'MZ0',
   '卫生健康': 'WJW',
@@ -398,6 +399,13 @@ async function getUpUsers () {
 
       for (let i = 0, j = users.length; i < j; i++) {
         if (postToUpPost[users[i].postName] && depToUpDep[users[i].depName1]) {
+          let zdrqlb = postToUpPost[users[i].postName]
+          let zrbm = depToUpDep[users[i].depName1]
+
+          if (users[i].postName === '建筑工地') {
+            zrbm = 'JWH'
+          }
+
           sendData.data.push({
             xm: users[i].name,
             xb: getIdCardSex(users[i].idcard),
@@ -405,8 +413,8 @@ async function getUpUsers () {
             zjhm: users[i].idcard,
             sjhm: users[i].phone,
             sfzg: users[i].userType === '在线' || users[i].userType === '已设置休假' ? 1 : 0,
-            zdrqlb: postToUpPost[users[i].postName],  // 重点人群类别
-            zrbm: depToUpDep[users[i].depName1],// 责任部门
+            zdrqlb: zdrqlb,  // 重点人群类别
+            zrbm: zrbm,// 责任部门
             sszrqbh: '320112000000',
             sszrjdbh: users[i].street ? streetToUpStreet[users[i].street] : streetToUpStreet[users[i].depStreet],
             sszrsqbh: communityToUpCommunity[users[i].community],
@@ -1102,14 +1110,17 @@ async function importUsers () {
           depName1: dep.depName,
           depName2: dep2.depName,
           depStreet: dep2.depStreet,
+          tyshxydm: dep2.tyshxydm,
+          street: dep2.depStreet,
+          community: dep2.depCommunity,
           name: data.name,
           phone: data.phone,
-          idcard: data.idcard.replace('x', 'X'),
+          idcard: data.idcard.replace(/[^a-z0-9]/gi, '').replace('x', 'X'),
           tradeType: post.tradeType,
           postName: post.postName,
           periodType: post.periodType,
           sampWay: post.sampWay,
-          userType: '在线'
+          isUp: 0
         }, {
           where: {
             id: user.id
@@ -1130,9 +1141,12 @@ async function importUsers () {
           depName1: dep.depName,
           depName2: dep2.depName,
           depStreet: dep2.depStreet,
+          tyshxydm: dep2.tyshxydm,
+          street: dep2.depStreet,
+          community: dep2.depCommunity,
           name: data.name,
           phone: data.phone,
-          idcard: data.idcard.replace('x', 'X'),
+          idcard: data.idcard.replace(/[^a-z0-9]/gi, '').replace('x', 'X'),
           tradeType: post.tradeType,
           postName: post.postName,
           periodType: post.periodType,
@@ -1190,7 +1204,7 @@ async function importSamps () {
           depStreet: '',
           name: data.name,
           phone: data.phone,
-          idcard: data.idcard.replace('x', 'X'),
+          idcard: data.idcard.replace(/[^a-z0-9]/gi, '').replace('x', 'X'),
           tradeType: '其他',
           postName: '愿检尽检人群',
           periodType: '当天',
