@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2022-08-08 10:18:06
+ * @LastEditTime: 2022-08-21 14:34:03
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/assetmanage/rearend.js
@@ -158,6 +158,27 @@ module.exports = {
             a3 = m.a3
           }
         })
+
+        // 删除已有的租赁信息
+        await ctx.orm().info_house_yearrent.destroy({
+          where: {
+            hid: hid,
+            hhid: id
+          }
+        })
+
+        if (yearrent && yearrent.length > 0) {
+          let data = yearrent.map(m => {
+            return {
+              ...m,
+              hid: hid,
+              hhid: id,
+              a4: a4,
+              a5: a5
+            };
+          });
+          ctx.orm().info_house_yearrent.bulkCreate(data);
+        }
       }
 
       await ctx.orm().info_house_having.update({
