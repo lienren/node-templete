@@ -177,6 +177,10 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING(100),
       allowNull: true
     },
+    x33: {
+      type: DataTypes.STRING(10),
+      allowNull: true
+    },
     state: {
       type: DataTypes.INTEGER(11),
       allowNull: true
@@ -205,6 +209,22 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.INTEGER(11),
       allowNull: true,
       defaultValue: '0'
+    },
+    noBackReason: {
+      type: DataTypes.STRING(500),
+      allowNull: true
+    },
+    userBack: {
+      type: DataTypes.STRING(20),
+      allowNull: true
+    },
+    img1: {
+      type: DataTypes.STRING(1000),
+      allowNull: true
+    },
+    img2: {
+      type: DataTypes.STRING(1000),
+      allowNull: true
     }
   }, {
     tableName: 'school_users_v2'

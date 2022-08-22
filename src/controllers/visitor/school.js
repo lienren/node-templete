@@ -11,9 +11,13 @@ const date = require('../../utils/date');
 
 const stateEnum = {
   0: '未提交',
-  1: '待审核',
-  2: '审核通过',
-  3: '审核不通过'
+  1: '待一审',
+  2: '一审通过',
+  3: '待二审',
+  4: '二审通过',
+  5: '一审核不通过',
+  6: '二审核不通过',
+  7: '锁定'
 }
 
 module.exports = {
@@ -87,30 +91,119 @@ module.exports = {
       });
     }
 
-    let isBack =
-      parseInt(date.formatDate(new Date(), 'YYYYMMDD')) >=
-      parseInt(date.formatDate(user.x19, 'YYYYMMDD'));
-
-    let backInfo = isBack ?
-      '今天可以返校' :
-      '今天不可以返校，您的返校时间是：' +
-      date.formatDate(user.x19, 'YYYY年MM月DD日');
-
     ctx.body = {
       id: user.id,
-      xIsAdd: user.xIsAdd,
       state: user.state,
       stateName: user.stateName,
-      x19: user.x19,
-      isBack: isBack,
-      backInfo: backInfo,
+      xIsAdd: user.xIsAdd,
+      today: date.formatDate(new Date(), 'YYYY年MM月DD日'),
       x1: user.x1,
       x3: user.x3,
       x5: user.x5,
       x6: user.x6,
+      x19: user.x19,
       x20: user.x20,
-      today: date.formatDate(new Date(), 'YYYY年MM月DD日'),
+      area: user.area,
+      today: date.formatDate(new Date(), 'YYYY年MM月DD日')
     };
+  },
+  submitUserInfoNew1: async (ctx) => {
+    let { openId, userBack, area, x4, x19, x7, x8, x9, skm, x10, x33, noBackReason } = ctx.request.body
+
+    cp.isEmpty(openId)
+    cp.isEmpty(userBack)
+
+    if (userBack === '我要返校') {
+      cp.isEmpty(area)
+      cp.isEmpty(x4)
+      cp.isEmpty(x19)
+      cp.isEmpty(x7)
+      cp.isEmpty(x8)
+      cp.isEmpty(x9)
+      cp.isEmpty(skm)
+      cp.isEmpty(x10)
+      cp.isEmpty(x33)
+    } else {
+      cp.isEmpty(noBackReason)
+    }
+
+    let user = await ctx.orm().school_users_v2.findOne({
+      where: {
+        openId: openId,
+        isclose: 0
+      }
+    })
+    assert.ok(!!user, '您不在返校名单中，请向辅导员确认是否暂缓/暂不返校！')
+    assert.ok(user.xState === 0 && user.xIsAdd === 0, '您的信息已完成登记！')
+
+    await ctx.orm().school_users_v2.update({
+      userBack, area, x4, x19, x7, x8, x9, skm, x10, x33, noBackReason,
+      xState: 0,
+      xStateName: '未返校',
+      xIsAdd: 1,
+      xlsAddTime: date.formatDate(),
+      state: 1,
+      stateName: stateEnum[1]
+    }, {
+      where: {
+        id: user.id
+      }
+    })
+
+    user = await ctx.orm().school_users_v2.findOne({
+      where: {
+        openId: openId
+      }
+    })
+
+    ctx.body = {
+      id: user.id,
+      state: user.state,
+      stateName: user.stateName,
+      xIsAdd: user.xIsAdd,
+      today: date.formatDate(new Date(), 'YYYY年MM月DD日')
+    }
+  },
+  submitUserInfoNew2: async (ctx) => {
+    let { openId, hsjctime, x11, x12, x18, img1, img2 } = ctx.request.body
+
+    cp.isEmpty(openId)
+    cp.isEmpty(hsjctime)
+    cp.isEmpty(x11)
+
+    let user = await ctx.orm().school_users_v2.findOne({
+      where: {
+        openId: openId,
+        state: 2,
+        isclose: 0
+      }
+    })
+    assert.ok(!!user, '您不在返校名单中，请向辅导员确认是否暂缓/暂不返校！')
+
+    await ctx.orm().school_users_v2.update({
+      hsjctime, x11, x12, x18, img1, img2,
+      state: 3,
+      stateName: stateEnum[3]
+    }, {
+      where: {
+        id: user.id,
+        state: 2
+      }
+    })
+
+    user = await ctx.orm().school_users_v2.findOne({
+      where: {
+        openId: openId
+      }
+    })
+
+    ctx.body = {
+      id: user.id,
+      state: user.state,
+      stateName: user.stateName,
+      xIsAdd: user.xIsAdd,
+      today: date.formatDate(new Date(), 'YYYY年MM月DD日')
+    }
   },
   submitUserInfo: async (ctx) => {
     let openId = ctx.request.body.openId || '';
@@ -634,7 +727,7 @@ module.exports = {
     let manager = await ctx.orm().school_manager.findOne({
       where: {
         openId: mOpenId,
-        isDel: 0,
+        isDel: 0
       },
     });
 
@@ -643,28 +736,26 @@ module.exports = {
     let user = await ctx.orm().school_users_v2.findOne({
       where: {
         openId: openId,
+        isclose: 0,
+        state: 4
       },
     });
-    assert.notStrictEqual(
-      user,
-      null,
-      '您不在返校名单中，请向辅导员确认是否暂缓/暂不返校！'
-    );
+    assert.ok(!!user, '您不在返校名单中，请向辅导员确认是否暂缓/暂不返校！');
     assert.ok(user.xIsAdd === 1, '信息未登记，请登记完成后再试！');
 
-    let isBack = 0;
+    let isBack = 1;
     let backInfo = '报到时间未到，不能入校';
 
     if (user.xState === 0 && user.xIsAdd === 1) {
       if (
-        parseInt(date.formatDate(new Date(), 'YYYYMMDD')) >=
-        parseInt(date.formatDate(user.x19, 'YYYYMMDD'))
+        parseInt(date.formatDate(new Date(), 'YYYYMMDDHH')) >=
+        parseInt(date.formatDate(user.x19, 'YYYYMMDDHH'))
       ) {
         isBack = 1;
         backInfo = '报到时间无误，可以入校';
       } else {
         isBack = 3;
-        backInfo = '返校日期是：' + date.formatDate(user.x19, 'YYYY年MM月DD日');
+        backInfo = '返校日期是：' + date.formatDate(user.x19, 'YYYY年MM月DD日 HH点');
       }
     } else if (user.xState === 1) {
       isBack = 2;
@@ -690,7 +781,7 @@ module.exports = {
       hsjcaddr: user.hsjcaddr,
       isBack: isBack,
       backInfo: backInfo,
-      xBackTime: date.formatDate(new Date(), 'YYYY-MM-DD HH:mm:ss'),
+      xBackTime: user.xBackTime
     };
   },
   setUserBackSchool: async (ctx) => {
@@ -704,7 +795,7 @@ module.exports = {
     let manager = await ctx.orm().school_manager.findOne({
       where: {
         openId: mOpenId,
-        isDel: 0,
+        isDel: 0
       },
     });
 
@@ -713,19 +804,17 @@ module.exports = {
     let user = await ctx.orm().school_users_v2.findOne({
       where: {
         openId: openId,
+        isclose: 0,
+        state: 4
       },
     });
-    assert.notStrictEqual(
-      user,
-      null,
-      '您不在返校名单中，请向辅导员确认是否暂缓/暂不返校！'
-    );
+    assert.notStrictEqual(user, '您不在返校名单中，请向辅导员确认是否暂缓/暂不返校！');
     assert.ok(user.xIsAdd === 1, '信息未登记，请登记完成后再试！');
 
     if (user.xState === 0) {
       let isBack =
-        parseInt(date.formatDate(new Date(), 'YYYYMMDD')) >=
-        parseInt(date.formatDate(user.x19, 'YYYYMMDD'));
+        parseInt(date.formatDate(new Date(), 'YYYYMMDDHH')) >=
+        parseInt(date.formatDate(user.x19, 'YYYYMMDDHH'));
 
       await ctx.orm().school_users_v2.update({
         xState: 1,
