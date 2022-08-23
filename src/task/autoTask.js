@@ -1120,7 +1120,8 @@ async function importUsers () {
           postName: post.postName,
           periodType: post.periodType,
           sampWay: post.sampWay,
-          isUp: 0
+          isUp: 0,
+          userType: dep2.id > 2 ? '在线': user.userType
         }, {
           where: {
             id: user.id
@@ -2203,8 +2204,8 @@ async function main () {
   })
 
   // handleTmp();
-  // getUpUsers()
-  autoRegular()
+  getUpUsers()
+  // autoRegular()
   // autoSysSampUpdate()
 }
 
