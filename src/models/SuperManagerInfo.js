@@ -68,6 +68,14 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.INTEGER(11),
       allowNull: true,
       defaultValue: '0'
+    },
+    userType: {
+      type: DataTypes.STRING(20),
+      allowNull: true
+    },
+    userData: {
+      type: DataTypes.STRING(100),
+      allowNull: true
     }
   }, {
     tableName: 'SuperManagerInfo'

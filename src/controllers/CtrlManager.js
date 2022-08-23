@@ -15,7 +15,7 @@ const jwt = require('../utils/jwt');
 const configData = require('./ConfigData');
 const config = require('../config.js');
 
-function serializeMenu(menus, parentId) {
+function serializeMenu (menus, parentId) {
   let list = [];
   menus.forEach(menu => {
     if (menu.parentId === parentId) {
@@ -124,6 +124,8 @@ module.exports = {
       token: token,
       roles: resultManagerRoles,
       depName: resultManager.depName,
+      userType: resultManager.userType,
+      userData: resultManager.userData,
       verifyLevel: resultManager.verifyLevel
     };
   },
@@ -213,6 +215,8 @@ module.exports = {
       token: token,
       roles: resultManagerRoles,
       depName: resultManager.depName,
+      userType: resultManager.userType,
+      userData: resultManager.userData,
       verifyLevel: resultManager.verifyLevel
     };
   },
@@ -266,6 +270,7 @@ module.exports = {
     let state = ctx.request.body.state;
     let startAddTime = ctx.request.body.startAddTime || 0;
     let endAddTime = ctx.request.body.endAddTime || 0;
+    let userType = ctx.request.body.userType || '';
     let condition = {};
 
     if (loginName !== '') {
@@ -291,6 +296,9 @@ module.exports = {
         $between: [startAddTime, endAddTime]
       };
     }
+    if (userType) {
+      condition.userType = userType;
+    }
 
     condition.isDel = 0;
 
@@ -298,7 +306,7 @@ module.exports = {
       where: condition
     });
     let result = await ctx.orm().SuperManagerInfo.findAll({
-      attributes: ['id', 'loginName', 'realName', 'phone', 'state', 'depName', 'sex', 'addTime', 'lastTime'],
+      attributes: ['id', 'loginName', 'realName', 'phone', 'state', 'depName', 'sex', 'userType', 'userData', 'addTime', 'lastTime'],
       offset: (current - 1) * pageSize,
       limit: pageSize,
       where: condition,
@@ -320,6 +328,8 @@ module.exports = {
     let state = ctx.request.body.state;
     let sex = ctx.request.body.sex;
     let depName = ctx.request.body.depName || '';
+    let userType = ctx.request.body.userType || '';
+    let userData = ctx.request.body.userData || '';
     let now = date.getTimeStamp();
 
     assert.notStrictEqual(loginName, '', 'InputParamIsNull');
@@ -353,6 +363,8 @@ module.exports = {
       tokenOverTime: now,
       addTime: now,
       lastTime: now,
+      userType,
+      userData,
       isDel: 0
     });
 
@@ -367,6 +379,8 @@ module.exports = {
     let state = ctx.request.body.state;
     let sex = ctx.request.body.sex;
     let depName = ctx.request.body.depName || '';
+    let userType = ctx.request.body.userType || '';
+    let userData = ctx.request.body.userData || '';
     let now = date.getTimeStamp();
 
     assert.notStrictEqual(id, 0, 'InputParamIsNull');
@@ -377,7 +391,10 @@ module.exports = {
     // 超级管理员禁止更新
     assert.notStrictEqual(id, 1, 'SuperManagerNotUpdate');
 
-    let updateField = {};
+    let updateField = {
+      userType,
+      userData
+    };
 
     let sameManagerResult = await ctx.orm().SuperManagerInfo.findOne({
       where: {
@@ -554,7 +571,7 @@ module.exports = {
     await ctx
       .orm()
       .query(`delete from SuperManagerRoleInfo where managerId = ${id}`)
-      .spread((results, metadata) => {});
+      .spread((results, metadata) => { });
 
     // 添加管理员角色数据
     let data = roleIds.map(role => {
@@ -749,7 +766,7 @@ module.exports = {
     await ctx
       .orm()
       .query(`delete from SuperRoleMenuInfo where roleId = ${id}`)
-      .spread((results, metadata) => {});
+      .spread((results, metadata) => { });
 
     // 添加角色菜单数据
     let data = menuIds.map(menu => {

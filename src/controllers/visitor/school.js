@@ -137,13 +137,13 @@ module.exports = {
     assert.ok(user.xState === 0 && user.xIsAdd === 0, '您的信息已完成登记！')
 
     await ctx.orm().school_users_v2.update({
-      userBack, area, x4, x19, x7, x8, x9, skm, x10, x33, noBackReason,
+      userBack, area, x4, x19:x19?x19:null, x7, x8, x9, skm, x10, x33, noBackReason,
       xState: 0,
       xStateName: '未返校',
       xIsAdd: 1,
       xlsAddTime: date.formatDate(),
-      state: 1,
-      stateName: stateEnum[1]
+      state: userBack === '我要返校' ? 1 : 7,
+      stateName: userBack === '我要返校' ? stateEnum[1] : stateEnum[7]
     }, {
       where: {
         id: user.id
@@ -858,6 +858,7 @@ module.exports = {
     let x22 = ctx.request.body.x22 || '';
     let area = ctx.request.body.area || '';
     let skm = ctx.request.body.skm || '';
+    let userBack = ctx.request.body.userBack || '';
     let pageIndex = ctx.request.body.pageIndex || 1;
     let pageSize = ctx.request.body.pageSize || 20;
 
@@ -949,9 +950,301 @@ module.exports = {
     if (x22 != '') {
       where.x22 = x22;
     }
-
     if (area !== '') {
       where.area = area;
+    }
+    if (userBack !== '') {
+      where.userBack = userBack;
+    }
+
+    let list = await ctx.orm().school_users_v2.findAndCountAll({
+      offset: (pageIndex - 1) * pageSize,
+      limit: pageSize,
+      where,
+    });
+
+    ctx.body = {
+      list: list.rows,
+      total: list.count,
+      pageIndex,
+      pageSize,
+    };
+  },
+  search: async (ctx) => {
+    let isAdd = ctx.request.body.isAdd || -1;
+    let isAddSTime = ctx.request.body.isAddSTime || '';
+    let isAddETime = ctx.request.body.isAddETime || '';
+    let state = ctx.request.body.state;
+    let verifyState = ctx.request.body.verifyState;
+    let backSTime = ctx.request.body.backSTime || '';
+    let backETime = ctx.request.body.backETime || '';
+    let x1 = ctx.request.body.x1 || '';
+    let x2 = ctx.request.body.x2 || '';
+    let x3 = ctx.request.body.x3 || '';
+    let x4 = ctx.request.body.x4 || '';
+    let x5 = ctx.request.body.x5 || '';
+    let x6 = ctx.request.body.x6 || '';
+    let x7 = ctx.request.body.x7 || '';
+    let x8 = ctx.request.body.x8 || '';
+    let x9 = ctx.request.body.x9 || '';
+    let x11 = ctx.request.body.x11 || '';
+    let x12 = ctx.request.body.x12 || '';
+    let x13 = ctx.request.body.x13 || -1;
+    let x14 = ctx.request.body.x14 || '';
+    let x15 = ctx.request.body.x15 || '';
+    let x16 = ctx.request.body.x16 || '';
+    let x19 = ctx.request.body.x19 || '';
+    let x20 = ctx.request.body.x20 || '';
+    let x22 = ctx.request.body.x22 || '';
+    let area = ctx.request.body.area || '';
+    let skm = ctx.request.body.skm || '';
+    let userBack = ctx.request.body.userBack || '';
+    let pageIndex = ctx.request.body.pageIndex || 1;
+    let pageSize = ctx.request.body.pageSize || 20;
+
+    let where = {};
+
+    if (isAdd > -1) {
+      where.xIsAdd = isAdd;
+    }
+
+    if (isAddSTime !== '' && isAddETime !== '') {
+      where.xlsAddTime = {
+        $between: [isAddSTime, isAddETime],
+      };
+    }
+
+    state = state === undefined || state === null ? -1 : state
+    if (state > -1) {
+      where.xState = state;
+    }
+
+    verifyState = verifyState === undefined || verifyState === null ? -1 : verifyState
+    if (verifyState > -1) {
+      where.state = verifyState;
+    }
+
+    if (backSTime !== '' && backETime !== '') {
+      where.xBackTime = {
+        $between: [backSTime, backETime],
+      };
+    }
+
+    if (skm !== '') {
+      where.skm = skm;
+    }
+
+    if (x1 !== '') {
+      where.x1 = x1;
+    }
+    if (x2 !== '') {
+      where.x2 = x2;
+    }
+    if (x3 !== '') {
+      where.x3 = x3;
+    }
+    if (x4 !== '') {
+      where.x4 = x4;
+    }
+    if (x5 !== '') {
+      where.x5 = x5;
+    }
+    if (x6 !== '') {
+      where.x6 = x6;
+    }
+    if (x7 !== '') {
+      where.x7 = x7;
+    }
+    if (x8 !== '') {
+      where.x8 = x8;
+    }
+    if (x9 !== '') {
+      where.x9 = x9;
+    }
+    if (x11 !== '') {
+      where.x11 = x11;
+    }
+    if (x12 !== '') {
+      where.x12 = x12;
+    }
+    if (x13 > -1) {
+      where.x13 = x13;
+    }
+    if (x14 !== '') {
+      where.x14 = x14;
+    }
+    if (x15 !== '') {
+      where.x15 = x15;
+    }
+    if (x16 !== '') {
+      where.x16 = x16;
+    }
+    if (x19 !== '') {
+      where.x19 = {
+        $between: [`${x19} 00:00:00`, `${x19} 23:59:59`],
+      };
+    }
+    if (x20 !== '') {
+      where.x20 = x20;
+    }
+    if (x22 != '') {
+      where.x22 = x22;
+    }
+    if (area !== '') {
+      where.area = area;
+    }
+    if (userBack !== '') {
+      where.userBack = userBack;
+    }
+
+    let list = await ctx.orm().school_users_v2.findAndCountAll({
+      offset: (pageIndex - 1) * pageSize,
+      limit: pageSize,
+      where,
+    });
+
+    ctx.body = {
+      list: list.rows,
+      total: list.count,
+      pageIndex,
+      pageSize,
+    };
+  },
+  searchf: async (ctx) => {
+    let isAdd = ctx.request.body.isAdd || -1;
+    let isAddSTime = ctx.request.body.isAddSTime || '';
+    let isAddETime = ctx.request.body.isAddETime || '';
+    let state = ctx.request.body.state;
+    let verifyState = ctx.request.body.verifyState;
+    let backSTime = ctx.request.body.backSTime || '';
+    let backETime = ctx.request.body.backETime || '';
+    let x1 = ctx.request.body.x1 || '';
+    let x2 = ctx.request.body.x2 || '';
+    let x3 = ctx.request.body.x3 || '';
+    let x4 = ctx.request.body.x4 || '';
+    let x5 = ctx.request.body.x5 || '';
+    let x6 = ctx.request.body.x6 || '';
+    let x7 = ctx.request.body.x7 || '';
+    let x8 = ctx.request.body.x8 || '';
+    let x9 = ctx.request.body.x9 || '';
+    let x11 = ctx.request.body.x11 || '';
+    let x12 = ctx.request.body.x12 || '';
+    let x13 = ctx.request.body.x13 || -1;
+    let x14 = ctx.request.body.x14 || '';
+    let x15 = ctx.request.body.x15 || '';
+    let x16 = ctx.request.body.x16 || '';
+    let x19 = ctx.request.body.x19 || '';
+    let x20 = ctx.request.body.x20 || '';
+    let x22 = ctx.request.body.x22 || '';
+    let area = ctx.request.body.area || '';
+    let skm = ctx.request.body.skm || '';
+    let userBack = ctx.request.body.userBack || '';
+    let pageIndex = ctx.request.body.pageIndex || 1;
+    let pageSize = ctx.request.body.pageSize || 20;
+    let manageId = ctx.request.body.manageId || 0;
+
+    let manage = await ctx.orm().SuperManagerInfo.findOne({
+      where: {
+        id: manageId
+      }
+    });
+
+    assert.ok(!!manage, '管理员不存在!')
+
+    let where = {
+      x6: {
+        $in: manage.userData ? JSON.parse(manage.userData) : ['']
+      }
+    };
+
+    if (isAdd > -1) {
+      where.xIsAdd = isAdd;
+    }
+
+    if (isAddSTime !== '' && isAddETime !== '') {
+      where.xlsAddTime = {
+        $between: [isAddSTime, isAddETime],
+      };
+    }
+
+    state = state === undefined || state === null ? -1 : state
+    if (state > -1) {
+      where.xState = state;
+    }
+
+    verifyState = verifyState === undefined || verifyState === null ? -1 : verifyState
+    if (verifyState > -1) {
+      where.state = verifyState;
+    }
+
+    if (backSTime !== '' && backETime !== '') {
+      where.xBackTime = {
+        $between: [backSTime, backETime],
+      };
+    }
+
+    if (skm !== '') {
+      where.skm = skm;
+    }
+
+    if (x1 !== '') {
+      where.x1 = x1;
+    }
+    if (x2 !== '') {
+      where.x2 = x2;
+    }
+    if (x3 !== '') {
+      where.x3 = x3;
+    }
+    if (x4 !== '') {
+      where.x4 = x4;
+    }
+    if (x5 !== '') {
+      where.x5 = x5;
+    }
+    if (x7 !== '') {
+      where.x7 = x7;
+    }
+    if (x8 !== '') {
+      where.x8 = x8;
+    }
+    if (x9 !== '') {
+      where.x9 = x9;
+    }
+    if (x11 !== '') {
+      where.x11 = x11;
+    }
+    if (x12 !== '') {
+      where.x12 = x12;
+    }
+    if (x13 > -1) {
+      where.x13 = x13;
+    }
+    if (x14 !== '') {
+      where.x14 = x14;
+    }
+    if (x15 !== '') {
+      where.x15 = x15;
+    }
+    if (x16 !== '') {
+      where.x16 = x16;
+    }
+    if (x19 !== '') {
+      where.x19 = {
+        $between: [`${x19} 00:00:00`, `${x19} 23:59:59`],
+      };
+    }
+    if (x20 !== '') {
+      where.x20 = x20;
+    }
+    if (x22 != '') {
+      where.x22 = x22;
+    }
+    if (area !== '') {
+      where.area = area;
+    }
+    if (userBack !== '') {
+      where.userBack = userBack;
     }
 
     let list = await ctx.orm().school_users_v2.findAndCountAll({
@@ -1000,8 +1293,7 @@ module.exports = {
       stateName: stateEnum[verfiyState]
     }, {
       where: {
-        id: id,
-        state: 1
+        id: id
       },
     });
 
@@ -1020,8 +1312,7 @@ module.exports = {
       where: {
         id: {
           $in: id
-        },
-        state: 1
+        }
       },
     });
 
