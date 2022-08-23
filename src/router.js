@@ -19,6 +19,7 @@ router
   // 上传文件
   .post('/base/uploadfile', uploadFile.getMulter('files').any(), ctrl.CtrlBase.uploadFile)
   .post('/super/login', ctrl.CtrlManager.login)
+  .post('/super/logingm', ctrl.CtrlManager.loginGM)
   .post('/super/setpassword', ctrl.CtrlManager.setPassword)
   /***************************** 管理员管理 *************************************/
   .post('/super/getmanagers', ctrl.CtrlManager.getManagers)
