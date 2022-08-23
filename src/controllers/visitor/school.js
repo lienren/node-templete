@@ -17,7 +17,7 @@ const stateEnum = {
   4: '二审通过',
   5: '一审核不通过',
   6: '二审核不通过',
-  7: '锁定'
+  7: '暂缓返校'
 }
 
 module.exports = {
@@ -700,6 +700,7 @@ module.exports = {
       x21: '',
       x22: '',
       x31: null,
+      x33: '',
       xIsAdd: 0,
       xlsAddTime: date.formatDate(),
       state: 0,
@@ -707,7 +708,11 @@ module.exports = {
       skm: '',
       hsjc: '',
       hsjctime: '',
-      hsjcaddr: ''
+      hsjcaddr: '',
+      img1: '',
+      img2: '',
+      noBackReason: '',
+      userBack: ''
     }, {
       where: {
         id: user.id,
