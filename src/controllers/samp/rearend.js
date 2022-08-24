@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2022-08-20 11:43:52
+ * @LastEditTime: 2022-08-24 16:47:22
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/samp/rearend.js
@@ -1578,8 +1578,8 @@ module.exports = {
           name: m[4].trim(),
           tradeType: m[5].trim(),
           postName: m[6].trim(),
-          idcard: m[7].toString().replace(/[^a-z0-9]/gi, ''),
-          phone: m[8].toString().trim(),
+          idcard: m[7] ? m[7].toString().replace(/[^a-z0-9]/gi, '') : '',
+          phone: m[8] ? m[8].toString().trim() : '',
           status: 0
         }
       });
