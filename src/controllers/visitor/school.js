@@ -134,10 +134,10 @@ module.exports = {
       }
     })
     assert.ok(!!user, '您不在返校名单中，请向辅导员确认是否暂缓/暂不返校！')
-    assert.ok(user.xState === 0 && user.xIsAdd === 0, '您的信息已完成登记！')
+    assert.ok(user.xState === 0, '您的信息已完成登记！')
 
     await ctx.orm().school_users_v2.update({
-      userBack, area, x4, x19:x19?x19:null, x7, x8, x9, skm, x10, x33, noBackReason,
+      userBack, area, x4, x19: x19 ? x19 : null, x7, x8, x9, skm, x10, x33, noBackReason,
       xState: 0,
       xStateName: '未返校',
       xIsAdd: 1,
@@ -1293,10 +1293,16 @@ module.exports = {
 
     cp.isEmpty(id);
 
-    await ctx.orm().school_users_v2.update({
+    let updateData = {
       state: verfiyState,
       stateName: stateEnum[verfiyState]
-    }, {
+    }
+    if (verfiyState === 0) {
+      updateData.userBack = ''
+      updateData.noBackReason = ''
+    }
+
+    await ctx.orm().school_users_v2.update(updateData, {
       where: {
         id: id
       },
@@ -1310,10 +1316,16 @@ module.exports = {
 
     cp.isArrayLengthGreaterThan0(id);
 
-    await ctx.orm().school_users_v2.update({
+    let updateData = {
       state: verfiyState,
       stateName: stateEnum[verfiyState]
-    }, {
+    }
+    if (verfiyState === 0) {
+      updateData.userBack = ''
+      updateData.noBackReason = ''
+    }
+
+    await ctx.orm().school_users_v2.update(updateData, {
       where: {
         id: {
           $in: id
@@ -1324,12 +1336,12 @@ module.exports = {
     ctx.body = {};
   },
   createSchoolUserInfo: async (ctx) => {
-    let { x1, x3, x5, x19, x20, area, x28 } = ctx.request.body;
+    let { x1, x3, x5, x6, x20, area, x28 } = ctx.request.body;
 
     cp.isEmpty(x1);
     cp.isEmpty(x3);
     cp.isEmpty(x5);
-    cp.isEmpty(x19);
+    cp.isEmpty(x6);
     cp.isEmpty(x20);
     cp.isEmpty(area);
     cp.isEmpty(x28);
@@ -1341,12 +1353,29 @@ module.exports = {
     });
     assert.ok(user === null, '用户学号已存在！');
 
+    let x30 = ''
+    let manages = await ctx.orm().SuperManagerInfo.findAll({
+      where: {
+        userType: '开学返校系统',
+        depName: x5
+      }
+    })
+    if (manages && manages.length > 0) {
+      for (let i = 0, j = manages.length; i < j; i++) {
+        let userData = manages[i].userData
+
+        if (userData.indexOf(x6) > -1) {
+          x30 = `${manages[i].realName}-${manages[i].phone}`
+        }
+      }
+    }
+
     await ctx.orm().school_users_v2.create({
       x1: x1,
       x2: x28.substring(x28.length - 6),
       x3: x3,
       x5: x5,
-      x19: x19,
+      x6: x6,
       x20: x20,
       xState: 0,
       xStateName: '未返校',
@@ -1354,6 +1383,7 @@ module.exports = {
       xisAdd: 0,
       area: area,
       x28: x28,
+      x30: x30,
       state: 0,
       stateName: stateEnum[0]
     });
@@ -1361,26 +1391,44 @@ module.exports = {
     ctx.body = {};
   },
   updateSchoolUserInfo: async (ctx) => {
-    let { id, x1, x3, x5, x19, x20, area, x28 } = ctx.request.body;
+    let { id, x1, x3, x5, x6, x20, area, x28 } = ctx.request.body;
 
     cp.isEmpty(id);
     cp.isEmpty(x1);
     cp.isEmpty(x3);
     cp.isEmpty(x5);
-    cp.isEmpty(x19);
+    cp.isEmpty(x6);
     cp.isEmpty(x20);
     cp.isEmpty(area);
     cp.isEmpty(x28);
+
+    let x30 = ''
+    let manages = await ctx.orm().SuperManagerInfo.findAll({
+      where: {
+        userType: '开学返校系统',
+        depName: x5
+      }
+    })
+    if (manages && manages.length > 0) {
+      for (let i = 0, j = manages.length; i < j; i++) {
+        let userData = manages[i].userData
+
+        if (userData.indexOf(x6) > -1) {
+          x30 = `${manages[i].realName}-${manages[i].phone}`
+        }
+      }
+    }
 
     await ctx.orm().school_users_v2.update({
       x1: x1,
       x2: x28.substring(x28.length - 6),
       x3: x3,
       x5: x5,
-      x19: x19,
+      x6: x6,
       x20: x20,
       area: area,
-      x28: x28
+      x28: x28,
+      x30: x30
     }, {
       where: {
         id
