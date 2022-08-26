@@ -174,7 +174,6 @@ module.exports = {
     let user = await ctx.orm().school_users_v2.findOne({
       where: {
         openId: openId,
-        state: 2,
         isclose: 0
       }
     })
@@ -186,8 +185,7 @@ module.exports = {
       stateName: stateEnum[3]
     }, {
       where: {
-        id: user.id,
-        state: 2
+        id: user.id
       }
     })
 
