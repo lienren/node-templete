@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2022-08-21 14:34:03
+ * @LastEditTime: 2022-08-30 16:00:44
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/assetmanage/rearend.js
@@ -13,6 +13,7 @@ const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
 const sequelize = require('sequelize');
+const moment = require('moment');
 const comm = require('../../utils/comm');
 const date = require('../../utils/date');
 const excel = require('../../utils/excel');
@@ -222,6 +223,31 @@ module.exports = {
 
     ctx.body = {}
   },
+  getProjectCode: async ctx => {
+    let project = await ctx.orm().info_projects.findOne({
+      where: {
+        create_time: {
+          $between: [
+            moment(new Date()).startOf('month').format('YYYY-MM-DD 00:00:00'),
+            moment(new Date()).endOf('month').format('YYYY-MM-DD 23:59:59')]
+        }
+      },
+      order: [['create_time', 'desc']]
+    })
+
+    if (project) {
+      let number = parseInt(project.pro_code.substring(6)) + 1
+      number = number ? number : 1
+
+      ctx.body = {
+        pro_code: `${date.formatDate(new Date(), 'YYYYMM')}` + (number > 99 ? `${number}` : number > 9 ? `0${number}` : `00${number}`)
+      }
+    } else {
+      ctx.body = {
+        pro_code: `${date.formatDate(new Date(), 'YYYYMM')}001`
+      }
+    }
+  },
   submitProjects: async ctx => {
     let { id, pro_code, pro_name, pro_level, pro_status, a1, pro_type, pro_source, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, manage_id, manage_user } = ctx.request.body;
 
@@ -260,6 +286,8 @@ module.exports = {
         manage_id, manage_user
       })
     }
+
+    ctx.body = {}
   },
   getProjects: async ctx => {
     let pageIndex = ctx.request.body.pageIndex || 1;
@@ -362,6 +390,42 @@ module.exports = {
     ctx.body = {
       total: result.count,
       list: result.rows,
+      pageIndex,
+      pageSize
+    }
+  },
+  searchProgress: async ctx => {
+    let pageIndex = ctx.request.body.pageIndex || 1;
+    let pageSize = ctx.request.body.pageSize || 50;
+
+    let result = await ctx.orm().info_progress.findAndCountAll({
+      offset: (pageIndex - 1) * pageSize,
+      limit: pageSize,
+      order: [['id', 'desc']]
+    })
+
+    let projects = []
+    if (result && result.rows && result.rows.length > 0) {
+      projects = await ctx.orm().info_projects.findAll({
+        where: {
+          id: {
+            $in: result.rows.map(m => {
+              return m.dataValues.pro_id
+            })
+          }
+        }
+      })
+    }
+
+    ctx.body = {
+      total: result.count,
+      list: result.rows.map(m => {
+        let project = projects.find(f => f.dataValues.id === m.dataValues.pro_id)
+        return {
+          ...m.dataValues,
+          project: project
+        }
+      }),
       pageIndex,
       pageSize
     }
