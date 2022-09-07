@@ -166,7 +166,7 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     x30: {
-      type: DataTypes.STRING(10),
+      type: DataTypes.STRING(20),
       allowNull: true
     },
     x31: {
@@ -224,6 +224,10 @@ module.exports = function(sequelize, DataTypes) {
     },
     img2: {
       type: DataTypes.STRING(1000),
+      allowNull: true
+    },
+    noBackType: {
+      type: DataTypes.STRING(100),
       allowNull: true
     }
   }, {

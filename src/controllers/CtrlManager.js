@@ -632,6 +632,57 @@ module.exports = {
 
     ctx.body = serializeMenu(resultMenus, 0);
   },
+  getManagerMenuNoTree: async ctx => {
+    let id = ctx.work.managerId || 0;
+
+    // 超级管理员禁止更新
+    assert.notStrictEqual(id, 0, 'ManagerNotExists');
+
+    let sameManagerResult = await ctx.orm().SuperManagerInfo.findOne({
+      where: {
+        id: id,
+        isDel: 0
+      }
+    });
+
+    assert.notStrictEqual(sameManagerResult, null, 'ManagerNotExists');
+
+    let resultRoleIds = await ctx.orm().SuperManagerRoleInfo.findAll({
+      where: {
+        managerId: id
+      }
+    });
+
+    let resultMenuIds = await ctx.orm().SuperRoleMenuInfo.findAll({
+      where: {
+        roleId: {
+          $in: resultRoleIds.map(val => {
+            return val.roleId;
+          })
+        }
+      }
+    });
+
+    let menuIds = [];
+    resultMenuIds.forEach(menu => {
+      menuIds.push(menu.menuId);
+      if (!menuIds.includes(menu.menuId.toString().substring(0, 1))) {
+        menuIds.push(menu.menuId.toString().substring(0, 1));
+      }
+    });
+
+    let resultMenus = await ctx.orm().BaseMenu.findAll({
+      where: {
+        id: {
+          $in: menuIds
+        },
+        isDel: 0
+      },
+      order: [['sort']]
+    });
+
+    ctx.body = resultMenus
+  },
   /***************************** 角色管理 *************************************/
   getRoles: async ctx => {
     let current = ctx.request.body.current || 1;

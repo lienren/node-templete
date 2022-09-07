@@ -360,6 +360,17 @@ module.exports = {
       updateTime: date.formatDate(result.dataValues.updateTime, 'YYYY年MM月DD日 HH:mm:ss')
     }
   },
+  delApplyInfo: async ctx => {
+    let id = ctx.request.body.id || 0;
+
+    await ctx.orm().applyInfo.destroy({
+      where: {
+        id
+      }
+    })
+
+    ctx.body = {}
+  },
   verifyApply1: async ctx => {
     let id = ctx.request.body.id || 0;
     let adminId = ctx.request.body.adminId || 0;
@@ -735,6 +746,7 @@ module.exports = {
     let visitorEndSTime = ctx.request.body.visitorEndSTime || '';
     let visitorEndETime = ctx.request.body.visitorEndETime || '';
     let userType = ctx.request.body.userType || 1;
+    let keywords = ctx.request.body.keywords || '';
 
     let where = `isDel = 0 and userType = ${userType}`;
 
@@ -772,6 +784,10 @@ module.exports = {
 
     if (visitorEndSTime && visitorEndETime) {
       where += ` and concat(date_format(visitorEndTime,'%Y-%m-%d'), ' ', visitorEndTimeNum, ':00') between '${visitorSTime}' and '${visitorETime}'`
+    }
+
+    if (keywords) {
+      where += ` and (visitorCompany like '%${keywords}%' or visitorCar like '%${keywords}%')`
     }
 
     let applyCount = await ctx.orm().query(`select count(1) num from applyInfo where ${where}`);
@@ -1015,6 +1031,73 @@ module.exports = {
         id
       }
     })
+
+    ctx.body = {}
+  },
+  getApplyBlackInfo: async ctx => {
+    let pageIndex = ctx.request.body.pageIndex || 1;
+    let pageSize = ctx.request.body.pageSize || 50;
+    let { kw, kwType } = ctx.request.body;
+
+    let where = {}
+
+    if (kw) {
+      where.kw = {
+        $like: `%${kw}%`
+      }
+    }
+
+    if (kwType) {
+      where.kwType = kwType
+    }
+
+    let result = await ctx.orm().applyBlackInfo.findAndCountAll({
+      offset: (pageIndex - 1) * pageSize,
+      limit: pageSize,
+      where,
+      order: [
+        ['createTime', 'desc']
+      ]
+    });
+
+    ctx.body = {
+      total: result.count,
+      list: result.rows,
+      pageIndex,
+      pageSize
+    }
+  },
+  submitApplyBlackInfo: async ctx => {
+    let { id, kw, kwType } = ctx.request.body;
+
+    if (id) {
+      await ctx.orm().applyBlackInfo.update({
+        kw,
+        kwType
+      }, {
+        where: {
+          id
+        }
+      })
+    } else {
+      await ctx.orm().applyBlackInfo.create({
+        kw,
+        kwType
+      })
+    }
+
+    ctx.body = {}
+  },
+  delApplyBlackInfo: async ctx => {
+    let { id } = ctx.request.body
+
+    if (id) {
+      await ctx.orm().applyBlackInfo.destroy({
+        where: {
+          id
+        }
+      })
+    }
 
     ctx.body = {}
   }

@@ -108,7 +108,7 @@ module.exports = {
     };
   },
   submitUserInfoNew1: async (ctx) => {
-    let { openId, userBack, area, x4, x19, x7, x8, x9, skm, x10, x33, noBackReason } = ctx.request.body
+    let { openId, userBack, area, x4, x19, x7, x8, x9, skm, x10, x33, noBackReason, noBackType } = ctx.request.body
 
     cp.isEmpty(openId)
     cp.isEmpty(userBack)
@@ -124,6 +124,7 @@ module.exports = {
       cp.isEmpty(x10)
       cp.isEmpty(x33)
     } else {
+      cp.isEmpty(noBackType)
       cp.isEmpty(noBackReason)
     }
 
@@ -137,7 +138,7 @@ module.exports = {
     assert.ok(user.xState === 0, '您的信息已完成登记！')
 
     await ctx.orm().school_users_v2.update({
-      userBack, area, x4, x19: x19 ? x19 : null, x7, x8, x9, skm, x10, x33, noBackReason,
+      userBack, area, x4, x19: x19 ? x19 : null, x7, x8, x9, skm, x10, x33, noBackReason, noBackType,
       xState: 0,
       xStateName: '未返校',
       xIsAdd: 1,
