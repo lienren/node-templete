@@ -40,6 +40,11 @@ module.exports = function(sequelize, DataTypes) {
     lbyId: {
       type: DataTypes.STRING(10),
       allowNull: true
+    },
+    sortId: {
+      type: DataTypes.INTEGER(11),
+      allowNull: true,
+      defaultValue: '0'
     }
   }, {
     tableName: 'info_posts'

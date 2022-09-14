@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2022-08-24 16:47:22
+ * @LastEditTime: 2022-09-14 17:48:59
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/samp/rearend.js
@@ -1506,6 +1506,14 @@ module.exports = {
       selectTime = date.formatDate(new Date(), 'YYYY-MM-DD');
     }
 
+    let postNames = await ctx.orm().info_posts.findAll({
+      where: {
+        postName: {
+          $ne: '愿检尽检人群'
+        }
+      },
+      order: [['sortId']]
+    })
     let sql1 = `select postName, count(1) num from info_users where depId > 2 and postName != '愿检尽检人群' group by postName`;
     let sql2 = `select u.postName, count(1) num from (
       select userId from info_user_samps 
@@ -1533,18 +1541,24 @@ module.exports = {
     let result3 = await ctx.orm().query(sql3);
     let result4 = await ctx.orm().query(sql4);
 
-    let data = result1.map(m => {
-      let f2 = result2.find(f => f.postName === m.postName);
-      let f3 = result3.find(f => f.postName === m.postName);
-      let f4 = result4.find(f => f.postName === m.postName);
-      return {
-        postName: m.postName,
-        n1: m.num,
-        n2: f2 ? parseInt(f2.num) : 0,
-        n3: f3 ? parseInt(f3.num) : 0,
-        n4: f4 ? parseInt(f4.num) : 0
+    let data = []
+    for (let i = 0, j = postNames.length; i < j; i++) {
+      let m = postNames[i]
+      let f1 = result1.find(f => f.postName === m.dataValues.postName);
+      let f2 = result2.find(f => f.postName === m.dataValues.postName);
+      let f3 = result3.find(f => f.postName === m.dataValues.postName);
+      let f4 = result4.find(f => f.postName === m.dataValues.postName);
+
+      if (f1 && f1.num > 0) {
+        data.push({
+          postName: m.dataValues.postName,
+          n1: f1 ? parseInt(f1.num) : 0,
+          n2: f2 ? parseInt(f2.num) : 0,
+          n3: f3 ? parseInt(f3.num) : 0,
+          n4: f4 ? parseInt(f4.num) : 0
+        })
       }
-    })
+    }
 
     let sum = data.reduce((total, curr) => {
       total.n1 += parseInt(curr.n1)
@@ -2891,7 +2905,9 @@ module.exports = {
     ctx.body = data;
   },
   submitPost: async ctx => {
-    let { id, postName, tradeType, cycleType, periodType, sampWay, remark, lbyId } = ctx.request.body;
+    let { id, postName, tradeType, cycleType, periodType, sampWay, remark, lbyId, sortId } = ctx.request.body;
+
+    sortId = sortId ? sortId : 0
 
     if (id) {
       // 更新
@@ -2903,7 +2919,9 @@ module.exports = {
 
       if (postinfo) {
         let isUpdateUser = false
-        let updateUser = {}
+        let updateUser = {
+          sortId: sortId
+        }
 
         if (postinfo.postName !== postName) {
           updateUser.postName = postName
@@ -2943,7 +2961,7 @@ module.exports = {
         }
 
         await ctx.orm().info_posts.update({
-          postName, tradeType, cycleType, periodType, sampWay, remark, lbyId
+          postName, tradeType, cycleType, periodType, sampWay, remark, lbyId, sortId
         }, {
           where: {
             id: postinfo.id
