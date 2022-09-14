@@ -186,7 +186,7 @@ module.exports = {
             "value": "已提交访校申请"
           },
           "thing3": {
-            "value": result.visitReason
+            "value": `${result.visitReason}【申请入校时间：${visitTime + ' ' + visitTimeNum}】`
           },
           "date4": {
             "value": date.formatDate(new Date(), 'YYYY年MM月DD日 HH:mm')
@@ -446,7 +446,7 @@ module.exports = {
                     "value": `${admin.realName}已经审核通过`
                   },
                   "thing3": {
-                    "value": result.visitReason
+                    "value": `${result.visitReason}【申请入校时间：${result.visitTime + ' ' + result.visitTimeNum}】`
                   },
                   "date4": {
                     "value": date.formatDate(new Date(), 'YYYY年MM月DD日 HH:mm')
@@ -461,7 +461,7 @@ module.exports = {
                     "value": `${admin.realName}已经审核通过`
                   },
                   "thing3": {
-                    "value": result.visitReason
+                    "value": `${result.visitReason}【申请入校时间：${result.visitTime + ' ' + result.visitTimeNum}】`
                   },
                   "date4": {
                     "value": date.formatDate(new Date(), 'YYYY年MM月DD日 HH:mm')
