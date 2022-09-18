@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2022-08-02 08:54:17
+ * @LastEditTime: 2022-09-15 15:05:54
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/samp/rearend.js
@@ -1966,4 +1966,25 @@ module.exports = {
 
     ctx.body = {}
   },
+  getErrorSwitch: async ctx => {
+    let errorSwitch = await configData.getConfig(ctx, 'ErrorSwitch');
+
+    ctx.body = {
+      val: errorSwitch
+    }
+  },
+  setErrorSwitch: async ctx => {
+    let { val } = ctx.request.body;
+
+    await ctx.orm().BaseConfig.update({
+      value: val,
+      lasttime: date.getTimeStamp()
+    }, {
+      where: {
+        key: 'ErrorSwitch'
+      }
+    })
+
+    ctx.body = {}
+  }
 };

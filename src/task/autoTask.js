@@ -25,9 +25,36 @@ let next = function () {
 };
 
 async function updateErrorStatus () {
-  let sql1 = 'update BaseConfig set `value` = "0" where `key` = "UpdateErrorSwitch" and `value` = "1" and lasttime <= UNIX_TIMESTAMP() * 1000 - 3 * 24 * 3600000'
+  let result = await ctx.orm().BaseConfig.findOne({
+    where: {
+      key: 'ErrorSwitch'
+    }
+  })
 
-  await ctx.orm().query(sql1, {}, { type: ctx.orm().sequelize.QueryTypes.UPDATE });
+  if (result && result.value) {
+    let data = JSON.parse(result.value)
+
+    Object.keys(data).map(m => {
+      if (data[m].open && data[m].openDate.length === 2) {
+        let startTime = date.getTimeStamp()
+        let endTime = date.timeToTimeStamp(data[m].openDate[1] + ' 23:59:59')
+        
+        if (startTime > endTime) {
+          data[m].open = false
+          data[m].openDate = []
+        }
+      }
+    })
+
+    await ctx.orm().BaseConfig.update({
+      value: JSON.stringify(data),
+      lasttime: date.getTimeStamp()
+    }, {
+      where: {
+        key: 'ErrorSwitch'
+      }
+    })
+  }
 }
 
 async function main () {
