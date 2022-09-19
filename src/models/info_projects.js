@@ -10,7 +10,8 @@ module.exports = function(sequelize, DataTypes) {
     },
     pro_code: {
       type: DataTypes.STRING(100),
-      allowNull: true
+      allowNull: true,
+      unique: true
     },
     pro_name: {
       type: DataTypes.STRING(100),

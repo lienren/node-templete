@@ -41,11 +41,11 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     a8: {
-      type: DataTypes.STRING(50),
+      type: DataTypes.STRING(500),
       allowNull: true
     },
     a9: {
-      type: DataTypes.STRING(50),
+      type: DataTypes.STRING(500),
       allowNull: true
     },
     a10: {

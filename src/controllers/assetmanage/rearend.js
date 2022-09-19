@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2022-08-30 16:00:44
+ * @LastEditTime: 2022-09-19 08:43:07
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/assetmanage/rearend.js
@@ -552,5 +552,53 @@ module.exports = {
       pro_id: project.id,
       pro_sub_verify: JSON.stringify(project.dataValues)
     })
-  }
+  },
+  submitProjectSub: async ctx => {
+    let { id, pro_id, a1, a2, a3, a40, a4, a5, a60, a6, a7, a8, a9, a10, a11, a12, remark, manage_id, manage_user } = ctx.request.body;
+
+    if (id) {
+      let projectsSub = await ctx.orm().info_projects_sub.findOne({
+        where: {
+          id
+        }
+      })
+
+      assert.ok(!!projectsSub, '项目进展不存在!')
+
+      await ctx.orm().info_projects_sub.update({
+        a1, a2, a3, a40, a4, a5, a60, a6, a7, a8, a9, a10, a11, a12, remark, manage_id, manage_user
+      }, {
+        where: {
+          id: projectsSub.id
+        }
+      })
+    } else {
+      await ctx.orm().info_projects_sub.create({
+        pro_id, a1, a2, a3, a40, a4, a5, a60, a6, a7, a8, a9, a10, a11, a12, remark, manage_id, manage_user
+      })
+    }
+  },
+  getProjectSub: async ctx => {
+    let pageIndex = ctx.request.body.pageIndex || 1;
+    let pageSize = ctx.request.body.pageSize || 50;
+    let { pro_id } = ctx.request.body;
+
+    let where = {};
+
+    Object.assign(where, pro_id && { pro_id })
+
+    let result = await ctx.orm().info_projects_sub.findAndCountAll({
+      offset: (pageIndex - 1) * pageSize,
+      limit: pageSize,
+      where: where,
+      order: [['id', 'desc']]
+    })
+
+    ctx.body = {
+      total: result.count,
+      list: result.rows,
+      pageIndex,
+      pageSize
+    }
+  },
 };

@@ -1,27 +1,31 @@
 /* jshint indent: 2 */
 
 module.exports = function(sequelize, DataTypes) {
-  return sequelize.define('info_house_having', {
+  return sequelize.define('info_projects_sub', {
     id: {
       type: DataTypes.INTEGER(11),
       allowNull: false,
       primaryKey: true,
       autoIncrement: true
     },
-    hid: {
+    pro_id: {
       type: DataTypes.INTEGER(11),
       allowNull: true
     },
     a1: {
-      type: DataTypes.STRING(20),
+      type: DataTypes.DECIMAL,
       allowNull: true
     },
     a2: {
-      type: DataTypes.STRING(100),
+      type: DataTypes.INTEGER(11),
       allowNull: true
     },
     a3: {
       type: DataTypes.DECIMAL,
+      allowNull: true
+    },
+    a40: {
+      type: DataTypes.INTEGER(11),
       allowNull: true
     },
     a4: {
@@ -29,58 +33,64 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     a5: {
-      type: DataTypes.STRING(10),
+      type: DataTypes.DECIMAL,
       allowNull: true
     },
     a6: {
-      type: DataTypes.DATEONLY,
+      type: DataTypes.DECIMAL,
       allowNull: true
     },
     a7: {
-      type: DataTypes.STRING(20),
+      type: DataTypes.DECIMAL,
       allowNull: true
     },
     a8: {
-      type: DataTypes.DATEONLY,
+      type: DataTypes.DECIMAL,
       allowNull: true
     },
     a9: {
-      type: DataTypes.DATEONLY,
+      type: DataTypes.DECIMAL,
       allowNull: true
     },
     a10: {
-      type: DataTypes.STRING(100),
+      type: DataTypes.STRING(10),
       allowNull: true
     },
     a11: {
-      type: DataTypes.STRING(20),
+      type: DataTypes.STRING(10),
       allowNull: true
     },
     a12: {
-      type: DataTypes.STRING(10),
-      allowNull: true,
-      defaultValue: '否'
+      type: DataTypes.TEXT,
+      allowNull: true
     },
-    a13: {
+    remark: {
       type: DataTypes.STRING(500),
       allowNull: true
     },
-    a14: {
+    create_time: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
+    },
+    update_time: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
+    },
+    manage_id: {
       type: DataTypes.INTEGER(11),
-      allowNull: true,
-      defaultValue: '1'
+      allowNull: true
     },
-    createTime: {
-      type: DataTypes.DATE,
-      allowNull: true,
-      defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
+    manage_user: {
+      type: DataTypes.STRING(100),
+      allowNull: true
     },
-    modifyTime: {
-      type: DataTypes.DATE,
-      allowNull: true,
-      defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
+    a60: {
+      type: DataTypes.INTEGER(11),
+      allowNull: true
     }
   }, {
-    tableName: 'info_house_having'
+    tableName: 'info_projects_sub'
   });
 };
