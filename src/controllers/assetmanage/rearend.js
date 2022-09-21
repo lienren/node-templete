@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2022-09-19 08:43:07
+ * @LastEditTime: 2022-09-20 08:48:05
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/assetmanage/rearend.js
@@ -340,9 +340,9 @@ module.exports = {
         }
       })
 
-      assert.ok(!!project, '项目进展不存在!')
+      assert.ok(!!iprogress, '项目进展不存在!')
 
-      await ctx.orm().info_projects.update({
+      await ctx.orm().info_progress.update({
         p_type, p_level, p_status, p_source, p_mtype, a1, a2, a2stime, a2etime, a3, a3stime, a3etime, manage_id, manage_user
       }, {
         where: {
