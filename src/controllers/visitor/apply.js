@@ -37,6 +37,7 @@ module.exports = {
         loginName: {
           $ne: 'admin'
         },
+        userType: '访客系统',
         state: 1,
         isDel: 0
       }
