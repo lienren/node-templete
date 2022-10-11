@@ -55,7 +55,8 @@ app.use(async (ctx, next) => {
 
   let path = ctx.path.toLowerCase();
 
-  if ( path.indexOf('/human/rearend/exportusers') >= 0) {
+  if (path.indexOf('/human/rearend/exportusers') >= 0 ||
+    path.indexOf('/human/rearend/exportuserretirements') >= 0) {
     ctx.disableBodyParserReturn = true;
   }
 

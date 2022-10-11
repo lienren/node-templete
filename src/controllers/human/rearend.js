@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2022-05-10 18:16:46
+ * @LastEditTime: 2022-10-11 12:38:04
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/human/rearend.js
@@ -37,7 +37,9 @@ module.exports = {
       hold, holdTime, workTime, post, postLevel, phone, idcard, specialty, remark, isretire,
       isresign, toretire, createTime, updateTime, honorType } = ctx.request.body;
 
-    let where = {};
+    let where = {
+      isDel: 0
+    };
 
     Object.assign(where, street && { street })
     Object.assign(where, community && { community })
@@ -994,7 +996,9 @@ module.exports = {
       hold, holdTime, workTime, post, postLevel, phone, idcard, specialty, remark, isretire,
       isresign, toretire, createTime, updateTime, honorType } = ctx.request.body;
 
-    let where = {};
+    let where = {
+      isDel: 0
+    };
 
     Object.assign(where, street && { street })
     Object.assign(where, community && { community })
@@ -1373,7 +1377,7 @@ module.exports = {
 
     ctx.set('Content-Type', 'application/vnd.openxmlformats');
     ctx.set('Access-Control-Expose-Headers', 'Content-Disposition')
-    ctx.set('Content-Disposition', 'attachment; filename=' + 'orders_export.xlsx');
+    ctx.set('Content-Disposition', 'attachment; filename=' + 'users_export.xlsx');
     ctx.body = excelFile;
   },
   submitLevel: async ctx => {
@@ -1415,5 +1419,209 @@ module.exports = {
     }
 
     ctx.body = {}
+  },
+  getUserRetirements: async ctx => {
+    let pageIndex = ctx.request.body.pageIndex || 1;
+    let pageSize = ctx.request.body.pageSize || 50;
+    let { streets, communitys, street, community, name, sex, birthday, nation, political, phone, idcard, createTime, updateTime, retirementTime } = ctx.request.body;
+
+    let where = {
+      isDel: 0
+    };
+
+    Object.assign(where, street && { street })
+    Object.assign(where, community && { community })
+    Object.assign(where, name && { name })
+    Object.assign(where, sex && { sex })
+    Object.assign(where, nation && { nation })
+    Object.assign(where, political && { political })
+    Object.assign(where, phone && { phone })
+    Object.assign(where, idcard && { idcard })
+
+    if (streets && streets.length > 0) {
+      where.street = {
+        $in: streets
+      }
+    }
+
+    if (communitys && communitys.length > 0) {
+      where.community = {
+        $in: communitys
+      }
+    }
+
+    if (birthday && birthday.length > 0) {
+      where.birthday = { $between: birthday }
+    }
+
+    if (createTime && createTime.length > 0) {
+      where.createTime = { $between: createTime }
+    }
+
+    if (updateTime && updateTime.length > 0) {
+      where.updateTime = { $between: updateTime }
+    }
+
+    if (retirementTime && retirementTime.length > 0) {
+      where.retirementTime = { $between: retirementTime }
+    }
+
+    let result = await ctx.orm().info_users_retirement.findAndCountAll({
+      offset: (pageIndex - 1) * pageSize,
+      limit: pageSize,
+      where,
+      order: [
+        ['id']
+      ]
+    });
+
+    ctx.body = {
+      total: result.count,
+      list: result.rows.map((m, i) => {
+        return {
+          ...m.dataValues,
+          index: (pageIndex - 1) * pageSize + (i + 1)
+        }
+      }),
+      pageIndex,
+      pageSize
+    }
+  },
+  submitUserRetirement: async ctx => {
+    let { id, street, community, name, sex, birthday, nation, political, phone, idcard, holdStartTime, holdEndTime, retirementTime } = ctx.request.body;
+
+    if (id) {
+      let findUser = await ctx.orm().info_users_retirement.findOne({
+        where: {
+          idcard: idcard,
+          id: {
+            $en: id
+          },
+          isDel: 0
+        }
+      })
+      assert.ok(findUser === null, '此身份证已存在，请更换！')
+
+      await ctx.orm().info_users_retirement.update({
+        street, community, name, sex, birthday, nation, political, phone, idcard, holdStartTime, holdEndTime, retirementTime
+      }, {
+        where: {
+          id
+        }
+      })
+    } else {
+      await ctx.orm().info_users_retirement.create({
+        street, community, name, sex, birthday, nation, political, phone, idcard, holdStartTime, holdEndTime, retirementTime,
+        isDel: 0
+      })
+    }
+  },
+  exportUserRetirements: async ctx => {
+    let { streets, communitys, street, community, name, sex, birthday, nation, political, phone, idcard, createTime, updateTime, retirementTime } = ctx.request.body;
+
+    let where = {
+      isDel: 0
+    };
+
+    Object.assign(where, street && { street })
+    Object.assign(where, community && { community })
+    Object.assign(where, name && { name })
+    Object.assign(where, sex && { sex })
+    Object.assign(where, nation && { nation })
+    Object.assign(where, political && { political })
+    Object.assign(where, phone && { phone })
+    Object.assign(where, idcard && { idcard })
+
+    if (streets && streets.length > 0 && streets.indexOf(',') >= 0) {
+      streets = streets.split(',')
+      where.street = {
+        $in: streets
+      }
+    }
+
+    if (communitys && communitys.length > 0 && communitys.indexOf(',') >= 0) {
+      communitys = communitys.split(',')
+      where.community = {
+        $in: communitys
+      }
+    }
+
+    if (birthday && birthday.length > 0 && birthday.indexOf(',') >= 0) {
+      birthday = birthday.split(',')
+      where.birthday = { $between: birthday }
+    }
+
+    if (createTime && createTime.length > 0 && createTime.indexOf(',') >= 0) {
+      createTime = createTime.split(',')
+      where.createTime = { $between: createTime }
+    }
+
+    if (updateTime && updateTime.length > 0 && updateTime.indexOf(',') >= 0) {
+      updateTime = updateTime.split(',')
+      where.updateTime = { $between: updateTime }
+    }
+
+    if (retirementTime && retirementTime.length > 0 && retirementTime.indexOf(',') >= 0) {
+      retirementTime = retirementTime.split(',')
+      where.retirementTime = { $between: retirementTime }
+    }
+
+    let users = await ctx.orm().info_users_retirement.findAll({
+      where
+    });
+
+    let xlsxObj = [];
+    xlsxObj.push({
+      name: '退养主任列表',
+      data: []
+    })
+    
+    xlsxObj[0].data.push([
+      '编号',
+      '街道',
+      '社区',
+      '姓名',
+      '性别',
+      '手机号',
+      '身份证号',
+      '出生年月',
+      '民族',
+      '政治面貌',
+      '工作开始时间',
+      '工作结束时间',
+      '退养时间',
+      '创建时间',
+      '最后修改时间'
+    ])
+
+    for (let i = 0, j = users.length; i < j; i++) {
+      let user = users[i];
+
+      let arr = new Array();
+      arr.push(user.id || '');
+      arr.push(user.street || '');
+      arr.push(user.community || '');
+      arr.push(user.name);
+      arr.push(user.sex);
+      arr.push(user.phone);
+      arr.push(user.idcard);
+      arr.push(user.birthday);
+      arr.push(user.nation);
+      arr.push(user.political);
+      arr.push(user.holdStartTime);
+      arr.push(user.holdEndTime);
+      arr.push(user.retirementTime);
+      arr.push(user.createTime);
+      arr.push(user.updateTime);
+
+      xlsxObj[0].data.push(arr)
+    }
+
+    let excelFile = excel.exportMoreSheetExcel(xlsxObj);
+
+    ctx.set('Content-Type', 'application/vnd.openxmlformats');
+    ctx.set('Access-Control-Expose-Headers', 'Content-Disposition')
+    ctx.set('Content-Disposition', 'attachment; filename=' + 'user_retirement_export.xlsx');
+    ctx.body = excelFile;
   }
 };
