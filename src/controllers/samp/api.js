@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-08-18 10:44:07
- * @LastEditTime: 2022-08-16 19:14:30
+ * @LastEditTime: 2022-09-30 09:39:53
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/samp/api.js
@@ -174,7 +174,7 @@ module.exports = {
       })
     } else {
       await ctx.orm().info_users.update({
-        userType: '在线',
+        // userType: '在线',
         sampName,
         sampUserName,
         sampHandleTime: now
