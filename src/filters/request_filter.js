@@ -38,6 +38,11 @@ module.exports = async function (ctx, next) {
     return;
   }
 
+  if (ctx.path.indexOf('shopmap') > -1) {
+    await sendfile(ctx, path.resolve(__dirname, '../../assets/shopmap/index.html'));
+    return;
+  }
+
   if (ctx.path.indexOf('onlineqa_mobile') > -1) {
     await sendfile(ctx, path.resolve(__dirname, '../../assets/onlineqa_mobile/index.html'));
     return;
