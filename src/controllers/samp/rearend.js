@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2022-09-15 15:05:54
+ * @LastEditTime: 2022-10-24 11:22:30
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/samp/rearend.js
@@ -574,20 +574,29 @@ module.exports = {
     // 不清楚/不记得、未享受，信息存在、去世
 
     let summary = '';
-    if (qa2 === '不清楚/不记得') {
-      summary = '不清楚/不记得';
-    } else {
+    if (qa2 === '是') {
+      summary = '';
+      qa13 = '';
+    } else if (qa2 === '否') {
       switch (qa13) {
         case '未享受，信息存在':
         case '去世':
           summary = qa13;
           break;
+        default:
+          summary = '';
+          qa13 = '';
+          break;
       }
+    } else {
+      summary = '不清楚/不记得';
+      qa13 = '';
     }
 
     await ctx.orm().info_users.update({
-      summary,
-      qa1, qa2, qa3, qa4, qa5, qa6, qa7, qa8, qa9, qa10, qa11, qa12, qa13,
+      summary: summary,
+      qa1, qa2, qa3, qa4, qa5, qa6, qa7, qa8, qa9, qa10, qa11, qa12,
+      qa13: qa13,
       opStatus: 2,
       opStatusName: opStatusNameEnum[2],
       connectType: '已接听',
