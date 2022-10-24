@@ -2,7 +2,7 @@
  * @Author: Lienren 
  * @Date: 2018-04-10 19:31:57 
  * @Last Modified by: Lienren
- * @Last Modified time: 2018-06-07 11:33:48
+ * @Last Modified time: 2021-03-23 09:44:08
  */
 'use strict';
 
@@ -25,7 +25,7 @@ module.exports = {
     let img = new BMP24(bmpWidth, bmpHeight);
     img.fillRect(0, 0, img.w, img.h, bgColor);
 
-    img.drawCircle(comm.rand(0, img.w), comm.rand(0, img.h), comm.rand(10, img.h), comm.rand(0, 0xffffff));
+    /* img.drawCircle(comm.rand(0, img.w), comm.rand(0, img.h), comm.rand(10, img.h), comm.rand(0, 0xffffff));
 
     img.fillRect(
       comm.rand(0, img.w),
@@ -57,7 +57,7 @@ module.exports = {
       for (let j = 0; j < bl; j++) {
         img.drawPoint(x, y + j, color);
       }
-    }
+    } */
 
     // 画验证码
     let fonts = [BMP24.font8x16, BMP24.font12x24, BMP24.font16x32];
