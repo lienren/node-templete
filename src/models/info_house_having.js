@@ -70,6 +70,10 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true,
       defaultValue: '1'
     },
+    a15: {
+      type: DataTypes.STRING(100),
+      allowNull: true
+    },
     createTime: {
       type: DataTypes.DATE,
       allowNull: true,

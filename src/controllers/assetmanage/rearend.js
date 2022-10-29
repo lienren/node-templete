@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2022-09-20 08:48:05
+ * @LastEditTime: 2022-10-29 11:48:26
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/assetmanage/rearend.js
@@ -77,6 +77,29 @@ module.exports = {
       pageSize
     }
   },
+  delHouse: async ctx => {
+    let { id } = ctx.request.body;
+
+    await ctx.orm().info_house.destroy({
+      where: {
+        id: id
+      }
+    })
+
+    await ctx.orm().info_house_having.destroy({
+      where: {
+        hid: id
+      }
+    })
+
+    await ctx.orm().info_house_yearrent.destroy({
+      where: {
+        hid: id
+      }
+    })
+
+    ctx.body = { }
+  },
   getHouseHaving: async ctx => {
     let { hid } = ctx.request.body;
 
@@ -114,6 +137,81 @@ module.exports = {
       }
     })
   },
+  getHouseHavings: async ctx => {
+    let pageIndex = ctx.request.body.pageIndex || 1;
+    let pageSize = ctx.request.body.pageSize || 50;
+
+    let where = {
+      a9: {
+        $gte: date.formatDate()
+      }
+    };
+
+    let result = await ctx.orm().info_house_having.findAndCountAll({
+      offset: (pageIndex - 1) * pageSize,
+      limit: pageSize,
+      where,
+      order: [['id', 'desc']]
+    });
+
+    let yearrent = null
+    if (result && result.rows.length > 0) {
+      yearrent = await ctx.orm().info_house_yearrent.findAll({
+        where: {
+          hhid: {
+            $in: result.rows.map(m => {
+              return m.dataValues.id
+            })
+          }
+        }
+      })
+    }
+
+    let house = null
+    if (result && result.rows.length > 0) {
+      house = await ctx.orm().info_house.findAll({
+        where: {
+          id: {
+            $in: result.rows.map(m => {
+              return m.dataValues.hid
+            })
+          }
+        }
+      })
+    }
+
+    ctx.body = {
+      total: result.count,
+      list: result.rows.map(m => {
+        let fy = yearrent && yearrent.length > 0 ? yearrent.filter(f => f.hid === m.dataValues.hid && f.hhid === m.dataValues.id) : []
+        let fh = house && house.length > 0 ? house.find(f => f.id === m.dataValues.hid) : {}
+        return {
+          ...m.dataValues,
+          yearrent: fy,
+          house: fh
+        }
+      }),
+      pageIndex,
+      pageSize
+    }
+  },
+  delHouseHaving: async ctx => {
+    let { id } = ctx.request.body;
+
+    await ctx.orm().info_house_having.destroy({
+      where: {
+        id: id
+      }
+    })
+
+    await ctx.orm().info_house_yearrent.destroy({
+      where: {
+        hhid: id
+      }
+    })
+
+    ctx.body = {}
+  },
   submitHouse: async ctx => {
     let { id, sn, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, street, community, remark } = ctx.request.body;
 
@@ -147,7 +245,7 @@ module.exports = {
     ctx.body = {}
   },
   submitHouseHaving: async ctx => {
-    let { id, hid, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, yearrent } = ctx.request.body;
+    let { id, hid, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, yearrent } = ctx.request.body;
 
     let now = date.getTimeStamp()
     if (id && id > 0) {
@@ -183,7 +281,7 @@ module.exports = {
       }
 
       await ctx.orm().info_house_having.update({
-        hid, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14
+        hid, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15
       }, {
         where: {
           id
@@ -201,7 +299,7 @@ module.exports = {
       }
 
       let having = await ctx.orm().info_house_having.create({
-        hid, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14
+        hid, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15
       })
 
       if (having.id && having.id > 0) {

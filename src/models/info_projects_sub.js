@@ -36,6 +36,10 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.DECIMAL,
       allowNull: true
     },
+    a60: {
+      type: DataTypes.INTEGER(11),
+      allowNull: true
+    },
     a6: {
       type: DataTypes.DECIMAL,
       allowNull: true
@@ -84,10 +88,6 @@ module.exports = function(sequelize, DataTypes) {
     },
     manage_user: {
       type: DataTypes.STRING(100),
-      allowNull: true
-    },
-    a60: {
-      type: DataTypes.INTEGER(11),
       allowNull: true
     }
   }, {
