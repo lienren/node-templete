@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2022-09-14 17:48:59
+ * @LastEditTime: 2022-10-31 10:46:35
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/samp/rearend.js
@@ -1529,7 +1529,7 @@ module.exports = {
     let sql4 = `select u.postName, count(1) num from (
       select userId from info_user_samps 
       where 
-        DATE_FORMAT(handleTime,'%Y-%m-%d') = '${selectTime}' and  
+        handleTime between '${selectTime} 00:00:00' and '${selectTime} 23:59:59' and  
         handleType = '已采样' and 
         userId in (select id from info_users where depId > 2)
       ) a
