@@ -7,6 +7,7 @@
 'use strict';
 
 const Router = require('koa-router');
+const uploadFile = require('./utils/uploadfile');
 const ctrl = require('./controllers/human/index.js');
 
 const router = new Router({
@@ -15,7 +16,12 @@ const router = new Router({
 
 for (let className in ctrl) {
   for (let funName in ctrl[className]) {
-    router.all(`/${className}/${funName}`, ctrl[className][funName]);
+    if (funName === 'importAddress') {
+      // 上传文件
+      router.post(`/${className}/${funName}`, uploadFile.getMulter('files').any(), ctrl[className][funName])
+    } else {
+      router.all(`/${className}/${funName}`, ctrl[className][funName]);
+    }
   }
 }
 
