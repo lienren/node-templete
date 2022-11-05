@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-08-18 10:44:07
- * @LastEditTime: 2022-11-05 08:14:14
+ * @LastEditTime: 2022-11-05 09:29:20
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/human/api.js
@@ -55,6 +55,8 @@ module.exports = {
 
       // 删除首行
       data.shift();
+
+      await ctx.orm().info_address.destroy({ truncate : true, cascade: false });
 
       await ctx.orm().info_address.bulkCreate(data);
 
