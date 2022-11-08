@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-08-18 10:44:07
- * @LastEditTime: 2022-09-30 09:39:53
+ * @LastEditTime: 2022-11-08 10:52:32
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/samp/api.js
@@ -12,7 +12,9 @@
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
+const FormData = require('form-data');
 const sequelize = require('sequelize');
+const axios = require('axios');
 const comm = require('../../utils/comm');
 const date = require('../../utils/date');
 const jwt = require('../../utils/jwt');
@@ -108,7 +110,7 @@ module.exports = {
     if (image) {
       // let filePath = path.resolve(path.join(__dirname, `../../../assets/uploads/${ctx.req.files[0].filename}`));
       // let image = fs.readFileSync(filePath).toString("base64");
-      let idCardSide = "back";
+      /* let idCardSide = "back";
 
       let result = await client.idcard(image, idCardSide);
 
@@ -132,6 +134,66 @@ module.exports = {
           idardInfo: idardInfo
         }
       } else {
+        ctx.body = {}
+      }*/
+
+      let imgData = image.replace(/^data:image\/\w+;base64,/, '');
+      let dataBuffer = Buffer.from(imgData, 'base64');
+
+      const imgPath = path.resolve(path.join(__dirname, `../../../assets/uploads/${Date.now()}.png`));
+      fs.writeFileSync(imgPath, dataBuffer);
+
+      let imgFiles = fs.createReadStream(imgPath);
+      let formData = new FormData();
+      formData.append('file', imgFiles);
+      let len = await new Promise((resolve, reject) => {
+        return formData.getLength((err, length) => (err ? reject(err) : resolve(length)));
+      });
+
+      // let url = 'http://218.94.35.202:3555/api/upload_IDapp'
+      let url = 'http://192.168.149.132:3555/api/upload_IDapp'
+
+      let res = await axios({
+        url: url,
+        method: 'POST',
+        params: {
+          type: 'image',   // 这里以上图片为例
+        },
+        data: formData,
+        headers: {
+          ...formData.getHeaders(), // 小心
+          'Content-Length': len,    // 谨慎
+        },
+      });
+
+      fs.unlink(imgPath, function (error) {
+        console.log('delete file error:', error)
+        return false
+      })
+
+      if (res &&
+        res.data &&
+        res.data.result &&
+        res.data.result.姓名 &&
+        res.data.result.民族 &&
+        res.data.result.住址 &&
+        res.data.result.公民身份号码 &&
+        res.data.result.出生年月 &&
+        res.data.result.性别) {
+        let idardInfo = {
+          name: res.data.result.姓名,
+          idcard: res.data.result.公民身份号码,
+          sex: res.data.result.性别,
+          birthday: res.data.result.出生,
+          nation: res.data.result.民族,
+          address: res.data.result.住址
+        }
+
+        ctx.body = {
+          idardInfo: idardInfo
+        }
+      } else {
+        console.log('身份证OCR失败，缺少信息：', JSON.stringify(res.data))
         ctx.body = {}
       }
     } else {
