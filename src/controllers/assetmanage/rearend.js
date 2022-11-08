@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2022-10-29 11:48:26
+ * @LastEditTime: 2022-11-07 11:23:25
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/assetmanage/rearend.js
@@ -17,6 +17,7 @@ const moment = require('moment');
 const comm = require('../../utils/comm');
 const date = require('../../utils/date');
 const excel = require('../../utils/excel');
+const http = require('../../utils/http');
 
 module.exports = {
   getHouses: async ctx => {
@@ -98,7 +99,7 @@ module.exports = {
       }
     })
 
-    ctx.body = { }
+    ctx.body = {}
   },
   getHouseHaving: async ctx => {
     let { hid } = ctx.request.body;
@@ -215,6 +216,9 @@ module.exports = {
   submitHouse: async ctx => {
     let { id, sn, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, street, community, remark } = ctx.request.body;
 
+    let lon = ''
+    let lat = ''
+
     if (id && id > 0) {
       let findHouse = await ctx.orm().info_house.findOne({
         where: {
@@ -227,8 +231,27 @@ module.exports = {
       })
       assert.ok(findHouse === null, '此资产编号已存在，请更换！')
 
+      lon = findHouse.lon
+      lat = findHouse.lat
+      if (findHouse.a1 !== a1) {
+        // 重新获取经度、纬度
+        let res = await http.get({
+          url: `https://restapi.amap.com/v3/geocode/geo?key=e6f2a4d50e731af88dac2646da574e3a&address=${encodeURIComponent(a1)}&city=${encodeURIComponent('南京市')}`
+        })
+
+        if (res && res.data && res.data.geocodes && res.data.geocodes.length > 0) {
+          let geocode = res.data.geocodes[0]
+
+          if (geocode.location) {
+            lon = geocode.location.split(',')[0]
+            lat = geocode.location.split(',')[1]
+          }
+        }
+      }
+
       await ctx.orm().info_house.update({
-        sn, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, street, community, remark
+        sn, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, street, community, remark,
+        lon, lat
       }, {
         where: {
           id,
@@ -236,8 +259,23 @@ module.exports = {
         }
       })
     } else {
+      // 重新获取经度、纬度
+      let res = await http.get({
+        url: `https://restapi.amap.com/v3/geocode/geo?key=e6f2a4d50e731af88dac2646da574e3a&address=${encodeURIComponent(a1)}&city=${encodeURIComponent('南京市')}`
+      })
+
+      if (res && res.data && res.data.geocodes && res.data.geocodes.length > 0) {
+        let geocode = res.data.geocodes[0]
+
+        if (geocode.location) {
+          lon = geocode.location.split(',')[0]
+          lat = geocode.location.split(',')[1]
+        }
+      }
+
       await ctx.orm().info_house.create({
         sn, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, street, community, remark,
+        lon: lon, lat: lat,
         isDel: 0
       })
     }
@@ -699,4 +737,68 @@ module.exports = {
       pageSize
     }
   },
+  s1: async ctx => {
+    let sql1 = `select 's1' title, count(1) num from info_house where isDel = 0 
+    union all 
+    select 's2' title, count(1) num from info_house_having where a1 = '出租' 
+    union all 
+    select 's3' title, count(1) num from info_house_having where a1 = '出借' 
+    union all 
+    select 's4' title, count(1) num from info_house_having where a1 = '空置' 
+    union all 
+    select 's5' title, count(1) num from info_house_having where a1 = '自用' 
+    union all 
+    select 's6' title, count(1) num from info_projects 
+    union all 
+    select 's7' title, count(1) num from info_projects where pro_status = '投前跟进' 
+    union all 
+    select 's8' title, count(1) num from info_progress 
+    union all 
+    select 's9' title, count(1) num from info_projects where pro_status = '投后审核中' 
+    union all 
+    select 's10' title, count(1) num from info_projects where pro_status = '投后管理'`
+
+    let sql2 = `select DATE_FORMAT(a1,'%Y') year, sum(a3) num from info_house_yearrent group by DATE_FORMAT(a1,'%Y')`
+
+    let result1 = await ctx.orm().query(sql1);
+    let result2 = await ctx.orm().query(sql2);
+
+    ctx.body = {
+      result1: result1,
+      result2: result2
+    };
+  },
+  runGeocode: async ctx => {
+    let result = await ctx.orm().info_house.findAll({
+      where: {
+        isDel: 0
+      }
+    });
+
+    for (let i = 0, j = result.length; i < j; i++) {
+      if (!result[i].lon) {
+        let res = await http.get({
+          url: `https://restapi.amap.com/v3/geocode/geo?key=e6f2a4d50e731af88dac2646da574e3a&address=${encodeURIComponent(result[i].a1)}&city=${encodeURIComponent('南京市')}`
+        })
+
+        if (res && res.data && res.data.geocodes && res.data.geocodes.length > 0) {
+          let geocode = res.data.geocodes[0]
+
+          if (geocode.location) {
+            let lon = geocode.location.split(',')[0]
+            let lat = geocode.location.split(',')[1]
+
+            await ctx.orm().info_house.update({
+              lon: lon,
+              lat: lat
+            }, {
+              where: {
+                id: result[i].id
+              }
+            })
+          }
+        }
+      }
+    }
+  }
 };

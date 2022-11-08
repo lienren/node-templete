@@ -106,6 +106,14 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.INTEGER(11),
       allowNull: true,
       defaultValue: '0'
+    },
+    lon: {
+      type: DataTypes.STRING(100),
+      allowNull: true
+    },
+    lat: {
+      type: DataTypes.STRING(100),
+      allowNull: true
     }
   }, {
     tableName: 'info_house'
