@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-08-18 10:44:07
- * @LastEditTime: 2022-11-08 10:52:32
+ * @LastEditTime: 2022-11-09 08:22:03
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/samp/api.js
@@ -110,7 +110,7 @@ module.exports = {
     if (image) {
       // let filePath = path.resolve(path.join(__dirname, `../../../assets/uploads/${ctx.req.files[0].filename}`));
       // let image = fs.readFileSync(filePath).toString("base64");
-      /* let idCardSide = "back";
+      let idCardSide = "back";
 
       let result = await client.idcard(image, idCardSide);
 
@@ -135,9 +135,9 @@ module.exports = {
         }
       } else {
         ctx.body = {}
-      }*/
+      }
 
-      let imgData = image.replace(/^data:image\/\w+;base64,/, '');
+      /* let imgData = image.replace(/^data:image\/\w+;base64,/, '');
       let dataBuffer = Buffer.from(imgData, 'base64');
 
       const imgPath = path.resolve(path.join(__dirname, `../../../assets/uploads/${Date.now()}.png`));
@@ -195,7 +195,7 @@ module.exports = {
       } else {
         console.log('身份证OCR失败，缺少信息：', JSON.stringify(res.data))
         ctx.body = {}
-      }
+      } */
     } else {
       ctx.body = {}
     }
