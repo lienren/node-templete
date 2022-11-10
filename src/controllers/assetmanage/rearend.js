@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2022-11-07 11:23:25
+ * @LastEditTime: 2022-11-10 10:22:22
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/assetmanage/rearend.js
@@ -566,8 +566,8 @@ module.exports = {
       pageSize
     }
   },
-  submitProjectGoInVerify: async ctx => {
-    let { id, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, verify_sub_manageid, verify_sub_manageuser } = ctx.request.body;
+  submitProjectGoInProject: async ctx => {
+    let { id, b17 } = ctx.request.body;
 
     let project = await ctx.orm().info_projects.findOne({
       where: {
@@ -578,12 +578,35 @@ module.exports = {
 
     assert.ok(!!project, '项目不存在!')
 
+    await ctx.orm().info_projects.update({
+      pro_status: '项目立项', 
+      b17
+    }, {
+      where: {
+        id: project.id
+      }
+    })
+
+    ctx.body = {}
+  },
+  submitProjectGoInVerify: async ctx => {
+    let { id, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, b15, b16, verify_sub_manageid, verify_sub_manageuser } = ctx.request.body;
+
+    let project = await ctx.orm().info_projects.findOne({
+      where: {
+        id,
+        pro_status: '项目立项'
+      }
+    })
+
+    assert.ok(!!project, '项目不存在!')
+
     let pro_status = '投后审核中'
     let verify_status = '一审中'
-    let verify_num = b1 === '盛世融合' ? 2 : 3
+    let verify_num = 3
 
     await ctx.orm().info_projects.update({
-      pro_status, verify_status, verify_num, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, verify_sub_manageid, verify_sub_manageuser
+      pro_status, verify_status, verify_num, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, b15, b16, verify_sub_manageid, verify_sub_manageuser
     }, {
       where: {
         id: project.id
@@ -623,7 +646,7 @@ module.exports = {
       sub_title = verify === '通过' ? '投后一审通过' : '投后一审不通过'
 
       update = {
-        pro_status: verify === '通过' ? '投后审核中' : '投前跟进',
+        pro_status: verify === '通过' ? '投后审核中' : '项目立项',
         verify_status: verify === '通过' ? '二审中' : '一审不通过',
         verify1: verify,
         verify1_manage_id: verify_manage_id,
@@ -637,7 +660,7 @@ module.exports = {
 
       if (project.verify_num === 2) {
         update = {
-          pro_status: verify === '通过' ? '投后管理' : '投前跟进',
+          pro_status: verify === '通过' ? '投后管理' : '项目立项',
           verify_status: verify === '通过' ? '审核通过' : '二审不通过',
           verify2: verify,
           verify2_manage_id: verify_manage_id,
@@ -647,7 +670,7 @@ module.exports = {
         }
       } else {
         update = {
-          pro_status: verify === '通过' ? '投后审核中' : '投前跟进',
+          pro_status: verify === '通过' ? '投后审核中' : '项目立项',
           verify_status: verify === '通过' ? '三审中' : '二审不通过',
           verify2: verify,
           verify2_manage_id: verify_manage_id,
@@ -661,7 +684,7 @@ module.exports = {
       sub_title = verify === '通过' ? '投后三审通过' : '投后三审不通过'
 
       update = {
-        pro_status: verify === '通过' ? '投后管理' : '投前跟进',
+        pro_status: verify === '通过' ? '投后管理' : '项目立项',
         verify_status: verify === '通过' ? '审核通过' : '三审不通过',
         verify3: verify,
         verify3_manage_id: verify_manage_id,

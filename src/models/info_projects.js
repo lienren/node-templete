@@ -266,6 +266,18 @@ module.exports = function(sequelize, DataTypes) {
     verify_sub_manageuser: {
       type: DataTypes.STRING(100),
       allowNull: true
+    },
+    b15: {
+      type: DataTypes.STRING(10),
+      allowNull: true
+    },
+    b16: {
+      type: DataTypes.STRING(100),
+      allowNull: true
+    },
+    b17: {
+      type: DataTypes.TEXT,
+      allowNull: true
     }
   }, {
     tableName: 'info_projects'
