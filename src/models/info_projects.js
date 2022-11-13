@@ -278,6 +278,10 @@ module.exports = function(sequelize, DataTypes) {
     b17: {
       type: DataTypes.TEXT,
       allowNull: true
+    },
+    b18: {
+      type: DataTypes.TEXT,
+      allowNull: true
     }
   }, {
     tableName: 'info_projects'

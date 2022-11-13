@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2022-11-10 10:22:22
+ * @LastEditTime: 2022-11-11 16:31:04
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/assetmanage/rearend.js
@@ -580,7 +580,7 @@ module.exports = {
 
     await ctx.orm().info_projects.update({
       pro_status: '项目立项', 
-      b17
+      b17: b17
     }, {
       where: {
         id: project.id
@@ -712,6 +712,27 @@ module.exports = {
       pro_sub_verify: JSON.stringify(project.dataValues)
     })
   },
+  submitProjectDueDiligence: async ctx => {
+    let { id, b18 } = ctx.request.body;
+
+    let project = await ctx.orm().info_projects.findOne({
+      where: {
+        id
+      }
+    })
+
+    assert.ok(!!project, '项目不存在!')
+
+    await ctx.orm().info_projects.update({
+      b18: b18
+    }, {
+      where: {
+        id: project.id
+      }
+    })
+
+    ctx.body = {}
+  },
   submitProjectSub: async ctx => {
     let { id, pro_id, a1, a2, a3, a40, a4, a5, a60, a6, a7, a8, a9, a10, a11, a12, remark, manage_id, manage_user } = ctx.request.body;
 
@@ -756,6 +777,93 @@ module.exports = {
     ctx.body = {
       total: result.count,
       list: result.rows,
+      pageIndex,
+      pageSize
+    }
+  },
+  submitProjectManagement: async ctx => {
+    let { id, pro_id, a1, a2, a3, a4, a5, manage_id, manage_user } = ctx.request.body;
+
+    if (id) {
+      let projectManagement = await ctx.orm().info_project_management.findOne({
+        where: {
+          id
+        }
+      })
+
+      assert.ok(!!projectManagement, '项目管理不存在!')
+
+      await ctx.orm().info_project_management.update({
+        a1, a2, a3, a4, a5, manage_id, manage_user
+      }, {
+        where: {
+          id: projectManagement.id
+        }
+      })
+    } else {
+      await ctx.orm().info_project_management.create({
+        pro_id, a1, a2, a3, a4, a5, manage_id, manage_user
+      })
+    }
+  },
+  getProjectManagement: async ctx => {
+    let pageIndex = ctx.request.body.pageIndex || 1;
+    let pageSize = ctx.request.body.pageSize || 50;
+    let { pro_id } = ctx.request.body;
+
+    let where = {};
+
+    Object.assign(where, pro_id && { pro_id })
+
+    let result = await ctx.orm().info_project_management.findAndCountAll({
+      offset: (pageIndex - 1) * pageSize,
+      limit: pageSize,
+      where: where,
+      order: [['a1', 'desc']]
+    })
+
+    ctx.body = {
+      total: result.count,
+      list: result.rows,
+      pageIndex,
+      pageSize
+    }
+  },
+  getProjectManagementList: async ctx => {
+    let pageIndex = ctx.request.body.pageIndex || 1;
+    let pageSize = ctx.request.body.pageSize || 50;
+
+    let where = {};
+    
+    let result = await ctx.orm().info_project_management.findAndCountAll({
+      offset: (pageIndex - 1) * pageSize,
+      limit: pageSize,
+      where: where,
+      order: [['a1', 'desc']]
+    })
+
+    let projects = null
+    if (result && result.rows.length > 0) {
+      projects = await ctx.orm().info_projects.findAll({
+        where: {
+          id: {
+            $in: result.rows.map(m => {
+              return m.dataValues.pro_id
+            })
+          }
+        }
+      })
+    }
+
+    ctx.body = {
+      total: result.count,
+      list: result.rows.map(m => {
+        let fp = projects && projects.length > 0 ? projects.find(f => f.id === m.dataValues.pro_id) : null
+        return {
+          ...m.dataValues,
+          project: fp
+        }
+      }),
       pageIndex,
       pageSize
     }
