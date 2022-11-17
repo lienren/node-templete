@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2022-11-11 16:31:04
+ * @LastEditTime: 2022-11-16 08:43:59
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/assetmanage/rearend.js
@@ -23,7 +23,7 @@ module.exports = {
   getHouses: async ctx => {
     let pageIndex = ctx.request.body.pageIndex || 1;
     let pageSize = ctx.request.body.pageSize || 50;
-    let { sn, street, community, streets, communitys, a4, a5, a7, a13, a14, remark, createTime, modifyTime } = ctx.request.body;
+    let { sn, street, community, streets, communitys, houseType, houseRelege, a4, a5, a7, a13, a14, remark, createTime, modifyTime } = ctx.request.body;
 
     let where = {
       isDel: 0
@@ -37,6 +37,8 @@ module.exports = {
     Object.assign(where, a7 && { a7 })
     Object.assign(where, a13 && { a13 })
     Object.assign(where, a14 && { a14 })
+    Object.assign(where, houseType && { houseType })
+    Object.assign(where, houseRelege && { houseRelege })
 
     if (streets && streets.length > 0) {
       where.street = {
@@ -141,12 +143,19 @@ module.exports = {
   getHouseHavings: async ctx => {
     let pageIndex = ctx.request.body.pageIndex || 1;
     let pageSize = ctx.request.body.pageSize || 50;
+    let { houseType } = ctx.request.body;
 
     let where = {
       a9: {
         $gte: date.formatDate()
       }
     };
+
+    if (houseType) {
+      where.hid = {
+        $in: sequelize.literal(`(select id from info_house where houseType = '${houseType}')`)
+      }
+    }
 
     let result = await ctx.orm().info_house_having.findAndCountAll({
       offset: (pageIndex - 1) * pageSize,
@@ -214,7 +223,7 @@ module.exports = {
     ctx.body = {}
   },
   submitHouse: async ctx => {
-    let { id, sn, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, street, community, remark } = ctx.request.body;
+    let { id, sn, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, street, community, remark, houseType, houseRelege } = ctx.request.body;
 
     let lon = ''
     let lat = ''
@@ -251,7 +260,7 @@ module.exports = {
 
       await ctx.orm().info_house.update({
         sn, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, street, community, remark,
-        lon, lat
+        lon, lat, houseType, houseRelege
       }, {
         where: {
           id,
@@ -276,6 +285,7 @@ module.exports = {
       await ctx.orm().info_house.create({
         sn, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, street, community, remark,
         lon: lon, lat: lat,
+        houseType, houseRelege,
         isDel: 0
       })
     }
@@ -385,7 +395,9 @@ module.exports = {
     }
   },
   submitProjects: async ctx => {
-    let { id, pro_code, pro_name, pro_level, pro_status, a1, pro_type, pro_source, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, manage_id, manage_user } = ctx.request.body;
+    let { id, ptype, pro_code, pro_name, pro_level, pro_status, a1, pro_type, pro_source, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, b19, b20, b21, b22, manage_id, manage_user } = ctx.request.body;
+
+    ptype = !ptype ? '普通项目' : ptype
 
     if (id) {
       let project = await ctx.orm().info_projects.findOne({
@@ -397,7 +409,7 @@ module.exports = {
       assert.ok(!!project, '项目不存在!')
 
       await ctx.orm().info_projects.update({
-        pro_code, pro_name, pro_level, pro_status, a1, pro_type, pro_source, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, manage_id, manage_user
+        ptype, pro_code, pro_name, pro_level, pro_status, a1, pro_type, pro_source, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, b19, b20, b21, b22, manage_id, manage_user
       }, {
         where: {
           id: project.id
@@ -417,9 +429,59 @@ module.exports = {
       })
     } else {
       await ctx.orm().info_projects.create({
-        pro_code, pro_name, pro_level, pro_status, a1, pro_type, pro_source,
+        ptype, pro_code, pro_name, pro_level, pro_status, a1, pro_type, pro_source,
         a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21,
         manage_id, manage_user
+      })
+    }
+
+    ctx.body = {}
+  },
+  submitProjectsND: async ctx => {
+    let { id, ptype, pro_code, pro_name, pro_level, pro_status, a1, pro_type, pro_source, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, b19, b20, b21, b22, manage_id, manage_user } = ctx.request.body;
+
+    ptype = !ptype ? '普通项目' : ptype
+
+    if (id) {
+      let project = await ctx.orm().info_projects.findOne({
+        where: {
+          id
+        }
+      })
+
+      assert.ok(!!project, '项目不存在!')
+
+      await ctx.orm().info_projects.update({
+        ptype, pro_code, pro_name, pro_level, a1, pro_type, pro_source, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, b19, b20, b21, b22, manage_id, manage_user
+      }, {
+        where: {
+          id: project.id
+        }
+      })
+
+      project = await ctx.orm().info_projects.findOne({
+        where: {
+          id: project.id
+        }
+      })
+
+      await ctx.orm().info_project_update.create({
+        sub_title: '更新项目资料',
+        pro_id: project.id,
+        pro_sub_verify: JSON.stringify(project.dataValues)
+      })
+    } else {
+      await ctx.orm().info_projects.create({
+        ptype, pro_code, pro_name, pro_level, a1, pro_type, pro_source,
+        a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, b19, b20, b21, b22,
+        manage_id, manage_user,
+        pro_status: '投后管理',
+        verify1_time: date.formatDate(),
+        verify1_remark: '南大项目自动审核通过',
+        verify2_time: date.formatDate(),
+        verify2_remark: '南大项目自动审核通过',
+        verify3_time: date.formatDate(),
+        verify3_remark: '南大项目自动审核通过'
       })
     }
 
@@ -428,10 +490,11 @@ module.exports = {
   getProjects: async ctx => {
     let pageIndex = ctx.request.body.pageIndex || 1;
     let pageSize = ctx.request.body.pageSize || 50;
-    let { pro_code, pro_name, pro_level, pro_status, pro_type, pro_source, verify_status, verify_num, create_time, update_time } = ctx.request.body;
+    let { ptype, pro_code, pro_name, pro_level, pro_status, pro_type, pro_source, verify_status, verify_num, create_time, update_time } = ctx.request.body;
 
     let where = {};
 
+    Object.assign(where, ptype && { ptype })
     Object.assign(where, pro_code && { pro_code })
     Object.assign(where, pro_name && { pro_name })
     Object.assign(where, pro_level && { pro_level })
@@ -459,9 +522,28 @@ module.exports = {
       order: [['id', 'desc']]
     });
 
+    let projectSubs = null
+    if (result && result.count > 0) {
+      projectSubs = await ctx.orm().info_projects_sub.findAll({
+        where: {
+          id: {
+            $in: sequelize.literal(`(select max(id) id from info_projects_sub where pro_id in (${result.rows.map(m => {
+              return m.dataValues.id
+            }).join(',')}) group by pro_id)`)
+          }
+        }
+      })
+    }
+
     ctx.body = {
       total: result.count,
-      list: result.rows,
+      list: result.rows.map(m => {
+        let fp = projectSubs && projectSubs.length > 0 ? projectSubs.find(f => f.pro_id === m.dataValues.id) : {}
+        return {
+          ...m.dataValues,
+          projectSub: fp
+        }
+      }),
       pageIndex,
       pageSize
     }
@@ -579,7 +661,7 @@ module.exports = {
     assert.ok(!!project, '项目不存在!')
 
     await ctx.orm().info_projects.update({
-      pro_status: '项目立项', 
+      pro_status: '项目立项',
       b17: b17
     }, {
       where: {
@@ -734,7 +816,7 @@ module.exports = {
     ctx.body = {}
   },
   submitProjectSub: async ctx => {
-    let { id, pro_id, a1, a2, a3, a40, a4, a5, a60, a6, a7, a8, a9, a10, a11, a12, remark, manage_id, manage_user } = ctx.request.body;
+    let { id, pro_id, a1, a2, a3, a40, a4, a5, a60, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, remark, manage_id, manage_user } = ctx.request.body;
 
     if (id) {
       let projectsSub = await ctx.orm().info_projects_sub.findOne({
@@ -746,7 +828,7 @@ module.exports = {
       assert.ok(!!projectsSub, '项目进展不存在!')
 
       await ctx.orm().info_projects_sub.update({
-        a1, a2, a3, a40, a4, a5, a60, a6, a7, a8, a9, a10, a11, a12, remark, manage_id, manage_user
+        a1, a2, a3, a40, a4, a5, a60, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, remark, manage_id, manage_user
       }, {
         where: {
           id: projectsSub.id
@@ -754,7 +836,7 @@ module.exports = {
       })
     } else {
       await ctx.orm().info_projects_sub.create({
-        pro_id, a1, a2, a3, a40, a4, a5, a60, a6, a7, a8, a9, a10, a11, a12, remark, manage_id, manage_user
+        pro_id, a1, a2, a3, a40, a4, a5, a60, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, remark, manage_id, manage_user
       })
     }
   },
@@ -834,7 +916,7 @@ module.exports = {
     let pageSize = ctx.request.body.pageSize || 50;
 
     let where = {};
-    
+
     let result = await ctx.orm().info_project_management.findAndCountAll({
       offset: (pageIndex - 1) * pageSize,
       limit: pageSize,

@@ -282,6 +282,27 @@ module.exports = function(sequelize, DataTypes) {
     b18: {
       type: DataTypes.TEXT,
       allowNull: true
+    },
+    b19: {
+      type: DataTypes.DATEONLY,
+      allowNull: true
+    },
+    b20: {
+      type: DataTypes.STRING(50),
+      allowNull: true
+    },
+    b21: {
+      type: DataTypes.STRING(50),
+      allowNull: true
+    },
+    b22: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
+    ptype: {
+      type: DataTypes.STRING(100),
+      allowNull: true,
+      defaultValue: '普通项目'
     }
   }, {
     tableName: 'info_projects'

@@ -89,6 +89,18 @@ module.exports = function(sequelize, DataTypes) {
     manage_user: {
       type: DataTypes.STRING(100),
       allowNull: true
+    },
+    a13: {
+      type: DataTypes.DATEONLY,
+      allowNull: true
+    },
+    a14: {
+      type: DataTypes.DECIMAL,
+      allowNull: true
+    },
+    a15: {
+      type: DataTypes.DECIMAL,
+      allowNull: true
     }
   }, {
     tableName: 'info_projects_sub'

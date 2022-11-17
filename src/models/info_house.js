@@ -114,6 +114,14 @@ module.exports = function(sequelize, DataTypes) {
     lat: {
       type: DataTypes.STRING(100),
       allowNull: true
+    },
+    houseType: {
+      type: DataTypes.STRING(100),
+      allowNull: true
+    },
+    houseRelege: {
+      type: DataTypes.STRING(100),
+      allowNull: true
     }
   }, {
     tableName: 'info_house'
