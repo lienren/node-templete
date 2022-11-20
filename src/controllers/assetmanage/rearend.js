@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2022-11-16 08:43:59
+ * @LastEditTime: 2022-11-20 17:16:06
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/assetmanage/rearend.js
@@ -425,13 +425,57 @@ module.exports = {
       await ctx.orm().info_project_update.create({
         sub_title: '更新项目资料',
         pro_id: project.id,
-        pro_sub_verify: JSON.stringify(project.dataValues)
+        pro_sub_verify: JSON.stringify(project.dataValues),
+        update_type: '更新项目内容'
       })
     } else {
       await ctx.orm().info_projects.create({
         ptype, pro_code, pro_name, pro_level, pro_status, a1, pro_type, pro_source,
         a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21,
         manage_id, manage_user
+      })
+    }
+
+    ctx.body = {}
+  },
+  submitBackProject: async ctx => {
+    let { id, pro_status, manage_id, manage_user } = ctx.request.body;
+
+    if (id) {
+      let oldProjectStatus = ''
+      let newProjectStatus = pro_status
+      let project = await ctx.orm().info_projects.findOne({
+        where: {
+          id
+        }
+      })
+
+      assert.ok(!!project, '项目不存在!')
+
+      oldProjectStatus = project.pro_status
+
+      await ctx.orm().info_projects.update({
+        ptype, pro_status: newProjectStatus, manage_id, manage_user
+      }, {
+        where: {
+          id: project.id
+        }
+      })
+
+      project = await ctx.orm().info_projects.findOne({
+        where: {
+          id: project.id
+        }
+      })
+
+      await ctx.orm().info_project_update.create({
+        sub_title: `项目状态从【${oldProjectStatus}】更新为【${newProjectStatus}】`,
+        pro_id: project.id,
+        pro_sub_verify: JSON.stringify(project.dataValues),
+        age_id: verify_manage_id,
+        manage_user: verify_manage_user,
+        manage_remark: verify_remark,
+        update_type: '项目状态更新'
       })
     }
 
@@ -468,7 +512,8 @@ module.exports = {
       await ctx.orm().info_project_update.create({
         sub_title: '更新项目资料',
         pro_id: project.id,
-        pro_sub_verify: JSON.stringify(project.dataValues)
+        pro_sub_verify: JSON.stringify(project.dataValues),
+        update_type: '更新项目内容'
       })
     } else {
       await ctx.orm().info_projects.create({
@@ -490,7 +535,7 @@ module.exports = {
   getProjects: async ctx => {
     let pageIndex = ctx.request.body.pageIndex || 1;
     let pageSize = ctx.request.body.pageSize || 50;
-    let { ptype, pro_code, pro_name, pro_level, pro_status, pro_type, pro_source, verify_status, verify_num, create_time, update_time } = ctx.request.body;
+    let { ptype, a5, a51, a13, pro_code, pro_name, pro_level, pro_status, pro_type, pro_source, verify_status, verify_num, create_time, update_time } = ctx.request.body;
 
     let where = {};
 
@@ -502,6 +547,15 @@ module.exports = {
     Object.assign(where, pro_source && { pro_source })
     Object.assign(where, verify_status && { verify_status })
     Object.assign(where, verify_num && { verify_num })
+
+    if (a51 && a5 !== null) {
+      where.a5 = {}
+      where.a5[`$${a51}`] = a5
+    }
+
+    if (a13 && a13.length > 0) {
+      where.a13 = { $in: a13 }
+    }
 
     if (pro_status && pro_status.length > 0) {
       where.pro_status = { $in: pro_status }
@@ -547,6 +601,19 @@ module.exports = {
       pageIndex,
       pageSize
     }
+  },
+  getProjectUpdate: async ctx => {
+    let { sub_title, pro_id, update_type } = ctx.request.body;
+
+    let where = {};
+
+    Object.assign(where, sub_title && { sub_title })
+    Object.assign(where, pro_id && { pro_id })
+    Object.assign(where, update_type && { update_type })
+
+    let result = await ctx.orm().info_project_update.findAll({ where })
+
+    ctx.body = result
   },
   submitProgress: async ctx => {
     let { id, pro_id, p_type, p_level, p_status, p_source, p_mtype, a1, a2, a2stime, a2etime, a3, a3stime, a3etime, manage_id, manage_user } = ctx.request.body;
@@ -704,7 +771,8 @@ module.exports = {
     await ctx.orm().info_project_update.create({
       sub_title: '提交审核',
       pro_id: project.id,
-      pro_sub_verify: JSON.stringify(project.dataValues)
+      pro_sub_verify: JSON.stringify(project.dataValues),
+      update_type: '更新项目内容'
     })
 
     ctx.body = {}
@@ -791,7 +859,11 @@ module.exports = {
     await ctx.orm().info_project_update.create({
       sub_title: sub_title,
       pro_id: project.id,
-      pro_sub_verify: JSON.stringify(project.dataValues)
+      pro_sub_verify: JSON.stringify(project.dataValues),
+      manage_id: verify_manage_id,
+      manage_user: verify_manage_user,
+      manage_remark: verify_remark,
+      update_type: '项目审核'
     })
   },
   submitProjectDueDiligence: async ctx => {
@@ -965,7 +1037,7 @@ module.exports = {
     union all 
     select 's7' title, count(1) num from info_projects where pro_status = '投前跟进' 
     union all 
-    select 's8' title, count(1) num from info_progress 
+    select 's8' title, count(1) num from info_projects where pro_status = '项目立项' 
     union all 
     select 's9' title, count(1) num from info_projects where pro_status = '投后审核中' 
     union all 

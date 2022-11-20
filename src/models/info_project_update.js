@@ -24,6 +24,22 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.DATE,
       allowNull: true,
       defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
+    },
+    manage_id: {
+      type: DataTypes.INTEGER(11),
+      allowNull: true
+    },
+    manage_user: {
+      type: DataTypes.STRING(100),
+      allowNull: true
+    },
+    manage_remark: {
+      type: DataTypes.STRING(100),
+      allowNull: true
+    },
+    update_type: {
+      type: DataTypes.STRING(20),
+      allowNull: true
     }
   }, {
     tableName: 'info_project_update'
