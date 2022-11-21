@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2022-11-20 17:16:06
+ * @LastEditTime: 2022-11-21 09:51:52
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/assetmanage/rearend.js
@@ -23,7 +23,7 @@ module.exports = {
   getHouses: async ctx => {
     let pageIndex = ctx.request.body.pageIndex || 1;
     let pageSize = ctx.request.body.pageSize || 50;
-    let { sn, street, community, streets, communitys, houseType, houseRelege, a4, a5, a7, a13, a14, remark, createTime, modifyTime } = ctx.request.body;
+    let { sn, street, community, streets, communitys, houseType, houseRelege, a1, a4, a5, a7, a11, a13, a14, a201, a202, remark, createTime, modifyTime } = ctx.request.body;
 
     let where = {
       isDel: 0
@@ -35,10 +35,17 @@ module.exports = {
     Object.assign(where, a4 && { a4 })
     Object.assign(where, a5 && { a5 })
     Object.assign(where, a7 && { a7 })
+    Object.assign(where, a11 && { a11 })
     Object.assign(where, a13 && { a13 })
     Object.assign(where, a14 && { a14 })
     Object.assign(where, houseType && { houseType })
     Object.assign(where, houseRelege && { houseRelege })
+
+    if (a201 && a202) {
+      where.a2 = {
+        $between: [a201, a202]
+      }
+    }
 
     if (streets && streets.length > 0) {
       where.street = {
@@ -50,6 +57,12 @@ module.exports = {
       where.community = {
         $in: communitys
       }
+    }
+
+    if (a1) {
+      where.a1 = {
+        $like: `%${a1}%`
+      };
     }
 
     if (remark) {
