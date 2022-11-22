@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2022-11-21 09:51:52
+ * @LastEditTime: 2022-11-22 10:57:53
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/assetmanage/rearend.js
@@ -23,7 +23,7 @@ module.exports = {
   getHouses: async ctx => {
     let pageIndex = ctx.request.body.pageIndex || 1;
     let pageSize = ctx.request.body.pageSize || 50;
-    let { sn, street, community, streets, communitys, houseType, houseRelege, a1, a4, a5, a7, a11, a13, a14, a201, a202, remark, createTime, modifyTime } = ctx.request.body;
+    let { sn, street, community, streets, communitys, houseType, a1, a4, a5, a6, a7, a11, a13, a14, a201, a202, remark, createTime, modifyTime } = ctx.request.body;
 
     let where = {
       isDel: 0
@@ -34,12 +34,12 @@ module.exports = {
     Object.assign(where, community && { community })
     Object.assign(where, a4 && { a4 })
     Object.assign(where, a5 && { a5 })
+    Object.assign(where, a6 && { a6 })
     Object.assign(where, a7 && { a7 })
     Object.assign(where, a11 && { a11 })
     Object.assign(where, a13 && { a13 })
     Object.assign(where, a14 && { a14 })
     Object.assign(where, houseType && { houseType })
-    Object.assign(where, houseRelege && { houseRelege })
 
     if (a201 && a202) {
       where.a2 = {
@@ -156,7 +156,7 @@ module.exports = {
   getHouseHavings: async ctx => {
     let pageIndex = ctx.request.body.pageIndex || 1;
     let pageSize = ctx.request.body.pageSize || 50;
-    let { houseType } = ctx.request.body;
+    let { houseType, sn, street, community, streets, communitys, a1, a4, a5, a6, a7, a11, a13, a14, a201, a202, a301, a302 } = ctx.request.body;
 
     let where = {
       a9: {
@@ -164,9 +164,61 @@ module.exports = {
       }
     };
 
-    if (houseType) {
+    if (a301 && a302) {
+      where.a3 = {
+        $between: [a301, a302]
+      }
+    }
+
+    let where1 = {
+      isDel: 0
+    };
+
+    Object.assign(where1, sn && { sn })
+    Object.assign(where1, street && { street })
+    Object.assign(where1, community && { community })
+    Object.assign(where1, a4 && { a4 })
+    Object.assign(where1, a5 && { a5 })
+    Object.assign(where1, a6 && { a6 })
+    Object.assign(where1, a7 && { a7 })
+    Object.assign(where1, a11 && { a11 })
+    Object.assign(where1, a13 && { a13 })
+    Object.assign(where1, a14 && { a14 })
+    Object.assign(where1, houseType && { houseType })
+
+    if (a201 && a202) {
+      where1.a2 = {
+        $between: [a201, a202]
+      }
+    }
+
+    if (streets && streets.length > 0) {
+      where1.street = {
+        $in: streets
+      }
+    }
+
+    if (communitys && communitys.length > 0) {
+      where1.community = {
+        $in: communitys
+      }
+    }
+
+    if (a1) {
+      where1.a1 = {
+        $like: `%${a1}%`
+      };
+    }
+
+    let houses = await ctx.orm().info_house.findAll({
+      where: where1
+    })
+
+    if (houses && houses.length > 0) {
       where.hid = {
-        $in: sequelize.literal(`(select id from info_house where houseType = '${houseType}')`)
+        $in: houses.map(m => {
+          return m.dataValues.id
+        })
       }
     }
 
@@ -468,7 +520,7 @@ module.exports = {
       oldProjectStatus = project.pro_status
 
       await ctx.orm().info_projects.update({
-        ptype, pro_status: newProjectStatus, manage_id, manage_user
+        pro_status: newProjectStatus, manage_id, manage_user
       }, {
         where: {
           id: project.id
