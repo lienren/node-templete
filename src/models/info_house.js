@@ -122,6 +122,26 @@ module.exports = function(sequelize, DataTypes) {
     houseRelege: {
       type: DataTypes.STRING(100),
       allowNull: true
+    },
+    houseImg: {
+      type: DataTypes.STRING(1000),
+      allowNull: true
+    },
+    a18: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
+    a19: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
+    a20: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
+    a21: {
+      type: DataTypes.STRING(50),
+      allowNull: true
     }
   }, {
     tableName: 'info_house'

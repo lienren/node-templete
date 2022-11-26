@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2022-11-22 10:57:53
+ * @LastEditTime: 2022-11-24 16:19:27
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/assetmanage/rearend.js
@@ -23,7 +23,7 @@ module.exports = {
   getHouses: async ctx => {
     let pageIndex = ctx.request.body.pageIndex || 1;
     let pageSize = ctx.request.body.pageSize || 50;
-    let { sn, street, community, streets, communitys, houseType, a1, a4, a5, a6, a7, a11, a13, a14, a201, a202, remark, createTime, modifyTime } = ctx.request.body;
+    let { sn, street, community, streets, communitys, houseType, a1, a4, a5, a6, a7, a8, a9, a10, a11, a13, a14, a201, a202, a301, a302, a21, h_a1, h_a2, h_a501, h_a502, h_a701, h_a702, remark, createTime, modifyTime } = ctx.request.body;
 
     let where = {
       isDel: 0
@@ -39,11 +39,18 @@ module.exports = {
     Object.assign(where, a11 && { a11 })
     Object.assign(where, a13 && { a13 })
     Object.assign(where, a14 && { a14 })
+    Object.assign(where, a21 && { a21 })
     Object.assign(where, houseType && { houseType })
 
     if (a201 && a202) {
       where.a2 = {
         $between: [a201, a202]
+      }
+    }
+
+    if (a301 && a302) {
+      where.a3 = {
+        $between: [a301, a302]
       }
     }
 
@@ -62,6 +69,24 @@ module.exports = {
     if (a1) {
       where.a1 = {
         $like: `%${a1}%`
+      };
+    }
+
+    if (a8) {
+      where.a8 = {
+        $like: `%${a8}%`
+      };
+    }
+
+    if (a9) {
+      where.a9 = {
+        $like: `%${a9}%`
+      };
+    }
+
+    if (a10) {
+      where.a10 = {
+        $like: `%${a10}%`
       };
     }
 
@@ -86,9 +111,181 @@ module.exports = {
       order: [['id', 'desc']]
     });
 
+    let havings = null
+    if (result && result.rows.length > 0) {
+      havings = await ctx.orm().info_house_having.findAll({
+        where: {
+          hid: result.rows.map(m => {
+            return m.dataValues.id
+          })
+        }
+      })
+    }
+
     ctx.body = {
       total: result.count,
-      list: result.rows,
+      list: result.rows.map(m => {
+        let h = havings && havings.length > 0 ? havings.filter(f => f.hid === m.dataValues.id) : []
+
+        return {
+          ...m.dataValues,
+          having: h
+        }
+      }),
+      pageIndex,
+      pageSize
+    }
+  },
+  getHousesPlus: async ctx => {
+    let pageIndex = ctx.request.body.pageIndex || 1;
+    let pageSize = ctx.request.body.pageSize || 50;
+    let { sn, street, community, streets, communitys, houseType, a1, a4, a5, a6, a7, a8, a9, a10, a11, a13, a14, a201, a202, a301, a302, a21, h_a1, h_a2, h_a501, h_a502, h_a701, h_a702, remark, createTime, modifyTime } = ctx.request.body;
+
+    let where = {
+      isDel: 0
+    };
+
+    let where1 = {}
+
+    Object.assign(where, sn && { sn })
+    Object.assign(where, street && { street })
+    Object.assign(where, community && { community })
+    Object.assign(where, a4 && { a4 })
+    Object.assign(where, a5 && { a5 })
+    Object.assign(where, a6 && { a6 })
+    Object.assign(where, a7 && { a7 })
+    Object.assign(where, a11 && { a11 })
+    Object.assign(where, a13 && { a13 })
+    Object.assign(where, a14 && { a14 })
+    Object.assign(where, a21 && { a21 })
+    Object.assign(where, houseType && { houseType })
+
+    Object.assign(where1, h_a1 && { a1: h_a1 })
+    Object.assign(where1, h_a2 && { a2: { $like: `%${h_a2}%` } })
+    if (h_a501 && h_a502) {
+      where.a5 = {
+        $between: [h_a501, h_a502]
+      }
+    }
+    if (h_a701 && h_a702) {
+      where.a7 = {
+        $between: [h_a701, h_a702]
+      }
+    }
+
+    if (a201 && a202) {
+      where.a2 = {
+        $between: [a201, a202]
+      }
+    }
+
+    if (a301 && a302) {
+      where.a3 = {
+        $between: [a301, a302]
+      }
+    }
+
+    if (streets && streets.length > 0) {
+      where.street = {
+        $in: streets
+      }
+    }
+
+    if (communitys && communitys.length > 0) {
+      where.community = {
+        $in: communitys
+      }
+    }
+
+    if (a1) {
+      where.a1 = {
+        $like: `%${a1}%`
+      };
+    }
+
+    if (a8) {
+      where.a8 = {
+        $like: `%${a8}%`
+      };
+    }
+
+    if (a9) {
+      where.a9 = {
+        $like: `%${a9}%`
+      };
+    }
+
+    if (a10) {
+      where.a10 = {
+        $like: `%${a10}%`
+      };
+    }
+
+    if (remark) {
+      where.remark = {
+        $like: `%${remark}%`
+      };
+    }
+
+    if (createTime && createTime.length === 2) {
+      where.createTime = { $between: createTime }
+    }
+
+    if (modifyTime && modifyTime.length === 2) {
+      where.modifyTime = { $between: modifyTime }
+    }
+
+    let result = await ctx.orm().info_house.findAndCountAll({
+      offset: (pageIndex - 1) * pageSize,
+      limit: pageSize,
+      where,
+      order: [['id', 'desc']]
+    });
+
+    let havings = null
+    if (result && result.rows.length > 0) {
+      havings = await ctx.orm().info_house_having.findAll({
+        where: {
+          hid: result.rows.map(m => {
+            return m.dataValues.id
+          })
+        }
+      })
+    }
+
+    let list = []
+    for (let i = 0, j = result.rows.length; i < j; i++) {
+      let m = result.rows[i].dataValues
+      let h = havings && havings.length > 0 ? havings.filter(f => f.hid === m.id) : []
+
+      let one = {}
+      if (h && h.length > 0) {
+        for (let x = 0, y = h.length; x < y; x++) {
+          let m1 = h[x].dataValues
+          one = {
+            index: i + 1,
+            ...m
+          }
+
+          Object.keys(m1).map(m2 => {
+            one[`h_${m2}`] = m1[m2]
+          })
+
+          list.push(one)
+        }
+      } else {
+        one = {
+          index: i + 1,
+          ...m
+        }
+
+        list.push(one)
+      }
+    }
+
+    ctx.body = {
+      total: result.count,
+      list: list,
       pageIndex,
       pageSize
     }
@@ -288,7 +485,7 @@ module.exports = {
     ctx.body = {}
   },
   submitHouse: async ctx => {
-    let { id, sn, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, street, community, remark, houseType, houseRelege } = ctx.request.body;
+    let { id, sn, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, street, community, remark, houseType, houseRelege, houseImg } = ctx.request.body;
 
     let lon = ''
     let lat = ''
@@ -324,8 +521,8 @@ module.exports = {
       }
 
       await ctx.orm().info_house.update({
-        sn, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, street, community, remark,
-        lon, lat, houseType, houseRelege
+        sn, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, street, community, remark,
+        lon, lat, houseType, houseRelege, houseImg
       }, {
         where: {
           id,
@@ -348,9 +545,9 @@ module.exports = {
       }
 
       await ctx.orm().info_house.create({
-        sn, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, street, community, remark,
+        sn, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, street, community, remark,
         lon: lon, lat: lat,
-        houseType, houseRelege,
+        houseType, houseRelege, houseImg,
         isDel: 0
       })
     }
@@ -537,9 +734,9 @@ module.exports = {
         sub_title: `项目状态从【${oldProjectStatus}】更新为【${newProjectStatus}】`,
         pro_id: project.id,
         pro_sub_verify: JSON.stringify(project.dataValues),
-        age_id: verify_manage_id,
-        manage_user: verify_manage_user,
-        manage_remark: verify_remark,
+        age_id: manage_id,
+        manage_user: manage_user,
+        manage_remark: '',
         update_type: '项目状态更新'
       })
     }
@@ -1149,6 +1346,93 @@ module.exports = {
           }
         }
       }
+    }
+  },
+  getHouseChecks: async ctx => {
+    let pageIndex = ctx.request.body.pageIndex || 1;
+    let pageSize = ctx.request.body.pageSize || 50;
+
+    let where = {}
+
+    let result = await ctx.orm().info_house_check.findAndCountAll({
+      offset: (pageIndex - 1) * pageSize,
+      limit: pageSize,
+      where,
+      order: [['id', 'desc']]
+    });
+
+    let checkUsers = null
+    if (result != null && result.rows.length > 0) {
+      checkUsers = await ctx.orm().info_house_check_users.findAll({
+        where: {
+          cid: {
+            $in: result.rows.map(m => {
+              return m.dataValues.id
+            })
+          }
+        }
+      })
+    }
+
+    ctx.body = {
+      total: result.count,
+      list: result.rows.map(m => {
+        let cu = checkUsers && checkUsers.length > 0 ? checkUsers.filter(f => f.cid === m.dataValues.id) : []
+        return {
+          ...m,
+          checkUsers: cu
+        }
+      }),
+      pageIndex,
+      pageSize
+    }
+  },
+  submitHouseChecks: async ctx => {
+    let { id, hid, hhid, cType, cUsers, cContent, cResult, isProblem, cProblem, cProblemImgs, cMeasure, cLevel, reviewTime, cUnUser, parent_id, parent_ids, cStatus } = ctx.request.body;
+
+    if (id) {
+      let check = await ctx.orm().info_house_check.findOne({
+        where: {
+          id
+        }
+      })
+
+      assert.ok(!!check, '安全检查不存在!')
+
+      if (cUsers !== check.cUsers) {
+        // 清除人员列表
+        await ctx.orm().info_house_check_users.destroy({
+          where: {
+            cid: check.id
+          }
+        })
+      }
+
+      await ctx.orm().info_house_check.update({
+        cType, cUsers: JSON.stringify(cUsers), cContent, cResult, isProblem, cProblem, cProblemImgs, cMeasure, cLevel, reviewTime, cUnUser, parent_id, parent_ids, cStatus
+      }, {
+        where: {
+          id: check.id
+        }
+      })
+
+      if (cUsers && cUsers.length > 0) {
+        let data = cUsers.map(m => {
+          return {
+            cid: check.id,
+            isUn: '否',
+            cUserId: m.cUserId,
+            cUserName: m.cUserName,
+            cUserImg: '',
+            cRemark: ''
+          };
+        });
+        ctx.orm().info_house_check_users.bulkCreate(data);
+      }
+    } else {
+      await ctx.orm().info_house_check.create({
+        hid, hhid, cType, cUsers: JSON.stringify(cUsers), cContent, cResult, isProblem, cProblem, cProblemImgs, cMeasure, cLevel, reviewTime, cUnUser, parent_id, parent_ids, cStatus
+      })
     }
   }
 };

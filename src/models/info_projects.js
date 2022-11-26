@@ -43,7 +43,8 @@ module.exports = function(sequelize, DataTypes) {
     },
     a3: {
       type: DataTypes.DECIMAL,
-      allowNull: true
+      allowNull: true,
+      defaultValue: '0.0000'
     },
     a4: {
       type: DataTypes.STRING(10),
@@ -51,7 +52,8 @@ module.exports = function(sequelize, DataTypes) {
     },
     a5: {
       type: DataTypes.DECIMAL,
-      allowNull: true
+      allowNull: true,
+      defaultValue: '0.0000'
     },
     a6: {
       type: DataTypes.STRING(100),
@@ -71,7 +73,8 @@ module.exports = function(sequelize, DataTypes) {
     },
     a10: {
       type: DataTypes.DECIMAL,
-      allowNull: true
+      allowNull: true,
+      defaultValue: '0.0000'
     },
     a11: {
       type: DataTypes.DATEONLY,
@@ -213,7 +216,8 @@ module.exports = function(sequelize, DataTypes) {
     },
     b3: {
       type: DataTypes.DECIMAL,
-      allowNull: true
+      allowNull: true,
+      defaultValue: '0.0000'
     },
     b4: {
       type: DataTypes.STRING(10),
@@ -221,7 +225,8 @@ module.exports = function(sequelize, DataTypes) {
     },
     b5: {
       type: DataTypes.DECIMAL,
-      allowNull: true
+      allowNull: true,
+      defaultValue: '0.00'
     },
     b6: {
       type: DataTypes.STRING(20),
@@ -233,7 +238,8 @@ module.exports = function(sequelize, DataTypes) {
     },
     b8: {
       type: DataTypes.DECIMAL,
-      allowNull: true
+      allowNull: true,
+      defaultValue: '0.00'
     },
     b9: {
       type: DataTypes.TEXT,
