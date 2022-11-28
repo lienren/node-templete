@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2022-11-24 16:19:27
+ * @LastEditTime: 2022-11-27 10:35:24
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/assetmanage/rearend.js
@@ -163,13 +163,27 @@ module.exports = {
     Object.assign(where1, h_a1 && { a1: h_a1 })
     Object.assign(where1, h_a2 && { a2: { $like: `%${h_a2}%` } })
     if (h_a501 && h_a502) {
-      where.a5 = {
+      where1.a5 = {
         $between: [h_a501, h_a502]
       }
     }
     if (h_a701 && h_a702) {
-      where.a7 = {
+      where1.a7 = {
         $between: [h_a701, h_a702]
+      }
+    }
+    if (Object.keys(where1).length > 0) {
+      let hs = await ctx.orm().info_house_having.findAll({
+        where: {
+          ...where1
+        }
+      })
+      if (hs && hs.length > 0) {
+        where.id = {
+          $in: hs.map(m => {
+            return m.dataValues.hid
+          })
+        }
       }
     }
 
@@ -246,6 +260,7 @@ module.exports = {
     if (result && result.rows.length > 0) {
       havings = await ctx.orm().info_house_having.findAll({
         where: {
+          ...where1,
           hid: result.rows.map(m => {
             return m.dataValues.id
           })
@@ -1351,8 +1366,10 @@ module.exports = {
   getHouseChecks: async ctx => {
     let pageIndex = ctx.request.body.pageIndex || 1;
     let pageSize = ctx.request.body.pageSize || 50;
+    let {cType} = ctx.request.body
 
     let where = {}
+    Object.assign(where, cType && { cType })
 
     let result = await ctx.orm().info_house_check.findAndCountAll({
       offset: (pageIndex - 1) * pageSize,
@@ -1379,7 +1396,7 @@ module.exports = {
       list: result.rows.map(m => {
         let cu = checkUsers && checkUsers.length > 0 ? checkUsers.filter(f => f.cid === m.dataValues.id) : []
         return {
-          ...m,
+          ...m.dataValues,
           checkUsers: cu
         }
       }),
@@ -1388,7 +1405,7 @@ module.exports = {
     }
   },
   submitHouseChecks: async ctx => {
-    let { id, hid, hhid, cType, cUsers, cContent, cResult, isProblem, cProblem, cProblemImgs, cMeasure, cLevel, reviewTime, cUnUser, parent_id, parent_ids, cStatus } = ctx.request.body;
+    let { id, hid, hhid, a1, ha2, cType, cUsers, cContent, cLevel, parent_id, parent_ids, cStatus } = ctx.request.body;
 
     if (id) {
       let check = await ctx.orm().info_house_check.findOne({
@@ -1409,7 +1426,7 @@ module.exports = {
       }
 
       await ctx.orm().info_house_check.update({
-        cType, cUsers: JSON.stringify(cUsers), cContent, cResult, isProblem, cProblem, cProblemImgs, cMeasure, cLevel, reviewTime, cUnUser, parent_id, parent_ids, cStatus
+        hid, hhid, a1, ha2, cType, cUsers: JSON.stringify(cUsers), cContent, cLevel, parent_id, parent_ids, cStatus
       }, {
         where: {
           id: check.id
@@ -1430,9 +1447,57 @@ module.exports = {
         ctx.orm().info_house_check_users.bulkCreate(data);
       }
     } else {
-      await ctx.orm().info_house_check.create({
-        hid, hhid, cType, cUsers: JSON.stringify(cUsers), cContent, cResult, isProblem, cProblem, cProblemImgs, cMeasure, cLevel, reviewTime, cUnUser, parent_id, parent_ids, cStatus
-      })
+      if (hid && hid.length > 0) {
+        for (let i = 0, j = hid.length; i < j; i++) {
+          let checkInfo = await ctx.orm().info_house_check.create({
+            hid: hid[i], hhid: hhid[i], a1: a1[i], ha2: ha2[i], cType, cUsers: JSON.stringify(cUsers), cContent, cLevel, parent_id, parent_ids, cStatus
+          })
+
+          if (checkInfo && cUsers && cUsers.length > 0) {
+            let data = cUsers.map(m => {
+              return {
+                cid: checkInfo.id,
+                isUn: '否',
+                cUserId: m.cUserId,
+                cUserName: m.cUserName,
+                cUserImg: '',
+                cRemark: ''
+              };
+            });
+            await ctx.orm().info_house_check_users.bulkCreate(data);
+          }
+        }
+      }
     }
+
+    ctx.body = {}
+  },
+  delHouseChecks: async ctx => {
+    let { id } = ctx.request.body;
+
+    await ctx.orm().info_house_check.destroy({
+      where: {
+        id
+      }
+    })
+
+    await ctx.orm().info_house_check_users.destroy({
+      where: {
+        cid: id
+      }
+    })
+
+    ctx.body = {}
+  },
+  getCheckUsers: async ctx => {
+    let result = await ctx.orm().SuperManagerInfo.findAll({
+      attributes: ['id', 'loginName', 'realName', 'phone'],
+      where: {
+        depName: '资产运营部',
+        isDel: 0
+      }
+    });
+
+    ctx.body = result;
   }
 };

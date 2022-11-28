@@ -16,6 +16,14 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.INTEGER(11),
       allowNull: true
     },
+    a1: {
+      type: DataTypes.STRING(500),
+      allowNull: true
+    },
+    ha2: {
+      type: DataTypes.STRING(100),
+      allowNull: true
+    },
     cType: {
       type: DataTypes.STRING(100),
       allowNull: true
@@ -26,6 +34,10 @@ module.exports = function(sequelize, DataTypes) {
     },
     cContent: {
       type: DataTypes.TEXT,
+      allowNull: true
+    },
+    cTime: {
+      type: DataTypes.DATEONLY,
       allowNull: true
     },
     cResult: {
