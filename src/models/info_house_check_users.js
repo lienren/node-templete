@@ -16,8 +16,16 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING(10),
       allowNull: true
     },
+    cIsHandle: {
+      type: DataTypes.STRING(10),
+      allowNull: true
+    },
     cUserId: {
       type: DataTypes.INTEGER(11),
+      allowNull: true
+    },
+    cUserName: {
+      type: DataTypes.STRING(50),
       allowNull: true
     },
     cUserImg: {
@@ -37,10 +45,6 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.DATE,
       allowNull: true,
       defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
-    },
-    cUserName: {
-      type: DataTypes.STRING(50),
-      allowNull: true
     }
   }, {
     tableName: 'info_house_check_users'

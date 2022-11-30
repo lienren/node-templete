@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2022-11-27 10:35:24
+ * @LastEditTime: 2022-11-30 18:05:32
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/assetmanage/rearend.js
@@ -1366,10 +1366,17 @@ module.exports = {
   getHouseChecks: async ctx => {
     let pageIndex = ctx.request.body.pageIndex || 1;
     let pageSize = ctx.request.body.pageSize || 50;
-    let {cType} = ctx.request.body
+    let { cType, cUserId, cStatus } = ctx.request.body
 
     let where = {}
     Object.assign(where, cType && { cType })
+    Object.assign(where, cStatus && { cStatus: { $in: cStatus } })
+
+    if (cUserId) {
+      where.id = {
+        $in: sequelize.literal(`(select cid from info_house_check_users where cUserId = ${cUserId})`)
+      }
+    }
 
     let result = await ctx.orm().info_house_check.findAndCountAll({
       offset: (pageIndex - 1) * pageSize,
@@ -1404,6 +1411,20 @@ module.exports = {
       pageSize
     }
   },
+  getHouseCheckUsers: async ctx => {
+    let { id, cid, cUserId } = ctx.request.body
+
+    let where = {}
+    Object.assign(where, id && { id })
+    Object.assign(where, cid && { cid })
+    Object.assign(where, cUserId && { cUserId })
+
+    let result = await ctx.orm().info_house_check_users.findAll({
+      where
+    });
+
+    ctx.body = result
+  },
   submitHouseChecks: async ctx => {
     let { id, hid, hhid, a1, ha2, cType, cUsers, cContent, cLevel, parent_id, parent_ids, cStatus } = ctx.request.body;
 
@@ -1426,7 +1447,8 @@ module.exports = {
       }
 
       await ctx.orm().info_house_check.update({
-        hid, hhid, a1, ha2, cType, cUsers: JSON.stringify(cUsers), cContent, cLevel, parent_id, parent_ids, cStatus
+        hid, hhid, a1, ha2, cType, cUsers: JSON.stringify(cUsers), cContent, cLevel, parent_id, parent_ids, cStatus,
+        cProblemImgs: '[]'
       }, {
         where: {
           id: check.id
@@ -1438,6 +1460,7 @@ module.exports = {
           return {
             cid: check.id,
             isUn: '否',
+            cIsHandle: '未处理',
             cUserId: m.cUserId,
             cUserName: m.cUserName,
             cUserImg: '',
@@ -1450,7 +1473,8 @@ module.exports = {
       if (hid && hid.length > 0) {
         for (let i = 0, j = hid.length; i < j; i++) {
           let checkInfo = await ctx.orm().info_house_check.create({
-            hid: hid[i], hhid: hhid[i], a1: a1[i], ha2: ha2[i], cType, cUsers: JSON.stringify(cUsers), cContent, cLevel, parent_id, parent_ids, cStatus
+            hid: hid[i], hhid: hhid[i], a1: a1[i], ha2: ha2[i], cType, cUsers: JSON.stringify(cUsers), cContent, cLevel, parent_id, parent_ids, cStatus,
+            cProblemImgs: '[]'
           })
 
           if (checkInfo && cUsers && cUsers.length > 0) {
@@ -1458,6 +1482,7 @@ module.exports = {
               return {
                 cid: checkInfo.id,
                 isUn: '否',
+                cIsHandle: '未处理',
                 cUserId: m.cUserId,
                 cUserName: m.cUserName,
                 cUserImg: '',
@@ -1471,6 +1496,32 @@ module.exports = {
     }
 
     ctx.body = {}
+  },
+  submitHouseChecked: async ctx => {
+    let { id, cContent, cTime, isProblem, cProblem, cProblemImgs, cMeasure, cUserId, cUserImg, cRemark } = ctx.request.body;
+
+    let cStatus = isProblem === '存在' ? '待复查' : '已完成'
+
+    await ctx.orm().info_house_check.update({
+      cContent: JSON.stringify(cContent),
+      cTime, isProblem, cProblem,
+      cProblemImgs: JSON.stringify(cProblemImgs), cMeasure, cUserId, cUserImg, cRemark, cStatus
+    }, {
+      where: {
+        id
+      }
+    })
+
+    await ctx.orm().info_house_check_users.update({
+      cUserImg: cUserImg,
+      cRemark: cRemark,
+      cIsHandle: '已处理'
+    }, {
+      where: {
+        cid: id,
+        cUserId: cUserId
+      }
+    })
   },
   delHouseChecks: async ctx => {
     let { id } = ctx.request.body;

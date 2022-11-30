@@ -38,6 +38,11 @@ module.exports = async function (ctx, next) {
     return;
   }
 
+  if (ctx.path.indexOf('asset_mobile') > -1) {
+    await sendfile(ctx, path.resolve(__dirname, '../../assets/asset_mobile/index.html'));
+    return;
+  }
+
   if (ctx.path.indexOf('aicommunity') > -1) {
     await sendfile(ctx, path.resolve(__dirname, '../../assets/aicommunity/index.html'));
     return;
