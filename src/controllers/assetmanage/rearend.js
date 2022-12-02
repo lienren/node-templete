@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2022-11-30 18:05:32
+ * @LastEditTime: 2022-12-02 19:03:40
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/assetmanage/rearend.js
@@ -23,7 +23,7 @@ module.exports = {
   getHouses: async ctx => {
     let pageIndex = ctx.request.body.pageIndex || 1;
     let pageSize = ctx.request.body.pageSize || 50;
-    let { sn, street, community, streets, communitys, houseType, a1, a4, a5, a6, a7, a8, a9, a10, a11, a13, a14, a201, a202, a301, a302, a21, h_a1, h_a2, h_a501, h_a502, h_a701, h_a702, remark, createTime, modifyTime } = ctx.request.body;
+    let { sn, street, community, streets, communitys, houseType, a1, a4, a5, a6, a7, a8, a9, a10, a11, a13, a14, a201, a202, a301, a302, a21, h_a1, h_a2, h_a301, h_a302, h_a701, h_a702, remark, createTime, modifyTime } = ctx.request.body;
 
     let where = {
       isDel: 0
@@ -41,6 +41,34 @@ module.exports = {
     Object.assign(where, a14 && { a14 })
     Object.assign(where, a21 && { a21 })
     Object.assign(where, houseType && { houseType })
+
+    let where1 = {}
+    Object.assign(where1, h_a1 && { a1: h_a1 })
+    Object.assign(where1, h_a2 && { a2: { $like: `%${h_a2}%` } })
+    if (h_a301 && h_a302) {
+      where1.a3 = {
+        $between: [h_a301, h_a302]
+      }
+    }
+    if (h_a701 && h_a702) {
+      where1.a7 = {
+        $between: [h_a701, h_a702]
+      }
+    }
+    if (Object.keys(where1).length > 0) {
+      let havings = await ctx.orm().info_house_having.findAll({
+        attributes: ['hid'],
+        where: where1
+      })
+
+      if (havings && havings.length > 0) {
+        where.id = {
+          $in: havings.map(m => {
+            return m.dataValues.hid
+          })
+        }
+      }
+    }
 
     if (a201 && a202) {
       where.a2 = {
@@ -117,7 +145,8 @@ module.exports = {
         where: {
           hid: result.rows.map(m => {
             return m.dataValues.id
-          })
+          }),
+          ...where1
         }
       })
     }
@@ -1371,12 +1400,7 @@ module.exports = {
     let where = {}
     Object.assign(where, cType && { cType })
     Object.assign(where, cStatus && { cStatus: { $in: cStatus } })
-
-    if (cUserId) {
-      where.id = {
-        $in: sequelize.literal(`(select cid from info_house_check_users where cUserId = ${cUserId})`)
-      }
-    }
+    Object.assign(where, cUserId && { cUserIds: { $like: `%,${cUserId},%` } })
 
     let result = await ctx.orm().info_house_check.findAndCountAll({
       offset: (pageIndex - 1) * pageSize,
@@ -1385,15 +1409,13 @@ module.exports = {
       order: [['id', 'desc']]
     });
 
-    let checkUsers = null
-    if (result != null && result.rows.length > 0) {
-      checkUsers = await ctx.orm().info_house_check_users.findAll({
+    let shops = null
+    if (result.rows && result.rows.length > 0) {
+      shops = await ctx.orm().info_house_check_shops.findAll({
         where: {
-          cid: {
-            $in: result.rows.map(m => {
-              return m.dataValues.id
-            })
-          }
+          cid: result.rows.map(m => {
+            return m.dataValues.id
+          })
         }
       })
     }
@@ -1401,23 +1423,64 @@ module.exports = {
     ctx.body = {
       total: result.count,
       list: result.rows.map(m => {
-        let cu = checkUsers && checkUsers.length > 0 ? checkUsers.filter(f => f.cid === m.dataValues.id) : []
+        let s = shops && shops.length > 0 ? shops.filter(f => f.cid === m.dataValues.id) : []
         return {
           ...m.dataValues,
-          checkUsers: cu
+          shops: s
         }
       }),
       pageIndex,
       pageSize
     }
   },
+  getHouseCheck: async ctx => {
+    let { id } = ctx.request.body
+
+    let result = await ctx.orm().info_house_check.findOne({
+      where: {
+        id
+      }
+    });
+
+    ctx.body = result
+  },
+  getHouseCheckShop: async ctx => {
+    let { cid, sid } = ctx.request.body
+
+    let where = {}
+    Object.assign(where, cid && { cid })
+    Object.assign(where, sid && { id: sid })
+
+    let result = await ctx.orm().info_house_check_shops.findAll({
+      where
+    });
+
+    let checkUsers = null
+    if (result && result.length > 0) {
+      checkUsers = await ctx.orm().info_house_check_users.findAll({
+        where: {
+          sid: result.map(m => {
+            return m.dataValues.id
+          })
+        }
+      })
+    }
+
+    ctx.body = result.map(m => {
+      let u = checkUsers && checkUsers.length > 0 ? checkUsers.filter(f => f.sid === m.dataValues.id) : []
+      return {
+        ...m.dataValues,
+        users: u
+      }
+    })
+  },
   getHouseCheckUsers: async ctx => {
-    let { id, cid, cUserId } = ctx.request.body
+    let { id, cid, sid } = ctx.request.body
 
     let where = {}
     Object.assign(where, id && { id })
     Object.assign(where, cid && { cid })
-    Object.assign(where, cUserId && { cUserId })
+    Object.assign(where, sid && { sid })
 
     let result = await ctx.orm().info_house_check_users.findAll({
       where
@@ -1425,103 +1488,182 @@ module.exports = {
 
     ctx.body = result
   },
-  submitHouseChecks: async ctx => {
-    let { id, hid, hhid, a1, ha2, cType, cUsers, cContent, cLevel, parent_id, parent_ids, cStatus } = ctx.request.body;
+  submitHouseCheck: async ctx => {
+    let { id, hid, a1, cType, cUsers, cContent, cStatus } = ctx.request.body;
 
     if (id) {
-      let check = await ctx.orm().info_house_check.findOne({
-        where: {
-          id
-        }
-      })
-
-      assert.ok(!!check, '安全检查不存在!')
-
-      if (cUsers !== check.cUsers) {
-        // 清除人员列表
-        await ctx.orm().info_house_check_users.destroy({
-          where: {
-            cid: check.id
-          }
-        })
-      }
-
       await ctx.orm().info_house_check.update({
-        hid, hhid, a1, ha2, cType, cUsers: JSON.stringify(cUsers), cContent, cLevel, parent_id, parent_ids, cStatus,
-        cProblemImgs: '[]'
+        hid, a1, cType, cUsers: JSON.stringify(cUsers),
+        cUserIds: ',' + cUsers.map(m => m.cUserId).join(',') + ',',
+        cContent: JSON.stringify(cContent), cStatus
       }, {
         where: {
-          id: check.id
+          id,
+          cStatus: '未处理'
         }
       })
-
-      if (cUsers && cUsers.length > 0) {
-        let data = cUsers.map(m => {
-          return {
-            cid: check.id,
-            isUn: '否',
-            cIsHandle: '未处理',
-            cUserId: m.cUserId,
-            cUserName: m.cUserName,
-            cUserImg: '',
-            cRemark: ''
-          };
-        });
-        ctx.orm().info_house_check_users.bulkCreate(data);
-      }
     } else {
       if (hid && hid.length > 0) {
         for (let i = 0, j = hid.length; i < j; i++) {
-          let checkInfo = await ctx.orm().info_house_check.create({
-            hid: hid[i], hhid: hhid[i], a1: a1[i], ha2: ha2[i], cType, cUsers: JSON.stringify(cUsers), cContent, cLevel, parent_id, parent_ids, cStatus,
-            cProblemImgs: '[]'
+          await ctx.orm().info_house_check.create({
+            hid: hid[i], a1: a1[i], cType,
+            cUsers: JSON.stringify(cUsers),
+            cUserIds: ',' + cUsers.map(m => m.cUserId).join(',') + ',',
+            cContent: JSON.stringify(cContent), cStatus
           })
-
-          if (checkInfo && cUsers && cUsers.length > 0) {
-            let data = cUsers.map(m => {
-              return {
-                cid: checkInfo.id,
-                isUn: '否',
-                cIsHandle: '未处理',
-                cUserId: m.cUserId,
-                cUserName: m.cUserName,
-                cUserImg: '',
-                cRemark: ''
-              };
-            });
-            await ctx.orm().info_house_check_users.bulkCreate(data);
-          }
         }
       }
     }
 
     ctx.body = {}
   },
-  submitHouseChecked: async ctx => {
-    let { id, cContent, cTime, isProblem, cProblem, cProblemImgs, cMeasure, cUserId, cUserImg, cRemark } = ctx.request.body;
+  submitHouseCheckShop: async ctx => {
+    let { id, shopName, cUserId, cUsersName, cUserImg, cRemark, cContent, cTime, cResult, isProblem, cProblem, cProblemImgs, cMeasure } = ctx.request.body;
 
-    let cStatus = isProblem === '存在' ? '待复查' : '已完成'
+    let check = await ctx.orm().info_house_check.findOne({
+      where: {
+        id
+      }
+    })
+
+    assert.ok(!!check, '检查项目不存在!')
 
     await ctx.orm().info_house_check.update({
+      cStatus: '处理中'
+    }, {
+      where: {
+        id: check.id
+      }
+    })
+
+    let shopStatus = isProblem === '存在' ? '待复查' : '已完成'
+
+    let shop = await ctx.orm().info_house_check_shops.create({
+      cid: check.id,
+      a1: check.a1,
+      shopName,
       cContent: JSON.stringify(cContent),
-      cTime, isProblem, cProblem,
-      cProblemImgs: JSON.stringify(cProblemImgs), cMeasure, cUserId, cUserImg, cRemark, cStatus
+      cType: check.cType,
+      cUsers: check.cUsers,
+      cStatus: shopStatus
+    })
+
+    let users = JSON.parse(check.cUsers)
+    let UserImgs = users.map(m => { return '' })
+    let Remarks = users.map(m => { return '' })
+
+    for (let i = 0, j = users.length; i < j; i++) {
+      if (users[i].cUserId === cUserId) {
+        UserImgs[i] = cUserImg
+        Remarks[i] = cRemark
+        break;
+      }
+    }
+
+    await ctx.orm().info_house_check_users.create({
+      cid: check.id,
+      sid: shop.id,
+      cUsers: check.cUsers,
+      cUserImg: JSON.stringify(UserImgs),
+      cRemark: JSON.stringify(Remarks),
+      cContent: JSON.stringify(cContent),
+      cTime,
+      cResult,
+      isProblem,
+      cProblem,
+      cProblemImgs: JSON.stringify(cProblemImgs),
+      cMeasure,
+      isRepeat: '不是'
+    })
+
+    ctx.body = {}
+  },
+  submitHouseCheckShopRepeat: async ctx => {
+    let { id, sid, cUserId, cUsersName, cUserImg, cRemark, cTime, cResult, isProblem, cMeasure } = ctx.request.body;
+
+    let check = await ctx.orm().info_house_check.findOne({
+      where: {
+        id
+      }
+    })
+    assert.ok(!!check, '检查项目不存在!')
+
+    let shop = await ctx.orm().info_house_check_shops.findOne({
+      where: {
+        id: sid
+      }
+    })
+    assert.ok(!!shop, '检查店铺不存在!')
+
+    let shopStatus = isProblem === '未整改' ? '待复查' : '已完成'
+
+    await ctx.orm().info_house_check_shops.update({
+      cStatus: shopStatus
+    }, {
+      where: {
+        id: shop.id
+      }
+    })
+
+    let users = JSON.parse(check.cUsers)
+    let UserImgs = users.map(m => { return '' })
+    let Remarks = users.map(m => { return '' })
+
+    for (let i = 0, j = users.length; i < j; i++) {
+      if (users[i].cUserId === cUserId) {
+        UserImgs[i] = cUserImg
+        Remarks[i] = cRemark
+        break;
+      }
+    }
+
+    await ctx.orm().info_house_check_users.create({
+      cid: check.id,
+      sid: shop.id,
+      cUsers: shop.cUsers,
+      cUserImg: JSON.stringify(UserImgs),
+      cRemark: JSON.stringify(Remarks),
+      cContent: shop.cContent,
+      cTime,
+      cResult,
+      isProblem,
+      cMeasure,
+      isRepeat: '是'
+    })
+
+    ctx.body = {}
+  },
+  submitHouseOver: async ctx => {
+    let { id } = ctx.request.body;
+
+    await ctx.orm().info_house_check.update({
+      cStatus: '已完成'
     }, {
       where: {
         id
       }
     })
 
+    ctx.body = {}
+  },
+  submitHouseCheckUnUser: async ctx => {
+    let { cid, sid, uid, cUnUserName, cUnUserImg } = ctx.request.body;
+
     await ctx.orm().info_house_check_users.update({
-      cUserImg: cUserImg,
-      cRemark: cRemark,
-      cIsHandle: '已处理'
+      cUnUserName,
+      cUnUserImg
     }, {
       where: {
-        cid: id,
-        cUserId: cUserId
+        cid,
+        sid,
+        id: uid,
+        cUnUserImg: {
+          $is: null
+        }
       }
     })
+
+    ctx.body = {}
   },
   delHouseChecks: async ctx => {
     let { id } = ctx.request.body;
@@ -1529,6 +1671,12 @@ module.exports = {
     await ctx.orm().info_house_check.destroy({
       where: {
         id
+      }
+    })
+
+    await ctx.orm().info_house_check_shops.destroy({
+      where: {
+        cid: id
       }
     })
 

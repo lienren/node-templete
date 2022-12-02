@@ -1,14 +1,14 @@
 /* jshint indent: 2 */
 
 module.exports = function(sequelize, DataTypes) {
-  return sequelize.define('info_house_check', {
+  return sequelize.define('info_house_check_shop', {
     id: {
       type: DataTypes.INTEGER(11),
       allowNull: false,
       primaryKey: true,
       autoIncrement: true
     },
-    hid: {
+    cid: {
       type: DataTypes.INTEGER(11),
       allowNull: true
     },
@@ -16,19 +16,15 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING(500),
       allowNull: true
     },
+    shopName: {
+      type: DataTypes.STRING(100),
+      allowNull: true
+    },
     cType: {
       type: DataTypes.STRING(100),
       allowNull: true
     },
     cUsers: {
-      type: DataTypes.STRING(2000),
-      allowNull: true
-    },
-    cUserIds: {
-      type: DataTypes.STRING(1000),
-      allowNull: true
-    },
-    cContent: {
       type: DataTypes.TEXT,
       allowNull: true
     },
@@ -47,6 +43,6 @@ module.exports = function(sequelize, DataTypes) {
       defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
     }
   }, {
-    tableName: 'info_house_check'
+    tableName: 'info_house_check_shop'
   });
 };

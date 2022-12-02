@@ -81,7 +81,7 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     a12: {
-      type: DataTypes.STRING(100),
+      type: DataTypes.STRING(500),
       allowNull: true
     },
     a13: {

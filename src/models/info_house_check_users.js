@@ -12,28 +12,20 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.INTEGER(11),
       allowNull: true
     },
-    isUn: {
-      type: DataTypes.STRING(10),
-      allowNull: true
-    },
-    cIsHandle: {
-      type: DataTypes.STRING(10),
-      allowNull: true
-    },
-    cUserId: {
+    sid: {
       type: DataTypes.INTEGER(11),
       allowNull: true
     },
-    cUserName: {
-      type: DataTypes.STRING(50),
+    cUsers: {
+      type: DataTypes.TEXT,
       allowNull: true
     },
     cUserImg: {
-      type: DataTypes.STRING(1000),
+      type: DataTypes.TEXT,
       allowNull: true
     },
     cRemark: {
-      type: DataTypes.STRING(500),
+      type: DataTypes.TEXT,
       allowNull: true
     },
     create_time: {
@@ -45,6 +37,46 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.DATE,
       allowNull: true,
       defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
+    },
+    cUnUserName: {
+      type: DataTypes.STRING(50),
+      allowNull: true
+    },
+    cUnUserImg: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
+    cContent: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
+    cTime: {
+      type: DataTypes.DATEONLY,
+      allowNull: true
+    },
+    cResult: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
+    isProblem: {
+      type: DataTypes.STRING(10),
+      allowNull: true
+    },
+    cProblem: {
+      type: DataTypes.STRING(500),
+      allowNull: true
+    },
+    cProblemImgs: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
+    cMeasure: {
+      type: DataTypes.STRING(500),
+      allowNull: true
+    },
+    isRepeat: {
+      type: DataTypes.STRING(10),
+      allowNull: true
     }
   }, {
     tableName: 'info_house_check_users'
