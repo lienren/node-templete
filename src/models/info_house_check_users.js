@@ -46,6 +46,10 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.TEXT,
       allowNull: true
     },
+    cUnUserPhone: {
+      type: DataTypes.STRING(20),
+      allowNull: true
+    },
     cContent: {
       type: DataTypes.TEXT,
       allowNull: true

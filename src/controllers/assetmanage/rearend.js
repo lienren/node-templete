@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2022-12-02 19:03:40
+ * @LastEditTime: 2022-12-03 14:20:22
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/assetmanage/rearend.js
@@ -1354,9 +1354,32 @@ module.exports = {
     let result1 = await ctx.orm().query(sql1);
     let result2 = await ctx.orm().query(sql2);
 
+    let result3 = await ctx.orm().info_house_yearrent.findAll({})
+    let years = {}
+
+    result3.map(m => {
+      let diffMonth = moment(m.dataValues.a2).diff(moment(m.dataValues.a1), 'month')
+      let montha3 = Math.round(m.dataValues.a3 / diffMonth)
+
+      for (let i = 0, j = diffMonth; i < j; i++) {
+        let year = moment(m.dataValues.a1).add(i, 'months').year()
+
+        if (i + 1 === j) {
+          montha3 = Math.round(m.dataValues.a3 - (diffMonth - 1) * montha3)
+        }
+
+        if (years[`${year}`]) {
+          years[`${year}`] += montha3
+        } else {
+          years[`${year}`] = montha3
+        }
+      }
+    })
+
     ctx.body = {
       result1: result1,
-      result2: result2
+      result2: result2,
+      result3: years
     };
   },
   runGeocode: async ctx => {
@@ -1518,7 +1541,7 @@ module.exports = {
     ctx.body = {}
   },
   submitHouseCheckShop: async ctx => {
-    let { id, shopName, cUserId, cUsersName, cUserImg, cRemark, cContent, cTime, cResult, isProblem, cProblem, cProblemImgs, cMeasure } = ctx.request.body;
+    let { id, shopName, cUserId, cUsersName, cUserImg, cUnUserPhone, cRemark, cContent, cTime, cResult, isProblem, cProblem, cProblemImgs, cMeasure } = ctx.request.body;
 
     let check = await ctx.orm().info_house_check.findOne({
       where: {
@@ -1573,13 +1596,14 @@ module.exports = {
       cProblem,
       cProblemImgs: JSON.stringify(cProblemImgs),
       cMeasure,
-      isRepeat: '不是'
+      isRepeat: '不是',
+      cUnUserPhone
     })
 
     ctx.body = {}
   },
   submitHouseCheckShopRepeat: async ctx => {
-    let { id, sid, cUserId, cUsersName, cUserImg, cRemark, cTime, cResult, isProblem, cMeasure } = ctx.request.body;
+    let { id, sid, cUserId, cUsersName, cUserImg, cUnUserPhone, cRemark, cTime, cResult, isProblem, cMeasure } = ctx.request.body;
 
     let check = await ctx.orm().info_house_check.findOne({
       where: {
@@ -1628,7 +1652,8 @@ module.exports = {
       cResult,
       isProblem,
       cMeasure,
-      isRepeat: '是'
+      isRepeat: '是',
+      cUnUserPhone
     })
 
     ctx.body = {}
