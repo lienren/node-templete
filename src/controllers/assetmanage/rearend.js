@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2022-12-05 09:46:14
+ * @LastEditTime: 2022-12-05 11:36:45
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/assetmanage/rearend.js
@@ -1413,12 +1413,136 @@ module.exports = {
   getHouseChecks: async ctx => {
     let pageIndex = ctx.request.body.pageIndex || 1;
     let pageSize = ctx.request.body.pageSize || 50;
-    let { cType, cUserId, cStatus } = ctx.request.body
+    let {
+      sn, street, community, streets, communitys, houseType, a1, a4, a5, a6, a7, a8, a9, a10, a11, a13, a14, a201, a202, a301, a302, a21, h_a1, h_a2, h_a301, h_a302, h_a701, h_a702, remark, createTime, modifyTime,
+      cType, cUserId, cStatus
+    } = ctx.request.body
 
     let where = {}
     Object.assign(where, cType && { cType })
     Object.assign(where, cStatus && { cStatus: { $in: cStatus } })
     Object.assign(where, cUserId && { cUserIds: { $like: `%,${cUserId},%` } })
+
+    let where1 = {};
+    Object.assign(where1, sn && { sn })
+    Object.assign(where1, street && { street })
+    Object.assign(where1, community && { community })
+    Object.assign(where1, a4 && { a4 })
+    Object.assign(where1, a5 && { a5 })
+    Object.assign(where1, a6 && { a6 })
+    Object.assign(where1, a7 && { a7 })
+    Object.assign(where1, a11 && { a11 })
+    Object.assign(where1, a13 && { a13 })
+    Object.assign(where1, a14 && { a14 })
+    Object.assign(where1, a21 && { a21 })
+    Object.assign(where1, houseType && { houseType })
+
+    let where2 = {}
+    Object.assign(where2, h_a1 && { a1: h_a1 })
+    Object.assign(where2, h_a2 && { a2: { $like: `%${h_a2}%` } })
+    if (h_a301 && h_a302) {
+      where2.a3 = {
+        $between: [h_a301, h_a302]
+      }
+    }
+    if (h_a701 && h_a702) {
+      where2.a7 = {
+        $between: [h_a701, h_a702]
+      }
+    }
+    if (Object.keys(where2).length > 0) {
+      let havings = await ctx.orm().info_house_having.findAll({
+        attributes: ['hid'],
+        where: where2
+      })
+
+      if (havings && havings.length > 0) {
+        where1.id = {
+          $in: havings.map(m => {
+            return m.dataValues.hid
+          })
+        }
+      }
+    }
+
+    if (a201 && a202) {
+      where1.a2 = {
+        $between: [a201, a202]
+      }
+    }
+
+    if (a301 && a302) {
+      where1.a3 = {
+        $between: [a301, a302]
+      }
+    }
+
+    if (streets && streets.length > 0) {
+      where1.street = {
+        $in: streets
+      }
+    }
+
+    if (communitys && communitys.length > 0) {
+      where1.community = {
+        $in: communitys
+      }
+    }
+
+    if (a1) {
+      where1.a1 = {
+        $like: `%${a1}%`
+      };
+    }
+
+    if (a8) {
+      where1.a8 = {
+        $like: `%${a8}%`
+      };
+    }
+
+    if (a9) {
+      where1.a9 = {
+        $like: `%${a9}%`
+      };
+    }
+
+    if (a10) {
+      where1.a10 = {
+        $like: `%${a10}%`
+      };
+    }
+
+    if (remark) {
+      where1.remark = {
+        $like: `%${remark}%`
+      };
+    }
+
+    if (createTime && createTime.length === 2) {
+      where1.createTime = { $between: createTime }
+    }
+
+    if (modifyTime && modifyTime.length === 2) {
+      where1.modifyTime = { $between: modifyTime }
+    }
+
+    if (Object.keys(where1).length > 0) {
+      where1.isDel = 0
+
+      let houses = await ctx.orm().info_house.findAll({
+        attributes: ['id'],
+        where: where1
+      });
+
+      if (houses && houses.length > 0) {
+        where.hid = {
+          $in: houses.map(m => {
+            return m.dataValues.id
+          })
+        }
+      }
+    }
 
     let result = await ctx.orm().info_house_check.findAndCountAll({
       offset: (pageIndex - 1) * pageSize,
@@ -1718,5 +1842,22 @@ module.exports = {
     });
 
     ctx.body = result;
+  },
+  s2: async ctx => {
+    let { createTime } = ctx.request.body
+
+    let where = ''
+    if (createTime && createTime.length > 0) {
+      where = ` and s.create_time between '${createTime[0]} 00:00:00' and '${createTime[1]} 23:59:59' `
+    }
+
+    let sql = `select s.id, s.cType, s.shopName, s.a1, u1.cUnUserName, u1.isProblem, u1.cProblem, u2.cMeasure, u2.isProblem isProblem1, s.cUsers from info_house_check_shops s 
+    left join (select sid, cUnUserName, isProblem, cProblem from info_house_check_users u where u.isProblem = '存在' and u.isRepeat = '不是' and id in (select max(id) from info_house_check_users where isRepeat = '不是' group by sid)) u1 on u1.sid = s.id 
+    left join (select sid, cMeasure, isProblem from info_house_check_users u where u.isRepeat = '是' and id in (select max(id) from info_house_check_users where isRepeat = '是' group by sid)) u2 on u2.sid = s.id 
+    where 1 = 1 ${where} `
+
+    let result = await ctx.orm().query(sql)
+
+    ctx.body = result
   }
 };
