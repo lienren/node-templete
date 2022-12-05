@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2022-12-03 14:20:22
+ * @LastEditTime: 2022-12-05 09:46:14
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/assetmanage/rearend.js
@@ -878,8 +878,7 @@ module.exports = {
     let result = await ctx.orm().info_projects.findAndCountAll({
       offset: (pageIndex - 1) * pageSize,
       limit: pageSize,
-      where,
-      order: [['id', 'desc']]
+      where
     });
 
     let projectSubs = null
@@ -974,8 +973,7 @@ module.exports = {
     let result = await ctx.orm().info_progress.findAndCountAll({
       offset: (pageIndex - 1) * pageSize,
       limit: pageSize,
-      where: where1,
-      order: [['id', 'desc']]
+      where: where1
     })
 
     ctx.body = {
@@ -991,8 +989,7 @@ module.exports = {
 
     let result = await ctx.orm().info_progress.findAndCountAll({
       offset: (pageIndex - 1) * pageSize,
-      limit: pageSize,
-      order: [['id', 'desc']]
+      limit: pageSize
     })
 
     let projects = []
@@ -1278,8 +1275,7 @@ module.exports = {
     let result = await ctx.orm().info_project_management.findAndCountAll({
       offset: (pageIndex - 1) * pageSize,
       limit: pageSize,
-      where: where,
-      order: [['a1', 'desc']]
+      where: where
     })
 
     ctx.body = {
@@ -1298,8 +1294,7 @@ module.exports = {
     let result = await ctx.orm().info_project_management.findAndCountAll({
       offset: (pageIndex - 1) * pageSize,
       limit: pageSize,
-      where: where,
-      order: [['a1', 'desc']]
+      where: where
     })
 
     let projects = null
