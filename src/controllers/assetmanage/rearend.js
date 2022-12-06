@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2022-12-05 11:36:45
+ * @LastEditTime: 2022-12-06 09:47:04
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/assetmanage/rearend.js
@@ -23,12 +23,13 @@ module.exports = {
   getHouses: async ctx => {
     let pageIndex = ctx.request.body.pageIndex || 1;
     let pageSize = ctx.request.body.pageSize || 50;
-    let { sn, street, community, streets, communitys, houseType, a1, a4, a5, a6, a7, a8, a9, a10, a11, a13, a14, a201, a202, a301, a302, a21, h_a1, h_a2, h_a301, h_a302, h_a701, h_a702, remark, createTime, modifyTime } = ctx.request.body;
+    let { sn, street, community, streets, communitys, houseType, a1, a4, a5, a6, a7, a8, a9, a10, a11, a13, a14, a201, a202, a301, a302, a21, h_a1, h_a2, h_a301, h_a302, h_a701, h_a702, remark, notid, createTime, modifyTime } = ctx.request.body;
 
     let where = {
       isDel: 0
     };
 
+    Object.assign(where, notid && { id: { $notIn: notid } })
     Object.assign(where, sn && { sn })
     Object.assign(where, street && { street })
     Object.assign(where, community && { community })
@@ -1702,7 +1703,7 @@ module.exports = {
       }
     }
 
-    await ctx.orm().info_house_check_users.create({
+    let usercheck = await ctx.orm().info_house_check_users.create({
       cid: check.id,
       sid: shop.id,
       cUsers: check.cUsers,
@@ -1719,7 +1720,11 @@ module.exports = {
       cUnUserPhone
     })
 
-    ctx.body = {}
+    ctx.body = {
+      cid: check.id,
+      sid: shop.id,
+      uid: usercheck.id
+    }
   },
   submitHouseCheckShopRepeat: async ctx => {
     let { id, sid, cUserId, cUsersName, cUserImg, cUnUserPhone, cRemark, cTime, cResult, isProblem, cMeasure } = ctx.request.body;
@@ -1760,7 +1765,7 @@ module.exports = {
       }
     }
 
-    await ctx.orm().info_house_check_users.create({
+    let usercheck = await ctx.orm().info_house_check_users.create({
       cid: check.id,
       sid: shop.id,
       cUsers: shop.cUsers,
@@ -1775,7 +1780,11 @@ module.exports = {
       cUnUserPhone
     })
 
-    ctx.body = {}
+    ctx.body = {
+      cid: check.id,
+      sid: shop.id,
+      uid: usercheck.id
+    }
   },
   submitHouseOver: async ctx => {
     let { id } = ctx.request.body;
