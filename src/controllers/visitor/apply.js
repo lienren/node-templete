@@ -265,13 +265,13 @@ module.exports = {
       where.openId = openId
     }
 
-    if (verifyAdminId1) {
+    if (verifyAdminId1 && !verifyAdminId2) {
       where.verifyAdminId1 = {
         $like: `%,${verifyAdminId1},%`
       }
     }
 
-    if (verifyAdminId2) {
+    /* if (verifyAdminId2) {
       let admin = ctx.orm().SuperManagerInfo.findOne({
         where: {
           id: parseInt(verifyAdminId2),
@@ -293,7 +293,7 @@ module.exports = {
           $like: `%,${verifyAdminId2},%`
         }
       }
-    }
+    } */
 
     if (status.length > 0) {
       where.status = {
@@ -389,15 +389,16 @@ module.exports = {
     let result = await ctx.orm().applyInfo.findOne({
       where: {
         id,
-        status: 1,
+        /* status: 1,
         verifyAdminId1: {
           $like: `%,${admin.id},%`
-        },
+        }, */
         isDel: 0
       }
     })
 
     if (result) {
+      status = status === 2 ? 4 : status
       // 更新审核状态
       await ctx.orm().applyInfo.update({
         verifyAdminIdOver: admin.id,
@@ -472,6 +473,37 @@ module.exports = {
             }
           }
         }
+      } else if (status === 4) {
+        if (result.openId) {
+          wx.sendMessage(result.openId, 'qfFp3pDFc_sfmLJPXzfhF5nOYv2begNN4QVx9iRh9ko', null, {
+            "thing1": {
+              "value": `${result.visitorUserName}`
+            },
+            "thing2": {
+              "value": `访客登记预约成功`
+            },
+            "character_string3": {
+              "value": result.id
+            },
+            "time4": {
+              "value": `${date.formatDate(result.visitorTime, 'YYYY年MM月DD日')} ${result.visitorTimeNum}`
+            }
+          })
+        }
+
+        if (result.visitorDepartment === '校级访客通道') {
+          wx.getwxacode(result.code, `pages/visitor/applyCheck?code=${result.code}`, {
+            "r": 103,
+            "g": 194,
+            "b": 58
+          })
+        } else {
+          wx.getwxacode(result.code, `pages/visitor/applyCheck?code=${result.code}`, {
+            "r": 0,
+            "g": 0,
+            "b": 0
+          })
+        }
       }
     }
 
@@ -495,9 +527,9 @@ module.exports = {
       where: {
         id,
         status: 2,
-        verifyAdminId2: {
+        /* verifyAdminId2: {
           $like: `%,${admin.id},%`
-        },
+        }, */
         isDel: 0
       }
     })
@@ -714,8 +746,8 @@ module.exports = {
     let startTime = date.timeToTimeStamp(`${date.formatDate(result.visitorTime, 'YYYY-MM-DD')} ${result.visitorTimeNum}:00`);
     let endTime = date.timeToTimeStamp(`${date.formatDate(result.visitorEndTime, 'YYYY-MM-DD')} ${result.visitorEndTimeNum}:00`);
 
-    assert.ok(now > startTime - 3600000, '此次访客信息未到时间！')
-    assert.ok(now < endTime + 3600000, '此次访客信息已过期！')
+    assert.ok(now > startTime - 7200000, '此次访客信息未到时间！')
+    // assert.ok(now < endTime + 3600000, '此次访客信息已过期！')
 
     // 记录打开日志
     ctx.orm().baLogs.create({
