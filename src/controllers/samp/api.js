@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-08-18 10:44:07
- * @LastEditTime: 2022-11-09 08:22:03
+ * @LastEditTime: 2022-12-13 10:48:31
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/samp/api.js
@@ -38,7 +38,8 @@ module.exports = {
     Object.assign(where, postName && { postName })
 
     let result = await ctx.orm().info_posts.findAll({
-      where
+      where,
+      order: [['sortId']]
     });
 
     ctx.body = result;
