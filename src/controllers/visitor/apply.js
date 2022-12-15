@@ -609,6 +609,8 @@ module.exports = {
       }
     })
 
+    status = status === 2 ? 4 : status
+
     // 更新审核状态
     await ctx.orm().applyInfo.update({
       verifyAdminIdOver: admin.id,
@@ -640,6 +642,34 @@ module.exports = {
       };
     });
     ctx.orm().applyLogs.bulkCreate(data);
+
+    if (status === 4) {
+      let applyInfos = await ctx.orm().applyInfo.findAll({
+        where: {
+          id: {
+            $in: id
+          },
+          isDel: 0
+        }
+      })
+      if (applyInfos && applyInfos.length > 0) {
+        for (let i = 0, j = applyInfos.length; i < j; i++) {
+          if (applyInfos[i].visitorDepartment === '校级访客通道') {
+            wx.getwxacode(applyInfos[i].code, `pages/visitor/applyCheck?code=${applyInfos[i].code}`, {
+              "r": 103,
+              "g": 194,
+              "b": 58
+            })
+          } else {
+            wx.getwxacode(applyInfos[i].code, `pages/visitor/applyCheck?code=${applyInfos[i].code}`, {
+              "r": 0,
+              "g": 0,
+              "b": 0
+            })
+          }
+        }
+      }
+    }
 
     ctx.body = {}
   },
