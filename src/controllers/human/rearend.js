@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2022-10-14 17:15:51
+ * @LastEditTime: 2023-01-05 10:55:15
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/human/rearend.js
@@ -311,16 +311,7 @@ module.exports = {
         eduLevel = eduLevelEnum[user.edu2]
 
         if (tmpEduLevel > eduLevel) {
-
-          filter = userCert.filter(f => {
-            return f.dataValues.certName === '全国助理社会工作师' ||
-              f.dataValues.certName === '全国社会工作师' ||
-              f.dataValues.certName === '全国高级社会工作师';
-          })
-
-          if (filter.length === 0) {
-            userPostLeveUp = 1
-          }
+          userPostLeveUp = 1
 
           await ctx.orm().info_users.update({
             edu2: '本科'
@@ -341,16 +332,6 @@ module.exports = {
             userPostLeveUp = 1
           } else {
             userPostLeveUp = 2
-          }
-
-          if (userCert.filter(f => { return f.dataValues.certName === '全国助理社会工作师'; }).length > 0) {
-            userPostLeveUp = userPostLeveUp > 1 ? 1 : userPostLeveUp
-          }
-          if (userCert.filter(f => { return f.dataValues.certName === '全国社会工作师'; }).length > 0) {
-            userPostLeveUp = userPostLeveUp > 0 ? 0 : userPostLeveUp
-          }
-          if (userCert.filter(f => { return f.dataValues.certName === '全国高级社会工作师'; }).length > 0) {
-            userPostLeveUp = userPostLeveUp > 0 ? 0 : userPostLeveUp
           }
 
           await ctx.orm().info_users.update({
@@ -376,16 +357,6 @@ module.exports = {
             userPostLeveUp = 3
           }
 
-          if (userCert.filter(f => { return f.dataValues.certName === '全国助理社会工作师'; }).length > 0) {
-            userPostLeveUp = userPostLeveUp > 2 ? 2 : userPostLeveUp;
-          }
-          if (userCert.filter(f => { return f.dataValues.certName === '全国社会工作师'; }).length > 0) {
-            userPostLeveUp = userPostLeveUp > 1 ? 1 : userPostLeveUp;
-          }
-          if (userCert.filter(f => { return f.dataValues.certName === '全国高级社会工作师'; }).length > 0) {
-            userPostLeveUp = userPostLeveUp > 0 ? 0 : userPostLeveUp;
-          }
-
           await ctx.orm().info_users.update({
             edu2: '博士'
           }, {
@@ -403,12 +374,7 @@ module.exports = {
         })
 
         if (filter.length === 0) {
-
-          if (user.edu2 === '本科' ||
-            user.edu2 === '硕士' ||
-            user.edu2 === '博士') {
-            userPostLeveUp = 0
-          }
+          userPostLeveUp = 1
 
           await ctx.orm().info_user_cert.create({
             userId: user.id,
@@ -429,19 +395,6 @@ module.exports = {
         if (filter.length === 0) {
           userPostLeveUp = 2
 
-          if (userCert.filter(f => { return f.dataValues.certName === '全国助理社会工作师'; }).length > 0) {
-            userPostLeveUp = userPostLeveUp > 1 ? 1 : userPostLeveUp;
-          }
-          if (user.edu2 === '本科') {
-            userPostLeveUp = userPostLeveUp > 1 ? 1 : userPostLeveUp;
-          }
-          if (user.edu2 === '硕士') {
-            userPostLeveUp = userPostLeveUp > 0 ? 0 : userPostLeveUp;
-          }
-          if (user.edu2 === '博士') {
-            userPostLeveUp = userPostLeveUp > 0 ? 0 : userPostLeveUp;
-          }
-
           await ctx.orm().info_user_cert.create({
             userId: user.id,
             certName: '全国社会工作师',
@@ -459,22 +412,6 @@ module.exports = {
 
         if (filter.length === 0) {
           userPostLeveUp = 3
-
-          if (userCert.filter(f => { return f.dataValues.certName === '全国助理社会工作师'; }).length > 0) {
-            userPostLeveUp = userPostLeveUp > 2 ? 2 : userPostLeveUp;
-          }
-          if (userCert.filter(f => { return f.dataValues.certName === '全国社会工作师'; }).length > 0) {
-            userPostLeveUp = userPostLeveUp > 1 ? 1 : userPostLeveUp;
-          }
-          if (user.edu2 === '本科') {
-            userPostLeveUp = userPostLeveUp > 2 ? 2 : userPostLeveUp;
-          }
-          if (user.edu2 === '硕士') {
-            userPostLeveUp = userPostLeveUp > 1 ? 1 : userPostLeveUp;
-          }
-          if (user.edu2 === '博士') {
-            userPostLeveUp = userPostLeveUp > 0 ? 0 : userPostLeveUp;
-          }
 
           await ctx.orm().info_user_cert.create({
             userId: user.id,
@@ -510,13 +447,13 @@ module.exports = {
       remark: remark
     })
 
-    /* await ctx.orm().info_users.update({
+    await ctx.orm().info_users.update({
       postLevel: userPostLevel
     }, {
       where: {
         id: user.id
       }
-    }) */
+    })
 
     ctx.body = {}
   },
@@ -1625,3 +1562,207 @@ module.exports = {
     ctx.body = excelFile;
   }
 };
+
+
+
+/*
+** 历史调级方案
+  switch (postLevelId) {
+      case 1:
+        userPostLeveUp = 1
+        break;
+      case 2:
+        userPostLeveUp = 1
+        break;
+      case 3:
+        tmpEduLevel = eduLevelEnum['本科']
+        eduLevel = eduLevelEnum[user.edu2]
+
+        if (tmpEduLevel > eduLevel) {
+
+          filter = userCert.filter(f => {
+            return f.dataValues.certName === '全国助理社会工作师' ||
+              f.dataValues.certName === '全国社会工作师' ||
+              f.dataValues.certName === '全国高级社会工作师';
+          })
+
+          if (filter.length === 0) {
+            userPostLeveUp = 1
+          }
+
+          await ctx.orm().info_users.update({
+            edu2: '本科'
+          }, {
+            where: {
+              id: user.id
+            }
+          })
+        }
+        break;
+      case 4:
+        tmpEduLevel = eduLevelEnum['硕士']
+        eduLevel = eduLevelEnum[user.edu2]
+
+        if (tmpEduLevel > eduLevel) {
+
+          if (user.edu2 === '本科') {
+            userPostLeveUp = 1
+          } else {
+            userPostLeveUp = 2
+          }
+
+          if (userCert.filter(f => { return f.dataValues.certName === '全国助理社会工作师'; }).length > 0) {
+            userPostLeveUp = userPostLeveUp > 1 ? 1 : userPostLeveUp
+          }
+          if (userCert.filter(f => { return f.dataValues.certName === '全国社会工作师'; }).length > 0) {
+            userPostLeveUp = userPostLeveUp > 0 ? 0 : userPostLeveUp
+          }
+          if (userCert.filter(f => { return f.dataValues.certName === '全国高级社会工作师'; }).length > 0) {
+            userPostLeveUp = userPostLeveUp > 0 ? 0 : userPostLeveUp
+          }
+
+          await ctx.orm().info_users.update({
+            edu2: '硕士'
+          }, {
+            where: {
+              id: user.id
+            }
+          })
+        }
+        break;
+      case 5:
+        tmpEduLevel = eduLevelEnum['博士']
+        eduLevel = eduLevelEnum[user.edu2]
+
+        if (tmpEduLevel > eduLevel) {
+
+          if (user.edu2 === '本科') {
+            userPostLeveUp = 2
+          } else if (user.edu2 === '硕士') {
+            userPostLeveUp = 1
+          } else {
+            userPostLeveUp = 3
+          }
+
+          if (userCert.filter(f => { return f.dataValues.certName === '全国助理社会工作师'; }).length > 0) {
+            userPostLeveUp = userPostLeveUp > 2 ? 2 : userPostLeveUp;
+          }
+          if (userCert.filter(f => { return f.dataValues.certName === '全国社会工作师'; }).length > 0) {
+            userPostLeveUp = userPostLeveUp > 1 ? 1 : userPostLeveUp;
+          }
+          if (userCert.filter(f => { return f.dataValues.certName === '全国高级社会工作师'; }).length > 0) {
+            userPostLeveUp = userPostLeveUp > 0 ? 0 : userPostLeveUp;
+          }
+
+          await ctx.orm().info_users.update({
+            edu2: '博士'
+          }, {
+            where: {
+              id: user.id
+            }
+          })
+        }
+        break;
+      case 6:
+        filter = userCert.filter(f => {
+          return f.dataValues.certName === '全国助理社会工作师' ||
+            f.dataValues.certName === '全国社会工作师' ||
+            f.dataValues.certName === '全国高级社会工作师';
+        })
+
+        if (filter.length === 0) {
+
+          if (user.edu2 === '本科' ||
+            user.edu2 === '硕士' ||
+            user.edu2 === '博士') {
+            userPostLeveUp = 0
+          }
+
+          await ctx.orm().info_user_cert.create({
+            userId: user.id,
+            certName: '全国助理社会工作师',
+            certNum: certNum,
+            certDesc: `在${certTime}获得了全国助理社会工作师`,
+            certTime: certTime,
+            remark: remark
+          })
+        }
+        break;
+      case 7:
+        filter = userCert.filter(f => {
+          return f.dataValues.certName === '全国社会工作师' ||
+            f.dataValues.certName === '全国高级社会工作师';
+        })
+
+        if (filter.length === 0) {
+          userPostLeveUp = 2
+
+          if (userCert.filter(f => { return f.dataValues.certName === '全国助理社会工作师'; }).length > 0) {
+            userPostLeveUp = userPostLeveUp > 1 ? 1 : userPostLeveUp;
+          }
+          if (user.edu2 === '本科') {
+            userPostLeveUp = userPostLeveUp > 1 ? 1 : userPostLeveUp;
+          }
+          if (user.edu2 === '硕士') {
+            userPostLeveUp = userPostLeveUp > 0 ? 0 : userPostLeveUp;
+          }
+          if (user.edu2 === '博士') {
+            userPostLeveUp = userPostLeveUp > 0 ? 0 : userPostLeveUp;
+          }
+
+          await ctx.orm().info_user_cert.create({
+            userId: user.id,
+            certName: '全国社会工作师',
+            certNum: certNum,
+            certDesc: `在${certTime}获得了全国社会工作师`,
+            certTime: certTime,
+            remark: remark
+          })
+        }
+        break;
+      case 8:
+        filter = userCert.filter(f => {
+          return f.dataValues.certName === '全国高级社会工作师';
+        })
+
+        if (filter.length === 0) {
+          userPostLeveUp = 3
+
+          if (userCert.filter(f => { return f.dataValues.certName === '全国助理社会工作师'; }).length > 0) {
+            userPostLeveUp = userPostLeveUp > 2 ? 2 : userPostLeveUp;
+          }
+          if (userCert.filter(f => { return f.dataValues.certName === '全国社会工作师'; }).length > 0) {
+            userPostLeveUp = userPostLeveUp > 1 ? 1 : userPostLeveUp;
+          }
+          if (user.edu2 === '本科') {
+            userPostLeveUp = userPostLeveUp > 2 ? 2 : userPostLeveUp;
+          }
+          if (user.edu2 === '硕士') {
+            userPostLeveUp = userPostLeveUp > 1 ? 1 : userPostLeveUp;
+          }
+          if (user.edu2 === '博士') {
+            userPostLeveUp = userPostLeveUp > 0 ? 0 : userPostLeveUp;
+          }
+
+          await ctx.orm().info_user_cert.create({
+            userId: user.id,
+            certName: '全国高级社会工作师',
+            certNum: certNum,
+            certDesc: `在${certTime}获得了全国高级社会工作师`,
+            certTime: certTime,
+            remark: remark
+          })
+        }
+        break;
+      case 9:
+        if (userUpLevel.filter(f => f.dataValues.postLevelDesc === '受到市级及以上党委、政府表彰（+1级）').length === 0) {
+          userPostLeveUp = 1
+        }
+        break;
+      case 10:
+        if (userUpLevel.filter(f => f.dataValues.postLevelDesc === '获得市级及以上劳模称号（+1级）').length === 0) {
+          userPostLeveUp = 1
+        }
+        break;
+    }
+*/
