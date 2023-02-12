@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2022-12-06 09:47:04
+ * @LastEditTime: 2023-01-31 15:32:33
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/assetmanage/rearend.js
@@ -547,9 +547,17 @@ module.exports = {
       })
       assert.ok(findHouse === null, '此资产编号已存在，请更换！')
 
-      lon = findHouse.lon
-      lat = findHouse.lat
-      if (findHouse.a1 !== a1) {
+      let house = await ctx.orm().info_house.findOne({
+        where: {
+          id,
+          isDel: 0
+        }
+      })
+      assert.ok(!!house, '资产信息不存在！')
+
+      lon = house.lon
+      lat = house.lat
+      if (house.a1 !== a1) {
         // 重新获取经度、纬度
         let res = await http.get({
           url: `https://restapi.amap.com/v3/geocode/geo?key=e6f2a4d50e731af88dac2646da574e3a&address=${encodeURIComponent(a1)}&city=${encodeURIComponent('南京市')}`
