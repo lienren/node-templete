@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-08-18 10:44:07
- * @LastEditTime: 2022-11-05 09:29:20
+ * @LastEditTime: 2023-02-12 08:52:38
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/human/api.js
@@ -30,7 +30,7 @@ module.exports = {
 
       let xlsx = excel.readExcel(filePath);
 
-      let data = xlsx.filter(f => f.length === 18).map(m => {
+      let data = xlsx.filter(f => f.length === 19).map(m => {
         return {
           sid: m[0].trim(),
           phone: m[1].trim(),
@@ -48,8 +48,8 @@ module.exports = {
           bdName: m[13].trim(),
           ctime: m[14].trim(),
           cstatus: m[15].trim(),
-          lot: m[16].trim(),
-          lat: m[17].trim()
+          lot: m[17].trim(),
+          lat: m[18].trim()
         }
       });
 
@@ -57,6 +57,8 @@ module.exports = {
       data.shift();
 
       await ctx.orm().info_address.destroy({ truncate : true, cascade: false });
+
+      console.log('data:', data.length)
 
       await ctx.orm().info_address.bulkCreate(data);
 
