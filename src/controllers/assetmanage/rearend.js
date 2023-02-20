@@ -1,8 +1,8 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2023-01-31 15:32:33
- * @LastEditors: Lienren
+ * @LastEditTime: 2023-02-19 11:08:15
+ * @LastEditors: Lienren lienren@vip.qq.com
  * @Description: 
  * @FilePath: /node-templete/src/controllers/assetmanage/rearend.js
  * PRESENTED BY ROOT Tech R&D TEAM 2021-2026.
@@ -1353,12 +1353,18 @@ module.exports = {
     union all 
     select 's10' title, count(1) num from info_projects where pro_status = '投后管理'`
 
-    let sql2 = `select DATE_FORMAT(a1,'%Y') year, sum(a3) num from info_house_yearrent group by DATE_FORMAT(a1,'%Y')`
+    let sql2 = `select DATE_FORMAT(a1,'%Y') year, sum(a3) num from info_house_yearrent where hid in (select id from info_house where houseType in ('自有房产')) group by DATE_FORMAT(a1,'%Y')`
 
     let result1 = await ctx.orm().query(sql1);
     let result2 = await ctx.orm().query(sql2);
 
-    let result3 = await ctx.orm().info_house_yearrent.findAll({})
+    let result3 = await ctx.orm().info_house_yearrent.findAll({
+      where: {
+        hid: {
+          $in: sequelize.literal(`(select id from info_house where houseType in ('自有房产')) `)
+        }
+      }
+    })
     let years = {}
 
     result3.map(m => {
@@ -1868,9 +1874,11 @@ module.exports = {
       where = ` and s.create_time between '${createTime[0]} 00:00:00' and '${createTime[1]} 23:59:59' `
     }
 
-    let sql = `select s.id, s.cType, s.shopName, s.a1, u1.cUnUserName, u1.isProblem, u1.cProblem, u2.cMeasure, u2.isProblem isProblem1, s.cUsers from info_house_check_shops s 
-    left join (select sid, cUnUserName, isProblem, cProblem from info_house_check_users u where u.isProblem = '存在' and u.isRepeat = '不是' and id in (select max(id) from info_house_check_users where isRepeat = '不是' group by sid)) u1 on u1.sid = s.id 
-    left join (select sid, cMeasure, isProblem from info_house_check_users u where u.isRepeat = '是' and id in (select max(id) from info_house_check_users where isRepeat = '是' group by sid)) u2 on u2.sid = s.id 
+    // left join (select sid, cUnUserName, cUnUserImg, isProblem, cProblem, cContent, cProblemImgs from info_house_check_users u where u.isProblem = '存在' and u.isRepeat = '不是' and id in (select max(id) from info_house_check_users where isRepeat = '不是' group by sid)) u1 on u1.sid = s.id
+
+    let sql = `select s.id, s.cType, s.shopName, s.a1, s.cContent, u1.cUnUserName, u1.isProblem, u1.cProblem, u1.cProblemImgs, u1.cUnUserImg, u2.cMeasure, u2.isProblem isProblem1, u2.cProblemImgs cProblemImgs2, s.cUsers from info_house_check_shops s 
+    left join (select sid, cUnUserName, cUnUserImg, isProblem, cProblem, cContent, cProblemImgs from info_house_check_users u where u.isRepeat = '不是') u1 on u1.sid = s.id 
+    left join (select sid, cMeasure, isProblem, cContent, cProblemImgs from info_house_check_users u where u.isRepeat = '是' and id in (select max(id) from info_house_check_users where isRepeat = '是' group by sid)) u2 on u2.sid = s.id 
     where 1 = 1 ${where} `
 
     let result = await ctx.orm().query(sql)
