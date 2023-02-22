@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2023-02-19 11:08:15
+ * @LastEditTime: 2023-02-22 08:33:30
  * @LastEditors: Lienren lienren@vip.qq.com
  * @Description: 
  * @FilePath: /node-templete/src/controllers/assetmanage/rearend.js
@@ -169,7 +169,7 @@ module.exports = {
   getHousesPlus: async ctx => {
     let pageIndex = ctx.request.body.pageIndex || 1;
     let pageSize = ctx.request.body.pageSize || 50;
-    let { sn, street, community, streets, communitys, houseType, a1, a4, a5, a6, a7, a8, a9, a10, a11, a13, a14, a201, a202, a301, a302, a21, h_a1, h_a2, h_a501, h_a502, h_a701, h_a702, remark, createTime, modifyTime } = ctx.request.body;
+    let { sn, street, community, streets, communitys, houseType, a1, a4, a5, a6, a7, a8, a9, a10, a11, a13, a14, a201, a202, a301, a302, a21, h_a1, h_a2, h_a301, h_a302, h_a501, h_a502, h_a701, h_a702, remark, createTime, modifyTime } = ctx.request.body;
 
     let where = {
       isDel: 0
@@ -192,6 +192,11 @@ module.exports = {
 
     Object.assign(where1, h_a1 && { a1: h_a1 })
     Object.assign(where1, h_a2 && { a2: { $like: `%${h_a2}%` } })
+    if (h_a301 && h_a302) {
+      where1.a3 = {
+        $between: [h_a301, h_a302]
+      }
+    }
     if (h_a501 && h_a502) {
       where1.a5 = {
         $between: [h_a501, h_a502]
@@ -1876,7 +1881,7 @@ module.exports = {
 
     // left join (select sid, cUnUserName, cUnUserImg, isProblem, cProblem, cContent, cProblemImgs from info_house_check_users u where u.isProblem = '存在' and u.isRepeat = '不是' and id in (select max(id) from info_house_check_users where isRepeat = '不是' group by sid)) u1 on u1.sid = s.id
 
-    let sql = `select s.id, s.cType, s.shopName, s.a1, s.cContent, u1.cUnUserName, u1.isProblem, u1.cProblem, u1.cProblemImgs, u1.cUnUserImg, u2.cMeasure, u2.isProblem isProblem1, u2.cProblemImgs cProblemImgs2, s.cUsers from info_house_check_shops s 
+    let sql = `select s.id, s.cType, s.shopName, s.a1, u1.cContent, u1.cUnUserName, u1.isProblem, u1.cProblem, u1.cProblemImgs, u1.cUnUserImg, u2.cMeasure, u2.isProblem isProblem1, u2.cProblemImgs cProblemImgs2, s.cUsers from info_house_check_shops s 
     left join (select sid, cUnUserName, cUnUserImg, isProblem, cProblem, cContent, cProblemImgs from info_house_check_users u where u.isRepeat = '不是') u1 on u1.sid = s.id 
     left join (select sid, cMeasure, isProblem, cContent, cProblemImgs from info_house_check_users u where u.isRepeat = '是' and id in (select max(id) from info_house_check_users where isRepeat = '是' group by sid)) u2 on u2.sid = s.id 
     where 1 = 1 ${where} `
