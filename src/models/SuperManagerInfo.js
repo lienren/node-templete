@@ -1,12 +1,11 @@
-/* jshint indent: 2 */
-
+const Sequelize = require('sequelize');
 module.exports = function(sequelize, DataTypes) {
   return sequelize.define('SuperManagerInfo', {
     id: {
-      type: DataTypes.INTEGER(11),
+      autoIncrement: true,
+      type: DataTypes.INTEGER,
       allowNull: false,
-      primaryKey: true,
-      autoIncrement: true
+      primaryKey: true
     },
     openId: {
       type: DataTypes.STRING(100),
@@ -33,7 +32,7 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     state: {
-      type: DataTypes.INTEGER(11),
+      type: DataTypes.INTEGER,
       allowNull: true
     },
     token: {
@@ -45,7 +44,7 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     sex: {
-      type: DataTypes.INTEGER(11),
+      type: DataTypes.INTEGER,
       allowNull: true
     },
     depName: {
@@ -61,23 +60,52 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     isDel: {
-      type: DataTypes.INTEGER(11),
+      type: DataTypes.INTEGER,
       allowNull: true
     },
     verifyLevel: {
-      type: DataTypes.INTEGER(11),
+      type: DataTypes.INTEGER,
       allowNull: true,
-      defaultValue: '0'
+      defaultValue: 0,
+      comment: "审核级别"
     },
     verifyType: {
       type: DataTypes.STRING(100),
-      allowNull: true
+      allowNull: true,
+      comment: "审核类型（物业、社区、街道、委办局）"
     },
     verifyVillages: {
       type: DataTypes.STRING(2000),
-      allowNull: true
+      allowNull: true,
+      comment: "审核小区编号JSON"
     }
   }, {
-    tableName: 'SuperManagerInfo'
+    sequelize,
+    tableName: 'SuperManagerInfo',
+    timestamps: false,
+    indexes: [
+      {
+        name: "PRIMARY",
+        unique: true,
+        using: "BTREE",
+        fields: [
+          { name: "id" },
+        ]
+      },
+      {
+        name: "idx_openId",
+        using: "BTREE",
+        fields: [
+          { name: "openId" },
+        ]
+      },
+      {
+        name: "idx_depName",
+        using: "BTREE",
+        fields: [
+          { name: "depName" },
+        ]
+      },
+    ]
   });
 };

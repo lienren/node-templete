@@ -1,52 +1,70 @@
-/* jshint indent: 2 */
-
+const Sequelize = require('sequelize');
 module.exports = function(sequelize, DataTypes) {
   return sequelize.define('info_house_yearrent', {
     id: {
-      type: DataTypes.INTEGER(11),
+      autoIncrement: true,
+      type: DataTypes.INTEGER,
       allowNull: false,
-      primaryKey: true,
-      autoIncrement: true
+      primaryKey: true
     },
     hid: {
-      type: DataTypes.INTEGER(11),
-      allowNull: true
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      comment: "房屋编号"
     },
     hhid: {
-      type: DataTypes.INTEGER(11),
-      allowNull: true
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      comment: "房屋租赁编号"
     },
     a1: {
       type: DataTypes.DATEONLY,
-      allowNull: true
+      allowNull: true,
+      comment: "租赁开始时间"
     },
     a2: {
       type: DataTypes.DATEONLY,
-      allowNull: true
+      allowNull: true,
+      comment: "租赁结束时间"
     },
     a3: {
-      type: DataTypes.DECIMAL,
-      allowNull: true
+      type: DataTypes.DECIMAL(10,2),
+      allowNull: true,
+      comment: "年租金"
     },
     a4: {
-      type: DataTypes.DECIMAL,
-      allowNull: true
+      type: DataTypes.DECIMAL(10,2),
+      allowNull: true,
+      comment: "保证金"
     },
     a5: {
       type: DataTypes.STRING(10),
-      allowNull: true
+      allowNull: true,
+      comment: "收款方式"
     },
     createTime: {
       type: DataTypes.DATE,
       allowNull: true,
-      defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
+      defaultValue: Sequelize.Sequelize.literal('CURRENT_TIMESTAMP')
     },
     modifyTime: {
       type: DataTypes.DATE,
       allowNull: true,
-      defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
+      defaultValue: Sequelize.Sequelize.literal('CURRENT_TIMESTAMP')
     }
   }, {
-    tableName: 'info_house_yearrent'
+    sequelize,
+    tableName: 'info_house_yearrent',
+    timestamps: false,
+    indexes: [
+      {
+        name: "PRIMARY",
+        unique: true,
+        using: "BTREE",
+        fields: [
+          { name: "id" },
+        ]
+      },
+    ]
   });
 };

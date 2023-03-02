@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2023-02-22 08:33:30
+ * @LastEditTime: 2023-02-26 04:31:21
  * @LastEditors: Lienren lienren@vip.qq.com
  * @Description: 
  * @FilePath: /node-templete/src/controllers/assetmanage/rearend.js
@@ -1889,5 +1889,75 @@ module.exports = {
     let result = await ctx.orm().query(sql)
 
     ctx.body = result
+  },
+  getContracts: async ctx => {
+    let pageIndex = ctx.request.body.pageIndex || 1;
+    let pageSize = ctx.request.body.pageSize || 50;
+    let { a15, cname, createTime, modifyTime } = ctx.request.body;
+
+    let where = {
+      isDel: 0
+    }
+
+    if (a15) {
+      where.a15 = a15
+    }
+
+    if (cname) {
+      where.cname = cname
+    }
+
+    if (createTime && createTime.length === 2) {
+      where.createTime = { $between: createTime }
+    }
+
+    if (modifyTime && modifyTime.length === 2) {
+      where.modifyTime = { $between: modifyTime }
+    }
+
+    let result = await ctx.orm().info_house_contract.findAndCountAll({
+      offset: (pageIndex - 1) * pageSize,
+      limit: pageSize,
+      where,
+      order: [['id', 'desc']]
+    });
+
+    ctx.body = {
+      total: result.count,
+      list: result.rows,
+      pageIndex,
+      pageSize
+    }
+  },
+  submitContract: async ctx => {
+    let { id, cname, camount, a1, a2, a4, a5, a15, files } = ctx.request.body;
+
+    if (id) {
+      await ctx.orm().info_house_contract.update({ cname, camount, a1, a2, a4, a5, a15, files }, {
+        where: {
+          id
+        }
+      })
+    } else {
+      await ctx.orm().info_house_contract.create({
+        cname, camount, a1, a2, a4, a5, a15, files,
+        isDel: 0
+      })
+    }
+
+    ctx.body = {}
+  },
+  delContract: async ctx => {
+    let { id } = ctx.request.body;
+
+    if (id) {
+      await ctx.orm().info_house_contract.update({ isDel: 1 }, {
+        where: {
+          id
+        }
+      })
+    }
+
+    ctx.body = {}
   }
 };

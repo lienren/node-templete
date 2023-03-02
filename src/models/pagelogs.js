@@ -1,12 +1,11 @@
-/* jshint indent: 2 */
-
+const Sequelize = require('sequelize');
 module.exports = function(sequelize, DataTypes) {
   return sequelize.define('pagelogs', {
     id: {
-      type: DataTypes.INTEGER(11),
+      autoIncrement: true,
+      type: DataTypes.INTEGER,
       allowNull: false,
-      primaryKey: true,
-      autoIncrement: true
+      primaryKey: true
     },
     terminalId: {
       type: DataTypes.STRING(100),
@@ -17,7 +16,7 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     udcId: {
-      type: DataTypes.INTEGER(11),
+      type: DataTypes.INTEGER,
       allowNull: true
     },
     phone: {
@@ -25,7 +24,7 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     fromUdcId: {
-      type: DataTypes.INTEGER(11),
+      type: DataTypes.INTEGER,
       allowNull: true
     },
     prePageUrl: {
@@ -37,7 +36,7 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     prePageSort: {
-      type: DataTypes.INTEGER(11),
+      type: DataTypes.INTEGER,
       allowNull: true
     },
     pageName: {
@@ -49,7 +48,7 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     pageSort: {
-      type: DataTypes.INTEGER(11),
+      type: DataTypes.INTEGER,
       allowNull: true
     },
     eventName: {
@@ -105,7 +104,7 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     useTime: {
-      type: DataTypes.INTEGER(11),
+      type: DataTypes.INTEGER,
       allowNull: true
     },
     screenSize: {
@@ -127,13 +126,39 @@ module.exports = function(sequelize, DataTypes) {
     addTimeYMD: {
       type: DataTypes.DATE,
       allowNull: true,
-      defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
+      defaultValue: Sequelize.Sequelize.literal('CURRENT_TIMESTAMP')
     },
     ip: {
       type: DataTypes.STRING(100),
       allowNull: true
     }
   }, {
-    tableName: 'pagelogs'
+    sequelize,
+    tableName: 'pagelogs',
+    timestamps: false,
+    indexes: [
+      {
+        name: "PRIMARY",
+        unique: true,
+        using: "BTREE",
+        fields: [
+          { name: "id" },
+        ]
+      },
+      {
+        name: "idx_eventName",
+        using: "BTREE",
+        fields: [
+          { name: "eventName" },
+        ]
+      },
+      {
+        name: "idx_udcId",
+        using: "BTREE",
+        fields: [
+          { name: "udcId" },
+        ]
+      },
+    ]
   });
 };

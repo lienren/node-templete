@@ -1,52 +1,76 @@
-/* jshint indent: 2 */
-
+const Sequelize = require('sequelize');
 module.exports = function(sequelize, DataTypes) {
   return sequelize.define('info_house_check_shops', {
     id: {
-      type: DataTypes.INTEGER(11),
+      autoIncrement: true,
+      type: DataTypes.INTEGER,
       allowNull: false,
-      primaryKey: true,
-      autoIncrement: true
+      primaryKey: true
     },
     cid: {
-      type: DataTypes.INTEGER(11),
+      type: DataTypes.INTEGER,
       allowNull: true
     },
     a1: {
       type: DataTypes.STRING(500),
-      allowNull: true
+      allowNull: true,
+      comment: "房屋坐落"
     },
     shopName: {
       type: DataTypes.STRING(100),
-      allowNull: true
+      allowNull: true,
+      comment: "店铺名称"
     },
     cType: {
       type: DataTypes.STRING(100),
-      allowNull: true
+      allowNull: true,
+      comment: "检查类型（经营性房产、集团办公楼）"
     },
     cUsers: {
       type: DataTypes.TEXT,
-      allowNull: true
+      allowNull: true,
+      comment: "检查人列表"
     },
     cContent: {
       type: DataTypes.TEXT,
-      allowNull: true
+      allowNull: true,
+      comment: "检查内容"
     },
     cStatus: {
       type: DataTypes.STRING(20),
-      allowNull: true
+      allowNull: true,
+      comment: "处理状态(待复查、已完成)"
     },
     create_time: {
       type: DataTypes.DATE,
       allowNull: true,
-      defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
+      defaultValue: Sequelize.Sequelize.literal('CURRENT_TIMESTAMP')
     },
     update_time: {
       type: DataTypes.DATE,
       allowNull: true,
-      defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
+      defaultValue: Sequelize.Sequelize.literal('CURRENT_TIMESTAMP')
     }
   }, {
-    tableName: 'info_house_check_shops'
+    sequelize,
+    tableName: 'info_house_check_shops',
+    timestamps: false,
+    indexes: [
+      {
+        name: "PRIMARY",
+        unique: true,
+        using: "BTREE",
+        fields: [
+          { name: "id" },
+        ]
+      },
+      {
+        name: "idx_cType",
+        using: "BTREE",
+        fields: [
+          { name: "cType" },
+        ]
+      },
+    ]
   });
 };

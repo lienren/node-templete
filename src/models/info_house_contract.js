@@ -1,63 +1,70 @@
 const Sequelize = require('sequelize');
 module.exports = function(sequelize, DataTypes) {
-  return sequelize.define('info_project_management', {
+  return sequelize.define('info_house_contract', {
     id: {
       autoIncrement: true,
       type: DataTypes.INTEGER,
       allowNull: false,
       primaryKey: true
     },
-    pro_id: {
-      type: DataTypes.INTEGER,
+    cname: {
+      type: DataTypes.STRING(200),
       allowNull: true,
-      comment: "项目编号"
+      comment: "合同名称"
+    },
+    camount: {
+      type: DataTypes.DECIMAL(10,2),
+      allowNull: true,
+      comment: "合同总金额"
     },
     a1: {
       type: DataTypes.DATEONLY,
       allowNull: true,
-      comment: "事件时间"
+      comment: "租赁开始时间"
     },
     a2: {
-      type: DataTypes.TEXT,
+      type: DataTypes.DATEONLY,
       allowNull: true,
-      comment: "议案"
-    },
-    a3: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-      comment: "上会材料"
+      comment: "租赁结束时间"
     },
     a4: {
-      type: DataTypes.TEXT,
+      type: DataTypes.DECIMAL(10,2),
       allowNull: true,
-      comment: "决策文件（董事会及股东会决议）"
+      comment: "保证金"
     },
     a5: {
-      type: DataTypes.STRING(500),
+      type: DataTypes.STRING(10),
       allowNull: true,
-      comment: "备注"
+      comment: "收款方式"
     },
-    create_time: {
-      type: DataTypes.DATE,
-      allowNull: true,
-      defaultValue: Sequelize.Sequelize.literal('CURRENT_TIMESTAMP')
-    },
-    update_time: {
-      type: DataTypes.DATE,
-      allowNull: true,
-      defaultValue: Sequelize.Sequelize.literal('CURRENT_TIMESTAMP')
-    },
-    manage_id: {
-      type: DataTypes.INTEGER,
-      allowNull: true
-    },
-    manage_user: {
+    a15: {
       type: DataTypes.STRING(100),
-      allowNull: true
+      allowNull: true,
+      comment: "租赁合同编号"
+    },
+    files: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+      comment: "文件列表"
+    },
+    createTime: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      defaultValue: Sequelize.Sequelize.literal('CURRENT_TIMESTAMP')
+    },
+    modifyTime: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      defaultValue: Sequelize.Sequelize.literal('CURRENT_TIMESTAMP')
+    },
+    isDel: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      defaultValue: 0
     }
   }, {
     sequelize,
-    tableName: 'info_project_management',
+    tableName: 'info_house_contract',
     timestamps: false,
     indexes: [
       {
@@ -66,13 +73,6 @@ module.exports = function(sequelize, DataTypes) {
         using: "BTREE",
         fields: [
           { name: "id" },
-        ]
-      },
-      {
-        name: "idx_pro_id",
-        using: "BTREE",
-        fields: [
-          { name: "pro_id" },
         ]
       },
     ]
