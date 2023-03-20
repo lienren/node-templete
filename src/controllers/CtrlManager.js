@@ -391,10 +391,15 @@ module.exports = {
     // 超级管理员禁止更新
     assert.notStrictEqual(id, 1, 'SuperManagerNotUpdate');
 
-    let updateField = {
-      userType,
-      userData
-    };
+    let updateField = {};
+
+    if (userType) {
+      updateField.userType = userType
+    }
+
+    if (userData) {
+      updateField.userData = userData
+    }
 
     let sameManagerResult = await ctx.orm().SuperManagerInfo.findOne({
       where: {
