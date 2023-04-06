@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-08-18 10:44:07
- * @LastEditTime: 2021-11-26 12:53:37
+ * @LastEditTime: 2023-04-01 17:26:01
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/bike/api.js
@@ -228,6 +228,8 @@ module.exports = {
     let modelCode = ctx.request.body.modelCode || ''
 
     assert.ok(!!modelCode, '获取车牌码错误')
+
+    console.log('modelCode:', modelCode)
 
     let num = await ctx.orm().info_model_nums.findOne({
       where: {
