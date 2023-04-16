@@ -18,6 +18,7 @@ router
   // 上传文件
   .post('/base/uploadfile', uploadFile.getMulter('files').any(), ctrl.CtrlBase.uploadFile)
   .post('/super/login', ctrl.CtrlManager.login)
+  .post('/super/logingm', ctrl.CtrlManager.loginGM)
   .post('/super/loginbynocode', ctrl.CtrlManager.loginByNoCode)
   .post('/super/setpassword', ctrl.CtrlManager.setPassword)
   /***************************** 管理员管理 *************************************/
@@ -31,6 +32,7 @@ router
   .post('/super/getmanagerrole', ctrl.CtrlManager.getManagerRole)
   .post('/super/setmanagerrole', ctrl.CtrlManager.setManagerRole)
   .post('/super/getmanagermenu', ctrl.CtrlManager.getManagerMenu)
+  .post('/super/getmanagermenunotree', ctrl.CtrlManager.getManagerMenuNoTree)
   /***************************** 角色管理 *************************************/
   .post('/super/getroles', ctrl.CtrlManager.getRoles)
   .post('/super/addrole', ctrl.CtrlManager.addRole)

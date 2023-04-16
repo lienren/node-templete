@@ -127,6 +127,97 @@ module.exports = {
       verifyVillages: JSON.parse(resultManager.verifyVillages)
     };
   },
+  loginGM: async ctx => {
+    let loginName = ctx.request.body.loginName || '';
+    let loginPwd = ctx.request.body.loginPwd || '';
+    let imgCode = ctx.request.body.imgCode || '';
+    let imgCodeToken = ctx.request.body.imgCodeToken || '';
+    let now = date.getTimeStamp();
+
+    assert.notStrictEqual(loginName, '', configData.ERROR_KEY_ENUM.InputParamIsNull);
+    assert.notStrictEqual(loginPwd, '', configData.ERROR_KEY_ENUM.InputParamIsNull);
+    assert.notStrictEqual(imgCode, '', configData.ERROR_KEY_ENUM.InputParamIsNull);
+    assert.notStrictEqual(imgCodeToken, '', configData.ERROR_KEY_ENUM.InputParamIsNull);
+
+    // 验证图形验证码
+    let resultImgCodeToken = await ctx.orm().BaseImgCode.findOne({
+      where: {
+        token: imgCodeToken,
+        imgCode: imgCode.toLocaleUpperCase(),
+        isUse: 0,
+        overTime: { $gt: now }
+      }
+    });
+    assert.notStrictEqual(resultImgCodeToken, null, configData.ERROR_KEY_ENUM.ImageCodeIsFail);
+
+    // 设置图形验证码已使用
+    ctx.orm().BaseImgCode.update(
+      { isUse: 1 },
+      {
+        where: {
+          token: imgCodeToken,
+          imgCode: imgCode
+        }
+      }
+    );
+
+    let resultManager = await ctx.orm().SuperManagerInfo.findOne({
+      where: {
+        loginname: loginName,
+        state: 1,
+        isDel: 0
+      }
+    });
+    assert.notStrictEqual(resultManager, null, configData.ERROR_KEY_ENUM.ManagerNotExists);
+
+    // 生成验证密钥
+    let encryptPwd = encrypt.getMd5(`${loginPwd}|${resultManager.salt}`);
+    console.log('encryptPwd:', encryptPwd)
+    assert.ok(resultManager.loginPwd === encryptPwd, configData.ERROR_KEY_ENUM.ManagerPasswordIsFail);
+
+    // 设置Token
+    let ManagerTokenOverTime = await configData.getConfig(ctx, configData.CONFIG_KEY_ENUM.ManagerTokenOverTime);
+
+    // 生成Token
+    let token = jwt.getToken({
+      managerId: resultManager.id,
+      managerLoginName: resultManager.loginName,
+      managerRealName: resultManager.realName,
+      managerPhone: resultManager.phone
+    });
+    let tokenOverTime = now + ManagerTokenOverTime * 60 * 1000;
+
+    ctx.orm().SuperManagerInfo.update(
+      {
+        token: token,
+        tokenOverTime: tokenOverTime,
+        lastTime: now
+      },
+      {
+        where: { id: resultManager.id }
+      }
+    );
+
+    // 获取管理员所有角色
+    let resultManagerRoles = await ctx.orm().SuperManagerRoleInfo.findAll({
+      where: {
+        managerId: resultManager.id
+      }
+    });
+
+    ctx.body = {
+      id: resultManager.id,
+      loginName: resultManager.loginName,
+      realName: resultManager.realName,
+      phone: resultManager.phone,
+      token: token,
+      roles: resultManagerRoles,
+      depName: resultManager.depName,
+      userType: resultManager.userType,
+      userData: resultManager.userData,
+      verifyLevel: resultManager.verifyLevel
+    };
+  },
   loginByNoCode: async ctx => {
     let openId = ctx.request.body.openId || '';
     let loginName = ctx.request.body.loginName || '';
@@ -710,6 +801,57 @@ module.exports = {
     });
 
     ctx.body = serializeMenu(resultMenus, 0);
+  },
+  getManagerMenuNoTree: async ctx => {
+    let id = ctx.work.managerId || 0;
+
+    // 超级管理员禁止更新
+    assert.notStrictEqual(id, 0, 'ManagerNotExists');
+
+    let sameManagerResult = await ctx.orm().SuperManagerInfo.findOne({
+      where: {
+        id: id,
+        isDel: 0
+      }
+    });
+
+    assert.notStrictEqual(sameManagerResult, null, 'ManagerNotExists');
+
+    let resultRoleIds = await ctx.orm().SuperManagerRoleInfo.findAll({
+      where: {
+        managerId: id
+      }
+    });
+
+    let resultMenuIds = await ctx.orm().SuperRoleMenuInfo.findAll({
+      where: {
+        roleId: {
+          $in: resultRoleIds.map(val => {
+            return val.roleId;
+          })
+        }
+      }
+    });
+
+    let menuIds = [];
+    resultMenuIds.forEach(menu => {
+      menuIds.push(menu.menuId);
+      if (!menuIds.includes(menu.menuId.toString().substring(0, 1))) {
+        menuIds.push(menu.menuId.toString().substring(0, 1));
+      }
+    });
+
+    let resultMenus = await ctx.orm().BaseMenu.findAll({
+      where: {
+        id: {
+          $in: menuIds
+        },
+        isDel: 0
+      },
+      order: [['sort']]
+    });
+
+    ctx.body = resultMenus
   },
   /***************************** 角色管理 *************************************/
   getRoles: async ctx => {
