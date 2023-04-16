@@ -30,6 +30,7 @@ router
   .post('/super/getmanagerrole', ctrl.CtrlManager.getManagerRole)
   .post('/super/setmanagerrole', ctrl.CtrlManager.setManagerRole)
   .post('/super/getmanagermenu', ctrl.CtrlManager.getManagerMenu)
+  .post('/super/getmanagernavlist', ctrl.CtrlManager.getManagerNavList)
   .post('/super/getmanagermenunotree', ctrl.CtrlManager.getManagerMenuNoTree)
   /***************************** 角色管理 *************************************/
   .post('/super/getroles', ctrl.CtrlManager.getRoles)

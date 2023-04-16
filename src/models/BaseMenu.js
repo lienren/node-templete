@@ -15,6 +15,10 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING(1000),
       allowNull: true
     },
+    menuPath: {
+      type: DataTypes.STRING(1000),
+      allowNull: true
+    },
     menuIcon: {
       type: DataTypes.STRING(100),
       allowNull: true
