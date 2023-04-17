@@ -1,8 +1,8 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2023-02-26 04:31:21
- * @LastEditors: Lienren lienren@vip.qq.com
+ * @LastEditTime: 2023-04-17 15:24:29
+ * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/assetmanage/rearend.js
  * PRESENTED BY ROOT Tech R&D TEAM 2021-2026.
@@ -1881,7 +1881,7 @@ module.exports = {
 
     // left join (select sid, cUnUserName, cUnUserImg, isProblem, cProblem, cContent, cProblemImgs from info_house_check_users u where u.isProblem = '存在' and u.isRepeat = '不是' and id in (select max(id) from info_house_check_users where isRepeat = '不是' group by sid)) u1 on u1.sid = s.id
 
-    let sql = `select s.id, s.cType, s.shopName, s.a1, u1.cContent, u1.cUnUserName, u1.isProblem, u1.cProblem, u1.cProblemImgs, u1.cUnUserImg, u2.cMeasure, u2.isProblem isProblem1, u2.cProblemImgs cProblemImgs2, s.cUsers from info_house_check_shops s 
+    let sql = `select s.create_time, s.id, s.cType, s.shopName, s.a1, u1.cContent, u1.cUnUserName, u1.isProblem, u1.cProblem, u1.cProblemImgs, u1.cUnUserImg, u2.cMeasure, u2.isProblem isProblem1, u2.cProblemImgs cProblemImgs2, s.cUsers from info_house_check_shops s 
     left join (select sid, cUnUserName, cUnUserImg, isProblem, cProblem, cContent, cProblemImgs from info_house_check_users u where u.isRepeat = '不是') u1 on u1.sid = s.id 
     left join (select sid, cMeasure, isProblem, cContent, cProblemImgs from info_house_check_users u where u.isRepeat = '是' and id in (select max(id) from info_house_check_users where isRepeat = '是' group by sid)) u2 on u2.sid = s.id 
     where 1 = 1 ${where} `
