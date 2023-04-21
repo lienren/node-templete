@@ -75,7 +75,7 @@ app.use(requestFilter);
 
 // 路由
 const router = require('./router.js');
-const router_bike = require('./router_bike.js');
+const router_bike = require('./router_wms.js');
 app.use(router).use(router_bike);
 
 // 绑定访问端口

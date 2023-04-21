@@ -1,12 +1,11 @@
-/* jshint indent: 2 */
-
+const Sequelize = require('sequelize');
 module.exports = function(sequelize, DataTypes) {
   return sequelize.define('SuperManagerInfo', {
     id: {
-      type: DataTypes.INTEGER(11),
+      autoIncrement: true,
+      type: DataTypes.INTEGER,
       allowNull: false,
-      primaryKey: true,
-      autoIncrement: true
+      primaryKey: true
     },
     openId: {
       type: DataTypes.STRING(100),
@@ -33,7 +32,7 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     state: {
-      type: DataTypes.INTEGER(11),
+      type: DataTypes.INTEGER,
       allowNull: true
     },
     token: {
@@ -45,7 +44,7 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     sex: {
-      type: DataTypes.INTEGER(11),
+      type: DataTypes.INTEGER,
       allowNull: true
     },
     depName: {
@@ -61,23 +60,57 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     isDel: {
-      type: DataTypes.INTEGER(11),
+      type: DataTypes.INTEGER,
       allowNull: true
     },
     verifyLevel: {
-      type: DataTypes.INTEGER(11),
+      type: DataTypes.INTEGER,
       allowNull: true,
-      defaultValue: '0'
+      defaultValue: 0
     },
     verifyType: {
-      type: DataTypes.STRING(100),
+      type: DataTypes.STRING(200),
       allowNull: true
     },
     verifyVillages: {
-      type: DataTypes.STRING(2000),
+      type: DataTypes.STRING(500),
+      allowNull: true
+    },
+    userType: {
+      type: DataTypes.STRING(20),
+      allowNull: true
+    },
+    userData: {
+      type: DataTypes.STRING(500),
       allowNull: true
     }
   }, {
-    tableName: 'SuperManagerInfo'
+    sequelize,
+    tableName: 'SuperManagerInfo',
+    timestamps: false,
+    indexes: [
+      {
+        name: "PRIMARY",
+        unique: true,
+        using: "BTREE",
+        fields: [
+          { name: "id" },
+        ]
+      },
+      {
+        name: "idx_openId",
+        using: "BTREE",
+        fields: [
+          { name: "openId" },
+        ]
+      },
+      {
+        name: "idx_userType",
+        using: "BTREE",
+        fields: [
+          { name: "userType" },
+        ]
+      },
+    ]
   });
 };

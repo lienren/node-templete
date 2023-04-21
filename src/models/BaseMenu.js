@@ -1,9 +1,8 @@
-/* jshint indent: 2 */
-
+const Sequelize = require('sequelize');
 module.exports = function(sequelize, DataTypes) {
   return sequelize.define('BaseMenu', {
     id: {
-      type: DataTypes.INTEGER(11),
+      type: DataTypes.INTEGER,
       allowNull: false,
       primaryKey: true
     },
@@ -24,15 +23,15 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     level: {
-      type: DataTypes.INTEGER(11),
+      type: DataTypes.INTEGER,
       allowNull: true
     },
     parentId: {
-      type: DataTypes.INTEGER(11),
+      type: DataTypes.INTEGER,
       allowNull: true
     },
     sort: {
-      type: DataTypes.INTEGER(11),
+      type: DataTypes.INTEGER,
       allowNull: true
     },
     addTime: {
@@ -40,7 +39,7 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     isDel: {
-      type: DataTypes.INTEGER(11),
+      type: DataTypes.INTEGER,
       allowNull: true
     },
     parentName: {
@@ -48,6 +47,18 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     }
   }, {
-    tableName: 'BaseMenu'
+    sequelize,
+    tableName: 'BaseMenu',
+    timestamps: false,
+    indexes: [
+      {
+        name: "PRIMARY",
+        unique: true,
+        using: "BTREE",
+        fields: [
+          { name: "id" },
+        ]
+      },
+    ]
   });
 };

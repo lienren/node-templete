@@ -1,12 +1,11 @@
-/* jshint indent: 2 */
-
+const Sequelize = require('sequelize');
 module.exports = function(sequelize, DataTypes) {
   return sequelize.define('BaseImgCode', {
     id: {
-      type: DataTypes.INTEGER(11),
+      autoIncrement: true,
+      type: DataTypes.INTEGER,
       allowNull: false,
-      primaryKey: true,
-      autoIncrement: true
+      primaryKey: true
     },
     token: {
       type: DataTypes.STRING(100),
@@ -17,7 +16,7 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     isUse: {
-      type: DataTypes.INTEGER(11),
+      type: DataTypes.INTEGER,
       allowNull: true
     },
     overTime: {
@@ -29,6 +28,18 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     }
   }, {
-    tableName: 'BaseImgCode'
+    sequelize,
+    tableName: 'BaseImgCode',
+    timestamps: false,
+    indexes: [
+      {
+        name: "PRIMARY",
+        unique: true,
+        using: "BTREE",
+        fields: [
+          { name: "id" },
+        ]
+      },
+    ]
   });
 };

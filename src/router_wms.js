@@ -7,10 +7,10 @@
 'use strict';
 
 const Router = require('koa-router');
-const ctrl = require('./controllers/bike/index.js');
+const ctrl = require('./controllers/wms/index.js');
 
 const router = new Router({
-  prefix: '/bike'
+  prefix: '/wms'
 });
 
 for (let className in ctrl) {
