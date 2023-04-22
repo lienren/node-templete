@@ -1,7 +1,7 @@
 {
   "apps": [
     {
-      "name": "bikeAuto",
+      "name": "wmsAuto",
       "script": "./src/task/autoTask.js",
       "watch": false,
       "ignore_watch": ["node_modules", "build", "logs"],

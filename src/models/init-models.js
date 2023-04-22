@@ -11,6 +11,9 @@ var _SuperRoleInfo = require("./SuperRoleInfo");
 var _SuperRoleMenuInfo = require("./SuperRoleMenuInfo");
 var _info_arrival = require("./info_arrival");
 var _info_arrival_pro = require("./info_arrival_pro");
+var _info_outwh = require("./info_outwh");
+var _info_outwh_pro = require("./info_outwh_pro");
+var _info_outwh_pro_space = require("./info_outwh_pro_space");
 var _info_pro = require("./info_pro");
 var _info_purchase = require("./info_purchase");
 var _info_purchase_pro = require("./info_purchase_pro");
@@ -32,6 +35,9 @@ function initModels(sequelize) {
   var SuperRoleMenuInfo = _SuperRoleMenuInfo(sequelize, DataTypes);
   var info_arrival = _info_arrival(sequelize, DataTypes);
   var info_arrival_pro = _info_arrival_pro(sequelize, DataTypes);
+  var info_outwh = _info_outwh(sequelize, DataTypes);
+  var info_outwh_pro = _info_outwh_pro(sequelize, DataTypes);
+  var info_outwh_pro_space = _info_outwh_pro_space(sequelize, DataTypes);
   var info_pro = _info_pro(sequelize, DataTypes);
   var info_purchase = _info_purchase(sequelize, DataTypes);
   var info_purchase_pro = _info_purchase_pro(sequelize, DataTypes);
@@ -54,6 +60,9 @@ function initModels(sequelize) {
     SuperRoleMenuInfo,
     info_arrival,
     info_arrival_pro,
+    info_outwh,
+    info_outwh_pro,
+    info_outwh_pro_space,
     info_pro,
     info_purchase,
     info_purchase_pro,

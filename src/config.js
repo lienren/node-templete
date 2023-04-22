@@ -10,10 +10,10 @@ const path = require('path');
 
 module.exports = {
   sys: {
-    port: 20005,
+    port: 20007,
     staticPath: path.resolve(__dirname, '../assets/'),
     uploadFilePath: path.resolve(__dirname, '../assets/uploads/'),
-    uploadVirtualFilePath: 'https://localhost:20005/uploads',
+    uploadVirtualFilePath: 'https://wms.billgenius.cn/uploads',
     logConfig: {
       appenders: {
         resLogger: {

@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2023-04-21 11:49:58
+ * @LastEditTime: 2023-04-22 14:18:53
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/wms/rearend.js
@@ -9,9 +9,12 @@
  */
 'use strict';
 
+const fs = require('fs');
+const path = require('path');
 const assert = require('assert');
 const sequelize = require('sequelize');
 const date = require('../../utils/date');
+const excel = require('../../utils/excel');
 
 module.exports = {
   getPros: async ctx => {
@@ -109,6 +112,31 @@ module.exports = {
     }
 
     ctx.body = {}
+  },
+  uploadPro: async ctx => {
+    let { filePath } = ctx.request.body;
+    assert.ok(!!filePath, '请选择商品文件')
+
+    let filePathObj = path.parse(filePath)
+    let filePhysicalPath = path.resolve(__dirname, `../../../assets/uploads/${filePathObj.base}`)
+    let data = excel.readExcel(filePhysicalPath)
+
+    let pros = []
+    for (let i = 0, j = data.length; i < j; i++) {
+      if (i === 0 || data[i][0] === '小计:' || data[i][0] === '合计:') {
+        continue
+      }
+
+      orders.push({
+        order_code: data[i][0],
+        pro_code: data[i][19],
+        pro_name: data[i][20],
+        pro_unit: data[i][24],
+        pro_num: parseInt(data[i][23]),
+        pro_out_status: '库存充足'
+      })
+    }
+    assert.ok(orders.length > 0, '订单文件中没有商品信息')
   },
   delPro: async ctx => {
     let { id } = ctx.request.body;
@@ -583,6 +611,381 @@ module.exports = {
         is_del: 0
       }
     })
+
+    ctx.body = {}
+  },
+  getWareHousePros: async ctx => {
+    let pageIndex = ctx.request.body.pageIndex || 1;
+    let pageSize = ctx.request.body.pageSize || 20;
+    let { pro_code, pro_name, wh_name, area_name, shelf_name, space_name } = ctx.request.body;
+
+    let where = {
+      pro_num: {
+        $gt: 0
+      }
+    };
+    Object.assign(where, pro_code && { pro_code: pro_code })
+    Object.assign(where, pro_name && { pro_name: pro_name })
+    Object.assign(where, wh_name && { wh_name: wh_name })
+    Object.assign(where, area_name && { area_name: area_name })
+    Object.assign(where, shelf_name && { shelf_name: shelf_name })
+    Object.assign(where, space_name && { space_name: space_name })
+
+    let result = await ctx.orm().info_warehouse_pro.findAndCountAll({
+      offset: (pageIndex - 1) * pageSize,
+      limit: pageSize,
+      where,
+      order: [
+        ['space_id'],
+        ['pc_id']
+      ]
+    });
+
+    ctx.body = {
+      total: result.count,
+      list: result.rows,
+      pageIndex,
+      pageSize
+    }
+  },
+  getOuts: async ctx => {
+    let pageIndex = ctx.request.body.pageIndex || 1;
+    let pageSize = ctx.request.body.pageSize || 20;
+    let { o_code, o_status } = ctx.request.body;
+
+    let where = { is_del: 0 };
+    Object.assign(where, o_code && { o_code })
+    Object.assign(where, o_status && { o_status })
+
+    let result = await ctx.orm().info_outwh.findAndCountAll({
+      offset: (pageIndex - 1) * pageSize,
+      limit: pageSize,
+      where,
+      order: [
+        ['id', 'desc']
+      ]
+    });
+
+    ctx.body = {
+      total: result.count,
+      list: result.rows,
+      pageIndex,
+      pageSize
+    }
+  },
+  getOutPros: async ctx => {
+    let { o_id } = ctx.request.body;
+
+    let where = { is_del: 0 };
+    Object.assign(where, o_id && { o_id })
+
+    let result = await ctx.orm().info_outwh_pro.findAll({
+      where
+    });
+
+    ctx.body = result
+  },
+  getOutProSpaces: async ctx => {
+    let { o_id } = ctx.request.body;
+
+    let where = {};
+    Object.assign(where, o_id && { o_id })
+
+    let result = await ctx.orm().info_outwh_pro_space.findAll({
+      where
+    });
+
+    ctx.body = result
+  },
+  analyzeOrderByOut: async ctx => {
+    let { filePath } = ctx.request.body;
+    assert.ok(!!filePath, '请选择订单文件')
+
+    let filePathObj = path.parse(filePath)
+    let filePhysicalPath = path.resolve(__dirname, `../../../assets/uploads/${filePathObj.base}`)
+    let data = excel.readExcel(filePhysicalPath)
+
+    let orders = []
+    for (let i = 0, j = data.length; i < j; i++) {
+      if (i === 0 || data[i][0] === '小计:' || data[i][0] === '合计:') {
+        continue
+      }
+
+      orders.push({
+        order_code: data[i][0],
+        pro_code: data[i][19],
+        pro_name: data[i][20],
+        pro_unit: data[i][24],
+        pro_num: parseInt(data[i][23]),
+        pro_out_status: '库存充足'
+      })
+    }
+    assert.ok(orders.length > 0, '订单文件中没有商品信息')
+
+    let wh_pros = await ctx.orm().info_warehouse_pro.findAll({
+      where: {
+        pro_code: {
+          $in: orders.map(m => {
+            return m.pro_code
+          })
+        }
+      }
+    })
+
+    // 合并库存
+    let wh_pro_nums = {}
+    wh_pros.map(m => {
+      if (wh_pro_nums[m.pro_code]) {
+        wh_pro_nums[m.pro_code] += (m.pro_num - m.pre_pro_num)
+      } else {
+        wh_pro_nums[m.pro_code] = (m.pro_num - m.pre_pro_num)
+      }
+    })
+
+    // 验证库存是否满足
+    orders.map(m => {
+      if (wh_pro_nums[m.pro_code]) {
+        if (wh_pro_nums[m.pro_code] >= m.pro_num) {
+          m.pro_out_status = '库存充足'
+          wh_pro_nums[m.pro_code] -= m.pro_num
+        } else {
+          m.pro_out_status = '库存不足'
+        }
+      } else {
+        m.pro_out_status = '库存中无此商品'
+      }
+    })
+
+    fs.rm(filePhysicalPath, () => {
+      console.log('订单文件删除成功')
+    })
+
+    ctx.body = orders
+  },
+  submitOut: async ctx => {
+    let { o_code, o_orders, o_uname } = ctx.request.body;
+
+    assert.ok(!!o_code, '请填写出库单编码')
+    assert.ok(!!o_orders, '请填写出库商品信息')
+    assert.ok(o_orders.length > 0, '请填写出库商品信息')
+
+    let orders = o_orders.map(m => m.order_code)
+    let orderNews = orders.filter((item, index) => orders.indexOf(item) === index);
+
+    let o_order_num = orderNews.length
+    let o_pro_num = o_orders.length
+
+    let outwh = await ctx.orm().info_outwh.create({
+      o_code: o_code,
+      o_order_num: o_order_num,
+      o_pro_num: o_pro_num,
+      o_status: '未出库',
+      o_status_time: date.formatDate(),
+      o_uname,
+      is_del: 0
+    })
+
+    let info_outwh_pros = o_orders.map(m => {
+      return {
+        o_id: outwh.id,
+        o_code: outwh.o_code,
+        order_code: m.order_code,
+        pro_code: m.pro_code,
+        pro_name: m.pro_name,
+        pro_unit: m.pro_unit,
+        pro_num: m.pro_num,
+        pro_out_status: '异常',
+        pro_out_status_time: date.formatDate(),
+        pro_out_status_desc: '未检测库存是否充足',
+        is_del: 0
+      }
+    })
+
+    let info_outwh_pro_space = []
+
+    let wh_pros = await ctx.orm().info_warehouse_pro.findAll({
+      where: {
+        pro_code: {
+          $in: info_outwh_pros.map(m => {
+            return m.pro_code
+          })
+        }
+      }
+    })
+
+    // 合并库存
+    let wh_pro_nums = {}
+    wh_pros.map(m => {
+      if (wh_pro_nums[m.pro_code]) {
+        wh_pro_nums[m.pro_code] += (m.pro_num - m.pre_pro_num)
+      } else {
+        wh_pro_nums[m.pro_code] = (m.pro_num - m.pre_pro_num)
+      }
+    })
+
+    // 验证库存是否满足
+    for (let i = 0, j = info_outwh_pros.length; i < j; i++) {
+      let outwh_pro = info_outwh_pros[i]
+
+      let pro = await ctx.orm().info_pro.findOne({
+        where: {
+          pro_code: outwh_pro.pro_code,
+          is_del: 0
+        }
+      })
+
+      if (!pro) { continue }
+
+      if (wh_pro_nums[outwh_pro.pro_code]) {
+        if (wh_pro_nums[outwh_pro.pro_code] >= outwh_pro.pro_num) {
+          // 获取库存
+          let sql = `select wp.id, wp.space_id, wp.wh_id, wp.wh_name, wp.area_name, wp.shelf_name, wp.space_name, wp.pc_id, wp.pc_code, wp.pro_num, wp.pre_pro_num, s.sort_index from info_warehouse_pro wp 
+          inner join info_space s on s.id = wp.space_id 
+          where wp.pro_id = '${pro.id}' and wp.pro_num - wp.pre_pro_num > 0 
+          order by wp.pc_id, s.sort_index`
+          let result = await ctx.orm().query(sql)
+
+          if (result && result.length > 0) {
+            let bck_pro_num = outwh_pro.pro_num
+            for (let x = 0, y = result.length; x < y; x++) {
+              let surplus_num = (parseInt(result[x].pro_num) - parseInt(result[x].pre_pro_num))
+
+              // 扣库存
+              if (surplus_num >= bck_pro_num) {
+                // 当前库存够扣
+                let update_wh_pro_num = await ctx.orm().info_warehouse_pro.update({
+                  pro_num: sequelize.literal(` pro_num - ${bck_pro_num} `)
+                }, {
+                  where: {
+                    id: result[x].id
+                  }
+                })
+
+                let f = info_outwh_pro_space.find(f => {
+                  return f.pro_id === pro.pro_id && f.space_id === result[x].space_id && f.pc_id === result[x].pc_id
+                })
+
+                if (f) {
+                  f.pro_num += bck_pro_num
+                } else {
+                  info_outwh_pro_space.push({
+                    o_id: outwh_pro.o_id,
+                    o_code: outwh_pro.o_code,
+                    pro_id: pro.pro_id,
+                    pro_code: pro.pro_code,
+                    pro_name: pro.pro_name,
+                    pro_unit: pro.pro_unit,
+                    space_id: result[x].space_id,
+                    wh_id: result[x].wh_id,
+                    wh_name: result[x].wh_name,
+                    area_name: result[x].area_name,
+                    shelf_name: result[x].shelf_name,
+                    space_name: result[x].space_name,
+                    pc_id: result[x].pc_id,
+                    pc_code: result[x].pc_code,
+                    pro_num: bck_pro_num
+                  })
+                }
+
+                outwh_pro.pro_out_status = '正常'
+                outwh_pro.pro_out_status_desc = '库存充足'
+
+                bck_pro_num = 0
+                break;
+              } else {
+                // 当前库存不够扣
+                let update_wh_pro_num = await ctx.orm().info_warehouse_pro.update({
+                  pro_num: sequelize.literal(` pro_num - ${surplus_num} `)
+                }, {
+                  where: {
+                    id: result[x].id
+                  }
+                })
+
+                let f = info_outwh_pro_space.find(f => {
+                  return f.pro_id === pro.pro_id && f.space_id === result[x].space_id && f.pc_id === result[x].pc_id
+                })
+
+                if (f) {
+                  f.pro_num += surplus_num
+                } else {
+                  info_outwh_pro_space.push({
+                    o_id: outwh_pro.o_id,
+                    o_code: outwh_pro.o_code,
+                    pro_id: pro.id,
+                    pro_code: pro.pro_code,
+                    pro_name: pro.pro_name,
+                    pro_unit: pro.pro_unit,
+                    space_id: result[x].space_id,
+                    wh_id: result[x].wh_id,
+                    wh_name: result[x].wh_name,
+                    area_name: result[x].area_name,
+                    shelf_name: result[x].shelf_name,
+                    space_name: result[x].space_name,
+                    pc_id: result[x].pc_id,
+                    pc_code: result[x].pc_code,
+                    pro_num: surplus_num
+                  })
+                }
+
+                bck_pro_num -= surplus_num
+              }
+            }
+
+          } else {
+            outwh_pro.pro_out_status = '异常'
+            outwh_pro.pro_out_status_desc = '库存不足'
+          }
+        } else {
+          outwh_pro.pro_out_status = '异常'
+          outwh_pro.pro_out_status_desc = '库存不足'
+        }
+      } else {
+        outwh_pro.pro_out_status = '异常'
+        outwh_pro.pro_out_status_desc = '仓库中无此商品'
+      }
+    }
+
+    // 保存出库单
+    await ctx.orm().info_outwh_pro.bulkCreate(info_outwh_pros);
+    await ctx.orm().info_outwh_pro_space.bulkCreate(info_outwh_pro_space);
+
+    await ctx.orm().info_outwh.update({
+      o_status: '拣货中'
+    }, {
+      where: {
+        id: outwh.id
+      }
+    })
+
+    ctx.body = {}
+  },
+  updateOutStatus: async ctx => {
+    let { id, o_status } = ctx.request.body;
+
+    assert.ok(!!id, '请选择出库单编号')
+    assert.ok(!!o_status, '请选择出库单状态')
+
+    await ctx.orm().info_outwh.update({
+      o_status,
+      o_status_time: date.formatDate()
+    }, {
+      where: {
+        id,
+        is_del: 0
+      }
+    });
+
+    ctx.body = {}
+  },
+  delOut: async ctx => {
+    let { id } = ctx.request.body;
+
+    await ctx.orm().info_outwh.update({
+      is_del: 1
+    }, {
+      where: { id }
+    });
 
     ctx.body = {}
   },
