@@ -111,6 +111,13 @@ module.exports = function(sequelize, DataTypes) {
           { name: "pc_id" },
         ]
       },
+      {
+        name: "idx_pro_code",
+        using: "BTREE",
+        fields: [
+          { name: "pro_code" },
+        ]
+      },
     ]
   });
 };

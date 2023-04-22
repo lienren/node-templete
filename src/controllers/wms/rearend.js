@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2023-04-22 14:18:53
+ * @LastEditTime: 2023-04-23 07:17:02
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/wms/rearend.js
@@ -97,17 +97,17 @@ module.exports = {
     ctx.body = result
   },
   submitPro: async ctx => {
-    let { id, pro_name, sort_first, sort_second, pro_code, pro_brand, pro_unit, pro_supplier } = ctx.request.body;
+    let { id, pro_name, sort_first, sort_second, pro_code, pro_brand, pro_unit, pro_supplier, outside_id } = ctx.request.body;
 
     if (id) {
       await ctx.orm().info_pro.update({
-        pro_name, sort_first, sort_second, pro_code, pro_brand, pro_unit, pro_supplier
+        pro_name, sort_first, sort_second, pro_code, pro_brand, pro_unit, pro_supplier, outside_id
       }, {
         where: { id }
       })
     } else {
       await ctx.orm().info_pro.create({
-        pro_name, sort_first, sort_second, pro_code, pro_brand, pro_unit, pro_supplier, is_del: 0
+        pro_name, sort_first, sort_second, pro_code, pro_brand, pro_unit, pro_supplier, outside_id, is_del: 0
       })
     }
 
@@ -123,20 +123,51 @@ module.exports = {
 
     let pros = []
     for (let i = 0, j = data.length; i < j; i++) {
-      if (i === 0 || data[i][0] === '小计:' || data[i][0] === '合计:') {
+      if (i < 3) {
         continue
       }
 
-      orders.push({
-        order_code: data[i][0],
-        pro_code: data[i][19],
-        pro_name: data[i][20],
-        pro_unit: data[i][24],
-        pro_num: parseInt(data[i][23]),
-        pro_out_status: '库存充足'
+      pros.push({
+        outside_id: data[i][0],
+        pro_name: data[i][4],
+        sort_first: data[i][1],
+        sort_second: data[i][2],
+        pro_code: data[i][3],
+        pro_brand: data[i][5],
+        pro_unit: data[i][11],
+        pro_supplier: data[i][10],
+        is_del: 0
       })
     }
-    assert.ok(orders.length > 0, '订单文件中没有商品信息')
+    assert.ok(pros.length > 0, '订单文件中没有商品信息')
+
+    for (let i = 0, j = pros.length; i < j; i++) {
+      let pro = await ctx.orm().info_pro.findOne({
+        where: {
+          pro_code: pros[i].pro_code
+        }
+      })
+
+      if (pro) {
+        await ctx.orm().info_pro.update({
+          ...pros[i]
+        }, {
+          where: {
+            id: pro.id
+          }
+        })
+      } else {
+        await ctx.orm().info_pro.create({
+          ...pros[i]
+        })
+      }
+    }
+
+    fs.unlink(filePhysicalPath, () => {
+      console.log('商品文件删除成功')
+    })
+
+    ctx.body = {}
   },
   delPro: async ctx => {
     let { id } = ctx.request.body;
@@ -307,6 +338,100 @@ module.exports = {
 
       await ctx.orm().info_purchase_pro.bulkCreate(data);
     }
+
+    ctx.body = {}
+  },
+  uploadPurchase: async ctx => {
+    let { filePath, pc_uname } = ctx.request.body;
+    assert.ok(!!filePath, '请选择采购单文件')
+
+    let filePathObj = path.parse(filePath)
+    let filePhysicalPath = path.resolve(__dirname, `../../../assets/uploads/${filePathObj.base}`)
+    let data = excel.readExcel(filePhysicalPath)
+
+    let purs = []
+    let purs_pros = []
+    for (let i = 0, j = data.length; i < j; i++) {
+      if (i === 0) {
+        continue
+      }
+
+      let pur = purs.find(f => f.pc_code === data[i][0])
+      if (!pur) {
+        purs.push({
+          pc_code: data[i][0],
+          pc_desc: data[i][7],
+          pc_uname,
+          pc_utime: date.formatDate(),
+          pc_pro_num: 0,
+          pc_pro_total_num: 0,
+          pc_pro_total_price: 0,
+          pc_pro_arrival_num: 0,
+          pc_status: '全部到货',
+          pc_status_time: date.formatDate(),
+          is_del: 0
+        })
+      }
+
+      let pro = await ctx.orm().info_pro.findOne({
+        where: {
+          pro_code: data[i][5]
+        }
+      })
+      purs_pros.push({
+        pc_id: 0,
+        pc_code: data[i][0],
+        pro_id: pro.id,
+        pro_code: pro.pro_code,
+        pro_name: pro.pro_name,
+        pro_unit: pro.pro_unit,
+        pro_num: parseInt(data[i][10]),
+        pro_pc_price: parseFloat(data[i][13]),
+        pro_pc_total_price: Math.floor(parseInt(data[i][10]) * parseFloat(data[i][13]) * 100) / 100,
+        pro_arrival_num: parseInt(data[i][10])
+      })
+    }
+
+    assert.ok(purs.length > 0, '采购单文件中没有信息')
+    assert.ok(purs_pros.length > 0, '采购单文件中没有商品信息')
+
+    for (let i = 0, j = purs.length; i < j; i++) {
+      let pros = purs_pros.filter(f => f.pc_code === purs[i].pc_code)
+
+      purs[i].pc_pro_num = pros.length
+      purs[i].pc_pro_total_num = pros.length
+      purs[i].pc_pro_total_price = pros.reduce((pre, curr) => {
+        return pre + curr.pro_pc_total_price
+      }, 0)
+    }
+
+    for (let i = 0, j = purs.length; i < j; i++) {
+      let f = await ctx.orm().info_purchase.findOne({
+        where: {
+          pc_code: purs[i].pc_code
+        }
+      })
+
+      if (!f) {
+        // 采购单不存在，则插入
+        let pur = await ctx.orm().info_purchase.create({
+          ...purs[i]
+        })
+
+        await ctx.orm().info_purchase_pro.bulkCreate(
+          purs_pros.filter(f => f.pc_code === pur.pc_code).map(m => {
+            return {
+              ...m,
+              pc_id: pur.id
+            }
+          })
+        );
+      }
+    }
+
+    fs.unlink(filePhysicalPath, () => {
+      console.log('采购单文件删除成功')
+    })
 
     ctx.body = {}
   },
@@ -713,10 +838,10 @@ module.exports = {
 
       orders.push({
         order_code: data[i][0],
-        pro_code: data[i][19],
-        pro_name: data[i][20],
-        pro_unit: data[i][24],
-        pro_num: parseInt(data[i][23]),
+        pro_code: data[i][20],
+        pro_name: data[i][21],
+        pro_unit: data[i][25],
+        pro_num: parseInt(data[i][24]),
         pro_out_status: '库存充足'
       })
     }
@@ -756,7 +881,7 @@ module.exports = {
       }
     })
 
-    fs.rm(filePhysicalPath, () => {
+    fs.unlink(filePhysicalPath, () => {
       console.log('订单文件删除成功')
     })
 

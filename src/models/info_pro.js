@@ -7,6 +7,11 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: false,
       primaryKey: true
     },
+    outside_id: {
+      type: DataTypes.STRING(100),
+      allowNull: true,
+      comment: "外部编号"
+    },
     pro_name: {
       type: DataTypes.STRING(100),
       allowNull: true,
