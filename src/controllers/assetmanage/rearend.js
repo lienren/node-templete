@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2023-04-17 15:24:29
+ * @LastEditTime: 2023-04-23 09:35:29
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/assetmanage/rearend.js
@@ -51,7 +51,7 @@ module.exports = {
         $between: [h_a301, h_a302]
       }
     }
-    if (h_a701 && h_a702) {
+    if (h_a701 !== undefined && h_a702) {
       where1.a7 = {
         $between: [h_a701, h_a702]
       }
@@ -202,10 +202,8 @@ module.exports = {
         $between: [h_a501, h_a502]
       }
     }
-    if (h_a701 && h_a702) {
-      where1.a7 = {
-        $between: [h_a701, h_a702]
-      }
+    if (h_a701 !== undefined && h_a702) {
+      where1.a7 = { $between: [h_a701, h_a702] }
     }
     if (Object.keys(where1).length > 0) {
       let hs = await ctx.orm().info_house_having.findAll({
@@ -1746,7 +1744,7 @@ module.exports = {
     }
   },
   submitHouseCheckShopRepeat: async ctx => {
-    let { id, sid, cUserId, cUsersName, cUserImg, cUnUserPhone, cRemark, cTime, cResult, isProblem, cMeasure } = ctx.request.body;
+    let { id, sid, cUserId, cUsersName, cUserImg, cUnUserPhone, cRemark, cTime, cResult, isProblem, cProblemImgs, cMeasure } = ctx.request.body;
 
     let check = await ctx.orm().info_house_check.findOne({
       where: {
@@ -1794,6 +1792,7 @@ module.exports = {
       cTime,
       cResult,
       isProblem,
+      cProblemImgs: JSON.stringify(cProblemImgs),
       cMeasure,
       isRepeat: '是',
       cUnUserPhone
