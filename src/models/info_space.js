@@ -37,6 +37,12 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true,
       comment: "拣货顺序"
     },
+    priority: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      defaultValue: 0,
+      comment: "优先级"
+    },
     is_del: {
       type: DataTypes.INTEGER,
       allowNull: true,

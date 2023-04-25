@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2023-04-23 07:17:02
+ * @LastEditTime: 2023-04-25 20:13:38
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/wms/rearend.js
@@ -46,6 +46,24 @@ module.exports = {
       pageIndex,
       pageSize
     }
+  },
+  getProSpec: async ctx => {
+    let { pro_id } = ctx.request.body;
+
+    let spec = await ctx.orm().info_pro_spec.findOne({
+      where: {
+        pro_id: pro_id
+      }
+    })
+
+    ctx.body = !spec ? {
+      pro_id,
+      spec_num: 0,
+      box_long: 0,
+      box_width: 0,
+      box_height: 0,
+      box_weight: 0
+    } : spec
   },
   getProWareHouses: async ctx => {
     let { id } = ctx.request.body;
@@ -97,7 +115,7 @@ module.exports = {
     ctx.body = result
   },
   submitPro: async ctx => {
-    let { id, pro_name, sort_first, sort_second, pro_code, pro_brand, pro_unit, pro_supplier, outside_id } = ctx.request.body;
+    let { id, pro_name, sort_first, sort_second, pro_code, pro_brand, pro_unit, pro_supplier, outside_id, spec_info } = ctx.request.body;
 
     if (id) {
       await ctx.orm().info_pro.update({
@@ -106,9 +124,42 @@ module.exports = {
         where: { id }
       })
     } else {
-      await ctx.orm().info_pro.create({
+      let pro = await ctx.orm().info_pro.create({
         pro_name, sort_first, sort_second, pro_code, pro_brand, pro_unit, pro_supplier, outside_id, is_del: 0
       })
+
+      id = pro.id
+    }
+
+    if (id && spec_info) {
+      let pro_spec = await ctx.orm().info_pro_spec.findOne({
+        where: {
+          pro_id: id
+        }
+      })
+
+      if (pro_spec) {
+        await ctx.orm().info_pro_spec.update({
+          spec_num: spec_info.spec_num,
+          box_long: spec_info.box_long,
+          box_width: spec_info.box_width,
+          box_height: spec_info.box_height,
+          box_weight: spec_info.box_weight
+        }, {
+          where: {
+            pro_id: id
+          }
+        })
+      } else {
+        await ctx.orm().info_pro_spec.create({
+          pro_id: id,
+          spec_num: spec_info.spec_num,
+          box_long: spec_info.box_long,
+          box_width: spec_info.box_width,
+          box_height: spec_info.box_height,
+          box_weight: spec_info.box_weight
+        })
+      }
     }
 
     ctx.body = {}
@@ -750,7 +801,7 @@ module.exports = {
       }
     };
     Object.assign(where, pro_code && { pro_code: pro_code })
-    Object.assign(where, pro_name && { pro_name: pro_name })
+    Object.assign(where, pro_name && { pro_name: { $like: `%${pro_name}%` } })
     Object.assign(where, wh_name && { wh_name: wh_name })
     Object.assign(where, area_name && { area_name: area_name })
     Object.assign(where, shelf_name && { shelf_name: shelf_name })
@@ -967,11 +1018,12 @@ module.exports = {
           let sql = `select wp.id, wp.space_id, wp.wh_id, wp.wh_name, wp.area_name, wp.shelf_name, wp.space_name, wp.pc_id, wp.pc_code, wp.pro_num, wp.pre_pro_num, s.sort_index from info_warehouse_pro wp 
           inner join info_space s on s.id = wp.space_id 
           where wp.pro_id = '${pro.id}' and wp.pro_num - wp.pre_pro_num > 0 
-          order by wp.pc_id, s.sort_index`
+          order by wp.pc_id, s.priority, s.sort_index`
           let result = await ctx.orm().query(sql)
 
           if (result && result.length > 0) {
             let bck_pro_num = outwh_pro.pro_num
+
             for (let x = 0, y = result.length; x < y; x++) {
               let surplus_num = (parseInt(result[x].pro_num) - parseInt(result[x].pre_pro_num))
 
@@ -996,7 +1048,7 @@ module.exports = {
                   info_outwh_pro_space.push({
                     o_id: outwh_pro.o_id,
                     o_code: outwh_pro.o_code,
-                    pro_id: pro.pro_id,
+                    pro_id: pro.id,
                     pro_code: pro.pro_code,
                     pro_name: pro.pro_name,
                     pro_unit: pro.pro_unit,
@@ -1114,4 +1166,101 @@ module.exports = {
 
     ctx.body = {}
   },
+  transferWareHousePro: async ctx => {
+    let { id, new_space_id, uname } = ctx.request.body;
+
+    let wh_pro = await ctx.orm().info_warehouse_pro.findOne({
+      where: {
+        id,
+        pro_num: {
+          $gt: 0
+        }
+      }
+    })
+    assert.ok(!!wh_pro, '库位上没有此商品')
+
+    let new_space = await ctx.orm().info_space.findOne({
+      where: {
+        id: new_space_id,
+        is_del: 0
+      }
+    })
+    assert.ok(!!new_space, '库位不存在')
+
+    let new_space_pro = await ctx.orm().info_warehouse_pro.findOne({
+      where: {
+        pro_id: wh_pro.pro_id,
+        space_id: new_space.id,
+        pc_id: wh_pro.pc_id
+      }
+    })
+
+    if (new_space_pro) {
+      // 商品批次存在，则更新新位置库存，删除老数据
+      await ctx.orm().info_warehouse_pro.update({
+        pro_num: sequelize.literal(` pro_num + ${wh_pro.pro_num} `)
+      }, {
+        where: {
+          id: new_space_pro.id
+        }
+      })
+
+      await ctx.orm().info_warehouse_pro.destroy({
+        where: {
+          id: wh_pro.id
+        }
+      })
+    } else {
+      // 商品批次不存在，则更新货位
+      await ctx.orm().info_warehouse_pro.update({
+        space_id: new_space.id,
+        wh_id: new_space.wh_id,
+        wh_name: new_space.wh_name,
+        area_name: new_space.area_name,
+        shelf_name: new_space.shelf_name,
+        space_name: new_space.space_name,
+      }, {
+        where: {
+          id: wh_pro.id
+        }
+      })
+    }
+
+    // 记录转移日志
+    await ctx.orm().info_transfer_log.create({
+      uname,
+      old_wh_pro: JSON.stringify({
+        pro_id: wh_pro.pro_id,
+        pro_code: wh_pro.pro_code,
+        pro_name: wh_pro.pro_name,
+        pro_unit: wh_pro.pro_unit,
+        pro_num: wh_pro.pro_num,
+        space_id: wh_pro.space_id,
+        wh_id: wh_pro.wh_id,
+        wh_name: wh_pro.wh_name,
+        area_name: wh_pro.area_name,
+        shelf_name: wh_pro.shelf_name,
+        space_name: wh_pro.space_name,
+        pc_id: wh_pro.pc_id,
+        pc_code: wh_pro.pc_code,
+        pre_pro_num: 0
+      }),
+      new_wh_pro: JSON.stringify({
+        pro_id: wh_pro.pro_id,
+        pro_code: wh_pro.pro_code,
+        pro_name: wh_pro.pro_name,
+        pro_unit: wh_pro.pro_unit,
+        pro_num: wh_pro.pro_num,
+        space_id: new_space.id,
+        wh_id: new_space.wh_id,
+        wh_name: new_space.wh_name,
+        area_name: new_space.area_name,
+        shelf_name: new_space.shelf_name,
+        space_name: new_space.space_name,
+        pc_id: wh_pro.pc_id,
+        pc_code: wh_pro.pc_code,
+        pre_pro_num: 0,
+      })
+    })
+  }
 };

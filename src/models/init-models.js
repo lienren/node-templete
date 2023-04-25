@@ -15,10 +15,12 @@ var _info_outwh = require("./info_outwh");
 var _info_outwh_pro = require("./info_outwh_pro");
 var _info_outwh_pro_space = require("./info_outwh_pro_space");
 var _info_pro = require("./info_pro");
+var _info_pro_spec = require("./info_pro_spec");
 var _info_purchase = require("./info_purchase");
 var _info_purchase_pro = require("./info_purchase_pro");
 var _info_sort = require("./info_sort");
 var _info_space = require("./info_space");
+var _info_transfer_log = require("./info_transfer_log");
 var _info_warehouse = require("./info_warehouse");
 var _info_warehouse_pro = require("./info_warehouse_pro");
 
@@ -39,10 +41,12 @@ function initModels(sequelize) {
   var info_outwh_pro = _info_outwh_pro(sequelize, DataTypes);
   var info_outwh_pro_space = _info_outwh_pro_space(sequelize, DataTypes);
   var info_pro = _info_pro(sequelize, DataTypes);
+  var info_pro_spec = _info_pro_spec(sequelize, DataTypes);
   var info_purchase = _info_purchase(sequelize, DataTypes);
   var info_purchase_pro = _info_purchase_pro(sequelize, DataTypes);
   var info_sort = _info_sort(sequelize, DataTypes);
   var info_space = _info_space(sequelize, DataTypes);
+  var info_transfer_log = _info_transfer_log(sequelize, DataTypes);
   var info_warehouse = _info_warehouse(sequelize, DataTypes);
   var info_warehouse_pro = _info_warehouse_pro(sequelize, DataTypes);
 
@@ -64,10 +68,12 @@ function initModels(sequelize) {
     info_outwh_pro,
     info_outwh_pro_space,
     info_pro,
+    info_pro_spec,
     info_purchase,
     info_purchase_pro,
     info_sort,
     info_space,
+    info_transfer_log,
     info_warehouse,
     info_warehouse_pro,
   };
