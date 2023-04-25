@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2023-04-25 20:13:38
+ * @LastEditTime: 2023-04-25 21:06:04
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/wms/rearend.js
@@ -887,8 +887,19 @@ module.exports = {
         continue
       }
 
+      let order_code = data[i][0]
+
+      // 拣货中或已出库订单不进入出库单中
+      let sql = `select order_code from info_outwh_pro p 
+      inner join info_outwh o on o.id = p.o_id 
+      where p.order_code = '${order_code}' and o.o_status in ('拣货中', '已出库') and o.is_del = 0 limit 1`
+      let result = await ctx.orm().query(sql)
+      if (result && result.length > 0) {
+        continue
+      }
+
       orders.push({
-        order_code: data[i][0],
+        order_code: order_code,
         pro_code: data[i][20],
         pro_name: data[i][21],
         pro_unit: data[i][25],
@@ -896,7 +907,7 @@ module.exports = {
         pro_out_status: '库存充足'
       })
     }
-    assert.ok(orders.length > 0, '订单文件中没有商品信息')
+    assert.ok(orders.length > 0, '订单文件中没有商品信息或已经下过出库单')
 
     let wh_pros = await ctx.orm().info_warehouse_pro.findAll({
       where: {
@@ -1136,6 +1147,71 @@ module.exports = {
     })
 
     ctx.body = {}
+  },
+  revokeOut: async ctx => {
+    let { id } = ctx.request.body;
+
+    let outwh = await ctx.orm().info_outwh.findOne({
+      where: {
+        id,
+        o_status: '拣货中',
+        is_del: 0
+      }
+    })
+    assert.ok(!!outwh, '出库单不存在')
+
+    let outwh_pro_spaces = await ctx.orm().info_outwh_pro_space.findAll({
+      where: {
+        o_id: id
+      }
+    })
+    assert.ok(!!outwh_pro_spaces, '出库单中商品信息不存在')
+
+    for (let i = 0, j = outwh_pro_spaces.length; i < j; i++) {
+      let outwh_pro_space = outwh_pro_spaces[i]
+
+      let wh_pro = await ctx.orm().info_warehouse_pro.findOne({
+        where: {
+          pro_id: outwh_pro_space.pro_id,
+          space_id: outwh_pro_space.space_id,
+          pc_id: outwh_pro_space.pc_id
+        }
+      })
+
+      if (wh_pro) {
+        await ctx.orm().info_warehouse_pro.update({
+          pro_num: sequelize.literal(` pro_num + ${outwh_pro_space.pro_num} `)
+        }, {
+          where: {
+            id: wh_pro.id
+          }
+        })
+      } else {
+        await ctx.orm().info_warehouse_pro.create({
+          pro_id: outwh_pro_space.pro_id,
+          pro_code: outwh_pro_space.pro_code,
+          pro_name: outwh_pro_space.pro_name,
+          pro_num: outwh_pro_space.pro_num,
+          space_id: outwh_pro_space.space_id,
+          wh_id: outwh_pro_space.wh_id,
+          wh_name: outwh_pro_space.wh_name,
+          area_name: outwh_pro_space.area_name,
+          shelf_name: outwh_pro_space.shelf_name,
+          space_name: outwh_pro_space.space_name,
+          pc_id: outwh_pro_space.pc_id,
+          pc_code: outwh_pro_space.pc_code,
+          pre_pro_num: 0
+        })
+      }
+    }
+
+    await ctx.orm().info_outwh.update({
+      o_status: '已撤销'
+    }, {
+      where: {
+        id: outwh.id
+      }
+    })
   },
   updateOutStatus: async ctx => {
     let { id, o_status } = ctx.request.body;
