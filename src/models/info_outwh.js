@@ -25,7 +25,7 @@ module.exports = function(sequelize, DataTypes) {
     o_status: {
       type: DataTypes.STRING(50),
       allowNull: true,
-      comment: "出库单状态（未出库、拣货中、已出库）"
+      comment: "出库单状态（未出库、拣货中、已出库、已撤销）"
     },
     o_status_time: {
       type: DataTypes.DATE,

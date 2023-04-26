@@ -54,6 +54,11 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true,
       comment: "实际入库位置明细"
     },
+    arrival_uname: {
+      type: DataTypes.STRING(100),
+      allowNull: true,
+      comment: "入库操作人"
+    },
     create_time: {
       type: DataTypes.DATE,
       allowNull: true,

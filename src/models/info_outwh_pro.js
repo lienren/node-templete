@@ -52,6 +52,11 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true,
       comment: "出库状态时间"
     },
+    pro_out_status_desc: {
+      type: DataTypes.STRING(100),
+      allowNull: true,
+      comment: "出库状态描述"
+    },
     is_del: {
       type: DataTypes.INTEGER,
       allowNull: true,
@@ -67,11 +72,6 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.DATE,
       allowNull: true,
       defaultValue: Sequelize.Sequelize.literal('CURRENT_TIMESTAMP')
-    },
-    pro_out_status_desc: {
-      type: DataTypes.STRING(100),
-      allowNull: true,
-      comment: "出库状态描述"
     }
   }, {
     sequelize,
@@ -84,6 +84,20 @@ module.exports = function(sequelize, DataTypes) {
         using: "BTREE",
         fields: [
           { name: "id" },
+        ]
+      },
+      {
+        name: "idx_order_code",
+        using: "BTREE",
+        fields: [
+          { name: "order_code" },
+        ]
+      },
+      {
+        name: "idx_o_id",
+        using: "BTREE",
+        fields: [
+          { name: "o_id" },
         ]
       },
     ]
