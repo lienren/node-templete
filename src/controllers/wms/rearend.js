@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2023-04-28 09:26:05
+ * @LastEditTime: 2023-04-28 13:27:36
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/wms/rearend.js
@@ -1050,7 +1050,7 @@ module.exports = {
                 })
 
                 let f = info_outwh_pro_space.find(f => {
-                  return f.pro_id === pro.pro_id && f.space_id === result[x].space_id && f.pc_id === result[x].pc_id
+                  return f.pro_id === pro.id && f.space_id === result[x].space_id && f.pc_id === result[x].pc_id
                 })
 
                 if (f) {
@@ -1071,7 +1071,8 @@ module.exports = {
                     space_name: result[x].space_name,
                     pc_id: result[x].pc_id,
                     pc_code: result[x].pc_code,
-                    pro_num: bck_pro_num
+                    pro_num: bck_pro_num,
+                    sort_index: result[x].sort_index
                   })
                 }
 
@@ -1091,7 +1092,7 @@ module.exports = {
                 })
 
                 let f = info_outwh_pro_space.find(f => {
-                  return f.pro_id === pro.pro_id && f.space_id === result[x].space_id && f.pc_id === result[x].pc_id
+                  return f.pro_id === pro.id && f.space_id === result[x].space_id && f.pc_id === result[x].pc_id
                 })
 
                 if (f) {
@@ -1112,7 +1113,8 @@ module.exports = {
                     space_name: result[x].space_name,
                     pc_id: result[x].pc_id,
                     pc_code: result[x].pc_code,
-                    pro_num: surplus_num
+                    pro_num: surplus_num,
+                    sort_index: result[x].sort_index
                   })
                 }
 
@@ -1133,6 +1135,30 @@ module.exports = {
         outwh_pro.pro_out_status_desc = '仓库中无此商品'
       }
     }
+
+    info_outwh_pro_space.sort((a, b) => {
+      return a.sort_index - b.sort_index
+    })
+
+    info_outwh_pro_space = info_outwh_pro_space.map(m => {
+      return {
+        o_id: m.o_id,
+        o_code: m.o_code,
+        pro_id: m.id,
+        pro_code: m.pro_code,
+        pro_name: m.pro_name,
+        pro_unit: m.pro_unit,
+        space_id: m.space_id,
+        wh_id: m.wh_id,
+        wh_name: m.wh_name,
+        area_name: m.area_name,
+        shelf_name: m.shelf_name,
+        space_name: m.space_name,
+        pc_id: m.pc_id,
+        pc_code: m.pc_code,
+        pro_num: m.pro_num
+      }
+    })
 
     // 保存出库单
     await ctx.orm().info_outwh_pro.bulkCreate(info_outwh_pros);
