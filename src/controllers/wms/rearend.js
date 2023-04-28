@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2023-04-26 13:44:29
+ * @LastEditTime: 2023-04-28 09:26:05
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/wms/rearend.js
@@ -636,8 +636,21 @@ module.exports = {
 
     assert.ok(!!al_id, '请选择入库单')
 
-    let where = {};
+    let where = {}
     Object.assign(where, al_id && { al_id })
+
+    let result = await ctx.orm().info_arrival_pro.findAll({
+      where
+    });
+
+    ctx.body = result
+  },
+  getArrivalProsByNoInSpace: async ctx => {
+    let where = {
+      pro_num: {
+        $gt: sequelize.literal(` pro_arrival_num `)
+      }
+    }
 
     let result = await ctx.orm().info_arrival_pro.findAll({
       where
@@ -1013,7 +1026,7 @@ module.exports = {
       if (wh_pro_nums[outwh_pro.pro_code]) {
         if (wh_pro_nums[outwh_pro.pro_code] >= outwh_pro.pro_num) {
           // 获取库存
-          let sql = `select wp.id, wp.space_id, wp.wh_id, wp.wh_name, wp.area_name, wp.shelf_name, wp.space_name, wp.pc_id, wp.pc_code, wp.pro_num, wp.pre_pro_num, s.sort_index from info_warehouse_pro wp 
+          let sql = `select wp.id, wp.space_id, wp.wh_id, wp.wh_name, wp.area_name, wp.shelf_name, wp.space_name, wp.pc_id, wp.pc_code, wp.pro_num, wp.pre_pro_num, s.priority, s.sort_index from info_warehouse_pro wp 
           inner join info_space s on s.id = wp.space_id 
           where wp.pro_id = '${pro.id}' and wp.pro_num - wp.pre_pro_num > 0 
           order by wp.pc_id, s.priority, s.sort_index`
