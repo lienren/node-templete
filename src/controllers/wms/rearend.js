@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2023-04-28 13:27:36
+ * @LastEditTime: 2023-05-01 08:54:01
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/wms/rearend.js
@@ -1144,7 +1144,7 @@ module.exports = {
       return {
         o_id: m.o_id,
         o_code: m.o_code,
-        pro_id: m.id,
+        pro_id: m.pro_id,
         pro_code: m.pro_code,
         pro_name: m.pro_name,
         pro_unit: m.pro_unit,
@@ -1269,17 +1269,21 @@ module.exports = {
     ctx.body = {}
   },
   transferWareHousePro: async ctx => {
-    let { id, new_space_id, uname } = ctx.request.body;
+    let { id, new_space_id, transfer_num, uname } = ctx.request.body;
+
+    assert.ok(!!id, '请选择转移老货位')
+    assert.ok(!!new_space_id, '请选择转移新货位')
+    assert.ok(!!transfer_num, '请输入转移数量')
 
     let wh_pro = await ctx.orm().info_warehouse_pro.findOne({
       where: {
         id,
         pro_num: {
-          $gt: 0
+          $gte: transfer_num
         }
       }
     })
-    assert.ok(!!wh_pro, '库位上没有此商品')
+    assert.ok(!!wh_pro, '库存不足或库位上没有此商品')
 
     let new_space = await ctx.orm().info_space.findOne({
       where: {
@@ -1298,29 +1302,49 @@ module.exports = {
     })
 
     if (new_space_pro) {
-      // 商品批次存在，则更新新位置库存，删除老数据
+      // 商品批次存在，则更新新位置库存
       await ctx.orm().info_warehouse_pro.update({
-        pro_num: sequelize.literal(` pro_num + ${wh_pro.pro_num} `)
+        pro_num: sequelize.literal(` pro_num + ${transfer_num} `)
       }, {
         where: {
           id: new_space_pro.id
         }
       })
-
-      await ctx.orm().info_warehouse_pro.destroy({
-        where: {
-          id: wh_pro.id
-        }
-      })
     } else {
-      // 商品批次不存在，则更新货位
-      await ctx.orm().info_warehouse_pro.update({
+      // 商品批次不存在，则新增货位
+      await ctx.orm().info_warehouse_pro.create({
+        pro_id: wh_pro.pro_id,
+        pro_code: wh_pro.pro_code,
+        pro_name: wh_pro.pro_name,
+        pro_unit: wh_pro.pro_unit,
+        pro_num: transfer_num,
         space_id: new_space.id,
         wh_id: new_space.wh_id,
         wh_name: new_space.wh_name,
         area_name: new_space.area_name,
         shelf_name: new_space.shelf_name,
         space_name: new_space.space_name,
+        pc_id: wh_pro.pc_id,
+        pc_code: wh_pro.pc_code,
+        pre_pro_num: 0
+      }, {
+        where: {
+          id: wh_pro.id
+        }
+      })
+    }
+
+    if (wh_pro.pro_num === transfer_num) {
+      // 全部转走
+      await ctx.orm().info_warehouse_pro.destroy({
+        where: {
+          id: wh_pro.id
+        }
+      })
+    } else {
+      // 转走部分
+      await ctx.orm().info_warehouse_pro.update({
+        pro_num: sequelize.literal(` pro_num - ${transfer_num} `)
       }, {
         where: {
           id: wh_pro.id
@@ -1336,7 +1360,7 @@ module.exports = {
         pro_code: wh_pro.pro_code,
         pro_name: wh_pro.pro_name,
         pro_unit: wh_pro.pro_unit,
-        pro_num: wh_pro.pro_num,
+        pro_num: transfer_num,
         space_id: wh_pro.space_id,
         wh_id: wh_pro.wh_id,
         wh_name: wh_pro.wh_name,
@@ -1352,7 +1376,7 @@ module.exports = {
         pro_code: wh_pro.pro_code,
         pro_name: wh_pro.pro_name,
         pro_unit: wh_pro.pro_unit,
-        pro_num: wh_pro.pro_num,
+        pro_num: transfer_num,
         space_id: new_space.id,
         wh_id: new_space.wh_id,
         wh_name: new_space.wh_name,
