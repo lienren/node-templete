@@ -1,21 +1,26 @@
 const Sequelize = require('sequelize');
 module.exports = function(sequelize, DataTypes) {
-  return sequelize.define('info_arrival_pro', {
+  return sequelize.define('info_back_pro', {
     id: {
       autoIncrement: true,
       type: DataTypes.INTEGER,
       allowNull: false,
       primaryKey: true
     },
-    al_id: {
+    pc_id: {
       type: DataTypes.INTEGER,
       allowNull: true,
-      comment: "入库单编号"
+      comment: "退货单编号"
     },
-    al_code: {
+    pc_code: {
       type: DataTypes.STRING(255),
       allowNull: true,
-      comment: "入库单编码"
+      comment: "退货单编码"
+    },
+    order_code: {
+      type: DataTypes.STRING(100),
+      allowNull: true,
+      comment: "订单号"
     },
     pro_id: {
       type: DataTypes.INTEGER,
@@ -41,23 +46,18 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.INTEGER,
       allowNull: true,
       defaultValue: 0,
-      comment: "应入库数量"
+      comment: "订购数量"
+    },
+    pro_back_num: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      comment: "退货数量"
     },
     pro_arrival_num: {
       type: DataTypes.INTEGER,
       allowNull: true,
       defaultValue: 0,
-      comment: "实际入库数量"
-    },
-    pro_arrival_detail: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-      comment: "实际入库位置明细"
-    },
-    arrival_uname: {
-      type: DataTypes.STRING(100),
-      allowNull: true,
-      comment: "入库操作人"
+      comment: "已到货数量"
     },
     create_time: {
       type: DataTypes.DATE,
@@ -68,25 +68,10 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.DATE,
       allowNull: true,
       defaultValue: Sequelize.Sequelize.literal('CURRENT_TIMESTAMP')
-    },
-    back_id: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      comment: "退货入库单编号"
-    },
-    back_code: {
-      type: DataTypes.STRING(100),
-      allowNull: true,
-      comment: "退货入库单编码"
-    },
-    back_order_code: {
-      type: DataTypes.STRING(100),
-      allowNull: true,
-      comment: "退货入库单订单号"
     }
   }, {
     sequelize,
-    tableName: 'info_arrival_pro',
+    tableName: 'info_back_pro',
     timestamps: false,
     indexes: [
       {
@@ -101,14 +86,14 @@ module.exports = function(sequelize, DataTypes) {
         name: "idx_pc_id",
         using: "BTREE",
         fields: [
-          { name: "al_id" },
+          { name: "pc_id" },
         ]
       },
       {
         name: "idx_pc_code",
         using: "BTREE",
         fields: [
-          { name: "al_code" },
+          { name: "pc_code" },
         ]
       },
     ]

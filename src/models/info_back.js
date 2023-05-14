@@ -1,61 +1,57 @@
 const Sequelize = require('sequelize');
 module.exports = function(sequelize, DataTypes) {
-  return sequelize.define('info_outwh_pro', {
+  return sequelize.define('info_back', {
     id: {
       autoIncrement: true,
       type: DataTypes.INTEGER,
       allowNull: false,
       primaryKey: true
     },
-    o_id: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      comment: "出库单编号"
-    },
-    o_code: {
+    pc_code: {
       type: DataTypes.STRING(100),
       allowNull: true,
-      comment: "出库单编码"
+      comment: "退货单编码"
     },
-    order_code: {
+    pc_desc: {
+      type: DataTypes.STRING(200),
+      allowNull: true,
+      comment: "退货单描述"
+    },
+    pc_uname: {
       type: DataTypes.STRING(100),
       allowNull: true,
-      comment: "订单编号"
+      comment: "制单人"
     },
-    pro_code: {
-      type: DataTypes.STRING(100),
-      allowNull: true,
-      comment: "商品编号"
-    },
-    pro_name: {
-      type: DataTypes.STRING(100),
-      allowNull: true,
-      comment: "商品名称"
-    },
-    pro_unit: {
-      type: DataTypes.STRING(20),
-      allowNull: true,
-      comment: "单位"
-    },
-    pro_num: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      comment: "商品数量"
-    },
-    pro_out_status: {
-      type: DataTypes.STRING(20),
-      allowNull: true,
-      comment: "出库状态（可出库、异常、已出库）"
-    },
-    pro_out_status_time: {
+    pc_utime: {
       type: DataTypes.DATE,
       allowNull: true,
-      comment: "出库状态时间"
+      comment: "制单时间"
     },
-    pro_out_status_desc: {
-      type: DataTypes.STRING(100),
+    pc_pro_num: {
+      type: DataTypes.INTEGER,
       allowNull: true,
-      comment: "出库状态描述"
+      comment: "商品种类数量"
+    },
+    pc_pro_total_num: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      comment: "商品退货总数量"
+    },
+    pc_pro_arrival_num: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      defaultValue: 0,
+      comment: "商品到货总数量"
+    },
+    pc_status: {
+      type: DataTypes.STRING(20),
+      allowNull: true,
+      comment: "退货单状态（未下单、退货中、全部到货、部分到货）"
+    },
+    pc_status_time: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      comment: "退货单状态变更时间"
     },
     is_del: {
       type: DataTypes.INTEGER,
@@ -75,7 +71,7 @@ module.exports = function(sequelize, DataTypes) {
     }
   }, {
     sequelize,
-    tableName: 'info_outwh_pro',
+    tableName: 'info_back',
     timestamps: false,
     indexes: [
       {
@@ -87,31 +83,31 @@ module.exports = function(sequelize, DataTypes) {
         ]
       },
       {
-        name: "idx_order_code",
+        name: "idx_pc_code",
         using: "BTREE",
         fields: [
-          { name: "order_code" },
+          { name: "pc_code" },
         ]
       },
       {
-        name: "idx_o_id",
+        name: "idx_pc_uname",
         using: "BTREE",
         fields: [
-          { name: "o_id" },
+          { name: "pc_uname" },
         ]
       },
       {
-        name: "idx_pro_code",
+        name: "idx_pc_utime",
         using: "BTREE",
         fields: [
-          { name: "pro_code" },
+          { name: "pc_utime" },
         ]
       },
       {
-        name: "idx_pro_name",
+        name: "idx_pc_status",
         using: "BTREE",
         fields: [
-          { name: "pro_name" },
+          { name: "pc_status" },
         ]
       },
     ]

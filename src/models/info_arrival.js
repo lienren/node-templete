@@ -22,6 +22,12 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true,
       comment: "入库总数量"
     },
+    al_type: {
+      type: DataTypes.STRING(20),
+      allowNull: true,
+      defaultValue: "采购入库单",
+      comment: "入库类型（采购入库单、退货入库单）"
+    },
     al_status: {
       type: DataTypes.STRING(20),
       allowNull: true,

@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2023-05-01 08:54:01
+ * @LastEditTime: 2023-05-14 17:04:59
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/wms/rearend.js
@@ -706,11 +706,55 @@ module.exports = {
     })
     assert.ok(!!space_id, '请选择入库货位')
 
+    let pc_id = al.pc_id
+    let pc_code = al.pc_code
+
+    // 如果是退货入库单，则取出库时最早的采购入库批次
+    if (al.al_type === '退货入库单') {
+      let back_pro = await ctx.orm().info_back_pro.findOne({
+        where: {
+          pc_id: al_pro.back_id,
+          pc_code: al_pro.back_code,
+          pro_id: pro_id
+        }
+      })
+
+      if (back_pro) {
+        let order_code = back_pro.order_code
+        let out_pro = await ctx.orm().info_outwh_pro.findOne({
+          limit: 1,
+          where: {
+            order_code: order_code,
+            pro_code: al_pro.pro_code,
+            is_del: 0
+          },
+          order: [['o_id', 'desc']]
+        })
+
+        if (out_pro) {
+          let out_pro_space = await ctx.orm().info_outwh_pro_space.findOne({
+            limit: 1,
+            where: {
+              o_id: out_pro.o_id,
+              o_code: out_pro.o_code,
+              pro_code: al_pro.pro_code
+            },
+            order: [['id']]
+          })
+
+          if (out_pro_space) {
+            pc_id = out_pro_space.pc_id
+            pc_code = out_pro_space.pc_code
+          }
+        }
+      }
+    }
+
     let wh_pro = await ctx.orm().info_warehouse_pro.findOne({
       where: {
         pro_id: al_pro.pro_id,
         space_id: space.id,
-        pc_id: al.pc_id
+        pc_id: pc_id
       }
     })
 
@@ -735,8 +779,8 @@ module.exports = {
         area_name: space.area_name,
         shelf_name: space.shelf_name,
         space_name: space.space_name,
-        pc_id: al.pc_id,
-        pc_code: al.pc_code,
+        pc_id: pc_id,
+        pc_code: pc_code,
         pre_pro_num: 0
       })
     }
@@ -860,6 +904,47 @@ module.exports = {
     });
 
     ctx.body = result
+  },
+  getOutProsByOrderCode: async ctx => {
+    let { order_code } = ctx.request.body;
+
+    let where = { is_del: 0 }
+    Object.assign(where, order_code && { order_code })
+
+    let result = await ctx.orm().info_outwh_pro.findAll({
+      attributes: ['pro_code', 'pro_name', 'pro_num', 'pro_unit'],
+      where,
+      order: [['pro_code']]
+    });
+
+    if (result && result.length > 0) {
+      let pros = await ctx.orm().info_pro.findAll({
+        where: {
+          pro_code: {
+            $in: result.map(m => {
+              return m.dataValues.pro_code
+            })
+          }
+        }
+      })
+
+      if (pros && pros.length > 0) {
+        ctx.body = pros.map(m => {
+          let f = result.find(f => f.dataValues.pro_code === m.dataValues.pro_code)
+          return {
+            pro_id: m.dataValues.id,
+            pro_code: m.dataValues.pro_code,
+            pro_name: m.dataValues.pro_name,
+            pro_num: f ? f.pro_num : 0,
+            pro_unit: m.dataValues.pro_unit
+          }
+        })
+      } else {
+        ctx.body = []
+      }
+    } else {
+      ctx.body = []
+    }
   },
   getOutProSpaces: async ctx => {
     let { o_id } = ctx.request.body;
@@ -1388,5 +1473,237 @@ module.exports = {
         pre_pro_num: 0,
       })
     })
-  }
+  },
+  searchOutOrders: async ctx => {
+    let { keywords, pageSize } = ctx.request.body;
+
+    pageSize = !pageSize ? 10 : pageSize
+
+    let where = ` where is_del=0 and order_code like '%${keywords}%' `
+    let sql = `select order_code from (select order_code from info_outwh_pro ${where} group by order_code) a limit ${pageSize}`
+
+    let result = await ctx.orm().query(sql);
+
+    ctx.body = result.map(m => {
+      return m.order_code
+    })
+  },
+  getBackOrders: async ctx => {
+    let pageIndex = ctx.request.body.pageIndex || 1;
+    let pageSize = ctx.request.body.pageSize || 20;
+    let { pc_code, pc_uname, pc_utime, pc_status } = ctx.request.body;
+
+    let where = { is_del: 0 };
+    Object.assign(where, pc_code && { pc_code })
+    Object.assign(where, pc_uname && { pc_uname })
+    Object.assign(where, pc_utime && { pc_utime: { $between: pc_utime } })
+    Object.assign(where, pc_status && { pc_status })
+
+    let result = await ctx.orm().info_back.findAndCountAll({
+      offset: (pageIndex - 1) * pageSize,
+      limit: pageSize,
+      where,
+      order: [
+        ['id', 'desc']
+      ]
+    });
+
+    ctx.body = {
+      total: result.count,
+      list: result.rows,
+      pageIndex,
+      pageSize
+    }
+  },
+  submitBackOrder: async ctx => {
+    let { id, pc_code, pc_desc, pc_uname, pc_utime, pc_pros } = ctx.request.body;
+
+    assert.ok(!!pc_code, '请填写退货单编码')
+    assert.ok(!!pc_pros, '请填写退货商品信息')
+    assert.ok(pc_pros.length > 0, '请填写退货商品信息')
+
+    let pc_status = '退货中'
+    let pc_pro_num = pc_pros.length
+    let pc_pro_total_num = pc_pros.reduce((pre, curr, index) => {
+      pre += curr.pro_back_num
+      return pre
+    }, 0)
+
+    let pc = null
+    if (id) {
+      await ctx.orm().info_back.update({
+        pc_code, pc_desc, pc_uname, pc_utime, pc_status,
+        pc_pro_num: pc_pro_num,
+        pc_pro_total_num: pc_pro_total_num,
+        pc_pro_arrival_num: 0,
+        is_del: 0
+      }, {
+        where: { id, is_del: 0 }
+      })
+
+      await ctx.orm().info_back_pro.destroy({
+        where: {
+          pc_id: id
+        }
+      })
+
+      pc = await ctx.orm().info_back.findOne({
+        where: {
+          id, is_del: 0
+        }
+      })
+    } else {
+      pc = await ctx.orm().info_back.create({
+        pc_code, pc_desc, pc_uname, pc_utime, pc_status,
+        pc_pro_num: pc_pro_num,
+        pc_pro_total_num: pc_pro_total_num,
+        pc_pro_arrival_num: 0,
+        pc_status_time: date.formatDate(),
+        is_del: 0
+      })
+    }
+
+    if (pc && pc.id) {
+      let data = pc_pros.map(m => {
+        return {
+          ...m,
+          pc_id: pc.id,
+          pc_code: pc.pc_code,
+          pro_arrival_num: 0
+        }
+      })
+
+      await ctx.orm().info_back_pro.bulkCreate(data);
+    }
+
+    ctx.body = {}
+  },
+  submitBackOrderStatus: async ctx => {
+    let { id, pc_status } = ctx.request.body;
+
+    assert.ok(!!id, '请选择退货单')
+    assert.ok(!!pc_status, '请选择退货单状态')
+
+    await ctx.orm().info_back.update({
+      pc_status,
+      pc_status_time: date.formatDate()
+    }, {
+      where: {
+        id: id,
+        is_del: 0
+      }
+    })
+
+    ctx.body = {}
+  },
+  delBackOrder: async ctx => {
+    let { id } = ctx.request.body;
+
+    await ctx.orm().info_back.update({
+      is_del: 1
+    }, {
+      where: { id }
+    });
+
+    ctx.body = {}
+  },
+  getBackOrderPros: async ctx => {
+    let { pc_id } = ctx.request.body;
+
+    assert.ok(!!pc_id, '请选择退货单')
+
+    let where = {};
+    Object.assign(where, pc_id && { pc_id })
+
+    let result = await ctx.orm().info_back_pro.findAll({
+      where
+    });
+
+    ctx.body = result
+  },
+  submitBackOrderArrival: async ctx => {
+    let { id, pc_id, pc_code, al_code, al_desc, al_uname, pc_pros } = ctx.request.body;
+
+    assert.ok(!!id, '请选择退货单')
+    assert.ok(!!al_code, '请填写入库单编码')
+    assert.ok(!!pc_pros, '请填写退货商品信息')
+    assert.ok(pc_pros.length > 0, '请填写退货商品信息')
+
+    let arrival_pros = pc_pros.filter(f => f.arrival_num > 0)
+    assert.ok(arrival_pros.length > 0, '请设置商品到货数量')
+
+    let al_status = '未入库'
+    let al_pro_total_num = arrival_pros.reduce((pre, curr, index) => {
+      pre += curr.arrival_num
+      return pre
+    }, 0)
+    assert.ok(!!al_pro_total_num, '请设置商品到货数量')
+
+
+    let al = await ctx.orm().info_arrival.create({
+      al_code, al_desc, al_uname, al_pro_total_num,
+      al_status,
+      al_status_time: date.formatDate(),
+      pc_id, pc_code,
+      is_del: 0,
+      al_type: '退货入库单'
+    })
+
+
+    if (al && al.id) {
+      let data = arrival_pros.map(m => {
+        return {
+          al_id: al.id,
+          al_code: al.al_code,
+          pro_id: m.pro_id,
+          pro_code: m.pro_code,
+          pro_name: m.pro_name,
+          pro_unit: m.pro_unit,
+          pro_num: m.arrival_num,
+          pro_arrival_num: 0,
+          pro_arrival_detail: '[]',
+          back_id: pc_id,
+          back_code: pc_code,
+          back_order_code: m.order_code
+        }
+      })
+
+      await ctx.orm().info_arrival_pro.bulkCreate(data);
+
+      // 更新入库单到货数量
+      let pc = await ctx.orm().info_back.findOne({
+        where: {
+          id,
+          is_del: 0
+        }
+      })
+
+      if (pc) {
+        let pc_pro_arrival_num = pc.pc_pro_arrival_num + al_pro_total_num
+        let pc_status = pc_pro_arrival_num >= pc.pc_pro_total_num ? '全部到货' : '部分到货'
+        await ctx.orm().info_back.update({
+          pc_pro_arrival_num: pc_pro_arrival_num,
+          pc_status: pc_status,
+          pc_status_time: date.formatDate()
+        }, {
+          where: {
+            id: pc.id
+          }
+        })
+
+        for (let i = 0, j = arrival_pros.length; i < j; i++) {
+          await ctx.orm().info_back_pro.update({
+            pro_arrival_num: sequelize.literal(` pro_arrival_num + ${arrival_pros[i].arrival_num} `)
+          }, {
+            where: {
+              id: arrival_pros[i].id,
+              pc_id: pc.id
+            }
+          })
+        }
+      }
+    }
+
+    ctx.body = {}
+  },
 };
