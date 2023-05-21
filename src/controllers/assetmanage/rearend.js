@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2023-04-23 09:35:29
+ * @LastEditTime: 2023-05-18 10:59:26
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/assetmanage/rearend.js
@@ -1917,8 +1917,7 @@ module.exports = {
     let result = await ctx.orm().info_house_contract.findAndCountAll({
       offset: (pageIndex - 1) * pageSize,
       limit: pageSize,
-      where,
-      order: [['id', 'desc']]
+      where
     });
 
     ctx.body = {
