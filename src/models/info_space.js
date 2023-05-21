@@ -32,6 +32,12 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true,
       comment: "货位名称"
     },
+    space_type: {
+      type: DataTypes.STRING(20),
+      allowNull: true,
+      defaultValue: "正常货位",
+      comment: "货位类型"
+    },
     sort_index: {
       type: DataTypes.INTEGER,
       allowNull: true,
@@ -77,6 +83,20 @@ module.exports = function(sequelize, DataTypes) {
         using: "BTREE",
         fields: [
           { name: "wh_id" },
+        ]
+      },
+      {
+        name: "idx_space_type",
+        using: "BTREE",
+        fields: [
+          { name: "space_type" },
+        ]
+      },
+      {
+        name: "idx_space_name",
+        using: "BTREE",
+        fields: [
+          { name: "space_name" },
         ]
       },
     ]

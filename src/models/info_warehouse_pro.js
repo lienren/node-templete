@@ -118,6 +118,13 @@ module.exports = function(sequelize, DataTypes) {
           { name: "pro_code" },
         ]
       },
+      {
+        name: "idx_space_name",
+        using: "BTREE",
+        fields: [
+          { name: "space_name" },
+        ]
+      },
     ]
   });
 };

@@ -105,6 +105,27 @@ module.exports = function(sequelize, DataTypes) {
           { name: "id" },
         ]
       },
+      {
+        name: "idx_o_id",
+        using: "BTREE",
+        fields: [
+          { name: "o_id" },
+        ]
+      },
+      {
+        name: "idx_o_code",
+        using: "BTREE",
+        fields: [
+          { name: "o_code" },
+        ]
+      },
+      {
+        name: "idx_pro_code",
+        using: "BTREE",
+        fields: [
+          { name: "pro_code" },
+        ]
+      },
     ]
   });
 };

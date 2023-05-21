@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2023-05-14 17:04:59
+ * @LastEditTime: 2023-05-21 11:48:58
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/wms/rearend.js
@@ -1706,4 +1706,56 @@ module.exports = {
 
     ctx.body = {}
   },
+  getAddress: async ctx => {
+    let result = await ctx.orm().info_address.findAll()
+    ctx.body = result
+  },
+  importAddress: async ctx => {
+    let { filePath } = ctx.request.body;
+    assert.ok(!!filePath, '请选择地址文件')
+
+    let filePathObj = path.parse(filePath)
+    let filePhysicalPath = path.resolve(__dirname, `../../../assets/uploads/${filePathObj.base}`)
+    let xlsx = excel.readExcel(filePhysicalPath)
+
+    let data = xlsx.filter(f => f.length === 19).map(m => {
+      return {
+        sid: m[0].trim(),
+        phone: m[1].trim(),
+        manageType: m[2].trim(),
+        shopName: m[3].trim(),
+        brandName: m[4].trim(),
+        creditNum: m[5],
+        bossName: m[6].trim(),
+        bossPhone: m[7].trim(),
+        pca: m[8].trim(),
+        addr: m[9].trim(),
+        level: m[10],
+        accountNum: m[11],
+        orderName: m[12].trim(),
+        bdName: m[13].trim(),
+        ctime: m[14].trim(),
+        cstatus: m[15].trim(),
+        lot: m[17].trim(),
+        lat: m[18].trim()
+      }
+    });
+
+    // 删除首行
+    data.shift();
+
+    await ctx.orm().info_address.destroy({ truncate : true, cascade: false });
+
+    console.log('导入地址数据数量:', data.length)
+
+    await ctx.orm().info_address.bulkCreate(data);
+
+    // 删除文件
+    fs.unlink(filePath, function (error) {
+      console.log('delete import excel file error:', error)
+      return false
+    })
+
+    ctx.body = {};
+  }
 };

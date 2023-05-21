@@ -9,6 +9,7 @@ var _SuperManagerLoginfo = require("./SuperManagerLoginfo");
 var _SuperManagerRoleInfo = require("./SuperManagerRoleInfo");
 var _SuperRoleInfo = require("./SuperRoleInfo");
 var _SuperRoleMenuInfo = require("./SuperRoleMenuInfo");
+var _info_address = require("./info_address");
 var _info_arrival = require("./info_arrival");
 var _info_arrival_pro = require("./info_arrival_pro");
 var _info_back = require("./info_back");
@@ -37,6 +38,7 @@ function initModels(sequelize) {
   var SuperManagerRoleInfo = _SuperManagerRoleInfo(sequelize, DataTypes);
   var SuperRoleInfo = _SuperRoleInfo(sequelize, DataTypes);
   var SuperRoleMenuInfo = _SuperRoleMenuInfo(sequelize, DataTypes);
+  var info_address = _info_address(sequelize, DataTypes);
   var info_arrival = _info_arrival(sequelize, DataTypes);
   var info_arrival_pro = _info_arrival_pro(sequelize, DataTypes);
   var info_back = _info_back(sequelize, DataTypes);
@@ -66,6 +68,7 @@ function initModels(sequelize) {
     SuperManagerRoleInfo,
     SuperRoleInfo,
     SuperRoleMenuInfo,
+    info_address,
     info_arrival,
     info_arrival_pro,
     info_back,
