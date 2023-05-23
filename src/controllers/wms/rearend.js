@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2023-05-21 11:48:58
+ * @LastEditTime: 2023-05-22 19:58:40
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/wms/rearend.js
@@ -1718,33 +1718,39 @@ module.exports = {
     let filePhysicalPath = path.resolve(__dirname, `../../../assets/uploads/${filePathObj.base}`)
     let xlsx = excel.readExcel(filePhysicalPath)
 
-    let data = xlsx.filter(f => f.length === 19).map(m => {
-      return {
-        sid: m[0].trim(),
-        phone: m[1].trim(),
-        manageType: m[2].trim(),
-        shopName: m[3].trim(),
-        brandName: m[4].trim(),
-        creditNum: m[5],
-        bossName: m[6].trim(),
-        bossPhone: m[7].trim(),
-        pca: m[8].trim(),
-        addr: m[9].trim(),
-        level: m[10],
-        accountNum: m[11],
-        orderName: m[12].trim(),
-        bdName: m[13].trim(),
-        ctime: m[14].trim(),
-        cstatus: m[15].trim(),
-        lot: m[17].trim(),
-        lat: m[18].trim()
+    let data = []
+    for (let i = 0, j = xlsx.length; i < j; i++) {
+      if (i < 2) {
+        continue
       }
-    });
 
-    // 删除首行
-    data.shift();
+      let m = xlsx[i]
 
-    await ctx.orm().info_address.destroy({ truncate : true, cascade: false });
+      if (m[19] && m[20]) {
+        data.push({
+          sid: m[26],
+          phone: m[2].trim(),
+          manageType: m[5].trim(),
+          shopName: m[3].trim(),
+          brandName: '',
+          creditNum: 0,
+          bossName: m[4],
+          bossPhone: m[2].trim(),
+          pca: m[17].trim(),
+          addr: m[18].trim(),
+          level: '',
+          accountNum: 0,
+          orderName: '',
+          bdName: '',
+          ctime: m[15].trim(),
+          cstatus: '',
+          lot: m[20],
+          lat: m[19]
+        })
+      }
+    }
+
+    await ctx.orm().info_address.destroy({ truncate: true, cascade: false });
 
     console.log('导入地址数据数量:', data.length)
 
