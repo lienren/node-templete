@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2023-05-22 19:58:40
+ * @LastEditTime: 2023-05-24 14:56:34
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/wms/rearend.js
@@ -1000,6 +1000,9 @@ module.exports = {
           $in: orders.map(m => {
             return m.pro_code
           })
+        },
+        area_name: {
+          $ne: 'D区'  // 异常区域
         }
       }
     })
@@ -1081,6 +1084,9 @@ module.exports = {
           $in: info_outwh_pros.map(m => {
             return m.pro_code
           })
+        },
+        area_name: {
+          $ne: 'D区'  // 异常区域
         }
       }
     })
@@ -1110,11 +1116,18 @@ module.exports = {
 
       if (wh_pro_nums[outwh_pro.pro_code]) {
         if (wh_pro_nums[outwh_pro.pro_code] >= outwh_pro.pro_num) {
-          // 获取库存
+          // 获取库存（无批次取货）
+          let sql = `select wp.id, wp.space_id, wp.wh_id, wp.wh_name, wp.area_name, wp.shelf_name, wp.space_name, wp.pc_id, wp.pc_code, wp.pro_num, wp.pre_pro_num, s.priority, s.sort_index from info_warehouse_pro wp 
+          inner join info_space s on s.id = wp.space_id 
+          where wp.pro_id = '${pro.id}' and wp.pro_num - wp.pre_pro_num > 0 
+          order by s.priority, s.sort_index`
+          /*
+          // 获取库存（批次取货）
           let sql = `select wp.id, wp.space_id, wp.wh_id, wp.wh_name, wp.area_name, wp.shelf_name, wp.space_name, wp.pc_id, wp.pc_code, wp.pro_num, wp.pre_pro_num, s.priority, s.sort_index from info_warehouse_pro wp 
           inner join info_space s on s.id = wp.space_id 
           where wp.pro_id = '${pro.id}' and wp.pro_num - wp.pre_pro_num > 0 
           order by wp.pc_id, s.priority, s.sort_index`
+          */
           let result = await ctx.orm().query(sql)
 
           if (result && result.length > 0) {
