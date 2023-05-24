@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2023-05-24 14:56:34
+ * @LastEditTime: 2023-05-24 16:22:00
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/wms/rearend.js
@@ -646,11 +646,19 @@ module.exports = {
     ctx.body = result
   },
   getArrivalProsByNoInSpace: async ctx => {
+    let { al_code, pro_code } = ctx.request.body;
+    
     let where = {
       pro_num: {
         $gt: sequelize.literal(` pro_arrival_num `)
+      },
+      al_id: {
+        $in: sequelize.literal(` (select id from info_arrival where is_del = 0) `)
       }
     }
+
+    Object.assign(where, al_code && { al_code })
+    Object.assign(where, pro_code && { pro_code })
 
     let result = await ctx.orm().info_arrival_pro.findAll({
       where
