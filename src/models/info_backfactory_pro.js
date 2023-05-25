@@ -1,11 +1,21 @@
 const Sequelize = require('sequelize');
 module.exports = function(sequelize, DataTypes) {
-  return sequelize.define('info_warehouse_pro', {
+  return sequelize.define('info_backfactory_pro', {
     id: {
       autoIncrement: true,
       type: DataTypes.INTEGER,
       allowNull: false,
       primaryKey: true
+    },
+    bf_id: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      comment: "返厂单编号"
+    },
+    bf_code: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
+      comment: "返厂单编码"
     },
     pro_id: {
       type: DataTypes.INTEGER,
@@ -31,7 +41,7 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.INTEGER,
       allowNull: true,
       defaultValue: 0,
-      comment: "库存"
+      comment: "返厂数量"
     },
     space_id: {
       type: DataTypes.INTEGER,
@@ -73,12 +83,6 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true,
       comment: "采购单编码"
     },
-    pre_pro_num: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      defaultValue: 0,
-      comment: "预占库存"
-    },
     create_time: {
       type: DataTypes.DATE,
       allowNull: true,
@@ -91,7 +95,7 @@ module.exports = function(sequelize, DataTypes) {
     }
   }, {
     sequelize,
-    tableName: 'info_warehouse_pro',
+    tableName: 'info_backfactory_pro',
     timestamps: false,
     indexes: [
       {
@@ -103,33 +107,17 @@ module.exports = function(sequelize, DataTypes) {
         ]
       },
       {
-        name: "idx_pro",
+        name: "idx_pc_id",
         using: "BTREE",
         fields: [
-          { name: "pro_id" },
-          { name: "space_id" },
-          { name: "pc_id" },
+          { name: "bf_id" },
         ]
       },
       {
-        name: "idx_pro_code",
+        name: "idx_pc_code",
         using: "BTREE",
         fields: [
-          { name: "pro_code" },
-        ]
-      },
-      {
-        name: "idx_space_name",
-        using: "BTREE",
-        fields: [
-          { name: "space_name" },
-        ]
-      },
-      {
-        name: "idx_area_name",
-        using: "BTREE",
-        fields: [
-          { name: "area_name" },
+          { name: "bf_code" },
         ]
       },
     ]

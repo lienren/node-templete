@@ -14,6 +14,8 @@ var _info_arrival = require("./info_arrival");
 var _info_arrival_pro = require("./info_arrival_pro");
 var _info_back = require("./info_back");
 var _info_back_pro = require("./info_back_pro");
+var _info_backfactory = require("./info_backfactory");
+var _info_backfactory_pro = require("./info_backfactory_pro");
 var _info_outwh = require("./info_outwh");
 var _info_outwh_pro = require("./info_outwh_pro");
 var _info_outwh_pro_space = require("./info_outwh_pro_space");
@@ -43,6 +45,8 @@ function initModels(sequelize) {
   var info_arrival_pro = _info_arrival_pro(sequelize, DataTypes);
   var info_back = _info_back(sequelize, DataTypes);
   var info_back_pro = _info_back_pro(sequelize, DataTypes);
+  var info_backfactory = _info_backfactory(sequelize, DataTypes);
+  var info_backfactory_pro = _info_backfactory_pro(sequelize, DataTypes);
   var info_outwh = _info_outwh(sequelize, DataTypes);
   var info_outwh_pro = _info_outwh_pro(sequelize, DataTypes);
   var info_outwh_pro_space = _info_outwh_pro_space(sequelize, DataTypes);
@@ -73,6 +77,8 @@ function initModels(sequelize) {
     info_arrival_pro,
     info_back,
     info_back_pro,
+    info_backfactory,
+    info_backfactory_pro,
     info_outwh,
     info_outwh_pro,
     info_outwh_pro_space,

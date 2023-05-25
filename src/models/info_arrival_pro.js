@@ -111,6 +111,13 @@ module.exports = function(sequelize, DataTypes) {
           { name: "al_code" },
         ]
       },
+      {
+        name: "idx_al_id",
+        using: "BTREE",
+        fields: [
+          { name: "al_id" },
+        ]
+      },
     ]
   });
 };

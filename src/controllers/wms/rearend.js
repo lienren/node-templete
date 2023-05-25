@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2023-05-24 16:22:00
+ * @LastEditTime: 2023-05-25 14:56:55
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/wms/rearend.js
@@ -647,7 +647,7 @@ module.exports = {
   },
   getArrivalProsByNoInSpace: async ctx => {
     let { al_code, pro_code } = ctx.request.body;
-    
+
     let where = {
       pro_num: {
         $gt: sequelize.literal(` pro_arrival_num `)
@@ -1344,6 +1344,19 @@ module.exports = {
         id: outwh.id
       }
     })
+
+    // 如果是返厂出库单，已撤销情况下更新返厂单为未下单
+    if (outwh.o_type === '返厂出库单') {
+      await ctx.orm().info_backfactory.update({
+        bf_status: '未下单',
+        bf_status_time: date.formatDate()
+      }, {
+        where: {
+          id: outwh.bf_id,
+          is_del: 0
+        }
+      })
+    }
   },
   updateOutStatus: async ctx => {
     let { id, o_status } = ctx.request.body;
@@ -1351,15 +1364,36 @@ module.exports = {
     assert.ok(!!id, '请选择出库单编号')
     assert.ok(!!o_status, '请选择出库单状态')
 
+    let outwh = await ctx.orm().info_outwh.findOne({
+      where: {
+        id: id,
+        is_del: 0
+      }
+    })
+    assert.ok(!!outwh, '出库单不存在')
+
     await ctx.orm().info_outwh.update({
       o_status,
       o_status_time: date.formatDate()
     }, {
       where: {
-        id,
+        id: outwh.id,
         is_del: 0
       }
     });
+
+    // 如果是返厂出库单，已出库情况下更新返厂单
+    if (o_status === '已出库' && outwh.o_type === '返厂出库单') {
+      await ctx.orm().info_backfactory.update({
+        bf_status: '已出库',
+        bf_status_time: date.formatDate()
+      }, {
+        where: {
+          id: outwh.bf_id,
+          is_del: 0
+        }
+      })
+    }
 
     ctx.body = {}
   },
@@ -1784,5 +1818,295 @@ module.exports = {
     })
 
     ctx.body = {};
+  },
+  getBackFactorys: async ctx => {
+    let pageIndex = ctx.request.body.pageIndex || 1;
+    let pageSize = ctx.request.body.pageSize || 20;
+    let { bf_code, bf_uname, bf_utime, bf_status } = ctx.request.body;
+
+    let where = { is_del: 0 };
+    Object.assign(where, bf_code && { bf_code })
+    Object.assign(where, bf_uname && { bf_uname })
+    Object.assign(where, bf_utime && { bf_utime: { $between: bf_utime } })
+    Object.assign(where, bf_status && { bf_status })
+
+    let result = await ctx.orm().info_backfactory.findAndCountAll({
+      offset: (pageIndex - 1) * pageSize,
+      limit: pageSize,
+      where,
+      order: [
+        ['id', 'desc']
+      ]
+    });
+
+    ctx.body = {
+      total: result.count,
+      list: result.rows,
+      pageIndex,
+      pageSize
+    }
+  },
+  getBackFactoryPros: async ctx => {
+    let { bf_id } = ctx.request.body;
+
+    assert.ok(!!bf_id, '请选择返厂单')
+
+    let where = {};
+    Object.assign(where, bf_id && { bf_id })
+
+    let result = await ctx.orm().info_backfactory_pro.findAll({
+      where
+    });
+
+    ctx.body = result
+  },
+  submitBackFactory: async ctx => {
+    let { id, bf_code, bf_desc, bf_uname, bf_utime, bf_pros } = ctx.request.body;
+
+    assert.ok(!!bf_code, '请填写返厂单编码')
+    assert.ok(!!bf_pros, '请填写返厂单商品信息')
+    assert.ok(bf_pros.length > 0, '请填写返厂单商品信息')
+
+    let bf_status = '未下单'
+    let bf_pro_num = bf_pros.length
+    let bf_pro_total_num = bf_pros.reduce((pre, curr, index) => {
+      pre += curr.bf_num
+      return pre
+    }, 0)
+
+    let bf = null
+
+    if (id) {
+      // 更新
+      await ctx.orm().info_backfactory.update({
+        bf_code, bf_desc, bf_uname, bf_utime, bf_status,
+        bf_pro_num: bf_pro_num,
+        bf_pro_total_num: bf_pro_total_num,
+        bf_status_time: date.formatDate(),
+        is_del: 0
+      }, {
+        where: { id, is_del: 0 }
+      })
+
+      await ctx.orm().info_backfactory_pro.destroy({
+        where: {
+          bf_id: id
+        }
+      })
+
+      bf = await ctx.orm().info_backfactory.findOne({
+        where: {
+          id, is_del: 0
+        }
+      })
+    } else {
+      // 新增
+      bf = await ctx.orm().info_backfactory.create({
+        bf_code, bf_desc, bf_uname, bf_utime, bf_status,
+        bf_pro_num: bf_pro_num,
+        bf_pro_total_num: bf_pro_total_num,
+        bf_status_time: date.formatDate(),
+        is_del: 0
+      })
+    }
+
+    if (bf && bf.id) {
+      let data = bf_pros.map(m => {
+        return {
+          ...m,
+          bf_id: bf.id,
+          bf_code: bf.bf_code,
+          pro_num: m.bf_num
+        }
+      })
+
+      await ctx.orm().info_backfactory_pro.bulkCreate(data);
+    }
+  },
+  submitBackFactoryToOut: async ctx => {
+    let { id, bf_uname } = ctx.request.body;
+
+    let bf = await ctx.orm().info_backfactory.findOne({
+      where: {
+        id,
+        is_del: 0
+      }
+    })
+    assert.ok(!!bf, '请选择返厂单')
+    let bf_pros = await ctx.orm().info_backfactory_pro.findAll({
+      where: {
+        bf_id: bf.id
+      }
+    })
+    assert.ok(bf_pros.length > 0, '返厂单中没有商品信息')
+
+    let o_code = `CK${date.formatDate(new Date(), 'yyyyMMddhhmmss')}`
+    let o_uname = bf_uname
+    let o_pro_num = bf.bf_pro_num
+
+    let outwh = await ctx.orm().info_outwh.create({
+      o_code: o_code,
+      o_type: '返厂出库单',
+      o_order_num: 1,
+      o_pro_num: o_pro_num,
+      o_status: '未出库',
+      o_status_time: date.formatDate(),
+      o_uname,
+      bf_id: bf.id,
+      bf_code: bf.bf_code,
+      is_del: 0
+    })
+
+    // 合并商品
+    let bf_merge_pros_sql = `select pro_id, pro_code, pro_name, pro_unit, sum(pro_num) pro_num from info_backfactory_pro where bf_id = ${bf.id} group by pro_id, pro_code, pro_name, pro_unit`
+    let bf_merge_pros = await ctx.orm().query(bf_merge_pros_sql)
+
+    let info_outwh_pros = bf_merge_pros.map(m => {
+      return {
+        o_id: outwh.id,
+        o_code: outwh.o_code,
+        order_code: outwh.o_code,
+        pro_code: m.pro_code,
+        pro_name: m.pro_name,
+        pro_unit: m.pro_unit,
+        pro_num: m.pro_num,
+        pro_out_status: '正常',
+        pro_out_status_time: date.formatDate(),
+        pro_out_status_desc: '库存充足',
+        is_del: 0
+      }
+    })
+
+    let info_outwh_pro_space = []
+
+    // 验证库存是否满足
+    for (let i = 0, j = bf_pros.length; i < j; i++) {
+      let bf_pro = bf_pros[i].dataValues
+
+      let wh_pro = await ctx.orm().info_warehouse_pro.findOne({
+        where: {
+          pro_id: bf_pro.pro_id,
+          space_id: bf_pro.space_id,
+          pc_id: bf_pro.pc_id,
+          pro_num: {
+            $gt: 0
+          }
+        }
+      })
+
+      if (wh_pro && wh_pro.pro_num >= bf_pro.pro_num) {
+        // 库存足够
+        let update_wh_pro_num = await ctx.orm().info_warehouse_pro.update({
+          pro_num: sequelize.literal(` pro_num - ${bf_pro.pro_num} `)
+        }, {
+          where: {
+            id: wh_pro.id
+          }
+        })
+
+        let space = await ctx.orm().info_space.findOne({
+          where: {
+            id: wh_pro.space_id
+          }
+        })
+
+        info_outwh_pro_space.push({
+          o_id: outwh.id,
+          o_code: outwh.o_code,
+          pro_id: wh_pro.pro_id,
+          pro_code: wh_pro.pro_code,
+          pro_name: wh_pro.pro_name,
+          pro_unit: wh_pro.pro_unit,
+          space_id: wh_pro.space_id,
+          wh_id: wh_pro.wh_id,
+          wh_name: wh_pro.wh_name,
+          area_name: wh_pro.area_name,
+          shelf_name: wh_pro.shelf_name,
+          space_name: wh_pro.space_name,
+          pc_id: wh_pro.pc_id,
+          pc_code: wh_pro.pc_code,
+          pro_num: bf_pro.pro_num,
+          sort_index: space.sort_index
+        })
+      } else {
+        let f = info_outwh_pros.find(f => f.pro_code === bf_pro.pro_code)
+        if (f) {
+          f.pro_out_status = '异常'
+          f.pro_out_status_desc = '商品不存在或库存不足'
+        }
+      }
+    }
+
+    info_outwh_pro_space.sort((a, b) => {
+      return a.sort_index - b.sort_index
+    })
+
+    info_outwh_pro_space = info_outwh_pro_space.map(m => {
+      return {
+        o_id: m.o_id,
+        o_code: m.o_code,
+        pro_id: m.pro_id,
+        pro_code: m.pro_code,
+        pro_name: m.pro_name,
+        pro_unit: m.pro_unit,
+        space_id: m.space_id,
+        wh_id: m.wh_id,
+        wh_name: m.wh_name,
+        area_name: m.area_name,
+        shelf_name: m.shelf_name,
+        space_name: m.space_name,
+        pc_id: m.pc_id,
+        pc_code: m.pc_code,
+        pro_num: m.pro_num
+      }
+    })
+
+    // 保存出库单
+    await ctx.orm().info_outwh_pro.bulkCreate(info_outwh_pros);
+    await ctx.orm().info_outwh_pro_space.bulkCreate(info_outwh_pro_space);
+
+    await ctx.orm().info_outwh.update({
+      o_status: '拣货中',
+      o_status_time: date.formatDate()
+    }, {
+      where: {
+        id: outwh.id
+      }
+    })
+
+    await ctx.orm().info_backfactory.update({
+      bf_status: '拣货中',
+      bf_status_time: date.formatDate()
+    }, {
+      where: {
+        id: bf.id
+      }
+    })
+
+    ctx.body = {}
+  },
+  delBackFactorys: async ctx => {
+    let { id } = ctx.request.body;
+
+    await ctx.orm().info_backfactory.update({
+      is_del: 1
+    }, {
+      where: { id }
+    });
+
+    ctx.body = {}
+  },
+  confirmBackFactory: async ctx => {
+    let { id, bf_express_company, bf_express_code, bf_express_sendtime } = ctx.request.body;
+
+    await ctx.orm().info_backfactory.update({
+      bf_status: '已返厂',
+      bf_status_time: date.formatDate(),
+      bf_express_company, bf_express_code, bf_express_sendtime
+    }, {
+      where: { id }
+    });
+
+    ctx.body = {}
   }
 };

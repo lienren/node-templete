@@ -1,83 +1,72 @@
 const Sequelize = require('sequelize');
 module.exports = function(sequelize, DataTypes) {
-  return sequelize.define('info_warehouse_pro', {
+  return sequelize.define('info_backfactory', {
     id: {
       autoIncrement: true,
       type: DataTypes.INTEGER,
       allowNull: false,
       primaryKey: true
     },
-    pro_id: {
+    bf_code: {
+      type: DataTypes.STRING(100),
+      allowNull: true,
+      comment: "返厂单编码"
+    },
+    bf_desc: {
+      type: DataTypes.STRING(200),
+      allowNull: true,
+      comment: "返厂单描述"
+    },
+    bf_uname: {
+      type: DataTypes.STRING(100),
+      allowNull: true,
+      comment: "制单人"
+    },
+    bf_utime: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      comment: "制单时间"
+    },
+    bf_pro_num: {
       type: DataTypes.INTEGER,
       allowNull: true,
-      comment: "商品编号"
+      comment: "商品种类数量"
     },
-    pro_code: {
-      type: DataTypes.STRING(100),
+    bf_pro_total_num: {
+      type: DataTypes.INTEGER,
       allowNull: true,
-      comment: "商品编码"
+      comment: "商品返厂总数量"
     },
-    pro_name: {
-      type: DataTypes.STRING(100),
-      allowNull: true,
-      comment: "商品名称"
-    },
-    pro_unit: {
+    bf_status: {
       type: DataTypes.STRING(20),
       allowNull: true,
-      comment: "单位"
+      comment: "返厂单状态（未下单、拣货中、已出库、已返厂）"
     },
-    pro_num: {
+    bf_status_time: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      comment: "返厂单状态变更时间"
+    },
+    bf_express_company: {
+      type: DataTypes.STRING(100),
+      allowNull: true,
+      comment: "物流公司"
+    },
+    bf_express_code: {
+      type: DataTypes.STRING(100),
+      allowNull: true,
+      comment: "物流单号"
+    },
+    bf_express_sendtime: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      comment: "物流发送时间"
+    },
+    is_del: {
       type: DataTypes.INTEGER,
       allowNull: true,
       defaultValue: 0,
-      comment: "库存"
-    },
-    space_id: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      comment: "货位编号"
-    },
-    wh_id: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      comment: "库房编号"
-    },
-    wh_name: {
-      type: DataTypes.STRING(100),
-      allowNull: true,
-      comment: "库房名称"
-    },
-    area_name: {
-      type: DataTypes.STRING(100),
-      allowNull: true,
-      comment: "区位名称"
-    },
-    shelf_name: {
-      type: DataTypes.STRING(100),
-      allowNull: true,
-      comment: "货架名称"
-    },
-    space_name: {
-      type: DataTypes.STRING(100),
-      allowNull: true,
-      comment: "货位名称"
-    },
-    pc_id: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      comment: "采购单编号"
-    },
-    pc_code: {
-      type: DataTypes.STRING(100),
-      allowNull: true,
-      comment: "采购单编码"
-    },
-    pre_pro_num: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      defaultValue: 0,
-      comment: "预占库存"
+      comment: "是否删除"
     },
     create_time: {
       type: DataTypes.DATE,
@@ -91,7 +80,7 @@ module.exports = function(sequelize, DataTypes) {
     }
   }, {
     sequelize,
-    tableName: 'info_warehouse_pro',
+    tableName: 'info_backfactory',
     timestamps: false,
     indexes: [
       {
@@ -103,33 +92,31 @@ module.exports = function(sequelize, DataTypes) {
         ]
       },
       {
-        name: "idx_pro",
+        name: "idx_pc_code",
         using: "BTREE",
         fields: [
-          { name: "pro_id" },
-          { name: "space_id" },
-          { name: "pc_id" },
+          { name: "bf_code" },
         ]
       },
       {
-        name: "idx_pro_code",
+        name: "idx_pc_uname",
         using: "BTREE",
         fields: [
-          { name: "pro_code" },
+          { name: "bf_uname" },
         ]
       },
       {
-        name: "idx_space_name",
+        name: "idx_pc_utime",
         using: "BTREE",
         fields: [
-          { name: "space_name" },
+          { name: "bf_utime" },
         ]
       },
       {
-        name: "idx_area_name",
+        name: "idx_pc_status",
         using: "BTREE",
         fields: [
-          { name: "area_name" },
+          { name: "bf_status" },
         ]
       },
     ]
