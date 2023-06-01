@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2023-05-25 14:56:55
+ * @LastEditTime: 2023-05-26 11:37:44
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/wms/rearend.js
@@ -118,11 +118,29 @@ module.exports = {
     let { id, pro_name, sort_first, sort_second, pro_code, pro_brand, pro_unit, pro_supplier, outside_id, spec_info } = ctx.request.body;
 
     if (id) {
+      let pro = await ctx.orm().info_pro.findOne({
+        where: {
+          id
+        }
+      })
+      
       await ctx.orm().info_pro.update({
         pro_name, sort_first, sort_second, pro_code, pro_brand, pro_unit, pro_supplier, outside_id
       }, {
         where: { id }
       })
+
+      if (pro && (pro.pro_name !== pro_name || pro.pro_unit !== pro_unit)) {
+        // 名称或规格变化时，刷新库存中信息
+        await ctx.orm().info_warehouse_pro.update({
+          pro_name: pro_name,
+          pro_unit: pro_unit
+        }, {
+          where: {
+            pro_id: pro.id
+          }
+        })
+      }
     } else {
       let pro = await ctx.orm().info_pro.create({
         pro_name, sort_first, sort_second, pro_code, pro_brand, pro_unit, pro_supplier, outside_id, is_del: 0
@@ -207,6 +225,18 @@ module.exports = {
             id: pro.id
           }
         })
+
+        if (pro && (pro.pro_name !== pros[i].pro_name || pro.pro_unit !== pros[i].pro_unit)) {
+          // 名称或规格变化时，刷新库存中信息
+          await ctx.orm().info_warehouse_pro.update({
+            pro_name: pro_name,
+            pro_unit: pro_unit
+          }, {
+            where: {
+              pro_id: pro.id
+            }
+          })
+        }
       } else {
         await ctx.orm().info_pro.create({
           ...pros[i]
