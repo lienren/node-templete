@@ -335,16 +335,37 @@ module.exports = {
     let id = ctx.request.body.id || 0;
     let code = ctx.request.body.code || '';
 
+    assert.ok(!!id, '请入参错误')
+    assert.ok(!!code, '请入参错误')
+
     let where = {
+      id,
+      openId: code,
       isDel: 0
     }
 
-    if (id > 0) {
-      where.id = id
-    }
+    let result = await ctx.orm().applyInfo.findOne({
+      where
+    })
 
-    if (code) {
-      where.code = code
+    ctx.body = {
+      ...result.dataValues,
+      _visitorTime: result.dataValues.visitorTime,
+      visitorTime: date.formatDate(result.dataValues.visitorTime, 'YYYY年MM月DD日'),
+      _visitorEndTime: result.dataValues.visitorEndTime,
+      visitorEndTime: date.formatDate(result.dataValues.visitorEndTime, 'YYYY年MM月DD日'),
+      createTime: date.formatDate(result.dataValues.createTime, 'YYYY年MM月DD日 HH:mm:ss'),
+      updateTime: date.formatDate(result.dataValues.updateTime, 'YYYY年MM月DD日 HH:mm:ss')
+    }
+  },
+  getApplyInfoVerify: async ctx => {
+    let {id, verifyAdminId1, verifyAdminId2} = ctx.request.body;
+
+    assert.ok(!!id, '请入参错误')
+
+    let where = {
+      id,
+      isDel: 0
     }
 
     let result = await ctx.orm().applyInfo.findOne({
