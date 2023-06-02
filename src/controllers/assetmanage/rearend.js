@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2023-05-18 10:59:26
+ * @LastEditTime: 2023-06-01 14:43:28
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/assetmanage/rearend.js
@@ -1892,7 +1892,7 @@ module.exports = {
   getContracts: async ctx => {
     let pageIndex = ctx.request.body.pageIndex || 1;
     let pageSize = ctx.request.body.pageSize || 50;
-    let { a15, cname, createTime, modifyTime } = ctx.request.body;
+    let { a15, cname, ctype, createTime, modifyTime } = ctx.request.body;
 
     let where = {
       isDel: 0
@@ -1904,6 +1904,10 @@ module.exports = {
 
     if (cname) {
       where.cname = cname
+    }
+
+    if (ctype) {
+      where.ctype = ctype
     }
 
     if (createTime && createTime.length === 2) {
@@ -1928,17 +1932,17 @@ module.exports = {
     }
   },
   submitContract: async ctx => {
-    let { id, cname, camount, a1, a2, a4, a5, a15, files } = ctx.request.body;
+    let { id, cname, ctype, camount, a1, a2, a4, a5, a15, yearrent, files } = ctx.request.body;
 
     if (id) {
-      await ctx.orm().info_house_contract.update({ cname, camount, a1, a2, a4, a5, a15, files }, {
+      await ctx.orm().info_house_contract.update({ cname, ctype, camount, a1, a2, a4, a5, a15, yearrent: JSON.stringify(yearrent), files }, {
         where: {
           id
         }
       })
     } else {
       await ctx.orm().info_house_contract.create({
-        cname, camount, a1, a2, a4, a5, a15, files,
+        cname, ctype, camount, a1, a2, a4, a5, a15, yearrent: JSON.stringify(yearrent), files,
         isDel: 0
       })
     }

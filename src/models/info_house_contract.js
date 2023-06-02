@@ -17,6 +17,11 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true,
       comment: "合同总金额"
     },
+    ctype: {
+      type: DataTypes.STRING(20),
+      allowNull: true,
+      comment: "合同类型"
+    },
     a1: {
       type: DataTypes.DATEONLY,
       allowNull: true,
@@ -41,6 +46,11 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING(100),
       allowNull: true,
       comment: "租赁合同编号"
+    },
+    yearrent: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+      comment: "年租金"
     },
     files: {
       type: DataTypes.TEXT,
@@ -73,6 +83,13 @@ module.exports = function(sequelize, DataTypes) {
         using: "BTREE",
         fields: [
           { name: "id" },
+        ]
+      },
+      {
+        name: "idx_ctype",
+        using: "BTREE",
+        fields: [
+          { name: "ctype" },
         ]
       },
     ]
