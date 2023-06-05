@@ -171,6 +171,11 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING(50),
       allowNull: true,
       comment: "房屋来源"
+    },
+    a22: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+      comment: "移交协议照片"
     }
   }, {
     sequelize,

@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2023-06-01 14:43:28
+ * @LastEditTime: 2023-06-05 17:59:22
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/assetmanage/rearend.js
@@ -533,7 +533,7 @@ module.exports = {
     ctx.body = {}
   },
   submitHouse: async ctx => {
-    let { id, sn, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, street, community, remark, houseType, houseRelege, houseImg } = ctx.request.body;
+    let { id, sn, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22, street, community, remark, houseType, houseRelege, houseImg } = ctx.request.body;
 
     let lon = ''
     let lat = ''
@@ -577,7 +577,7 @@ module.exports = {
       }
 
       await ctx.orm().info_house.update({
-        sn, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, street, community, remark,
+        sn, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22, street, community, remark,
         lon, lat, houseType, houseRelege, houseImg
       }, {
         where: {
@@ -601,7 +601,7 @@ module.exports = {
       }
 
       await ctx.orm().info_house.create({
-        sn, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, street, community, remark,
+        sn, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22, street, community, remark,
         lon: lon, lat: lat,
         houseType, houseRelege, houseImg,
         isDel: 0
