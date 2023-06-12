@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2023-05-26 11:37:44
+ * @LastEditTime: 2023-06-12 11:34:09
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/wms/rearend.js
@@ -1842,7 +1842,7 @@ module.exports = {
     await ctx.orm().info_address.bulkCreate(data);
 
     // 删除文件
-    fs.unlink(filePath, function (error) {
+    fs.unlink(filePhysicalPath, function (error) {
       console.log('delete import excel file error:', error)
       return false
     })
