@@ -15,6 +15,7 @@ var _info_house_check_shops = require("./info_house_check_shops");
 var _info_house_check_users = require("./info_house_check_users");
 var _info_house_contract = require("./info_house_contract");
 var _info_house_having = require("./info_house_having");
+var _info_house_update = require("./info_house_update");
 var _info_house_yearrent = require("./info_house_yearrent");
 var _info_progress = require("./info_progress");
 var _info_project_management = require("./info_project_management");
@@ -40,6 +41,7 @@ function initModels(sequelize) {
   var info_house_check_users = _info_house_check_users(sequelize, DataTypes);
   var info_house_contract = _info_house_contract(sequelize, DataTypes);
   var info_house_having = _info_house_having(sequelize, DataTypes);
+  var info_house_update = _info_house_update(sequelize, DataTypes);
   var info_house_yearrent = _info_house_yearrent(sequelize, DataTypes);
   var info_progress = _info_progress(sequelize, DataTypes);
   var info_project_management = _info_project_management(sequelize, DataTypes);
@@ -66,6 +68,7 @@ function initModels(sequelize) {
     info_house_check_users,
     info_house_contract,
     info_house_having,
+    info_house_update,
     info_house_yearrent,
     info_progress,
     info_project_management,

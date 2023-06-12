@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2023-06-05 17:59:22
+ * @LastEditTime: 2023-06-12 12:24:20
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/assetmanage/rearend.js
@@ -585,6 +585,20 @@ module.exports = {
           isDel: 0
         }
       })
+
+      house = await ctx.orm().info_house.findOne({
+        where: {
+          id,
+          isDel: 0
+        }
+      })
+
+      await ctx.orm().info_house_update.create({
+        sub_title: '更新房产资料',
+        house_id: house.id,
+        house_sub_verify: JSON.stringify(house.dataValues),
+        update_type: '更新房产内容'
+      })
     } else {
       // 重新获取经度、纬度
       let res = await http.get({
@@ -614,6 +628,7 @@ module.exports = {
     let { id, hid, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, yearrent } = ctx.request.body;
 
     let now = date.getTimeStamp()
+    let yearrent_data = []
     if (id && id > 0) {
       // 计算a3 年租金
       // 计算a6 下一期收款提醒
@@ -633,7 +648,7 @@ module.exports = {
         })
 
         if (yearrent && yearrent.length > 0) {
-          let data = yearrent.map(m => {
+          let data = yearrent_data = yearrent.map(m => {
             return {
               ...m,
               hid: hid,
@@ -642,7 +657,7 @@ module.exports = {
               a5: a5
             };
           });
-          ctx.orm().info_house_yearrent.bulkCreate(data);
+          await ctx.orm().info_house_yearrent.bulkCreate(data);
         }
       }
 
@@ -652,6 +667,22 @@ module.exports = {
         where: {
           id
         }
+      })
+
+      let house_having = await ctx.orm().info_house_having.findOne({
+        where: {
+          id
+        }
+      })
+
+      await ctx.orm().info_house_update.create({
+        sub_title: '更新房产使用情况资料',
+        house_id: house_having.id,
+        house_sub_verify: JSON.stringify({
+          ...house_having.dataValues,
+          yearrent_data: yearrent_data
+        }),
+        update_type: '更新房产使用情况内容'
       })
     } else {
       // 计算a3 年租金
@@ -680,7 +711,7 @@ module.exports = {
               a5: having.a5
             };
           });
-          ctx.orm().info_house_yearrent.bulkCreate(data);
+          await ctx.orm().info_house_yearrent.bulkCreate(data);
         }
       }
     }
@@ -744,7 +775,8 @@ module.exports = {
         sub_title: '更新项目资料',
         pro_id: project.id,
         pro_sub_verify: JSON.stringify(project.dataValues),
-        update_type: '更新项目内容'
+        update_type: '更新项目内容',
+        manage_id, manage_user
       })
     } else {
       await ctx.orm().info_projects.create({
@@ -790,7 +822,7 @@ module.exports = {
         sub_title: `项目状态从【${oldProjectStatus}】更新为【${newProjectStatus}】`,
         pro_id: project.id,
         pro_sub_verify: JSON.stringify(project.dataValues),
-        age_id: manage_id,
+        manage_id: manage_id,
         manage_user: manage_user,
         manage_remark: '',
         update_type: '项目状态更新'
@@ -831,7 +863,8 @@ module.exports = {
         sub_title: '更新项目资料',
         pro_id: project.id,
         pro_sub_verify: JSON.stringify(project.dataValues),
-        update_type: '更新项目内容'
+        update_type: '更新项目内容',
+        manage_id, manage_user
       })
     } else {
       await ctx.orm().info_projects.create({
@@ -1087,7 +1120,9 @@ module.exports = {
       sub_title: '提交审核',
       pro_id: project.id,
       pro_sub_verify: JSON.stringify(project.dataValues),
-      update_type: '更新项目内容'
+      update_type: '更新项目内容',
+      manage_id: verify_sub_manageid,
+      manage_user: verify_sub_manageuser
     })
 
     ctx.body = {}
