@@ -54,6 +54,11 @@ module.exports = function(sequelize, DataTypes) {
     manage_user: {
       type: DataTypes.STRING(100),
       allowNull: true
+    },
+    is_del: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      defaultValue: 0
     }
   }, {
     sequelize,

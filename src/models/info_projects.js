@@ -379,6 +379,11 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true,
       defaultValue: "普通项目",
       comment: "类型"
+    },
+    is_del: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      defaultValue: 0
     }
   }, {
     sequelize,

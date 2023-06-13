@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2023-06-12 12:24:20
+ * @LastEditTime: 2023-06-13 07:17:40
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/assetmanage/rearend.js
@@ -888,11 +888,11 @@ module.exports = {
     let pageSize = ctx.request.body.pageSize || 50;
     let { ptype, a5, a51, a13, pro_code, pro_name, pro_level, pro_status, pro_type, pro_source, verify_status, verify_num, create_time, update_time } = ctx.request.body;
 
-    let where = {};
+    let where = { is_del: 0 };
 
     Object.assign(where, ptype && { ptype })
     Object.assign(where, pro_code && { pro_code })
-    Object.assign(where, pro_name && { pro_name })
+    Object.assign(where, pro_name && { pro_name: { $like: `%${pro_name}%` } })
     Object.assign(where, pro_level && { pro_level })
     Object.assign(where, pro_type && { pro_type })
     Object.assign(where, pro_source && { pro_source })
@@ -964,6 +964,17 @@ module.exports = {
     let result = await ctx.orm().info_project_update.findAll({ where })
 
     ctx.body = result
+  },
+  delProject: async ctx => {
+    let { id } = ctx.request.body;
+
+    await ctx.orm().info_projects.update({
+      is_del: 1
+    }, {
+      where: { id }
+    })
+
+    ctx.body = {}
   },
   submitProgress: async ctx => {
     let { id, pro_id, p_type, p_level, p_status, p_source, p_mtype, a1, a2, a2stime, a2etime, a3, a3stime, a3etime, manage_id, manage_user } = ctx.request.body;
@@ -1315,7 +1326,9 @@ module.exports = {
     let pageSize = ctx.request.body.pageSize || 50;
     let { pro_id } = ctx.request.body;
 
-    let where = {};
+    let where = {
+      is_del: 0
+    };
 
     Object.assign(where, pro_id && { pro_id })
 
@@ -1336,7 +1349,9 @@ module.exports = {
     let pageIndex = ctx.request.body.pageIndex || 1;
     let pageSize = ctx.request.body.pageSize || 50;
 
-    let where = {};
+    let where = {
+      is_del: 0
+    };
 
     let result = await ctx.orm().info_project_management.findAndCountAll({
       offset: (pageIndex - 1) * pageSize,
@@ -1369,6 +1384,18 @@ module.exports = {
       pageIndex,
       pageSize
     }
+  },
+  delProjectManagement: async ctx => {
+    let { id } = ctx.request.body;
+
+    await ctx.orm().info_project_management.update({
+      is_del: 1
+    }, {
+      where: { id }
+    })
+
+
+    ctx.body = {}
   },
   s1: async ctx => {
     let sql1 = `select 's1' title, count(1) num from info_house where isDel = 0 
