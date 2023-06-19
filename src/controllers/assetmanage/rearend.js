@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2023-06-13 07:17:40
+ * @LastEditTime: 2023-06-19 09:27:55
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/assetmanage/rearend.js
@@ -533,7 +533,7 @@ module.exports = {
     ctx.body = {}
   },
   submitHouse: async ctx => {
-    let { id, sn, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22, street, community, remark, houseType, houseRelege, houseImg } = ctx.request.body;
+    let { id, sn, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22, street, community, remark, houseType, houseRelege, houseImg, manage_id, manage_user } = ctx.request.body;
 
     let lon = ''
     let lat = ''
@@ -614,18 +614,26 @@ module.exports = {
         }
       }
 
-      await ctx.orm().info_house.create({
+      let result = await ctx.orm().info_house.create({
         sn, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22, street, community, remark,
         lon: lon, lat: lat,
         houseType, houseRelege, houseImg,
         isDel: 0
+      })
+
+      await ctx.orm().info_house_update.create({
+        sub_title: '新增房产资料',
+        house_id: result.id,
+        house_sub_verify: JSON.stringify(result.dataValues),
+        update_type: '新增房产内容',
+        manage_id, manage_user
       })
     }
 
     ctx.body = {}
   },
   submitHouseHaving: async ctx => {
-    let { id, hid, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, yearrent } = ctx.request.body;
+    let { id, hid, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, yearrent, manage_id, manage_user } = ctx.request.body;
 
     let now = date.getTimeStamp()
     let yearrent_data = []
@@ -682,7 +690,8 @@ module.exports = {
           ...house_having.dataValues,
           yearrent_data: yearrent_data
         }),
-        update_type: '更新房产使用情况内容'
+        update_type: '更新房产使用情况内容',
+        manage_id, manage_user
       })
     } else {
       // 计算a3 年租金
@@ -702,7 +711,7 @@ module.exports = {
       if (having.id && having.id > 0) {
         if (yearrent && yearrent.length > 0) {
 
-          let data = yearrent.map(m => {
+          let data = yearrent_data = yearrent.map(m => {
             return {
               ...m,
               hid: having.hid,
@@ -713,6 +722,17 @@ module.exports = {
           });
           await ctx.orm().info_house_yearrent.bulkCreate(data);
         }
+
+        await ctx.orm().info_house_update.create({
+          sub_title: '新增房产使用情况资料',
+          house_id: having.id,
+          house_sub_verify: JSON.stringify({
+            ...having.dataValues,
+            yearrent_data: yearrent_data
+          }),
+          update_type: '新增房产使用情况内容',
+          manage_id, manage_user
+        })
       }
     }
 
@@ -744,7 +764,7 @@ module.exports = {
     }
   },
   submitProjects: async ctx => {
-    let { id, ptype, pro_code, pro_name, pro_level, pro_status, a1, pro_type, pro_source, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, b19, b20, b21, b22, manage_id, manage_user } = ctx.request.body;
+    let { id, ptype, pro_code, pro_name, pro_level, pro_status, a1, pro_type, pro_source, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22, b19, b20, b21, b22, manage_id, manage_user } = ctx.request.body;
 
     ptype = !ptype ? '普通项目' : ptype
 
@@ -758,7 +778,7 @@ module.exports = {
       assert.ok(!!project, '项目不存在!')
 
       await ctx.orm().info_projects.update({
-        ptype, pro_code, pro_name, pro_level, pro_status, a1, pro_type, pro_source, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, b19, b20, b21, b22, manage_id, manage_user
+        ptype, pro_code, pro_name, pro_level, pro_status, a1, pro_type, pro_source, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22, b19, b20, b21, b22, manage_id, manage_user
       }, {
         where: {
           id: project.id
@@ -779,9 +799,17 @@ module.exports = {
         manage_id, manage_user
       })
     } else {
-      await ctx.orm().info_projects.create({
+      let result = await ctx.orm().info_projects.create({
         ptype, pro_code, pro_name, pro_level, pro_status, a1, pro_type, pro_source,
-        a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21,
+        a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22,
+        manage_id, manage_user
+      })
+
+      await ctx.orm().info_project_update.create({
+        sub_title: '新增项目资料',
+        pro_id: result.id,
+        pro_sub_verify: JSON.stringify(result.dataValues),
+        update_type: '新增项目内容',
         manage_id, manage_user
       })
     }
@@ -867,7 +895,7 @@ module.exports = {
         manage_id, manage_user
       })
     } else {
-      await ctx.orm().info_projects.create({
+      let result = await ctx.orm().info_projects.create({
         ptype, pro_code, pro_name, pro_level, a1, pro_type, pro_source,
         a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, b19, b20, b21, b22,
         manage_id, manage_user,
@@ -878,6 +906,14 @@ module.exports = {
         verify2_remark: '南大项目自动审核通过',
         verify3_time: date.formatDate(),
         verify3_remark: '南大项目自动审核通过'
+      })
+
+      await ctx.orm().info_project_update.create({
+        sub_title: '新增项目资料',
+        pro_id: result.id,
+        pro_sub_verify: JSON.stringify(result.dataValues),
+        update_type: '新增项目内容',
+        manage_id, manage_user
       })
     }
 
@@ -1942,9 +1978,9 @@ module.exports = {
 
     // left join (select sid, cUnUserName, cUnUserImg, isProblem, cProblem, cContent, cProblemImgs from info_house_check_users u where u.isProblem = '存在' and u.isRepeat = '不是' and id in (select max(id) from info_house_check_users where isRepeat = '不是' group by sid)) u1 on u1.sid = s.id
 
-    let sql = `select s.create_time, s.id, s.cType, s.shopName, s.a1, u1.cContent, u1.cUnUserName, u1.isProblem, u1.cProblem, u1.cProblemImgs, u1.cUnUserImg, u2.cMeasure, u2.isProblem isProblem1, u2.cProblemImgs cProblemImgs2, s.cUsers from info_house_check_shops s 
-    left join (select sid, cUnUserName, cUnUserImg, isProblem, cProblem, cContent, cProblemImgs from info_house_check_users u where u.isRepeat = '不是') u1 on u1.sid = s.id 
-    left join (select sid, cMeasure, isProblem, cContent, cProblemImgs from info_house_check_users u where u.isRepeat = '是' and id in (select max(id) from info_house_check_users where isRepeat = '是' group by sid)) u2 on u2.sid = s.id 
+    let sql = `select s.create_time, s.id, s.cType, s.shopName, s.a1, u1.cContent, u1.cUnUserName, u1.isProblem, u1.cProblem, u1.cProblemImgs, u1.cUnUserImg, u1.cUnUserPhone, u2.cMeasure, u2.isProblem isProblem1, u2.cProblemImgs cProblemImgs2, s.cUsers from info_house_check_shops s 
+    left join (select sid, cUnUserName, cUnUserImg, isProblem, cProblem, cContent, cProblemImgs, cUnUserPhone from info_house_check_users u where u.isRepeat = '不是') u1 on u1.sid = s.id 
+    left join (select sid, cMeasure, isProblem, cContent, cProblemImgs, cUnUserPhone from info_house_check_users u where u.isRepeat = '是' and id in (select max(id) from info_house_check_users where isRepeat = '是' group by sid)) u2 on u2.sid = s.id 
     where 1 = 1 ${where} `
 
     let result = await ctx.orm().query(sql)
