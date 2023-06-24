@@ -68,6 +68,16 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING(100),
       allowNull: true,
       comment: "返厂单编码"
+    },
+    remark: {
+      type: DataTypes.STRING(500),
+      allowNull: true,
+      comment: "备注"
+    },
+    o_source: {
+      type: DataTypes.STRING(20),
+      allowNull: true,
+      comment: "出库单来源"
     }
   }, {
     sequelize,

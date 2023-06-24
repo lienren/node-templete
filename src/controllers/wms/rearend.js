@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2023-06-12 11:34:09
+ * @LastEditTime: 2023-06-24 12:07:03
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/wms/rearend.js
@@ -123,7 +123,7 @@ module.exports = {
           id
         }
       })
-      
+
       await ctx.orm().info_pro.update({
         pro_name, sort_first, sort_second, pro_code, pro_brand, pro_unit, pro_supplier, outside_id
       }, {
@@ -1005,30 +1005,68 @@ module.exports = {
     let data = excel.readExcel(filePhysicalPath)
 
     let orders = []
-    for (let i = 0, j = data.length; i < j; i++) {
-      if (i === 0 || data[i][0] === '小计:' || data[i][0] === '合计:') {
-        continue
+
+    if (data && data.length > 0) {
+      let c1 = data[0][0]
+
+      if (c1 === 'ID编号') {
+        // 美菜订单
+        for (let i = 0, j = data.length; i < j; i++) {
+          if (i === 0) {
+            continue
+          }
+
+          let order_code = data[i][1]
+
+          // 拣货中或已出库订单不进入出库单中
+          let sql = `select order_code from info_outwh_pro p 
+          inner join info_outwh o on o.id = p.o_id 
+          where p.order_code = '${order_code}' and o.o_status in ('拣货中', '已出库') and o.is_del = 0 limit 1`
+          let result = await ctx.orm().query(sql)
+          if (result && result.length > 0) {
+            continue
+          }
+
+          orders.push({
+            order_code: order_code,
+            pro_code: data[i][4],
+            pro_name: data[i][7],
+            pro_unit: data[i][9],
+            pro_num: parseInt(data[i][11]),
+            pro_out_status: '库存充足',
+            o_source: '美菜'
+          })
+        }
+
+      } else {
+        // 商城订单
+        for (let i = 0, j = data.length; i < j; i++) {
+          if (i === 0 || data[i][0] === '小计:' || data[i][0] === '合计:') {
+            continue
+          }
+
+          let order_code = data[i][0]
+
+          // 拣货中或已出库订单不进入出库单中
+          let sql = `select order_code from info_outwh_pro p 
+          inner join info_outwh o on o.id = p.o_id 
+          where p.order_code = '${order_code}' and o.o_status in ('拣货中', '已出库') and o.is_del = 0 limit 1`
+          let result = await ctx.orm().query(sql)
+          if (result && result.length > 0) {
+            continue
+          }
+
+          orders.push({
+            order_code: order_code,
+            pro_code: data[i][20],
+            pro_name: data[i][21],
+            pro_unit: data[i][25],
+            pro_num: parseInt(data[i][24]),
+            pro_out_status: '库存充足',
+            o_source: '自有商城'
+          })
+        }
       }
-
-      let order_code = data[i][0]
-
-      // 拣货中或已出库订单不进入出库单中
-      let sql = `select order_code from info_outwh_pro p 
-      inner join info_outwh o on o.id = p.o_id 
-      where p.order_code = '${order_code}' and o.o_status in ('拣货中', '已出库') and o.is_del = 0 limit 1`
-      let result = await ctx.orm().query(sql)
-      if (result && result.length > 0) {
-        continue
-      }
-
-      orders.push({
-        order_code: order_code,
-        pro_code: data[i][20],
-        pro_name: data[i][21],
-        pro_unit: data[i][25],
-        pro_num: parseInt(data[i][24]),
-        pro_out_status: '库存充足'
-      })
     }
     assert.ok(orders.length > 0, '订单文件中没有商品信息或已经下过出库单')
 
