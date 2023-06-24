@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2023-06-19 09:27:55
+ * @LastEditTime: 2023-06-21 14:54:48
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/assetmanage/rearend.js
@@ -2052,6 +2052,71 @@ module.exports = {
 
     if (id) {
       await ctx.orm().info_house_contract.update({ isDel: 1 }, {
+        where: {
+          id
+        }
+      })
+    }
+
+    ctx.body = {}
+  },
+  getWorkers: async ctx => {
+    let pageIndex = ctx.request.body.pageIndex || 1;
+    let pageSize = ctx.request.body.pageSize || 50;
+    let { manage_id, status, createTime, modifyTime } = ctx.request.body;
+
+    let where = {
+      isDel: 0
+    }
+
+    Object.assign(where, status && { status: status })
+    Object.assign(where, manage_id && { manage_id: manage_id })
+
+    if (createTime && createTime.length === 2) {
+      where.createTime = { $between: createTime }
+    }
+
+    if (modifyTime && modifyTime.length === 2) {
+      where.modifyTime = { $between: modifyTime }
+    }
+
+    let result = await ctx.orm().info_worker.findAndCountAll({
+      offset: (pageIndex - 1) * pageSize,
+      limit: pageSize,
+      where,
+      order: [['id', 'desc']]
+    });
+
+    ctx.body = {
+      total: result.count,
+      list: result.rows,
+      pageIndex,
+      pageSize
+    }
+  },
+  submitWorker: async ctx => {
+    let { id, title, context, status, manage_id, manage_user } = ctx.request.body;
+
+    if (id) {
+      await ctx.orm().info_worker.update({ title, context, status, manage_id, manage_user }, {
+        where: {
+          id
+        }
+      })
+    } else {
+      await ctx.orm().info_worker.create({
+        title, context, status, manage_id, manage_user,
+        isDel: 0
+      })
+    }
+
+    ctx.body = {}
+  },
+  delWorker: async ctx => {
+    let { id } = ctx.request.body;
+
+    if (id) {
+      await ctx.orm().info_worker.update({ isDel: 1 }, {
         where: {
           id
         }

@@ -22,6 +22,7 @@ var _info_project_management = require("./info_project_management");
 var _info_project_update = require("./info_project_update");
 var _info_projects = require("./info_projects");
 var _info_projects_sub = require("./info_projects_sub");
+var _info_worker = require("./info_worker");
 var _pagelogs = require("./pagelogs");
 
 function initModels(sequelize) {
@@ -48,6 +49,7 @@ function initModels(sequelize) {
   var info_project_update = _info_project_update(sequelize, DataTypes);
   var info_projects = _info_projects(sequelize, DataTypes);
   var info_projects_sub = _info_projects_sub(sequelize, DataTypes);
+  var info_worker = _info_worker(sequelize, DataTypes);
   var pagelogs = _pagelogs(sequelize, DataTypes);
 
 
@@ -75,6 +77,7 @@ function initModels(sequelize) {
     info_project_update,
     info_projects,
     info_projects_sub,
+    info_worker,
     pagelogs,
   };
 }
