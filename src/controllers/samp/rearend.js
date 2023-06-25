@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2022-10-24 11:22:30
+ * @LastEditTime: 2023-06-25 09:57:25
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/samp/rearend.js
@@ -419,7 +419,8 @@ module.exports = {
           col['areaName'] = areaName[m[i]]
         } else if (keys[i] === 'ga_organ') {
           col[keys[i]] = m[i]
-          col['streetName'] = streetName[m[i]]
+          // col['streetName'] = streetName[m[i]]
+          col['streetName'] = m[i]
         } else if (keys[i] === 'IS_KCDJ') {
           if (!m[i]) {
             col[keys[i]] = 0
@@ -427,7 +428,9 @@ module.exports = {
             col[keys[i]] = m[i]
           }
         } else {
-          col[keys[i]] = m[i]
+          if (keys[i]) {
+            col[keys[i]] = m[i]
+          }
         }
       }
       return col
