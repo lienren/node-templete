@@ -1,43 +1,60 @@
-/* jshint indent: 2 */
-
+const Sequelize = require('sequelize');
 module.exports = function(sequelize, DataTypes) {
   return sequelize.define('info_posts', {
     id: {
-      type: DataTypes.INTEGER(11),
+      autoIncrement: true,
+      type: DataTypes.INTEGER,
       allowNull: false,
-      primaryKey: true,
-      autoIncrement: true
+      primaryKey: true
     },
     postName: {
       type: DataTypes.STRING(100),
-      allowNull: true
+      allowNull: true,
+      comment: "职业名称"
     },
     tradeType: {
       type: DataTypes.STRING(100),
-      allowNull: true
+      allowNull: true,
+      comment: "行业类别"
     },
     cycleType: {
       type: DataTypes.STRING(100),
-      allowNull: true
+      allowNull: true,
+      comment: "周期类型"
     },
     periodType: {
       type: DataTypes.STRING(100),
-      allowNull: true
+      allowNull: true,
+      comment: "采样周期类型"
     },
     sampWay: {
       type: DataTypes.STRING(100),
-      allowNull: true
+      allowNull: true,
+      comment: "采样方式"
     },
     remark: {
       type: DataTypes.STRING(100),
-      allowNull: true
+      allowNull: true,
+      comment: "备注"
     },
     createTime: {
       type: DataTypes.DATE,
       allowNull: true,
-      defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
+      defaultValue: Sequelize.Sequelize.literal('CURRENT_TIMESTAMP')
     }
   }, {
-    tableName: 'info_posts'
+    sequelize,
+    tableName: 'info_posts',
+    timestamps: false,
+    indexes: [
+      {
+        name: "PRIMARY",
+        unique: true,
+        using: "BTREE",
+        fields: [
+          { name: "id" },
+        ]
+      },
+    ]
   });
 };

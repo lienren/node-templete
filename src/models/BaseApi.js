@@ -1,5 +1,4 @@
-/* jshint indent: 2 */
-
+const Sequelize = require('sequelize');
 module.exports = function(sequelize, DataTypes) {
   return sequelize.define('BaseApi', {
     apiUrl: {
@@ -20,11 +19,11 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     apiType: {
-      type: DataTypes.INTEGER(11),
+      type: DataTypes.INTEGER,
       allowNull: true
     },
     isAuth: {
-      type: DataTypes.INTEGER(11),
+      type: DataTypes.INTEGER,
       allowNull: true
     },
     addTime: {
@@ -32,6 +31,18 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     }
   }, {
-    tableName: 'BaseApi'
+    sequelize,
+    tableName: 'BaseApi',
+    timestamps: false,
+    indexes: [
+      {
+        name: "PRIMARY",
+        unique: true,
+        using: "BTREE",
+        fields: [
+          { name: "apiUrl" },
+        ]
+      },
+    ]
   });
 };
