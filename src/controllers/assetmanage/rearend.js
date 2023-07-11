@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2023-06-21 14:54:48
+ * @LastEditTime: 2023-07-05 11:49:34
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/assetmanage/rearend.js
@@ -2001,7 +2001,9 @@ module.exports = {
     }
 
     if (cname) {
-      where.cname = cname
+      where.cname = {
+        $like: `%${cname}%`
+      }
     }
 
     if (ctype) {
