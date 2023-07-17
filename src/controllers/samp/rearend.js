@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2023-06-25 09:57:25
+ * @LastEditTime: 2023-07-13 17:28:13
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/samp/rearend.js
@@ -184,7 +184,7 @@ module.exports = {
     Object.assign(where, batch_no && { batch_no })
     Object.assign(where, batchName && { batchName })
     Object.assign(where, name && { name })
-    Object.assign(where, tel && { tel })
+    Object.assign(where, tel && { $or: [{ tel }, { contact_tel: tel }] })
     Object.assign(where, cert_no && { cert_no })
     Object.assign(where, cusId && { cusId })
     Object.assign(where, cusName && { cusName })
@@ -382,6 +382,7 @@ module.exports = {
           col['cx_id'] = m[i]
         } else if (keys[i] === 'tel') {
           if (m[i]) {
+            m[i] = `${m[i]}`
             if (m[i].length === 8) {
               col[keys[i]] = `025${m[i]}`
             } else if (m[i].length === 11) {
