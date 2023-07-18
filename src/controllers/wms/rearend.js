@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2023-06-24 12:07:03
+ * @LastEditTime: 2023-07-17 22:13:52
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/wms/rearend.js
@@ -2176,5 +2176,84 @@ module.exports = {
     });
 
     ctx.body = {}
+  },
+  importClient: async ctx => {
+    let { filePath } = ctx.request.body;
+    assert.ok(!!filePath, '请选择地址文件')
+
+    let filePathObj = path.parse(filePath)
+    let filePhysicalPath = path.resolve(__dirname, `../../../assets/uploads/${filePathObj.base}`)
+    let xlsx = excel.readExcel(filePhysicalPath)
+
+    let data = []
+    for (let i = 0, j = xlsx.length; i < j; i++) {
+      if (i < 2) {
+        continue
+      }
+
+      let m = xlsx[i]
+
+      if (m[8] && m[26]) {
+        data.push({
+          out_id: m[26],
+          out_code: m[8],
+          account: m[0],
+          account_name: m[3],
+          concat_name: m[4],
+          status: m[13],
+          clerk_name: m[14],
+          line_name: m[17],
+          receive_phone: m[2],
+          receive_address: m[18],
+          lng: m[19],
+          lat: m[20],
+        })
+      }
+    }
+
+    await ctx.orm().info_client.destroy({ truncate: true, cascade: false });
+
+    console.log('导入客户数据数量:', data.length)
+
+    await ctx.orm().info_client.bulkCreate(data);
+
+    // 删除文件
+    fs.unlink(filePhysicalPath, function (error) {
+      console.log('delete import excel file error:', error)
+      return false
+    })
+
+    ctx.body = {};
+  },
+  getClients: async ctx => {
+    let pageIndex = ctx.request.body.pageIndex || 1;
+    let pageSize = ctx.request.body.pageSize || 20;
+    let { out_id, out_code, account, account_name, clerk_name, line_name, receive_phone, receive_address } = ctx.request.body;
+
+    let where = { is_del: 0 };
+    Object.assign(where, out_id && { out_id })
+    Object.assign(where, out_code && { out_code })
+    Object.assign(where, account && { account })
+    Object.assign(where, account_name && { account_name: { $like: `%${account_name}%` } })
+    Object.assign(where, clerk_name && { clerk_name })
+    Object.assign(where, line_name && { line_name })
+    Object.assign(where, receive_phone && { receive_phone })
+    Object.assign(where, receive_address && { receive_address: { $like: `%${receive_address}%` } })
+
+    let result = await ctx.orm().info_client.findAndCountAll({
+      offset: (pageIndex - 1) * pageSize,
+      limit: pageSize,
+      where,
+      order: [
+        ['id', 'desc']
+      ]
+    });
+
+    ctx.body = {
+      total: result.count,
+      list: result.rows,
+      pageIndex,
+      pageSize
+    }
   }
 };
