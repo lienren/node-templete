@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2023-07-17 22:13:52
+ * @LastEditTime: 2023-07-30 22:09:42
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/wms/rearend.js
@@ -1990,6 +1990,8 @@ module.exports = {
 
       await ctx.orm().info_backfactory_pro.bulkCreate(data);
     }
+
+    ctx.body = {}
   },
   submitBackFactoryToOut: async ctx => {
     let { id, bf_uname } = ctx.request.body;
@@ -2193,9 +2195,9 @@ module.exports = {
 
       let m = xlsx[i]
 
-      if (m[8] && m[26]) {
+      if (m[8] && m[27]) {
         data.push({
-          out_id: m[26],
+          out_id: m[27],
           out_code: m[8],
           account: m[0],
           account_name: m[3],
@@ -2255,5 +2257,64 @@ module.exports = {
       pageIndex,
       pageSize
     }
+  },
+  getRebates: async ctx => {
+    let pageIndex = ctx.request.body.pageIndex || 1;
+    let pageSize = ctx.request.body.pageSize || 20;
+    let { re_user } = ctx.request.body;
+
+    let where = { is_del: 0 };
+    Object.assign(where, re_user && { re_user })
+
+    let result = await ctx.orm().info_rebate.findAndCountAll({
+      offset: (pageIndex - 1) * pageSize,
+      limit: pageSize,
+      where,
+      order: [
+        ['id', 'desc']
+      ]
+    });
+
+    ctx.body = {
+      total: result.count,
+      list: result.rows,
+      pageIndex,
+      pageSize
+    }
+  },
+  submitRebate: async ctx => {
+    let { id, re_user, out_codes, pro_codes } = ctx.request.body;
+
+    assert.ok(!!re_user, '请填写返利用户信息')
+    assert.ok(!!out_codes, '请填写客户编码信息')
+    assert.ok(!!pro_codes, '请填写商品编码信息')
+
+    if (id) {
+      // 更新
+      await ctx.orm().info_rebate.update({
+        re_user, out_codes, pro_codes
+      }, {
+        where: { id, is_del: 0 }
+      })
+    } else {
+      // 新增
+      await ctx.orm().info_rebate.create({
+        re_user, out_codes, pro_codes,
+        is_del: 0
+      })
+    }
+
+    ctx.body = {}
+  },
+  delRebate: async ctx => {
+    let { id } = ctx.request.body;
+
+    await ctx.orm().info_rebate.update({
+      is_del: 1
+    }, {
+      where: { id }
+    });
+
+    ctx.body = {}
   }
 };

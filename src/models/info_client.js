@@ -124,6 +124,27 @@ module.exports = function(sequelize, DataTypes) {
           { name: "line_name" },
         ]
       },
+      {
+        name: "idx_account_name",
+        using: "BTREE",
+        fields: [
+          { name: "account_name" },
+        ]
+      },
+      {
+        name: "idx_clerk_name",
+        using: "BTREE",
+        fields: [
+          { name: "clerk_name" },
+        ]
+      },
+      {
+        name: "idx_receive_phone",
+        using: "BTREE",
+        fields: [
+          { name: "receive_phone" },
+        ]
+      },
     ]
   });
 };
