@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2023-07-30 22:09:42
+ * @LastEditTime: 2023-07-31 00:32:39
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/wms/rearend.js
@@ -1046,24 +1046,42 @@ module.exports = {
           }
 
           let order_code = data[i][0]
+          let pro_code = data[i][20]
 
           // 拣货中或已出库订单不进入出库单中
-          let sql = `select order_code from info_outwh_pro p 
+          let sql = `select p.id, p.order_code, p.pro_code from info_outwh_pro p 
           inner join info_outwh o on o.id = p.o_id 
-          where p.order_code = '${order_code}' and o.o_status in ('拣货中', '已出库') and o.is_del = 0 limit 1`
+          where p.order_code = '${order_code}' and p.pro_code = '${pro_code}' and o.o_status in ('拣货中', '已出库') and o.is_del = 0 limit 1`
           let result = await ctx.orm().query(sql)
           if (result && result.length > 0) {
+            // 如果存在，则更新
+            await ctx.orm().info_outwh_pro.update({
+              account_name: data[i][1],
+              sales_price: data[i][26],
+              sales_total_price: data[i][27],
+              out_code: data[i][53],
+              order_time: data[i][4]
+            }, {
+              where: {
+                id: result[0].id
+              }
+            })
             continue
           }
 
           orders.push({
             order_code: order_code,
-            pro_code: data[i][20],
+            pro_code: pro_code,
             pro_name: data[i][21],
             pro_unit: data[i][25],
             pro_num: parseInt(data[i][24]),
             pro_out_status: '库存充足',
-            o_source: '自有商城'
+            o_source: '自有商城',
+            account_name: data[i][1],
+            sales_price: data[i][26],
+            sales_total_price: data[i][27],
+            out_code: data[i][53],
+            order_time: data[i][4]
           })
         }
       }
@@ -1148,7 +1166,12 @@ module.exports = {
         pro_out_status: '异常',
         pro_out_status_time: date.formatDate(),
         pro_out_status_desc: '未检测库存是否充足',
-        is_del: 0
+        is_del: 0,
+        account_name: m.account_name,
+        sales_price: m.sales_price,
+        sales_total_price: m.sales_total_price,
+        out_code: m.out_code,
+        order_time: m.order_time
       }
     })
 

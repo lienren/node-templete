@@ -72,6 +72,31 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.DATE,
       allowNull: true,
       defaultValue: Sequelize.Sequelize.literal('CURRENT_TIMESTAMP')
+    },
+    account_name: {
+      type: DataTypes.STRING(100),
+      allowNull: true,
+      comment: "客户名称"
+    },
+    sales_price: {
+      type: DataTypes.DECIMAL(10,2),
+      allowNull: true,
+      comment: "销售单价"
+    },
+    sales_total_price: {
+      type: DataTypes.DECIMAL(10,2),
+      allowNull: true,
+      comment: "销售总价"
+    },
+    out_code: {
+      type: DataTypes.STRING(100),
+      allowNull: true,
+      comment: "客户编码"
+    },
+    order_time: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      comment: "订单下单时间"
     }
   }, {
     sequelize,
@@ -112,6 +137,20 @@ module.exports = function(sequelize, DataTypes) {
         using: "BTREE",
         fields: [
           { name: "pro_name" },
+        ]
+      },
+      {
+        name: "idx_out_code",
+        using: "BTREE",
+        fields: [
+          { name: "out_code" },
+        ]
+      },
+      {
+        name: "idx_order_time",
+        using: "BTREE",
+        fields: [
+          { name: "order_time" },
         ]
       },
     ]
