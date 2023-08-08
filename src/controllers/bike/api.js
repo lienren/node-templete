@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-08-18 10:44:07
- * @LastEditTime: 2023-04-01 17:26:01
+ * @LastEditTime: 2023-08-08 12:17:19
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/bike/api.js
@@ -372,6 +372,12 @@ module.exports = {
       case '待报废通知':
         notifyContent = `因您的车目前为待报废状态，现已移至${d1}区域，30天后将进行报废处理，如需取回，请尽快领走！`
         break;
+      case '超速通知':
+        notifyContent = `您好，在巡查中发现您超速行为，本次已记录，定期将同步所在学院及部门，请安全骑行！`
+        break;
+      case '超载通知':
+        notifyContent = `您在巡查中发现存在骑行超载情况，本次将记录，请勿超载！`
+        break;
     }
 
     await ctx.orm().info_notifys.create({
@@ -491,5 +497,13 @@ module.exports = {
     }
 
     ctx.body = {}
-  }
+  },
+  notifyUserStatistics: async ctx => {
+    let { userId } = ctx.request.body;
+
+    let sql = `select notifyType, count(1) num from info_notifys where userId = ${userId} group by notifyType`
+    let result = await ctx.orm().query(sql)
+
+    ctx.body = result
+  },
 };
