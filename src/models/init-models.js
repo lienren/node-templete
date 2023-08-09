@@ -26,6 +26,7 @@ var _info_pro_spec = require("./info_pro_spec");
 var _info_purchase = require("./info_purchase");
 var _info_purchase_pro = require("./info_purchase_pro");
 var _info_rebate = require("./info_rebate");
+var _info_rebate_order = require("./info_rebate_order");
 var _info_sort = require("./info_sort");
 var _info_space = require("./info_space");
 var _info_transfer_log = require("./info_transfer_log");
@@ -60,6 +61,7 @@ function initModels(sequelize) {
   var info_purchase = _info_purchase(sequelize, DataTypes);
   var info_purchase_pro = _info_purchase_pro(sequelize, DataTypes);
   var info_rebate = _info_rebate(sequelize, DataTypes);
+  var info_rebate_order = _info_rebate_order(sequelize, DataTypes);
   var info_sort = _info_sort(sequelize, DataTypes);
   var info_space = _info_space(sequelize, DataTypes);
   var info_transfer_log = _info_transfer_log(sequelize, DataTypes);
@@ -95,6 +97,7 @@ function initModels(sequelize) {
     info_purchase,
     info_purchase_pro,
     info_rebate,
+    info_rebate_order,
     info_sort,
     info_space,
     info_transfer_log,

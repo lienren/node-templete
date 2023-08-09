@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2023-07-31 00:32:39
+ * @LastEditTime: 2023-08-09 08:37:45
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/wms/rearend.js
@@ -1620,6 +1620,36 @@ module.exports = {
       })
     })
   },
+  getOutOrders: async ctx => {
+    let { order_code, pro_code, startTime, endTime } = ctx.request.body;
+    let pageIndex = ctx.request.body.pageIndex || 1;
+    let pageSize = ctx.request.body.pageSize || 20;
+
+    let where = { is_del: 0 };
+    Object.assign(where, order_code && { order_code })
+    Object.assign(where, pro_code && { pro_code })
+    Object.assign(where, startTime && {
+      order_time: {
+        $between: [startTime, endTime]
+      }
+    })
+
+    let result = await ctx.orm().info_outwh_pro.findAndCountAll({
+      offset: (pageIndex - 1) * pageSize,
+      limit: pageSize,
+      where,
+      order: [
+        ['order_time', 'desc']
+      ]
+    });
+
+    ctx.body = {
+      total: result.count,
+      list: result.rows,
+      pageIndex,
+      pageSize
+    }
+  },
   searchOutOrders: async ctx => {
     let { keywords, pageSize } = ctx.request.body;
 
@@ -2306,7 +2336,7 @@ module.exports = {
     }
   },
   submitRebate: async ctx => {
-    let { id, re_user, out_codes, pro_codes } = ctx.request.body;
+    let { id, re_user, re_user_phone, out_codes, pro_codes } = ctx.request.body;
 
     assert.ok(!!re_user, '请填写返利用户信息')
     assert.ok(!!out_codes, '请填写客户编码信息')
@@ -2315,14 +2345,14 @@ module.exports = {
     if (id) {
       // 更新
       await ctx.orm().info_rebate.update({
-        re_user, out_codes, pro_codes
+        re_user, re_user_phone, out_codes, pro_codes
       }, {
         where: { id, is_del: 0 }
       })
     } else {
       // 新增
       await ctx.orm().info_rebate.create({
-        re_user, out_codes, pro_codes,
+        re_user, re_user_phone, out_codes, pro_codes,
         is_del: 0
       })
     }
@@ -2339,5 +2369,111 @@ module.exports = {
     });
 
     ctx.body = {}
+  },
+  refreshRebate: async ctx => {
+    let rebates = await ctx.orm().info_rebate.findAll({
+      where: {
+        is_del: 0
+      }
+    })
+
+    if (rebates && rebates.length > 0) {
+      // 清空表数据
+      await ctx.orm().info_rebate_order.destroy({ truncate: true, cascade: false });
+
+      for (let i = 0, j = rebates.length; i < j; i++) {
+        let rebate = rebates[i]
+        let out_codes = JSON.parse(rebate.out_codes)
+        let pro_codes = JSON.parse(rebate.pro_codes)
+
+        let outwh_pros = await ctx.orm().info_outwh_pro.findAll({
+          where: {
+            out_code: {
+              $in: out_codes.map(m => {
+                return m.out_code
+              })
+            },
+            pro_code: {
+              $in: pro_codes.map(m => {
+                return m.pro_code
+              })
+            },
+            is_del: 0
+          }
+        })
+
+        if (outwh_pros && outwh_pros.length > 0) {
+          let data = outwh_pros.map(m => {
+            let out_info = out_codes.find(f => f.out_code === m.out_code)
+            let pro = pro_codes.find(f => f.pro_code === m.pro_code)
+            let rebate_price = Math.floor(m.pro_num * parseFloat(pro.rebatePrice) * 100) / 100
+
+            return {
+              re_user: rebate.re_user,
+              re_user_phone: rebate.re_user_phone,
+              re_date: date.formatDate(m.create_time, 'YYYY-MM-DD'),
+              out_id: out_info.out_id,
+              out_code: m.out_code,
+              account: out_info.account,
+              account_name: out_info.account_name,
+              order_code: m.order_code,
+              pro_code: m.pro_code,
+              pro_name: m.pro_name,
+              pro_unit: m.pro_unit,
+              pro_num: m.pro_num,
+              rebate_price: rebate_price
+            }
+          })
+
+          await ctx.orm().info_rebate_order.bulkCreate(data);
+        }
+      }
+    }
+  },
+  getRebateOrderList: async ctx => {
+    let { startDate, endDate, re_user, re_user_phone } = ctx.request.body;
+
+    let sql = `select * from (select DATE_FORMAT(re_date,'%Y-%m') date, re_user, count(DISTINCT(order_code)) order_num, sum(pro_num) pro_num, sum(rebate_price) rebate_price 
+    from info_rebate_order where 1=1 
+    ${startDate ? ` and re_date between '${startDate}' and '${endDate}' ` : ``} 
+    ${re_user ? ` and re_user = '${re_user}' ` : ``} 
+    ${re_user_phone ? ` and re_user_phone = '${re_user_phone}' ` : ``} 
+    group by DATE_FORMAT(re_date,'%Y-%m'), re_user) a 
+    order by a.re_user, a.date desc 
+    `
+
+    let result = await ctx.orm().query(sql)
+
+    ctx.body = result
+  },
+  getRebateOrders: async ctx => {
+    let pageIndex = ctx.request.body.pageIndex || 1;
+    let pageSize = ctx.request.body.pageSize || 20;
+    let { re_user, re_user_phone, startDate, endDate } = ctx.request.body;
+
+    let where = { is_del: 0 };
+    Object.assign(where, re_user && { re_user })
+    Object.assign(where, re_user_phone && { re_user_phone })
+    Object.assign(where, startDate && {
+      re_date: {
+        $between: [startDate, endDate]
+      }
+    })
+
+    let result = await ctx.orm().info_rebate_order.findAndCountAll({
+      offset: (pageIndex - 1) * pageSize,
+      limit: pageSize,
+      where,
+      order: [
+        ['re_date', 'desc']
+      ]
+    });
+
+    ctx.body = {
+      total: result.count,
+      list: result.rows,
+      pageIndex,
+      pageSize
+    }
   }
 };

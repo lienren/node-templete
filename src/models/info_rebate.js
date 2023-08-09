@@ -12,6 +12,11 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true,
       comment: "返利用户"
     },
+    re_user_phone: {
+      type: DataTypes.STRING(20),
+      allowNull: true,
+      comment: "返利用户手机号"
+    },
     out_codes: {
       type: DataTypes.TEXT,
       allowNull: true,
