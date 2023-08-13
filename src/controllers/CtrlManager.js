@@ -215,7 +215,8 @@ module.exports = {
       depName: resultManager.depName,
       userType: resultManager.userType,
       userData: resultManager.userData,
-      verifyLevel: resultManager.verifyLevel
+      verifyLevel: resultManager.verifyLevel,
+      verifyVillages: JSON.parse(resultManager.verifyVillages)
     };
   },
   loginByNoCode: async ctx => {

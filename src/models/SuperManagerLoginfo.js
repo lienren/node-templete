@@ -1,12 +1,11 @@
-/* jshint indent: 2 */
-
+const Sequelize = require('sequelize');
 module.exports = function(sequelize, DataTypes) {
   return sequelize.define('SuperManagerLoginfo', {
     id: {
-      type: DataTypes.INTEGER(11),
+      autoIncrement: true,
+      type: DataTypes.INTEGER,
       allowNull: false,
-      primaryKey: true,
-      autoIncrement: true
+      primaryKey: true
     },
     pageName: {
       type: DataTypes.STRING(100),
@@ -33,7 +32,7 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     managerId: {
-      type: DataTypes.INTEGER(11),
+      type: DataTypes.INTEGER,
       allowNull: true
     },
     managerRealName: {
@@ -65,6 +64,18 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     }
   }, {
-    tableName: 'SuperManagerLoginfo'
+    sequelize,
+    tableName: 'SuperManagerLoginfo',
+    timestamps: false,
+    indexes: [
+      {
+        name: "PRIMARY",
+        unique: true,
+        using: "BTREE",
+        fields: [
+          { name: "id" },
+        ]
+      },
+    ]
   });
 };

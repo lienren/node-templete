@@ -1,27 +1,47 @@
-/* jshint indent: 2 */
-
+const Sequelize = require('sequelize');
 module.exports = function(sequelize, DataTypes) {
   return sequelize.define('info_school_deps', {
     id: {
-      type: DataTypes.INTEGER(11),
+      autoIncrement: true,
+      type: DataTypes.INTEGER,
       allowNull: false,
-      primaryKey: true,
-      autoIncrement: true
+      primaryKey: true
     },
     school: {
       type: DataTypes.STRING(100),
-      allowNull: true
+      allowNull: true,
+      comment: "学校名称"
     },
     depName: {
       type: DataTypes.STRING(100),
-      allowNull: true
+      allowNull: true,
+      comment: "部门名称"
     },
     createTime: {
       type: DataTypes.DATE,
       allowNull: true,
-      defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
+      defaultValue: Sequelize.Sequelize.literal('CURRENT_TIMESTAMP')
     }
   }, {
-    tableName: 'info_school_deps'
+    sequelize,
+    tableName: 'info_school_deps',
+    timestamps: false,
+    indexes: [
+      {
+        name: "PRIMARY",
+        unique: true,
+        using: "BTREE",
+        fields: [
+          { name: "id" },
+        ]
+      },
+      {
+        name: "idx_school",
+        using: "BTREE",
+        fields: [
+          { name: "school" },
+        ]
+      },
+    ]
   });
 };

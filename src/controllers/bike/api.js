@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-08-18 10:44:07
- * @LastEditTime: 2023-08-08 12:17:19
+ * @LastEditTime: 2023-08-10 08:46:51
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/bike/api.js
@@ -373,10 +373,10 @@ module.exports = {
         notifyContent = `因您的车目前为待报废状态，现已移至${d1}区域，30天后将进行报废处理，如需取回，请尽快领走！`
         break;
       case '超速通知':
-        notifyContent = `您好，在巡查中发现您超速行为，本次已记录，定期将同步所在学院及部门，请安全骑行！`
+        notifyContent = `您在巡查中发现存在超速行为，本次已记录，定期将同步所在学院及部门，请安全骑行。`
         break;
       case '超载通知':
-        notifyContent = `您在巡查中发现存在骑行超载情况，本次将记录，请勿超载！`
+        notifyContent = `您在巡查中发现存在超载行为，本次已记录，定期将同步所在学院及部门，请安全骑行。`
         break;
     }
 
