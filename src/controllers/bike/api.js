@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-08-18 10:44:07
- * @LastEditTime: 2023-08-10 08:46:51
+ * @LastEditTime: 2023-08-24 08:53:57
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/bike/api.js
@@ -244,7 +244,7 @@ module.exports = {
     }
   },
   submitModel: async ctx => {
-    let { openId, name, phone, idcard, postType, depName, specType, studNum, modelType, modelImg } = ctx.request.body;
+    let { openId, name, phone, idcard, postType, depName, specType, studNum, modelType, modelImg, grade } = ctx.request.body;
 
     assert.ok(!!openId, '获取用户信息失败')
 
@@ -259,6 +259,7 @@ module.exports = {
     if (!user.idcard) {
       await ctx.orm().info_users.update({
         name, phone, idcard, postType, depName,
+        grade: grade ? grade : '',
         specType: specType ? specType : '',
         studNum: studNum ? studNum : ''
       }, {

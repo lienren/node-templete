@@ -46,6 +46,11 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true,
       comment: "专业类型"
     },
+    grade: {
+      type: DataTypes.STRING(100),
+      allowNull: true,
+      comment: "年级"
+    },
     studNum: {
       type: DataTypes.STRING(100),
       allowNull: true,
