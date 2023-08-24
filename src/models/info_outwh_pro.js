@@ -97,6 +97,11 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.DATE,
       allowNull: true,
       comment: "订单下单时间"
+    },
+    line_name: {
+      type: DataTypes.STRING(100),
+      allowNull: true,
+      comment: "线路名称"
     }
   }, {
     sequelize,

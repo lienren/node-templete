@@ -40,6 +40,24 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.DATE,
       allowNull: true,
       defaultValue: Sequelize.Sequelize.literal('CURRENT_TIMESTAMP')
+    },
+    lead_time: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      defaultValue: 5,
+      comment: "厂家备货周期"
+    },
+    logistics_time: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      defaultValue: 2,
+      comment: "物流送货周期"
+    },
+    sales_time: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      defaultValue: 5,
+      comment: "备货销售天数"
     }
   }, {
     sequelize,

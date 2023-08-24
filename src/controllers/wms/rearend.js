@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2023-08-09 08:37:45
+ * @LastEditTime: 2023-08-21 17:39:22
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/wms/rearend.js
@@ -62,7 +62,10 @@ module.exports = {
       box_long: 0,
       box_width: 0,
       box_height: 0,
-      box_weight: 0
+      box_weight: 0,
+      lead_time: 0,
+      logistics_time: 0,
+      sales_time: 0
     } : spec
   },
   getProWareHouses: async ctx => {
@@ -162,7 +165,10 @@ module.exports = {
           box_long: spec_info.box_long,
           box_width: spec_info.box_width,
           box_height: spec_info.box_height,
-          box_weight: spec_info.box_weight
+          box_weight: spec_info.box_weight,
+          lead_time: spec_info.lead_time,
+          logistics_time: spec_info.logistics_time,
+          sales_time: spec_info.sales_time
         }, {
           where: {
             pro_id: id
@@ -175,7 +181,10 @@ module.exports = {
           box_long: spec_info.box_long,
           box_width: spec_info.box_width,
           box_height: spec_info.box_height,
-          box_weight: spec_info.box_weight
+          box_weight: spec_info.box_weight,
+          lead_time: spec_info.lead_time,
+          logistics_time: spec_info.logistics_time,
+          sales_time: spec_info.sales_time
         })
       }
     }
@@ -941,7 +950,23 @@ module.exports = {
       where
     });
 
-    ctx.body = result
+    let clients = await ctx.orm().info_client.findAll({
+      where: {
+        out_code: {
+          $in: result.map(m => {
+            return m.dataValues.out_code
+          })
+        }
+      }
+    })
+
+    ctx.body = result.map(m => {
+      let f = clients.find(f => f.dataValues.out_code === m.dataValues.out_code)
+      return {
+        ...m.dataValues,
+        client: f ? { ...f.dataValues } : null
+      }
+    })
   },
   getOutProsByOrderCode: async ctx => {
     let { order_code } = ctx.request.body;
@@ -1056,6 +1081,7 @@ module.exports = {
           if (result && result.length > 0) {
             // 如果存在，则更新
             await ctx.orm().info_outwh_pro.update({
+              line_name: data[i][8],
               account_name: data[i][1],
               sales_price: data[i][26],
               sales_total_price: data[i][27],
@@ -1077,6 +1103,7 @@ module.exports = {
             pro_num: parseInt(data[i][24]),
             pro_out_status: '库存充足',
             o_source: '自有商城',
+            line_name: data[i][8],
             account_name: data[i][1],
             sales_price: data[i][26],
             sales_total_price: data[i][27],
@@ -1167,6 +1194,7 @@ module.exports = {
         pro_out_status_time: date.formatDate(),
         pro_out_status_desc: '未检测库存是否充足',
         is_del: 0,
+        line_name: m.line_name,
         account_name: m.account_name,
         sales_price: m.sales_price,
         sales_total_price: m.sales_total_price,
@@ -1218,7 +1246,7 @@ module.exports = {
           // 获取库存（无批次取货）
           let sql = `select wp.id, wp.space_id, wp.wh_id, wp.wh_name, wp.area_name, wp.shelf_name, wp.space_name, wp.pc_id, wp.pc_code, wp.pro_num, wp.pre_pro_num, s.priority, s.sort_index from info_warehouse_pro wp 
           inner join info_space s on s.id = wp.space_id 
-          where wp.pro_id = '${pro.id}' and wp.pro_num - wp.pre_pro_num > 0 
+          where wp.pro_id = '${pro.id}' and wp.area_name != 'D区' and wp.pro_num - wp.pre_pro_num > 0 
           order by s.priority, s.sort_index`
           /*
           // 获取库存（批次取货）
@@ -1558,10 +1586,6 @@ module.exports = {
         pc_id: wh_pro.pc_id,
         pc_code: wh_pro.pc_code,
         pre_pro_num: 0
-      }, {
-        where: {
-          id: wh_pro.id
-        }
       })
     }
 
@@ -2446,6 +2470,38 @@ module.exports = {
 
     ctx.body = result
   },
+  getKHRebateOrderList: async ctx => {
+    let { startDate, endDate } = ctx.request.body;
+    let id = ctx.work.managerId || 0;
+
+    // 超级管理员禁止更新
+    assert.notStrictEqual(id, 0, '用户信息不存在');
+
+    let sameManagerResult = await ctx.orm().SuperManagerInfo.findOne({
+      where: {
+        id: id,
+        isDel: 0
+      }
+    });
+
+    assert.notStrictEqual(sameManagerResult, null, '用户信息不存在');
+
+    let re_user = ''
+    let re_user_phone = sameManagerResult.loginName
+
+    let sql = `select * from (select DATE_FORMAT(re_date,'%Y-%m') date, re_user, count(DISTINCT(order_code)) order_num, sum(pro_num) pro_num, sum(rebate_price) rebate_price 
+    from info_rebate_order where 1=1 
+    ${startDate ? ` and re_date between '${startDate}' and '${endDate}' ` : ``} 
+    ${re_user ? ` and re_user = '${re_user}' ` : ``} 
+    ${re_user_phone ? ` and re_user_phone = '${re_user_phone}' ` : ``} 
+    group by DATE_FORMAT(re_date,'%Y-%m'), re_user) a 
+    order by a.re_user, a.date desc 
+    `
+
+    let result = await ctx.orm().query(sql)
+
+    ctx.body = result
+  },
   getRebateOrders: async ctx => {
     let pageIndex = ctx.request.body.pageIndex || 1;
     let pageSize = ctx.request.body.pageSize || 20;
@@ -2475,5 +2531,52 @@ module.exports = {
       pageIndex,
       pageSize
     }
+  },
+  getAISales: async ctx => {
+    let { start_time, end_time, pro_brand, pro_code } = ctx.request.body;
+
+    let where = ''
+
+    if (pro_brand) {
+      where += ` and p.pro_brand = '${pro_brand}'`
+    }
+
+    if (pro_code) {
+      where += ` and p.pro_code = '${pro_code}'`
+    }
+
+    let dates = []
+    if (start_time && end_time) {
+      dates = date.dataScope(start_time, end_time)
+    } else {
+      let day30 = new Date()
+      day30.setDate((new Date()).getDate() - 30)
+      start_time = date.formatDate(day30, 'yyyy-MM-DD 00:00:00')
+      end_time = date.formatDate(new Date(), 'yyyy-MM-DD 23:59:59')
+
+      dates = date.dataScope(start_time, end_time)
+    }
+
+    let sql = `select 
+        p.pro_brand, 
+        p.pro_code, 
+        p.pro_name, 
+        ROUND(IFNULL(wp.num,0),2) wp_num, 
+        ROUND(IFNULL(s.num,0),2) sales_num, 
+        ROUND(IFNULL(s.num/${dates.length - 1},0),2) everydaysales, 
+        ROUND(IFNULL(wp.num/(s.num/${dates.length - 1}),0),2) salesday,
+        IFNULL(ps.lead_time,0) lead_time,
+        IFNULL(ps.logistics_time,0) logistics_time,
+        IFNULL(ps.sales_time,0) sales_time,
+        ROUND(IFNULL(ps.logistics_time+ps.sales_time+ps.lead_time*(s.num/${dates.length - 1}),0),2) stock_num,
+        ROUND(IFNULL(ps.box_long*ps.box_width*ps.box_height/1000000,0),2) cube from info_pro p 
+      left join (select pro_code, sum(pro_num) num from info_outwh_pro where is_del = 0 and create_time between '${start_time}' and '${end_time}' group by pro_code) s on s.pro_code = p.pro_code 
+      left join (select pro_code, sum(pro_num) num from info_warehouse_pro where pro_num > 0 group by pro_code) wp on wp.pro_code = p.pro_code 
+      left join info_pro_spec ps on ps.pro_id = p.id 
+      where p.is_del = 0 ${where}`
+
+    let result = await ctx.orm().query(sql)
+
+    ctx.body = result
   }
 };
