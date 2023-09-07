@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2023-01-05 10:55:15
+ * @LastEditTime: 2023-09-07 14:31:52
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/human/rearend.js
@@ -584,10 +584,10 @@ module.exports = {
     case postLevel when 15 then 1 else 0 end post15,
     case postLevel when 16 then 1 else 0 end post16,
     case postLevel when 17 then 1 else 0 end post17,
-    case postLevel when 18 then 1 else 0 end post18 from info_users where isresign = 1 and isretire = 1) a 
+    case postLevel when 18 then 1 else 0 end post18 from info_users where isDel = 0 and isresign = 1 and isretire = 1) a 
     group by a.street;`
-    let sql2 = `select street, hold, count(1) num from info_users group by street, hold;`;
-    let sql3 = `select u.street, c.certName, count(1) num from info_users u inner join info_user_cert c on c.userId = u.id group by u.street, c.certName;`;
+    let sql2 = `select street, hold, count(1) num from info_users where isDel = 0 group by street, hold;`;
+    let sql3 = `select u.street, c.certName, count(1) num from info_users u inner join info_user_cert c on c.userId = u.id where u.isDel = 0 group by u.street, c.certName;`;
 
     let result1 = await ctx.orm().query(sql1);
     let result2 = await ctx.orm().query(sql2);
