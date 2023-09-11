@@ -137,6 +137,12 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true,
       comment: "纬度"
     },
+    houseStatus: {
+      type: DataTypes.STRING(100),
+      allowNull: true,
+      defaultValue: "在册",
+      comment: "房产状态（在册、核销）"
+    },
     houseType: {
       type: DataTypes.STRING(100),
       allowNull: true,

@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2023-07-05 11:49:34
+ * @LastEditTime: 2023-09-08 09:22:30
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/assetmanage/rearend.js
@@ -23,7 +23,7 @@ module.exports = {
   getHouses: async ctx => {
     let pageIndex = ctx.request.body.pageIndex || 1;
     let pageSize = ctx.request.body.pageSize || 50;
-    let { sn, street, community, streets, communitys, houseType, a1, a4, a5, a6, a7, a8, a9, a10, a11, a13, a14, a201, a202, a301, a302, a21, h_a1, h_a2, h_a301, h_a302, h_a701, h_a702, remark, notid, createTime, modifyTime } = ctx.request.body;
+    let { sn, street, community, streets, communitys, houseType, houseStatus, a1, a4, a5, a6, a7, a8, a9, a10, a11, a13, a14, a201, a202, a301, a302, a21, h_a1, h_a2, h_a301, h_a302, h_a701, h_a702, remark, notid, createTime, modifyTime } = ctx.request.body;
 
     let where = {
       isDel: 0
@@ -42,6 +42,7 @@ module.exports = {
     Object.assign(where, a14 && { a14 })
     Object.assign(where, a21 && { a21 })
     Object.assign(where, houseType && { houseType })
+    Object.assign(where, houseStatus && { houseStatus })
 
     let where1 = {}
     Object.assign(where1, h_a1 && { a1: h_a1 })
@@ -169,7 +170,7 @@ module.exports = {
   getHousesPlus: async ctx => {
     let pageIndex = ctx.request.body.pageIndex || 1;
     let pageSize = ctx.request.body.pageSize || 50;
-    let { sn, street, community, streets, communitys, houseType, a1, a4, a5, a6, a7, a8, a9, a10, a11, a13, a14, a201, a202, a301, a302, a21, h_a1, h_a2, h_a301, h_a302, h_a501, h_a502, h_a701, h_a702, remark, createTime, modifyTime } = ctx.request.body;
+    let { sn, street, community, streets, communitys, houseType, houseStatus, a1, a4, a5, a6, a7, a8, a9, a10, a11, a13, a14, a201, a202, a301, a302, a21, h_a1, h_a2, h_a301, h_a302, h_a501, h_a502, h_a701, h_a702, remark, createTime, modifyTime } = ctx.request.body;
 
     let where = {
       isDel: 0
@@ -189,6 +190,7 @@ module.exports = {
     Object.assign(where, a14 && { a14 })
     Object.assign(where, a21 && { a21 })
     Object.assign(where, houseType && { houseType })
+    Object.assign(where, houseStatus && { houseStatus })
 
     Object.assign(where1, h_a1 && { a1: h_a1 })
     Object.assign(where1, h_a2 && { a2: { $like: `%${h_a2}%` } })
@@ -533,7 +535,7 @@ module.exports = {
     ctx.body = {}
   },
   submitHouse: async ctx => {
-    let { id, sn, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22, street, community, remark, houseType, houseRelege, houseImg, manage_id, manage_user } = ctx.request.body;
+    let { id, sn, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22, street, community, remark, houseType, houseStatus, houseRelege, houseImg, manage_id, manage_user } = ctx.request.body;
 
     let lon = ''
     let lat = ''
@@ -578,7 +580,7 @@ module.exports = {
 
       await ctx.orm().info_house.update({
         sn, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22, street, community, remark,
-        lon, lat, houseType, houseRelege, houseImg
+        lon, lat, houseType, houseStatus, houseRelege, houseImg
       }, {
         where: {
           id,
@@ -617,7 +619,7 @@ module.exports = {
       let result = await ctx.orm().info_house.create({
         sn, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22, street, community, remark,
         lon: lon, lat: lat,
-        houseType, houseRelege, houseImg,
+        houseType, houseStatus, houseRelege, houseImg,
         isDel: 0
       })
 
@@ -2032,10 +2034,10 @@ module.exports = {
     }
   },
   submitContract: async ctx => {
-    let { id, cname, ctype, camount, a1, a2, a4, a5, a15, yearrent, files } = ctx.request.body;
+    let { id, cname, ctype, camount, a1, a2, a4, a5, a15, yearrent, files, liqMoney } = ctx.request.body;
 
     if (id) {
-      await ctx.orm().info_house_contract.update({ cname, ctype, camount, a1, a2, a4, a5, a15, yearrent: JSON.stringify(yearrent), files }, {
+      await ctx.orm().info_house_contract.update({ cname, ctype, camount, a1, a2, a4, a5, a15, yearrent: JSON.stringify(yearrent), files, liqMoney }, {
         where: {
           id
         }
@@ -2043,6 +2045,7 @@ module.exports = {
     } else {
       await ctx.orm().info_house_contract.create({
         cname, ctype, camount, a1, a2, a4, a5, a15, yearrent: JSON.stringify(yearrent), files,
+        liqMoney,
         isDel: 0
       })
     }
@@ -2072,7 +2075,7 @@ module.exports = {
     }
 
     Object.assign(where, status && { status: status })
-    Object.assign(where, manage_id && { manage_id: manage_id })
+    // Object.assign(where, manage_id && { manage_id: manage_id })
 
     if (createTime && createTime.length === 2) {
       where.createTime = { $between: createTime }

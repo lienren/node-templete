@@ -22,6 +22,11 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true,
       comment: "合同类型"
     },
+    liqMoney: {
+      type: DataTypes.DECIMAL(10,2),
+      allowNull: true,
+      comment: "违约金"
+    },
     a1: {
       type: DataTypes.DATEONLY,
       allowNull: true,
