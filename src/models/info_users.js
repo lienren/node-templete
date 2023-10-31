@@ -36,6 +36,11 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true,
       comment: "职业类型"
     },
+    campus: {
+      type: DataTypes.STRING(50),
+      allowNull: true,
+      comment: "校区"
+    },
     depName: {
       type: DataTypes.STRING(100),
       allowNull: true,
@@ -95,6 +100,34 @@ module.exports = function(sequelize, DataTypes) {
         using: "BTREE",
         fields: [
           { name: "openId" },
+        ]
+      },
+      {
+        name: "idx_phone",
+        using: "BTREE",
+        fields: [
+          { name: "phone" },
+        ]
+      },
+      {
+        name: "idx_idcard",
+        using: "BTREE",
+        fields: [
+          { name: "idcard" },
+        ]
+      },
+      {
+        name: "idx_grade",
+        using: "BTREE",
+        fields: [
+          { name: "grade" },
+        ]
+      },
+      {
+        name: "idx_campus",
+        using: "BTREE",
+        fields: [
+          { name: "campus" },
         ]
       },
     ]

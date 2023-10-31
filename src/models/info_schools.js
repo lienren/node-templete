@@ -32,6 +32,11 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true,
       comment: "取牌联系电话"
     },
+    campus: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
+      comment: "校区"
+    },
     createTime: {
       type: DataTypes.DATE,
       allowNull: true,

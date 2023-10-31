@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2023-09-18 09:46:45
+ * @LastEditTime: 2023-10-31 09:20:27
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/bike/rearend.js
@@ -25,7 +25,7 @@ module.exports = {
   getUsers: async ctx => {
     let pageIndex = ctx.request.body.pageIndex || 1;
     let pageSize = ctx.request.body.pageSize || 20;
-    let { schoolName, phone, idcard, grade, modelNum } = ctx.request.body;
+    let { schoolName, phone, idcard, grade, modelNum, campus } = ctx.request.body;
 
     assert.ok(!!schoolName, '请输入学校名称')
 
@@ -34,6 +34,7 @@ module.exports = {
     Object.assign(where, phone && { phone: phone })
     Object.assign(where, idcard && { idcard: idcard })
     Object.assign(where, grade && { grade: grade })
+    Object.assign(where, campus && { campus: campus })
     Object.assign(where, modelNum && { id: {
       $in:sequelize.literal(`(select userId from info_models where modelNum = '${modelNum}')`)
     } })
@@ -68,7 +69,7 @@ module.exports = {
   getUserModels: async ctx => {
     let pageIndex = ctx.request.body.pageIndex || 1;
     let pageSize = ctx.request.body.pageSize || 20;
-    let { userId, schoolName, phone, idcard, grade, modelNum } = ctx.request.body;
+    let { userId, schoolName, phone, idcard, grade, modelNum, campus } = ctx.request.body;
 
     let where = {};
     Object.assign(where, userId && { userId })
@@ -91,6 +92,11 @@ module.exports = {
     Object.assign(where, grade && {
       userId: {
         $in: sequelize.literal(`(select id from info_users where grade = '${grade}')`)
+      }
+    })
+    Object.assign(where, campus && {
+      userId: {
+        $in: sequelize.literal(`(select id from info_users where campus = '${campus}')`)
       }
     })
 

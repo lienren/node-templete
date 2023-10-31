@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-08-18 10:44:07
- * @LastEditTime: 2023-09-13 10:42:19
+ * @LastEditTime: 2023-10-31 09:18:16
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/bike/api.js
@@ -211,6 +211,19 @@ module.exports = {
       user
     }
   },
+  getSchoolByName: async ctx => {
+    let schoolName = ctx.request.body.schoolName || ''
+
+    assert.ok(!!schoolName, '获取学校信息失败')
+
+    let school = await ctx.orm().info_schools.findOne({
+      where: {
+        schoolName: schoolName
+      }
+    })
+
+    ctx.body = school
+  },
   getSchoolDeps: async ctx => {
     let school = ctx.request.body.school || ''
 
@@ -244,7 +257,7 @@ module.exports = {
     }
   },
   submitModel: async ctx => {
-    let { openId, name, phone, idcard, postType, depName, specType, studNum, modelType, modelImg, grade } = ctx.request.body;
+    let { openId, name, phone, idcard, postType, depName, specType, studNum, modelType, modelImg, grade, campus } = ctx.request.body;
 
     assert.ok(!!openId, '获取用户信息失败')
 
@@ -258,7 +271,9 @@ module.exports = {
     // 如果没有填写身份证，就认为信息未完善
     if (!user.idcard) {
       await ctx.orm().info_users.update({
-        name, phone, idcard, postType, depName,
+        name, phone, idcard, postType, 
+        campus: campus ? campus : '', 
+        depName,
         grade: grade ? grade : '',
         specType: specType ? specType : '',
         studNum: studNum ? studNum : ''
