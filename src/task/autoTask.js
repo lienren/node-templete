@@ -9,24 +9,24 @@
 console.time('AutoTaskExec');
 
 const schedule = require('node-schedule');
-const sequelize = require('sequelize').Sequelize;
-const path = require('path');
-const fs = require('fs');
 const config = require('../config.js');
 const date = require('../utils/date');
-const wx = require('../controllers/visitor/wx');
 
 // 自动检查二维码
-let automaticCheckQCodeJob = null;
+let everyDayJob = null;
 let ctx = {};
 let next = function () {
   return true;
 };
 
-async function getSuccessed () {
-  console.log('check QCode is start:%s', date.formatDate());
+// 每天执行
+async function everyDayWork () {
+  console.log('everyDayWork is start:%s', date.formatDate());
 
-  console.log('check QCode is over:%s', date.formatDate());
+  let sql = `update info_house_contract set ctype = '合同到期' where ctype = '正常履约' and a2 < current_date()`
+  await ctx.orm().query(sql)
+
+  console.log('everyDayWork is over:%s', date.formatDate());
 }
 
 async function main () {
@@ -36,25 +36,12 @@ async function main () {
     orm.middleware(ctx, next);
   }
 
-  // 更新团购状态，每10秒执行一次
-  let automaticRule = new schedule.RecurrenceRule();
-  automaticRule.second = [];
-  for (let i = 0, j = 60; i < j; i++) {
-    if (i % 30 === 0) {
-      automaticRule.second.push(i);
-    }
-  }
-
-  // automaticUpdateGroupStatusJob = schedule.scheduleJob(automaticRule, updateGroupStatus);
-  automaticCheckQCodeJob = schedule.scheduleJob(
-    automaticRule,
-    getSuccessed
-  );
+  everyDayJob = schedule.scheduleJob('0 1 0 * *', everyDayWork);
 }
 
 process.on('SIGINT', function () {
-  if (automaticCheckQCodeJob) {
-    automaticCheckQCodeJob.cancel();
+  if (everyDayJob) {
+    everyDayJob.cancel();
   }
 
   process.exit(0);

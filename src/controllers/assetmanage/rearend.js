@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2023-09-08 09:22:30
+ * @LastEditTime: 2023-12-27 08:59:49
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/assetmanage/rearend.js
@@ -44,7 +44,9 @@ module.exports = {
     Object.assign(where, houseType && { houseType })
     Object.assign(where, houseStatus && { houseStatus })
 
-    let where1 = {}
+    let where1 = {
+      a9: { $gte: date.formatDate() }
+    }
     Object.assign(where1, h_a1 && { a1: h_a1 })
     Object.assign(where1, h_a2 && { a2: { $like: `%${h_a2}%` } })
     if (h_a301 && h_a302) {
@@ -176,7 +178,9 @@ module.exports = {
       isDel: 0
     };
 
-    let where1 = {}
+    let where1 = {
+      a9: { $gte: date.formatDate() }
+    }
 
     Object.assign(where, sn && { sn })
     Object.assign(where, street && { street })
@@ -367,9 +371,7 @@ module.exports = {
     let { hid } = ctx.request.body;
 
     let where = {
-      a9: {
-        $gte: date.formatDate()
-      }
+      a9: { $gte: date.formatDate() }
     };
 
     Object.assign(where, hid && { hid })
@@ -1456,36 +1458,40 @@ module.exports = {
     union all 
     select 's10' title, count(1) num from info_projects where pro_status = '投后管理'`
 
-    let sql2 = `select DATE_FORMAT(a1,'%Y') year, sum(a3) num from info_house_yearrent where hid in (select id from info_house where houseType in ('自有房产')) group by DATE_FORMAT(a1,'%Y')`
+    let sql2 = `select DATE_FORMAT(a1,'%Y') year, sum(camount) num from info_house_contract where isDel = 0 group by DATE_FORMAT(a1,'%Y')`
 
     let result1 = await ctx.orm().query(sql1);
     let result2 = await ctx.orm().query(sql2);
 
-    let result3 = await ctx.orm().info_house_yearrent.findAll({
+    let contracts = await ctx.orm().info_house_contract.findAll({
       where: {
-        hid: {
-          $in: sequelize.literal(`(select id from info_house where houseType in ('自有房产')) `)
-        }
+        isDel: 0
       }
     })
     let years = {}
 
-    result3.map(m => {
-      let diffMonth = moment(m.dataValues.a2).diff(moment(m.dataValues.a1), 'month')
-      let montha3 = Math.round(m.dataValues.a3 / diffMonth)
+    contracts.map(contract => {
+      if (contract.dataValues.yearrent) {
+        let yearrent = JSON.parse(contract.dataValues.yearrent)
 
-      for (let i = 0, j = diffMonth; i < j; i++) {
-        let year = moment(m.dataValues.a1).add(i, 'months').year()
+        yearrent.map(m => {
+          let diffMonth = moment(m.a2).diff(moment(m.a1), 'month')
+          let monthAvg = Math.round(m.a3 / diffMonth)
 
-        if (i + 1 === j) {
-          montha3 = Math.round(m.dataValues.a3 - (diffMonth - 1) * montha3)
-        }
+          for (let i = 0, j = diffMonth; i < j; i++) {
+            let year = moment(m.a1).add(i, 'months').year()
 
-        if (years[`${year}`]) {
-          years[`${year}`] += montha3
-        } else {
-          years[`${year}`] = montha3
-        }
+            if (i + 1 === j) {
+              monthAvg = Math.round(m.a3 - (diffMonth - 1) * monthAvg)
+            }
+
+            if (years[`${year}`]) {
+              years[`${year}`] += monthAvg
+            } else {
+              years[`${year}`] = monthAvg
+            }
+          }
+        })
       }
     })
 
@@ -2074,8 +2080,37 @@ module.exports = {
       isDel: 0
     }
 
+    let manager = await ctx.orm().SuperManagerInfo.findOne({
+      where: {
+        id: manage_id,
+        isDel: 0
+      }
+    })
+
+    if (!manager) {
+      Object.assign(where, manage_id && { manage_id: manage_id })
+    } else {
+      if (manager.depName !== '国资集团') {
+        let depManagers = await ctx.orm().SuperManagerInfo.findAll({
+          where: {
+            depName: manager.depName,
+            isDel: 0
+          }
+        })
+
+        if (depManagers && depManagers.length > 0) {
+          Object.assign(where, manage_id && {
+            manage_id: {
+              $in: depManagers.map(m => {
+                return m.dataValues.id
+              })
+            }
+          })
+        }
+      }
+    }
+
     Object.assign(where, status && { status: status })
-    // Object.assign(where, manage_id && { manage_id: manage_id })
 
     if (createTime && createTime.length === 2) {
       where.createTime = { $between: createTime }
@@ -2129,5 +2164,99 @@ module.exports = {
     }
 
     ctx.body = {}
+  },
+  s3: async ctx => {
+    let sql = `select a.a1, a.a7, a.a2, concat(i.a1,'/',i.a2) a12, 
+    case when json_length(i.yearrent) > 0 then json_unquote(json_extract(i.yearrent, '$[0].a3')) else '' end s1, 
+    case when json_length(i.yearrent) > 1 then json_unquote(json_extract(i.yearrent, '$[1].a3')) else '' end s2, 
+    case when json_length(i.yearrent) > 2 then json_unquote(json_extract(i.yearrent, '$[2].a3')) else '' end s3, 
+    case when json_length(i.yearrent) > 3 then json_unquote(json_extract(i.yearrent, '$[3].a3')) else '' end s4, 
+    case when json_length(i.yearrent) > 4 then json_unquote(json_extract(i.yearrent, '$[4].a3')) else '' end s5 
+    from info_house_contract i 
+    inner join (
+      select h.a1, hh.a15, sum(hh.a7) a7, group_concat(hh.a2) a2 from info_house_having hh 
+      inner join info_house h on h.id = hh.hid 
+      where 
+        hh.a1 = '出租' and 
+        h.isDel = 0 
+      group by h.a1, hh.a15 
+    ) a on a.a15 = i.a15 
+    where 
+      i.isDel = 0 
+    order by i.a1`
+
+    let result = await ctx.orm().query(sql)
+
+    ctx.body = result
+  },
+  s4: async ctx => {
+    let contracts = await ctx.orm().info_house_contract.findAll({
+      where: {
+        isDel: 0,
+        yearrent: {
+          $ne: '[]'
+        }
+      }
+    })
+
+    let houses = []
+
+    for (let i = 0, j = contracts.length; i < j; i++) {
+      let contract = contracts[i].dataValues
+      let sql = `select h.a1, hh.a15, sum(hh.a7) a7, group_concat(hh.a2) a2 from info_house_having hh 
+      inner join info_house h on h.id = hh.hid 
+      where 
+        hh.a1 = '出租' and 
+        h.isDel = 0 and 
+        hh.a15 = '${contract.a15}' 
+      group by h.a1, hh.a15`
+
+      let house = await ctx.orm().query(sql)
+      if (house && house.length > 0) {
+
+        house.map(h => {
+          let fHouse = houses.find(f => f.a1 === h.a1)
+
+          if (fHouse) { } else {
+            fHouse = {
+              ...h,
+              a12: '',
+              s2018: 0,
+              s2019: 0,
+              s2020: 0,
+              s2021: 0,
+              s2022: 0
+            }
+
+            houses.push(fHouse)
+          }
+
+          if (contract.yearrent) {
+            let yearrent = JSON.parse(contract.yearrent)
+
+            yearrent.map(m => {
+              let diffMonth = moment(m.a2).diff(moment(m.a1), 'month')
+              let monthAvg = Math.round(m.a3 / diffMonth)
+
+              for (let i = 0, j = diffMonth; i < j; i++) {
+                let year = moment(m.a1).add(i, 'months').year()
+
+                if (i + 1 === j) {
+                  monthAvg = Math.round(m.a3 - (diffMonth - 1) * monthAvg)
+                }
+
+                if (fHouse[`s${year}`]) {
+                  fHouse[`s${year}`] += monthAvg
+                } else {
+                  fHouse[`s${year}`] = monthAvg
+                }
+              }
+            })
+          }
+        })
+      }
+    }
+
+    ctx.body = houses
   }
 };
