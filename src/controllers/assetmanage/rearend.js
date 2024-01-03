@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2023-12-27 08:59:49
+ * @LastEditTime: 2023-12-28 12:53:56
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/assetmanage/rearend.js
@@ -45,7 +45,7 @@ module.exports = {
     Object.assign(where, houseStatus && { houseStatus })
 
     let where1 = {
-      a9: { $gte: date.formatDate() }
+      // a9: { $gte: date.formatDate() }
     }
     Object.assign(where1, h_a1 && { a1: h_a1 })
     Object.assign(where1, h_a2 && { a2: { $like: `%${h_a2}%` } })
@@ -179,7 +179,7 @@ module.exports = {
     };
 
     let where1 = {
-      a9: { $gte: date.formatDate() }
+      // a9: { $gte: date.formatDate() }
     }
 
     Object.assign(where, sn && { sn })
