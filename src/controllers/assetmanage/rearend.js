@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2023-12-28 12:53:56
+ * @LastEditTime: 2024-01-31 09:09:09
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/assetmanage/rearend.js
@@ -1336,6 +1336,17 @@ module.exports = {
       pageSize
     }
   },
+  delProjectSub: async ctx => {
+    let { id } = ctx.request.body;
+
+    await ctx.orm().info_projects_sub.destroy({
+      where: {
+        id
+      }
+    })
+
+    ctx.body = {}
+  },
   submitProjectManagement: async ctx => {
     let { id, pro_id, a1, a2, a3, a4, a5, manage_id, manage_user } = ctx.request.body;
 
@@ -2258,5 +2269,12 @@ module.exports = {
     }
 
     ctx.body = houses
-  }
+  },
+  getNotices: async ctx => {
+    let sql = `select * from info_house_contract where isDel = 0 and date_add(now(), interval 30 day) >= a2 and ctype = '正常履约'`
+
+    let contract = await ctx.orm().query(sql)
+
+    ctx.body = contract
+  },
 };
