@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2024-01-31 09:09:09
+ * @LastEditTime: 2024-03-13 17:40:39
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/assetmanage/rearend.js
@@ -2271,9 +2271,37 @@ module.exports = {
     ctx.body = houses
   },
   getNotices: async ctx => {
-    let sql = `select * from info_house_contract where isDel = 0 and date_add(now(), interval 30 day) >= a2 and ctype = '正常履约'`
+    let sql = `select * from info_house_contract where isDel = 0 and ctype = '正常履约'`
+    let result = await ctx.orm().query(sql)
 
-    let contract = await ctx.orm().query(sql)
+    let contract = []
+    let now = date.formatDate(new Date(), 'YYYY-MM-DD')
+
+    for (let i = 0, j = result.length; i < j; i++) {
+
+      if (!moment().add(30, 'days').isBefore(result[i].a2)) {
+        contract.push({
+          notice_type: '合同即将到期',
+          notice_data: result[i].a2,
+          ...result[i]
+        })
+      }
+
+      let yearrent = result[i].yearrent ? JSON.parse(result[i].yearrent) : []
+      for (let x = 0, y = yearrent.length; x < y; x++) {
+        let diffDay = moment(yearrent[x].a1, 'YYYY-MM-DD').diff(moment(now, 'YYYY-MM-DD'), 'day')
+        if (diffDay >= 0 && diffDay <= 30) {
+
+          contract.push({
+            notice_type: '合同即将收租',
+            notice_data: yearrent[x].a1,
+            ...result[i]
+          })
+
+          break
+        }
+      }
+    }
 
     ctx.body = contract
   },
