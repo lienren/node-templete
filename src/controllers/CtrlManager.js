@@ -15,6 +15,8 @@ const jwt = require('../utils/jwt');
 const configData = require('./ConfigData');
 const config = require('../config.js');
 
+const manageIds = [5, 9]
+
 function serializeMenu (menus, parentId) {
   let list = [];
   menus.forEach(menu => {
@@ -169,6 +171,10 @@ module.exports = {
   },
   /***************************** 管理员管理 *************************************/
   getManagers: async ctx => {
+    if (manageIds.indexOf(ctx.work.managerId) < 0) {
+      ctx.body = {}
+    }
+
     let current = ctx.request.body.current || 1;
     let pageSize = ctx.request.body.pageSize || 20;
     let loginName = ctx.request.body.loginName || '';
@@ -230,6 +236,10 @@ module.exports = {
     };
   },
   addManager: async ctx => {
+    if (manageIds.indexOf(ctx.work.managerId) < 0) {
+      ctx.body = {}
+    }
+
     let loginName = ctx.request.body.loginName || '';
     let loginPwd = ctx.request.body.loginPwd || '';
     let realName = ctx.request.body.realName || '';
@@ -283,6 +293,10 @@ module.exports = {
     ctx.body = result;
   },
   editManager: async ctx => {
+    if (manageIds.indexOf(ctx.work.managerId) < 0) {
+      ctx.body = {}
+    }
+
     let id = ctx.request.body.id || 0;
     let loginName = ctx.request.body.loginName || '';
     let loginPwd = ctx.request.body.loginPwd || '';
@@ -352,6 +366,10 @@ module.exports = {
     ctx.body = {};
   },
   editManagerState: async ctx => {
+    if (manageIds.indexOf(ctx.work.managerId) < 0) {
+      ctx.body = {}
+    }
+
     let id = ctx.request.body.id || 0;
     let state = ctx.request.body.state;
 
@@ -398,6 +416,10 @@ module.exports = {
     ctx.body = {};
   },
   delManager: async ctx => {
+    if (manageIds.indexOf(ctx.work.managerId) < 0) {
+      ctx.body = {}
+    }
+
     let id = ctx.request.body.id || 0;
 
     // 超级管理员禁止更新
@@ -428,6 +450,10 @@ module.exports = {
     ctx.body = {};
   },
   getManagerRole: async ctx => {
+    if (manageIds.indexOf(ctx.work.managerId) < 0) {
+      ctx.body = {}
+    }
+
     let id = ctx.request.body.id || 0;
 
     // 超级管理员禁止更新
@@ -461,6 +487,10 @@ module.exports = {
     ctx.body = resultRole;
   },
   setManagerRole: async ctx => {
+    if (manageIds.indexOf(ctx.work.managerId) < 0) {
+      ctx.body = {}
+    }
+
     let id = ctx.request.body.id || 0;
     let roleIds = ctx.request.body.roleIds || [];
     let now = date.getTimeStamp();
@@ -544,6 +574,10 @@ module.exports = {
   },
   /***************************** 角色管理 *************************************/
   getRoles: async ctx => {
+    if (manageIds.indexOf(ctx.work.managerId) < 0) {
+      ctx.body = {}
+    }
+
     let current = ctx.request.body.current || 1;
     let pageSize = ctx.request.body.pageSize || 20;
     let roleName = ctx.request.body.roleName || '';
@@ -582,6 +616,10 @@ module.exports = {
     };
   },
   addRole: async ctx => {
+    if (manageIds.indexOf(ctx.work.managerId) < 0) {
+      ctx.body = {}
+    }
+
     let roleName = ctx.request.body.roleName || '';
     let now = date.getTimeStamp();
 
@@ -605,6 +643,10 @@ module.exports = {
     ctx.body = {};
   },
   delRole: async ctx => {
+    if (manageIds.indexOf(ctx.work.managerId) < 0) {
+      ctx.body = {}
+    }
+
     let id = ctx.request.body.id || 0;
 
     // 超级管理员禁止更新
@@ -634,6 +676,10 @@ module.exports = {
     ctx.body = {};
   },
   getRoleMenu: async ctx => {
+    if (manageIds.indexOf(ctx.work.managerId) < 0) {
+      ctx.body = {}
+    }
+
     let id = ctx.request.body.id || 0;
 
     let sameResult = await ctx.orm().SuperRoleInfo.findOne({
@@ -656,6 +702,10 @@ module.exports = {
     });
   },
   setRoleMenu: async ctx => {
+    if (manageIds.indexOf(ctx.work.managerId) < 0) {
+      ctx.body = {}
+    }
+
     let id = ctx.request.body.id || 0;
     let menuIds = ctx.request.body.menuIds || [];
     let now = date.getTimeStamp();
@@ -688,6 +738,10 @@ module.exports = {
   },
   /***************************** 菜单管理 *************************************/
   getMenus: async ctx => {
+    if (manageIds.indexOf(ctx.work.managerId) < 0) {
+      ctx.body = {}
+    }
+
     let result = await ctx.orm().BaseMenu.findAll({
       where: {
         isDel: 0
@@ -700,6 +754,10 @@ module.exports = {
     ctx.body = list;
   },
   getMenuList: async ctx => {
+    if (manageIds.indexOf(ctx.work.managerId) < 0) {
+      ctx.body = {}
+    }
+
     let current = ctx.request.body.current || 1;
     let pageSize = ctx.request.body.pageSize || 20;
     let menuName = ctx.request.body.menuName || '';
@@ -738,6 +796,10 @@ module.exports = {
     };
   },
   addMenu: async ctx => {
+    if (manageIds.indexOf(ctx.work.managerId) < 0) {
+      ctx.body = {}
+    }
+
     let id = ctx.request.body.id || 0;
     let menuName = ctx.request.body.menuName || '';
     let menuLink = ctx.request.body.menuLink || '';
@@ -799,6 +861,10 @@ module.exports = {
     ctx.body = {};
   },
   delMenu: async ctx => {
+    if (manageIds.indexOf(ctx.work.managerId) < 0) {
+      ctx.body = {}
+    }
+
     let id = ctx.request.body.id || 0;
 
     ctx.orm().BaseMenu.update(
@@ -816,6 +882,10 @@ module.exports = {
   },
   /***************************** 日志管理 *************************************/
   getLogs: async ctx => {
+    if (manageIds.indexOf(ctx.work.managerId) < 0) {
+      ctx.body = {}
+    }
+    
     let current = ctx.request.body.current || 1;
     let pageSize = ctx.request.body.pageSize || 20;
     let pageName = ctx.request.body.pageName || '';
