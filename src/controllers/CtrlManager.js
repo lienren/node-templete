@@ -173,6 +173,7 @@ module.exports = {
   getManagers: async ctx => {
     if (manageIds.indexOf(ctx.work.managerId) < 0) {
       ctx.body = {}
+      return
     }
 
     let current = ctx.request.body.current || 1;
@@ -238,6 +239,7 @@ module.exports = {
   addManager: async ctx => {
     if (manageIds.indexOf(ctx.work.managerId) < 0) {
       ctx.body = {}
+      return
     }
 
     let loginName = ctx.request.body.loginName || '';
@@ -295,6 +297,7 @@ module.exports = {
   editManager: async ctx => {
     if (manageIds.indexOf(ctx.work.managerId) < 0) {
       ctx.body = {}
+      return
     }
 
     let id = ctx.request.body.id || 0;
@@ -368,6 +371,7 @@ module.exports = {
   editManagerState: async ctx => {
     if (manageIds.indexOf(ctx.work.managerId) < 0) {
       ctx.body = {}
+      return
     }
 
     let id = ctx.request.body.id || 0;
@@ -418,6 +422,7 @@ module.exports = {
   delManager: async ctx => {
     if (manageIds.indexOf(ctx.work.managerId) < 0) {
       ctx.body = {}
+      return
     }
 
     let id = ctx.request.body.id || 0;
@@ -452,6 +457,7 @@ module.exports = {
   getManagerRole: async ctx => {
     if (manageIds.indexOf(ctx.work.managerId) < 0) {
       ctx.body = {}
+      return
     }
 
     let id = ctx.request.body.id || 0;
@@ -489,6 +495,7 @@ module.exports = {
   setManagerRole: async ctx => {
     if (manageIds.indexOf(ctx.work.managerId) < 0) {
       ctx.body = {}
+      return
     }
 
     let id = ctx.request.body.id || 0;
@@ -576,6 +583,7 @@ module.exports = {
   getRoles: async ctx => {
     if (manageIds.indexOf(ctx.work.managerId) < 0) {
       ctx.body = {}
+      return
     }
 
     let current = ctx.request.body.current || 1;
@@ -618,6 +626,7 @@ module.exports = {
   addRole: async ctx => {
     if (manageIds.indexOf(ctx.work.managerId) < 0) {
       ctx.body = {}
+      return
     }
 
     let roleName = ctx.request.body.roleName || '';
@@ -645,6 +654,7 @@ module.exports = {
   delRole: async ctx => {
     if (manageIds.indexOf(ctx.work.managerId) < 0) {
       ctx.body = {}
+      return
     }
 
     let id = ctx.request.body.id || 0;
@@ -678,6 +688,7 @@ module.exports = {
   getRoleMenu: async ctx => {
     if (manageIds.indexOf(ctx.work.managerId) < 0) {
       ctx.body = {}
+      return
     }
 
     let id = ctx.request.body.id || 0;
@@ -704,6 +715,7 @@ module.exports = {
   setRoleMenu: async ctx => {
     if (manageIds.indexOf(ctx.work.managerId) < 0) {
       ctx.body = {}
+      return
     }
 
     let id = ctx.request.body.id || 0;
@@ -740,6 +752,7 @@ module.exports = {
   getMenus: async ctx => {
     if (manageIds.indexOf(ctx.work.managerId) < 0) {
       ctx.body = {}
+      return
     }
 
     let result = await ctx.orm().BaseMenu.findAll({
@@ -756,6 +769,7 @@ module.exports = {
   getMenuList: async ctx => {
     if (manageIds.indexOf(ctx.work.managerId) < 0) {
       ctx.body = {}
+      return
     }
 
     let current = ctx.request.body.current || 1;
@@ -798,6 +812,7 @@ module.exports = {
   addMenu: async ctx => {
     if (manageIds.indexOf(ctx.work.managerId) < 0) {
       ctx.body = {}
+      return
     }
 
     let id = ctx.request.body.id || 0;
@@ -863,6 +878,7 @@ module.exports = {
   delMenu: async ctx => {
     if (manageIds.indexOf(ctx.work.managerId) < 0) {
       ctx.body = {}
+      return
     }
 
     let id = ctx.request.body.id || 0;
@@ -884,8 +900,9 @@ module.exports = {
   getLogs: async ctx => {
     if (manageIds.indexOf(ctx.work.managerId) < 0) {
       ctx.body = {}
+      return
     }
-    
+
     let current = ctx.request.body.current || 1;
     let pageSize = ctx.request.body.pageSize || 20;
     let pageName = ctx.request.body.pageName || '';
