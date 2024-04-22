@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2023-11-14 11:00:30
+ * @LastEditTime: 2024-04-22 15:52:35
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/human/rearend.js
@@ -1320,6 +1320,8 @@ module.exports = {
   submitLevel: async ctx => {
     let { id, year, levelType, remark, checkUser } = ctx.request.body;
 
+    year = year ? date.formatDate(year, 'YYYY') : 0
+
     let user = await ctx.orm().info_users.findOne({
       where: { id, isDel: 0 }
     })
@@ -1512,7 +1514,7 @@ module.exports = {
       name: '退养主任列表',
       data: []
     })
-    
+
     xlsxObj[0].data.push([
       '编号',
       '街道',
