@@ -82,6 +82,7 @@ module.exports = {
 
     // 生成验证密钥
     let encryptPwd = encrypt.getMd5(`${loginPwd}|${resultManager.salt}`);
+    console.log('encryptPwd:', encryptPwd)
     assert.ok(resultManager.loginPwd === encryptPwd, configData.ERROR_KEY_ENUM.ManagerPasswordIsFail);
 
     // 设置Token
