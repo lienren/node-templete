@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2023-08-21 17:39:22
+ * @LastEditTime: 2024-05-23 19:30:03
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/wms/rearend.js
@@ -1589,23 +1589,14 @@ module.exports = {
       })
     }
 
-    if (wh_pro.pro_num === transfer_num) {
-      // 全部转走
-      await ctx.orm().info_warehouse_pro.destroy({
-        where: {
-          id: wh_pro.id
-        }
-      })
-    } else {
-      // 转走部分
-      await ctx.orm().info_warehouse_pro.update({
-        pro_num: sequelize.literal(` pro_num - ${transfer_num} `)
-      }, {
-        where: {
-          id: wh_pro.id
-        }
-      })
-    }
+    // 去除老库存
+    await ctx.orm().info_warehouse_pro.update({
+      pro_num: sequelize.literal(` pro_num - ${transfer_num} `)
+    }, {
+      where: {
+        id: wh_pro.id
+      }
+    })
 
     // 记录转移日志
     await ctx.orm().info_transfer_log.create({
