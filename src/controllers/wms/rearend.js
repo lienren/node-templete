@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2024-05-23 19:30:03
+ * @LastEditTime: 2024-08-17 09:10:31
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/wms/rearend.js
@@ -133,9 +133,10 @@ module.exports = {
         where: { id }
       })
 
-      if (pro && (pro.pro_name !== pro_name || pro.pro_unit !== pro_unit)) {
+      if (pro && (pro.pro_code !== pro_code || pro.pro_name !== pro_name || pro.pro_unit !== pro_unit)) {
         // 名称或规格变化时，刷新库存中信息
         await ctx.orm().info_warehouse_pro.update({
+          pro_code: pro_code,
           pro_name: pro_name,
           pro_unit: pro_unit
         }, {
