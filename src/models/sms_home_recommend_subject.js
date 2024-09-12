@@ -1,30 +1,30 @@
 /* jshint indent: 2 */
 
 module.exports = function(sequelize, DataTypes) {
-  return sequelize.define('users', {
-    uid: {
-      type: DataTypes.INTEGER(11),
+  return sequelize.define('sms_home_recommend_subject', {
+    id: {
+      type: DataTypes.BIGINT,
       allowNull: false,
       primaryKey: true,
       autoIncrement: true
     },
-    uname: {
-      type: DataTypes.STRING(200),
-      allowNull: true
-    },
-    upwd: {
-      type: DataTypes.STRING(200),
-      allowNull: true
-    },
-    addtime: {
+    subject_id: {
       type: DataTypes.BIGINT,
       allowNull: true
     },
-    isdel: {
+    subject_name: {
+      type: DataTypes.STRING(64),
+      allowNull: true
+    },
+    recommend_status: {
+      type: DataTypes.INTEGER(1),
+      allowNull: true
+    },
+    sort: {
       type: DataTypes.INTEGER(11),
       allowNull: true
     }
   }, {
-    tableName: 'users'
+    tableName: 'sms_home_recommend_subject'
   });
 };

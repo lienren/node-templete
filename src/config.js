@@ -2,17 +2,19 @@
  * @Author: Lienren
  * @Date: 2018-12-13 23:49:41
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-03-01 11:14:43
+ * @Last Modified time: 2021-03-01 23:23:34
  */
 'use strict';
 
 const path = require('path');
+const date = require('./utils/date');
 
 module.exports = {
   sys: {
     port: 20000,
     staticPath: path.resolve(__dirname, '../assets/'),
-    uploadFilePath: path.resolve(__dirname, '../uploads/'),
+    uploadFilePath: path.resolve(__dirname, '../assets/uploads/files'),
+    uploadVirtualFilePath: 'http://localhost:20000/uploads/files/',
     logConfig: {
       appenders: {
         resLogger: {
@@ -27,7 +29,7 @@ module.exports = {
           category: 'log_file',
           numBackups: 5, // keep five backup files
           // compress: true, // compress the backups
-          encoding: 'utf-8'
+          encoding: 'utf-8',
         },
         errorLogger: {
           type: 'dateFile',
@@ -41,54 +43,75 @@ module.exports = {
           category: 'log_file',
           numBackups: 5, // keep five backup files
           // compress: true, // compress the backups
-          encoding: 'utf-8'
-        }
+          encoding: 'utf-8',
+        },
       },
       categories: {
         default: { appenders: ['resLogger'], level: 'trace' },
         resLogger: { appenders: ['resLogger'], level: 'trace' },
-        errorLogger: { appenders: ['errorLogger'], level: 'error' }
-      }
-    }
+        errorLogger: { appenders: ['errorLogger'], level: 'error' },
+      },
+    },
   },
   auth: {
     authOpen: true,
-    authSite: 'authentication',
+    authSite: 'authorization',
     authSource: 'authsource',
     authKey: '447CTXA2C2X9XMYBGQRYP3NMVCUXEA3BYQGP',
     authOptions: {
       expiresIn: '24h',
-      issuer: 'RiskManager System',
-      audience: 'AXON R&D TEAM 2018-2020.',
-      algorithm: 'HS512'
-    }
+      issuer: 'Fruit System',
+      audience: 'Li R&D TEAM 2019-2021.',
+      algorithm: 'HS512',
+    },
   },
   websites: [
     {
-      sitename: 'website',
-      sitepath: path.resolve(__dirname, '../assets/website/index.html')
-    }
+      sitename: 'adminweb',
+      sitepath: path.resolve(__dirname, '../assets/adminweb/index.html'),
+    },
+    {
+      sitename: '.ico',
+      sitepath: path.resolve(__dirname, '../assets/adminweb/index.html'),
+    },
   ],
-  // sequelize-auto -o "./src/models" -d db_test -h localhost -u root -p 3306 -x 123456 -e mysql
+  // sequelize-auto -o "./src/models" -d mall -h 47.118.50.149 -u root -p 3306 -x Yangmiao@2021 -e mysql
   databases: [
     {
       modelPath: path.resolve(__dirname, './models'),
-      db: 'db_test',
+      db: 'mall',
       dialect: 'mysql',
       port: 3306,
       replication: {
-        read: [{ host: 'localhost', username: 'root', password: '123456' }],
-        write: { host: 'localhost', username: 'root', password: '123456' }
+        read: [
+          { host: '47.118.50.149', username: 'root', password: 'Yangmiao@2021' },
+        ],
+        write: { host: '47.118.50.149', username: 'root', password: 'Yangmiao@2021' },
       },
+      dialectOptions: {
+        dateStrings: true,
+        typeCast: function (field, next) {
+          if (field.type === 'DATETIME' || field.type === 'TIMESTAMP') {
+            let fieldDate = field.string();
+            if (fieldDate) {
+              return date.formatDate(fieldDate);
+            } else {
+              return fieldDate;
+            }
+          }
+          return next();
+        },
+      },
+      timezone: '+08:00',
       pool: {
-        maxConnections: 20,
+        maxConnections: 200,
         minConnections: 0,
-        maxIdleTime: 30000
+        maxIdleTime: 30000,
       },
       define: {
-        timestamps: false
+        timestamps: false,
       },
-      logging: false
+      logging: false,
     }
   ],
   redis: {
@@ -96,13 +119,13 @@ module.exports = {
     port: 6379,
     family: 4,
     password: '',
-    db: 0
+    db: 0,
   },
   rebitmq: {
     protocol: 'amqp',
-    hostname: '10.10.133.217',
+    hostname: 'localhost',
     port: 5672,
     username: 'guest',
-    password: 'guest'
-  }
+    password: 'guest',
+  },
 };
