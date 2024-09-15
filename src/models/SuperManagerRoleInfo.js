@@ -1,30 +1,26 @@
 /* jshint indent: 2 */
 
 module.exports = function(sequelize, DataTypes) {
-  return sequelize.define('users', {
-    uid: {
+  return sequelize.define('SuperManagerRoleInfo', {
+    id: {
       type: DataTypes.INTEGER(11),
       allowNull: false,
       primaryKey: true,
       autoIncrement: true
     },
-    uname: {
-      type: DataTypes.STRING(200),
-      allowNull: true
-    },
-    upwd: {
-      type: DataTypes.STRING(200),
-      allowNull: true
-    },
-    addtime: {
-      type: DataTypes.BIGINT,
-      allowNull: true
-    },
-    isdel: {
+    managerId: {
       type: DataTypes.INTEGER(11),
+      allowNull: true
+    },
+    roleId: {
+      type: DataTypes.INTEGER(11),
+      allowNull: true
+    },
+    addTime: {
+      type: DataTypes.BIGINT,
       allowNull: true
     }
   }, {
-    tableName: 'users'
+    tableName: 'SuperManagerRoleInfo'
   });
 };
