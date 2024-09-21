@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2024-08-17 09:10:31
+ * @LastEditTime: 2024-09-21 11:19:10
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/wms/rearend.js
@@ -2051,6 +2051,7 @@ module.exports = {
       let data = bf_pros.map(m => {
         return {
           ...m,
+          id: null,
           bf_id: bf.id,
           bf_code: bf.bf_code,
           pro_num: m.bf_num
