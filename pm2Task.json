@@ -1,8 +1,8 @@
 {
   "apps": [
     {
-      "name": "samp",
-      "script": "./src/app.js",
+      "name": "sampAuto",
+      "script": "./src/task/autoTask.js",
       "watch": false,
       "ignore_watch": ["node_modules", "build", "logs"],
       "out_file": "./logs/out.log",

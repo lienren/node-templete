@@ -1,8 +1,8 @@
 /*
- * @Author: Lienren 
- * @Date: 2018-04-19 12:02:43 
+ * @Author: Lienren
+ * @Date: 2018-04-19 12:02:43
  * @Last Modified by: Lienren
- * @Last Modified time: 2018-12-12 23:09:12
+ * @Last Modified time: 2019-08-26 11:14:25
  */
 'use strict';
 
@@ -11,7 +11,7 @@ const comm = require('./comm');
 
 module.exports = {
   // Date日期格式化
-  formatDate: function(date = new Date(), formate = 'YYYY-MM-DD HH:mm:ss', isunix = false) {
+  formatDate: function (date = new Date(), formate = 'YYYY-MM-DD HH:mm:ss', isunix = false) {
     if (!date) {
       date = new Date();
     }
@@ -30,7 +30,7 @@ module.exports = {
     return val;
   },
   // 获取毫秒级时间戳
-  getTimeStamp: function(second) {
+  getTimeStamp: function (second) {
     let date = new Date().getTime();
 
     if (second && comm.isNumber(second)) {
@@ -40,7 +40,7 @@ module.exports = {
     return date;
   },
   // 获取秒级时间戳
-  getSecondStamp: function(second) {
+  getSecondStamp: function (second) {
     let date = parseInt(new Date().getTime() / 1000);
 
     if (second && comm.isNumber(second)) {
@@ -50,7 +50,7 @@ module.exports = {
     return date;
   },
   // 时间戳转时间，格式：yyyy-MM-DD HH:mm:ss
-  timestampToTime: function(timestamp, position) {
+  timestampToTime: function (timestamp, position) {
     if (/^\d{10}$/.test(timestamp)) {
       timestamp = new Date(parseInt(timestamp) * 1000);
     }
@@ -66,15 +66,71 @@ module.exports = {
     return Y + M + D + h + m + s;
   },
   // 时间转时间戳，时间格式：yyyy-MM-DD HH:mm:ss
-  timeToTimeStamp: function(time) {
+  timeToTimeStamp: function (time) {
     var date = new Date(time.replace(/-/g, '/'));
     return date.getTime();
   },
   // 获取今天开始和结束时间戳
-  getTodayTimeStamp: function() {
+  getTodayTimeStamp: function () {
     return {
       starttime: new Date(new Date().setHours(0, 0, 0, 0)).getTime(),
       endtime: new Date(new Date().setHours(23, 59, 59, 999)).getTime()
     };
+  },
+  // 获取两个时间之间的时间段
+  dataScope: function (a, b) {
+    var date1 = getDate(a);
+    var date2 = getDate(b);
+    date2.setDate(date2.getDate() + 1);
+    if (date1 > date2) {
+      var tempDate = date1;
+      date1 = date2;
+      date2 = tempDate;
+    }
+    date1.setDate(date1.getDate());
+    var dateArr = [];
+    var i = 0;
+    while (
+      !(
+        date1.getFullYear() == date2.getFullYear() &&
+        date1.getMonth() == date2.getMonth() &&
+        date1.getDate() == date2.getDate()
+      )
+    ) {
+      var dayStr = date1.getDate().toString();
+      var monthStr = (date1.getMonth() + 1).toString();
+      dayStr = dayStr.length === 1 ? '0' + dayStr : dayStr;
+      monthStr = monthStr.length === 1 ? '0' + monthStr : monthStr;
+      dateArr[i] = date1.getFullYear() + '-' + monthStr + '-' + dayStr;
+      i++;
+      date1.setDate(date1.getDate() + 1);
+    }
+    return dateArr;
+  },
+  getTodayToPreDay (preDays, formate = 'YYYY-MM-DD HH:mm:ss', isunix = false) {
+    let time = new Date().getTime() - 86400000 * preDays;
+    return this.formatDate(new Date(time), formate, isunix);
   }
 };
+
+function getDate (date) {
+  if (!date) {
+    date = new Date();
+  } else {
+    // date类型
+    if (date instanceof Date) {
+    }
+    // unix时间戳
+    else if (/^\d{10}$/.test(date)) {
+      date = new Date(parseInt(date) * 1000);
+    }
+    // 普通时间字符串
+    else {
+      if (date.indexOf('.') > -1) {
+        date = date.split('.')[0];
+      }
+      date = new Date(date.replace(/-/g, '/'));
+    }
+  }
+  return date;
+}
