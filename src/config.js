@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2018-12-13 23:49:41
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-03-01 11:14:43
+ * @Last Modified time: 2021-06-07 10:53:02
  */
 'use strict';
 
@@ -10,9 +10,10 @@ const path = require('path');
 
 module.exports = {
   sys: {
-    port: 20000,
+    port: 20005,
     staticPath: path.resolve(__dirname, '../assets/'),
-    uploadFilePath: path.resolve(__dirname, '../uploads/'),
+    uploadFilePath: path.resolve(__dirname, '../assets/uploads/'),
+    uploadVirtualFilePath: 'https://localhost:20005/uploads',
     logConfig: {
       appenders: {
         resLogger: {
@@ -53,35 +54,50 @@ module.exports = {
   },
   auth: {
     authOpen: true,
-    authSite: 'authentication',
+    authSite: 'authorization',
     authSource: 'authsource',
     authKey: '447CTXA2C2X9XMYBGQRYP3NMVCUXEA3BYQGP',
     authOptions: {
       expiresIn: '24h',
-      issuer: 'RiskManager System',
-      audience: 'AXON R&D TEAM 2018-2020.',
+      issuer: 'SAT System',
+      audience: 'Root R&D TEAM 2021-2022.',
       algorithm: 'HS512'
     }
   },
   websites: [
     {
-      sitename: 'website',
-      sitepath: path.resolve(__dirname, '../assets/website/index.html')
+      sitename: 'adminweb',
+      sitepath: path.resolve(__dirname, '../assets/adminweb/index.html')
+    },
+    {
+      sitename: '.ico',
+      sitepath: path.resolve(__dirname, '../assets/adminweb/index.html')
     }
   ],
-  // sequelize-auto -o "./src/models" -d db_test -h localhost -u root -p 3306 -x 123456 -e mysql
+  // sequelize-auto -o "./src/models" -d bike -h 120.55.97.164 -u root -p 3306 -x Ler@2021 -e mysql
   databases: [
     {
       modelPath: path.resolve(__dirname, './models'),
-      db: 'db_test',
+      db: 'bike',
       dialect: 'mysql',
       port: 3306,
       replication: {
-        read: [{ host: 'localhost', username: 'root', password: '123456' }],
-        write: { host: 'localhost', username: 'root', password: '123456' }
+        read: [{ host: '120.55.97.164', username: 'root', password: 'Ler@2021' }],
+        write: { host: '120.55.97.164', username: 'root', password: 'Ler@2021' }
       },
+      dialectOptions: {
+        dateStrings: true,
+        typeCast: function(field, next) {
+          // for reading from database
+          if (field.type === 'DATETIME' || field.type === 'TIMESTAMP') {
+            return field.string();
+          }
+          return next();
+        }
+      },
+      timezone: '+08:00',
       pool: {
-        maxConnections: 20,
+        maxConnections: 200,
         minConnections: 0,
         maxIdleTime: 30000
       },
