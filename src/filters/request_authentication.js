@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2018-12-14 09:01:56
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-03-01 09:55:36
+ * @Last Modified time: 2019-08-17 15:06:39
  */
 'use strict';
 
@@ -17,8 +17,18 @@ const jwt = require('../utils/jwt');
  * @param {*} callback 验证结束后回调的方法
  */
 module.exports = async function(ctx, needMethod, callback) {
+  let token = ctx.headers[auth.authSite] || '';
+  let authSource = ctx.headers[auth.authSource] || '';
+  let isPass = false;
+  let authInfo = null;
+
   if (!auth.authOpen) {
-    return true;
+    return {
+      isPass: true,
+      authSource,
+      authInfo,
+      token
+    };
   }
 
   let requestUrl = ctx.path || '';
@@ -28,11 +38,6 @@ module.exports = async function(ctx, needMethod, callback) {
   if (typeof needMethod === 'function') {
     isNeed = await needMethod(ctx, requestUrl);
   }
-
-  let token = ctx.headers[auth.authSite] || '';
-  let authSource = ctx.headers[auth.authSource] || '';
-  let isPass = false;
-  let authInfo = null;
 
   if (isNeed) {
     // 业务逻辑处理后，需要验证
@@ -60,6 +65,7 @@ module.exports = async function(ctx, needMethod, callback) {
   return {
     isPass,
     authSource,
+    authInfo,
     token
   };
 };

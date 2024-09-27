@@ -2,7 +2,7 @@
  * @Author: Lienren
  * @Date: 2018-04-19 11:52:42
  * @Last Modified by: Lienren
- * @Last Modified time: 2019-03-01 11:13:22
+ * @Last Modified time: 2021-03-21 11:48:21
  */
 'use strict';
 
@@ -31,6 +31,17 @@ app.use(async (ctx, next) => {
 });
 
 // 使用koa-bodyparser中间件
+app.use(async (ctx, next) => {
+  ctx.disableBodyParserReturn = false;
+
+  let path = ctx.path.toLowerCase();
+
+  if (path.indexOf('/base/getimagecodebybase64') >= 0) {
+    ctx.disableBodyParserReturn = true;
+  }
+  await next();
+});
+
 app.use(
   bodyParser({
     enableTypes: ['json', 'form'],
@@ -51,7 +62,8 @@ app.use(requestFilter);
 
 // 路由
 const router = require('./router.js');
-app.use(router);
+const router_visitor = require('./router_visitor.js');
+app.use(router).use(router_visitor);
 
 // 绑定访问端口
 http.createServer(app.callback()).listen(config.sys.port);

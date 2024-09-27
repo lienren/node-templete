@@ -1,8 +1,8 @@
 {
   "apps": [
     {
-      "name": "jssnuvisitor",
-      "script": "./src/app.js",
+      "name": "autoTask",
+      "script": "./src/task/autoTask.js",
       "watch": false,
       "ignore_watch": ["node_modules", "build", "logs"],
       "out_file": "./logs/out.log",
@@ -12,7 +12,7 @@
         "NODE_ENV": "production"
       },
       "exec_mode": "cluster",
-      "instances": "max",
+      "instances": "1",
       "autorestart": true
     }
   ]
