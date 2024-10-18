@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2024-09-21 11:19:10
+ * @LastEditTime: 2024-10-18 13:19:48
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/wms/rearend.js
@@ -1077,7 +1077,7 @@ module.exports = {
           // 拣货中或已出库订单不进入出库单中
           let sql = `select p.id, p.order_code, p.pro_code from info_outwh_pro p 
           inner join info_outwh o on o.id = p.o_id 
-          where p.order_code = '${order_code}' and p.pro_code = '${pro_code}' and o.o_status in ('拣货中', '已出库') and o.is_del = 0 limit 1`
+          where p.order_code = '${order_code}' and o.o_status in ('拣货中', '已出库') and o.is_del = 0 limit 1`
           let result = await ctx.orm().query(sql)
           if (result && result.length > 0) {
             // 如果存在，则更新
@@ -1103,7 +1103,7 @@ module.exports = {
             pro_unit: data[i][25],
             pro_num: parseInt(data[i][24]),
             pro_out_status: '库存充足',
-            o_source: '自有商城',
+            o_source: '苏东坡订单',
             line_name: data[i][8],
             account_name: data[i][1],
             sales_price: data[i][26],
