@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2024-10-18 13:19:48
+ * @LastEditTime: 2024-10-20 11:56:14
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/wms/rearend.js
@@ -1043,24 +1043,44 @@ module.exports = {
           }
 
           let order_code = data[i][1]
+          let pro_code = data[i][4]
 
           // 拣货中或已出库订单不进入出库单中
-          let sql = `select order_code from info_outwh_pro p 
+          let sql = `select p.id, p.order_code, p.pro_code from info_outwh_pro p 
           inner join info_outwh o on o.id = p.o_id 
-          where p.order_code = '${order_code}' and o.o_status in ('拣货中', '已出库') and o.is_del = 0 limit 1`
+          where p.order_code = '${order_code}' and p.pro_code = '${pro_code}' and o.o_status in ('拣货中', '已出库') and o.is_del = 0 limit 1`
           let result = await ctx.orm().query(sql)
           if (result && result.length > 0) {
+            // 如果存在，则更新
+            await ctx.orm().info_outwh_pro.update({
+              line_name: data[i][7],
+              account_name: data[i][21],
+              sales_price: data[i][9],
+              sales_total_price: data[i][14],
+              out_code: pro_code,
+              order_time: data[i][24]
+            }, {
+              where: {
+                id: result[0].id
+              }
+            })
             continue
           }
 
           orders.push({
             order_code: order_code,
-            pro_code: data[i][4],
-            pro_name: data[i][7],
-            pro_unit: data[i][9],
-            pro_num: parseInt(data[i][11]),
+            pro_code: pro_code,
+            pro_name: data[i][6],
+            pro_unit: data[i][8],
+            pro_num: parseInt(data[i][10]),
             pro_out_status: '库存充足',
-            o_source: '美菜'
+            o_source: '美菜',
+            line_name: data[i][7],
+            account_name: data[i][21],
+            sales_price: data[i][9],
+            sales_total_price: data[i][14],
+            out_code: pro_code,
+            order_time: data[i][24]
           })
         }
 
@@ -1077,7 +1097,7 @@ module.exports = {
           // 拣货中或已出库订单不进入出库单中
           let sql = `select p.id, p.order_code, p.pro_code from info_outwh_pro p 
           inner join info_outwh o on o.id = p.o_id 
-          where p.order_code = '${order_code}' and o.o_status in ('拣货中', '已出库') and o.is_del = 0 limit 1`
+          where p.order_code = '${order_code}' and p.pro_code = '${pro_code}' and o.o_status in ('拣货中', '已出库') and o.is_del = 0 limit 1`
           let result = await ctx.orm().query(sql)
           if (result && result.length > 0) {
             // 如果存在，则更新
@@ -1086,7 +1106,7 @@ module.exports = {
               account_name: data[i][1],
               sales_price: data[i][26],
               sales_total_price: data[i][27],
-              out_code: data[i][53],
+              out_code: data[i][52],
               order_time: data[i][4]
             }, {
               where: {
@@ -1179,7 +1199,8 @@ module.exports = {
       o_status: '未出库',
       o_status_time: date.formatDate(),
       o_uname,
-      is_del: 0
+      is_del: 0,
+      o_source: o_orders[0].o_source
     })
 
     let info_outwh_pros = o_orders.map(m => {
