@@ -47,6 +47,12 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true,
       comment: "供应商"
     },
+    is_open: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      defaultValue: 1,
+      comment: "是否上下架（1上架，2下架）"
+    },
     is_del: {
       type: DataTypes.INTEGER,
       allowNull: true,

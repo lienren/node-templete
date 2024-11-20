@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2024-10-23 21:32:48
+ * @LastEditTime: 2024-11-20 14:06:43
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/wms/rearend.js
@@ -20,7 +20,7 @@ module.exports = {
   getPros: async ctx => {
     let pageIndex = ctx.request.body.pageIndex || 1;
     let pageSize = ctx.request.body.pageSize || 20;
-    let { pro_name, sort_first, sort_second, pro_code, pro_brand, pro_unit, pro_supplier } = ctx.request.body;
+    let { pro_name, sort_first, sort_second, pro_code, pro_brand, pro_unit, pro_supplier, is_open } = ctx.request.body;
 
     let where = { is_del: 0 };
     Object.assign(where, pro_name && { pro_name: { $like: `%${pro_name}%` } })
@@ -30,6 +30,7 @@ module.exports = {
     Object.assign(where, pro_brand && { pro_brand: pro_brand })
     Object.assign(where, pro_unit && { pro_unit: pro_unit })
     Object.assign(where, pro_supplier && { pro_supplier: { $like: `%${pro_supplier}%` } })
+    Object.assign(where, is_open && { is_open: is_open })
 
     let result = await ctx.orm().info_pro.findAndCountAll({
       offset: (pageIndex - 1) * pageSize,
@@ -118,7 +119,7 @@ module.exports = {
     ctx.body = result
   },
   submitPro: async ctx => {
-    let { id, pro_name, sort_first, sort_second, pro_code, pro_brand, pro_unit, pro_supplier, outside_id, spec_info } = ctx.request.body;
+    let { id, pro_name, sort_first, sort_second, pro_code, pro_brand, pro_unit, pro_supplier, outside_id, spec_info, is_open } = ctx.request.body;
 
     if (id) {
       let pro = await ctx.orm().info_pro.findOne({
@@ -128,7 +129,7 @@ module.exports = {
       })
 
       await ctx.orm().info_pro.update({
-        pro_name, sort_first, sort_second, pro_code, pro_brand, pro_unit, pro_supplier, outside_id
+        pro_name, sort_first, sort_second, pro_code, pro_brand, pro_unit, pro_supplier, outside_id, is_open
       }, {
         where: { id }
       })
@@ -147,7 +148,7 @@ module.exports = {
       }
     } else {
       let pro = await ctx.orm().info_pro.create({
-        pro_name, sort_first, sort_second, pro_code, pro_brand, pro_unit, pro_supplier, outside_id, is_del: 0
+        pro_name, sort_first, sort_second, pro_code, pro_brand, pro_unit, pro_supplier, outside_id, is_open, is_del: 0
       })
 
       id = pro.id
@@ -1044,6 +1045,10 @@ module.exports = {
 
           let order_code = data[i][1]
           let pro_code = data[i][4]
+
+          if (['6946969', '6947025', '6947259'].includes(pro_code)) {
+            continue;
+          }
 
           // 拣货中或已出库订单不进入出库单中
           let sql = `select p.id, p.order_code, p.pro_code from info_outwh_pro p 
@@ -2587,7 +2592,7 @@ module.exports = {
       left join (select pro_code, sum(pro_num) num from info_outwh_pro where is_del = 0 and create_time between '${start_time}' and '${end_time}' group by pro_code) s on s.pro_code = p.pro_code 
       left join (select pro_code, sum(pro_num) num from info_warehouse_pro where pro_num > 0 group by pro_code) wp on wp.pro_code = p.pro_code 
       left join info_pro_spec ps on ps.pro_id = p.id 
-      where p.is_del = 0 ${where}`
+      where p.is_del = 0 and p.is_open = 1 ${where}`
 
     let result = await ctx.orm().query(sql)
 
