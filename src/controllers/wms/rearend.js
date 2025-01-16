@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2024-11-20 14:06:43
+ * @LastEditTime: 2025-01-16 08:33:52
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/wms/rearend.js
@@ -15,6 +15,8 @@ const assert = require('assert');
 const sequelize = require('sequelize');
 const date = require('../../utils/date');
 const excel = require('../../utils/excel');
+
+const mcNoOutOrderProductId = ['6946969', '6947025', '6947259', '6129927', '6129446', '6922075', '6129317', '6129417', '6130023', '6130412', '6129890', '6923670', '6910195', '6922131', '6921060', '6912147', '6127638', '6127621', '6922249', '6952022', '6952342', '6912174', '6130437', '6924626', '6912838', '6914812', '6912098']
 
 module.exports = {
   getPros: async ctx => {
@@ -1046,7 +1048,7 @@ module.exports = {
           let order_code = data[i][1]
           let pro_code = data[i][4]
 
-          if (['6946969', '6947025', '6947259'].includes(pro_code)) {
+          if (mcNoOutOrderProductId.includes(pro_code)) {
             continue;
           }
 
