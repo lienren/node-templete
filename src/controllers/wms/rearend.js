@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2025-02-05 16:53:24
+ * @LastEditTime: 2025-03-04 15:26:22
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/wms/rearend.js
@@ -16,18 +16,9 @@ const sequelize = require('sequelize');
 const date = require('../../utils/date');
 const excel = require('../../utils/excel');
 
-const mcNoOutOrderProductId = ['6129927',
-'6129446',
-'6130023',
-'6921060',
-'6127638',
-'6952022',
-'6952342',
-'6924626',
-'6912098',
-'6946969',
-'6947259',
-'6947025']
+const mcNoOutOrderProductId = ['6946969',
+  '6947259',
+  '6947025']
 
 module.exports = {
   getPros: async ctx => {
@@ -2304,20 +2295,20 @@ module.exports = {
 
       let m = xlsx[i]
 
-      if (m[8] && m[27]) {
+      if (m[9] && m[30]) {
         data.push({
-          out_id: m[27],
-          out_code: m[8],
+          out_id: m[30],
+          out_code: m[9],
           account: m[0],
           account_name: m[3],
           concat_name: m[4],
-          status: m[13],
-          clerk_name: m[14],
-          line_name: m[17],
+          status: m[14],
+          clerk_name: m[15],
+          line_name: m[18],
           receive_phone: m[2],
-          receive_address: m[18],
-          lng: m[19],
-          lat: m[20],
+          receive_address: m[19],
+          lng: m[20],
+          lat: m[21]
         })
       }
     }
