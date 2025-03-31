@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2025-03-04 15:26:22
+ * @LastEditTime: 2025-03-28 17:54:50
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/wms/rearend.js
@@ -447,7 +447,7 @@ module.exports = {
 
     let pur = {
       pc_code: `CGS${date.formatDate(new Date(), 'YYYYMMDDHHmmss')}`,
-      pc_desc: '',
+      pc_desc: data[4][1],
       pc_uname: pc_uname,
       pc_utime: date.formatDate(),
       pc_plan_arrival: date.formatDate(data[1][4], 'YYYY-MM-DD'),
