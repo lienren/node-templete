@@ -1,7 +1,7 @@
 /*
  * @Author: Lienren
  * @Date: 2021-09-04 22:52:54
- * @LastEditTime: 2025-03-28 17:54:50
+ * @LastEditTime: 2025-04-15 21:51:58
  * @LastEditors: Lienren
  * @Description: 
  * @FilePath: /node-templete/src/controllers/wms/rearend.js
@@ -18,7 +18,12 @@ const excel = require('../../utils/excel');
 
 const mcNoOutOrderProductId = ['6946969',
   '6947259',
-  '6947025']
+  '6947025',
+  '7127609',
+  '7158632',
+  '7158631',
+  '7158630',
+  '7158542']
 
 module.exports = {
   getPros: async ctx => {
